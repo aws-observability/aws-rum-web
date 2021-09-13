@@ -1,11 +1,6 @@
-## My Project
+## AWS Real User Monitoring (RUM) Client
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+This is the AWS RUM client source code repository which hosts the RUM agent for collecting real time user monitoring events from web clients to send to any AWS monitoring service.
 
 ## Security
 
