@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.largest_contentful_paint_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "LargestContentfulPaintEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "value": {
+            "type": "number",
+            "description": "Value of the lcp metric"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "value"]
+}

@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.cumulative_layout_shift_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "CumulativeLayoutShiftEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "value": {
+            "type": "number",
+            "description": "Value of the cls metric"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "value"]
+}

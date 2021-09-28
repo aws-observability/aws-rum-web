@@ -1,0 +1,23 @@
+{
+    "$id": "com.amazon.rum.performance_paint_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "PaintEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "startTime": {
+            "type": "number",
+            "description": "Beginning of the event in milliseconds"
+        },
+        "duration": {
+            "type": "number",
+            "description": "Duration of the event in milliseconds"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "startTime", "duration"]
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RUM Integ Test</title>
+        <script src="./loader_cookies_enabled.js"></script>
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+
+        <script>
+            // Common to all test pages
+            function dispatch() {
+                cwr('dispatch');
+            }
+
+            function clearRequestResponse() {
+                document.getElementById('request_url').innerText = '';
+                document.getElementById('request_header').innerText = '';
+                document.getElementById('request_body').innerText = '';
+
+                document.getElementById('response_status').innerText = '';
+                document.getElementById('response_header').innerText = '';
+                document.getElementById('response_body').innerText = '';
+            }
+        </script>
+
+        <style>
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <p id="welcome">This application is used for RUM integ testing.</p>
+        <hr />
+        <button id="dispatch" onclick="dispatch()">Dispatch</button>
+        <button id="clearRequestResponse" onclick="clearRequestResponse()">
+            Clear
+        </button>
+        <hr />
+        <span id="request"></span>
+        <span id="response"></span>
+        <table>
+            <tr>
+                <td>Request URL</td>
+                <td id="request_url"></td>
+            </tr>
+            <tr>
+                <td>Request Header</td>
+                <td id="request_header"></td>
+            </tr>
+            <tr>
+                <td>Request Body</td>
+                <td id="request_body"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Response Status Code</td>
+                <td id="response_status"></td>
+            </tr>
+            <tr>
+                <td>Response Header</td>
+                <td id="response_header"></td>
+            </tr>
+            <tr>
+                <td>Response Body</td>
+                <td id="response_body"></td>
+            </tr>
+        </table>
+    </body>
+</html>

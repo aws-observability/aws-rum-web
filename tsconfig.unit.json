@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "baseUrl": "src",
+        "downlevelIteration": true,
+        "esModuleInterop": true,
+        "lib": ["es2018", "dom"],
+        "moduleResolution": "node",
+        "noEmit": true,
+        "target": "es2018",
+        "types": ["node", "jest", "@testing-library/jest-dom"]
+    },
+    "include": ["types", "**/__tests__/**/*.ts", "**/__mocks__/**/*.ts"]
+}

@@ -1,0 +1,172 @@
+import {
+    Http,
+    Subsegment,
+    XRayTraceEvent
+} from '../../events/xray-trace-event';
+import { getRandomValues } from '../../utils/random';
+
+// All one-byte hex strings from 0x00 to 0xff.
+export const byteToHex = [];
+for (let i = 0; i < 256; i++) {
+    byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
+
+export type HttpPluginConfig = {
+    logicalServiceName?: string;
+    urlsToInclude?: RegExp[];
+    urlsToExclude?: RegExp[];
+    trace?: boolean;
+    stackTraceLength?: number;
+    recordAllRequests?: boolean;
+};
+
+export type HttpPluginConfigWithDefaults = {
+    logicalServiceName: string;
+    urlsToInclude: RegExp[];
+    urlsToExclude: RegExp[];
+    trace: boolean;
+    stackTraceLength: number;
+    recordAllRequests: boolean;
+};
+
+export const defaultConfig: HttpPluginConfigWithDefaults = {
+    logicalServiceName: 'rum.aws.amazon.com',
+    urlsToInclude: [/.*/],
+    urlsToExclude: [
+        // Cognito endpoints https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html
+        /cognito\-identity\.([^\.]*\.)?amazonaws\.com/,
+        // STS endpoints https://docs.aws.amazon.com/general/latest/gr/sts.html
+        /sts\.([^\.]*\.)?amazonaws\.com/
+    ],
+    trace: false,
+    stackTraceLength: 200,
+    recordAllRequests: false
+};
+
+export const isUrlAllowed = (
+    url: string,
+    config: HttpPluginConfigWithDefaults
+) => {
+    const include = config.urlsToInclude.some((urlPattern) =>
+        urlPattern.test(url)
+    );
+    const exclude = config.urlsToExclude.some((urlPattern) =>
+        urlPattern.test(url)
+    );
+    return include && !exclude;
+};
+
+/**
+ * Returns the current time, in floating point seconds in epoch time, accurate to milliseconds.
+ */
+export const epochTime = () => {
+    return Date.now() / 1000;
+};
+
+export const createXRayTraceEventHttp = (
+    input: RequestInfo,
+    init: RequestInit,
+    traced: boolean
+): Http => {
+    const http: Http = { request: {} };
+    http.request.url = input.toString();
+    http.request.method = init.method ? init.method : 'GET';
+    http.request.traced = traced;
+    return http;
+};
+
+export const createXRayTraceEvent = (
+    name: string,
+    startTime: number,
+    http?: Http
+): XRayTraceEvent => {
+    const traceEvent: XRayTraceEvent = {
+        version: '1.0.0',
+        name,
+        origin: 'AWS::RUM::Application',
+        id: generateSegmentId(),
+        start_time: startTime,
+        trace_id: generateTraceId(),
+        end_time: undefined,
+        subsegments: [],
+        in_progress: false
+    };
+    if (http) {
+        traceEvent.http = http;
+    }
+    return traceEvent;
+};
+
+export const createXRaySubsegment = (name: string, startTime): Subsegment => {
+    return {
+        id: generateSegmentId(),
+        name,
+        start_time: startTime,
+        end_time: undefined,
+        in_progress: false
+    };
+};
+
+export const addAmznTraceIdHeader = (
+    init: RequestInit,
+    traceId: string,
+    segmentId: string
+) => {
+    if (!init.headers) {
+        init.headers = [];
+    }
+    init.headers[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
+        traceId,
+        segmentId
+    );
+};
+
+export const getAmznTraceIdHeaderValue = (
+    traceId: string,
+    segmentId: string
+) => {
+    return 'Root=' + traceId + ';Parent=' + segmentId + ';Sampled=1';
+};
+
+/**
+ * Generate a globally unique trace ID.
+ *
+ * See https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html
+ * @returns a trace id with the form '1-[unix epoch time in 8 hex digits]-[random in 24 hex digits]'
+ */
+const generateTraceId = (): string => {
+    return `1-${hexTime()}-${guid()}`;
+};
+
+/**
+ * Generate a segment ID that is unique within a trace.
+ *
+ * See https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html
+ * @returns a segment id, which is 16 random hex digits
+ */
+const generateSegmentId = (): string => {
+    const randomBytes = new Uint8Array(8);
+    getRandomValues(randomBytes);
+    return uint8ArrayToHexString(randomBytes);
+};
+
+const hexTime = (): string => {
+    return Math.floor(Date.now() / 1000).toString(16);
+};
+
+const guid = (): string => {
+    const randomBytes = new Uint8Array(12);
+    getRandomValues(randomBytes);
+    return uint8ArrayToHexString(randomBytes);
+};
+
+const uint8ArrayToHexString = (bytes: Uint8Array): string => {
+    let hexString = '';
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < bytes.length; i++) {
+        hexString += byteToHex[bytes[i]];
+    }
+    return hexString;
+};

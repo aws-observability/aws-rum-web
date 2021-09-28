@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.page_close_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Page Close Event",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "pageId": { "type": "string" },
+        "pageInteractionId": { "type": "string" },
+        "interaction": { "type": "number" },
+        "duration": { "type": "number" }
+    },
+    "additionalProperties": false,
+    "required": ["pageId", "pageInteractionId", "interaction"]
+}
