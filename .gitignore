@@ -7,7 +7,6 @@ dist
 coverage
 node_modules
 npm-debug.log
-package-lock.json
 src/events
 integ-test-results
 .DS_Store
