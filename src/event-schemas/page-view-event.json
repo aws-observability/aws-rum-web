@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.page_view_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Page View Event",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "pageId": { "type": "string" },
+        "pageInteractionId": { "type": "string" },
+        "interaction": { "type": "number" },
+        "parentPageInteractionId": { "type": "string" }
+    },
+    "additionalProperties": false,
+    "required": ["pageId"]
+}

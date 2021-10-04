@@ -1,0 +1,58 @@
+{
+    "$id": "com.amazon.rum.http_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "HttpEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "request": {
+            "type": "object",
+            "properties": {
+                "method": { "type": "string" },
+                "url": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["method", "url"]
+        },
+        "response": {
+            "type": "object",
+            "properties": {
+                "status": { "type": "number" },
+                "statusText": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["status"]
+        },
+        "error": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Error type (eg., TypeError, ParseError, etc)."
+                },
+                "message": {
+                    "type": "string"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "lineno": {
+                    "type": "number"
+                },
+                "colno": {
+                    "type": "number"
+                },
+                "stack": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "request"]
+}

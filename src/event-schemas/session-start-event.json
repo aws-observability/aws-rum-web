@@ -1,0 +1,15 @@
+{
+    "$id": "com.amazon.rum.session_start_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "SessionStartEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version"]
+}

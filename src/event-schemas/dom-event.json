@@ -1,0 +1,23 @@
+{
+    "$id": "com.amazon.rum.dom_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "DomEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "event": {
+            "type": "string",
+            "description": "DOM event type (e.g., click, scroll, hover, etc.)"
+        },
+        "elementId": {
+            "type": "string",
+            "description": "DOM element ID."
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "event", "elementId"]
+}

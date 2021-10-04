@@ -1,0 +1,69 @@
+{
+    "$id": "com.amazon.rum.meta_data",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "MetaData",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "browserLanguage": {
+            "type": "string"
+        },
+        "browserName": {
+            "type": "string"
+        },
+        "browserVersion": {
+            "type": "string"
+        },
+        "osName": {
+            "type": "string"
+        },
+        "osVersion": {
+            "type": "string"
+        },
+        "deviceType": {
+            "type": "string"
+        },
+        "platformType": {
+            "type": "string"
+        },
+        "pageUrl": {
+            "type": "string"
+        },
+        "url": {
+            "type": "string"
+        },
+        "pageId": {
+            "type": "string"
+        },
+        "parentPageId": {
+            "type": "string"
+        },
+        "interaction": {
+            "type": "number"
+        },
+        "referrerUrl": {
+            "type": "string"
+        },
+        "pageTitle": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "countryCode": {
+            "type": "string"
+        },
+        "subdivisionCode": {
+            "type": "string"
+        },
+        "domain": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "domain"]
+}

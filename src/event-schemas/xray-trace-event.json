@@ -1,0 +1,159 @@
+{
+    "$id": "com.amazon.xray_trace_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "X-Ray Trace Event",
+    "type": "object",
+
+    "definitions": {
+        "stackFrame": {
+            "$id": "#stackFrame",
+            "type": "object",
+            "properties": {
+                "class_name": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "method_name": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "exception": {
+            "$id": "#exception",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "message": { "type": "string" },
+                "type": { "type": "string" },
+                "remote": { "type": "boolean" },
+                "truncated": { "type": "integer" },
+                "cause": { "type": "string" },
+                "stack": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/stackFrame"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "cause": {
+            "$id": "#cause",
+            "type": "object",
+            "properties": {
+                "exceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/exception"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "annotations": {
+            "$id": "#annotations",
+            "type": "object",
+            "additionalProperties": true
+        },
+        "metadata": {
+            "$id": "#metadata",
+            "type": "object",
+            "additionalProperties": true
+        },
+
+        "http": {
+            "$id": "#http",
+            "type": "object",
+            "properties": {
+                "request": {
+                    "type": "object",
+                    "properties": {
+                        "method": { "type": "string" },
+                        "url": { "type": "string" },
+                        "client_ip": { "type": "string" },
+                        "x_forwarded_for": { "type": "boolean" },
+                        "traced": { "type": "boolean" }
+                    },
+                    "additionalProperties": false
+                },
+                "response": {
+                    "type": "object",
+                    "properties": {
+                        "status": { "type": "number" },
+                        "content_length": { "type": "number" }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "subsegment": {
+            "$id": "#subsegment",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "start_time": { "type": "number" },
+                "end_time": { "type": "number" },
+                "origin": { "type": "string" },
+                "in_progress": { "type": "boolean" },
+                "trace_id": { "type": "string" },
+                "parent_id": { "type": "string" },
+                "type": { "type": "string", "value": "subsegment" },
+                "http": { "$ref": "#/definitions/http" },
+                "error": { "type": "boolean" },
+                "throttle": { "type": "boolean" },
+                "fault": { "type": "boolean" },
+                "cause": { "$ref": "#/definitions/cause" },
+                "annotations": { "$ref": "#/definitions/annotations" },
+                "metadata": { "$ref": "#/definitions/metadata" },
+                "subsegments": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/subsegment" }
+                }
+            },
+            "additionalProperties": false,
+            "required": ["id", "name", "start_time"]
+        }
+    },
+
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string"
+        },
+        "name": { "type": "string" },
+        "id": { "type": "string" },
+        "start_time": { "type": "number" },
+        "trace_id": { "type": "string" },
+        "end_time": { "type": "number" },
+        "origin": { "type": "string" },
+        "in_progress": { "type": "boolean" },
+        "user": { "type": "string" },
+        "parent_id": { "type": "string" },
+        "http": { "$ref": "#/definitions/http" },
+        "error": { "type": "boolean" },
+        "throttle": { "type": "boolean" },
+        "fault": { "type": "boolean" },
+        "cause": { "$ref": "#/definitions/cause" },
+        "annotations": { "$ref": "#/definitions/annotations" },
+        "metadata": { "$ref": "#/definitions/metadata" },
+        "subsegments": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/subsegment"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": ["name", "id", "trace_id", "start_time"]
+}

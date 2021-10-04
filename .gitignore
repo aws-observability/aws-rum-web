@@ -1,0 +1,17 @@
+.history
+.project
+.settings
+.vscode
+build
+dist
+coverage
+node_modules
+npm-debug.log
+src/events
+integ-test-results
+.DS_Store
+*.swp
+chromedriver.log
+geckodriver.log
+safaridriver.log
+tests_output

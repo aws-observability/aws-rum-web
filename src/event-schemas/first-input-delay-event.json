@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.first_input_delay_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "FirstInputDelayEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "value": {
+            "type": "number",
+            "description": "Value of the fid metric"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "value"]
+}
