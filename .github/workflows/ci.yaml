@@ -1,0 +1,71 @@
+name: AWS RUM Web Client Continuous Build
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    unit-test:
+        name: Check Format and Run Unit Tests
+        runs-on: ubuntu-latest
+        permissions: read-all
+        steps:
+            - name: Checkout AWS RUM Web Client Repository
+              uses: actions/checkout@v2
+
+            - name: Setup Node
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14
+
+            - name: Cache NPM modules
+              uses: actions/cache@v2
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
+            - run: npm install
+
+            - name: Check Code Format
+              run: npm run prettier
+
+            - name: Run Linter
+              run: npm run lint
+
+            - name: Run Unit Tests
+              run: npm run test
+
+    integ-test:
+        name: Run Integ Tests on ${{ matrix.browser }}
+        runs-on: ubuntu-latest
+        permissions: read-all
+        strategy:
+            fail-fast: false
+            matrix:
+                browser: [chrome]
+
+        steps:
+            - name: Checkout AWS RUM Web Client Repository
+              uses: actions/checkout@v2
+
+            - name: Setup Node
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 14
+
+            - name: Cache NPM modules
+              uses: actions/cache@v2
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
+            - run: npm install
+
+            - name: Run Integ Tests
+              run: npm run integ:local:${{ matrix.browser }}:headless

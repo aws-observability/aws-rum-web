@@ -1,28 +1,13 @@
 {
-    "screenshotPath": "build/brazil-integration-tests/",
+    "screenshotPath": "build/integration-tests/",
     "screenshotPathPattern": "failed_test_${TEST_INDEX}/${BROWSER}/${FILE_INDEX}.png",
     "takeScreenshotsOnFails": true,
     "assertionTimeout": 6000,
     "src": "src/**/__integ__/**/*.(js|ts)",
     "skipJsErrors": true,
-    "browsers": {
-        "path": "/apollo/env/DiamondToolkitBrowsersEnvironment/bin/firefox",
-        "cmd": "--headless"
-    },
     "reporter": [
         {
             "name": "spec"
-        },
-        {
-            "name": "html",
-            "output": "build/brazil-integration-tests/index.html"
-        },
-        {
-            "name": "json",
-            "output": "build/brazil-integration-tests/report.json"
         }
-    ],
-    "compilerOptions": {
-        "typescript": { "customCompilerModulePath": "../typescript" }
-    }
+    ]
 }
