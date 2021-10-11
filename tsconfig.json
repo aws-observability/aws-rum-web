@@ -5,8 +5,7 @@
         "lib": ["dom", "es2018"],
         "module": "esnext",
         "moduleResolution": "node",
-        "strict": true,
-        "strictPropertyInitialization": false
+        "strict": false
     },
     "include": ["src/"],
     "exclude": [
