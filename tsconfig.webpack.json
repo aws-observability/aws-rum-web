@@ -5,6 +5,7 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "sourceMap": true,
+        "strict": false,
         "target": "es5",
         "outDir": "./dist/webpack"
     },

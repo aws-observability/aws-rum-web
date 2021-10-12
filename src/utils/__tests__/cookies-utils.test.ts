@@ -67,20 +67,16 @@ describe('Cookies utils tests', () => {
 
     test('getCookie() when document.cookie has more than one cookie, return the correct cookie value', async () => {
         // Init
-        const cookieName1 = COOKIE_FRE_FIX + '_' + new Date().getTime();
+        const cookieName1 = COOKIE_FRE_FIX + '_A';
         const cookieValue1 = new Date().toString();
 
-        const cookieName2 = COOKIE_FRE_FIX + '_' + new Date().getTime();
+        const cookieName2 = COOKIE_FRE_FIX + '_B';
         const cookieValue2 = new Date().toString();
 
-        document.cookie =
-            cookieName1 +
-            '=' +
-            cookieValue1 +
-            '; ' +
-            cookieName2 +
-            '=' +
-            cookieValue2;
+        document.cookie = cookieName1 + '=' + cookieValue1;
+        document.cookie = cookieName2 + '=' + cookieValue2;
+
+        console.log(document.cookie);
 
         // Assert
         expect(utils.getCookie(cookieName1)).toEqual(cookieValue1);

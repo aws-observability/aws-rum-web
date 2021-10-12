@@ -6,6 +6,7 @@
         "lib": ["es2018", "dom"],
         "moduleResolution": "node",
         "noEmit": true,
+        "strict": false,
         "target": "es2018",
         "types": ["node", "jest", "@testing-library/jest-dom"]
     },

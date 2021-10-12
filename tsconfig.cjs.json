@@ -5,8 +5,7 @@
         "lib": ["dom", "es2018"],
         "module": "commonjs",
         "moduleResolution": "node",
-        "strict": true,
-        "strictPropertyInitialization": false,
+        "strict": false,
         "target": "es5",
         "outDir": "./dist/cjs"
     },
