@@ -9,11 +9,9 @@ on:
 
 jobs:
     publish_to_cdn:
-        name: Publish Web Bundle to CloudWatch RUM CDN
+        name: Publish New Release
         runs-on: ubuntu-latest
-        permissions:
-            id-token: write
-            contents: read
+        permissions: write-all
         steps:
             - name: Checkout AWS RUM Web Client Repository
               uses: actions/checkout@v2
@@ -50,7 +48,19 @@ jobs:
                   npm install
                   npm run release
 
-            - name: Copy Files to CDN
+            - name: Publish to CloudWatch RUM CDN
               run: |
                   aws s3api put-object --bucket aws-rum-web-beta-us-west-2 --key 'content/${{ github.event.inputs.version }}/cwr.js' --body build/assets/cwr.js
                   aws s3api put-object --bucket aws-rum-web-beta-us-west-2 --key 'content/${{ github.event.inputs.version }}/LICENSE-THIRD-PARTY' --body LICENSE-THIRD-PARTY
+
+            - name: Create GitHub Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: 'aws-rum-web@${{ github.event.inputs.version }}'
+                  release_name: 'Release ${{ github.event.inputs.version }}'
+                  body: 'Please see [CHANGELOG](https://github.com/aws/aws-rum-web/blob/master/CHANGELOG.md) for details.'
+                  draft: true
+                  prerelease: false
