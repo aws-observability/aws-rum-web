@@ -12,7 +12,7 @@
         "build:es": "tsc --project ./tsconfig.es.json",
         "build:cjs": "tsc --project ./tsconfig.cjs.json",
         "build:dev": "npm run build:schemas && webpack --config webpack/webpack.dev.js",
-        "build:schemas": "scripts/generate-schema-ts",
+        "build:schemas": "node scripts/generate-schema-ts.js",
         "clean": "rm -rf ./build && rm -rf ./node_modules & rm package-lock.json",
         "server": "webpack-dev-server --config webpack/webpack.dev.js",
         "release": "npm run test && npm run build",
