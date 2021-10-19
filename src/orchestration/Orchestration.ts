@@ -36,7 +36,7 @@ export enum TELEMETRY_TYPES {
 
 type PluginInitializer = () => Plugin[];
 
-interface DataCollectionFunctor {
+interface TelemetriesFunctor {
     [key: string]: PluginInitializer;
 }
 
@@ -51,6 +51,7 @@ export type PartialConfig = {
     batchLimit?: number;
     clientBuilder?: ClientBuilder;
     dispatchInterval?: number;
+    enableRumClient?: boolean;
     endpoint?: string;
     eventCacheSize?: number;
     eventPluginsToLoad?: Plugin[];
@@ -62,7 +63,6 @@ export type PartialConfig = {
     sessionEventLimit?: number;
     sessionLengthSeconds?: number;
     sessionSampleRate?: number;
-    userIdRetentionDays?: number;
     /**
      * Application owners think about data collection in terms of the categories
      * of data being collected. For example, JavaScript errors, page load
@@ -76,12 +76,14 @@ export type PartialConfig = {
      * plugins which map to the selected categories.
      */
     telemetries?: string[];
+    userIdRetentionDays?: number;
 };
 
 export const defaultConfig: Config = {
     allowCookies: false,
     batchLimit: 100,
     dispatchInterval: 5 * 1000,
+    enableRumClient: true,
     endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
     eventCacheSize: 200,
     eventPluginsToLoad: [],
@@ -91,13 +93,13 @@ export const defaultConfig: Config = {
     sessionEventLimit: 200,
     sessionLengthSeconds: 60 * 30,
     sessionSampleRate: 1,
-    userIdRetentionDays: 0,
     telemetries: [
         TELEMETRY_TYPES.ERRORS,
         TELEMETRY_TYPES.PERFORMANCE,
         TELEMETRY_TYPES.JOURNEY,
         TELEMETRY_TYPES.INTERACTION
-    ]
+    ],
+    userIdRetentionDays: 0
 };
 
 export type Config = {
@@ -105,6 +107,7 @@ export type Config = {
     batchLimit: number;
     clientBuilder?: ClientBuilder;
     dispatchInterval: number;
+    enableRumClient: boolean;
     endpoint: string;
     eventCacheSize: number;
     eventPluginsToLoad: Plugin[];
@@ -125,8 +128,8 @@ export type Config = {
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
-    userIdRetentionDays: number;
     telemetries: string[];
+    userIdRetentionDays: number;
 };
 
 /**
@@ -175,6 +178,12 @@ export class Orchestration {
             applicationName,
             applicationVersion
         );
+
+        if (this.config.enableRumClient) {
+            this.enable();
+        } else {
+            this.disable();
+        }
     }
 
     /**
@@ -339,7 +348,7 @@ export class Orchestration {
 
     private constructBuiltinPlugins(): Plugin[] {
         let plugins: Plugin[] = [];
-        const functor: DataCollectionFunctor = this.telemetryFunctor();
+        const functor: TelemetriesFunctor = this.telemetryFunctor();
 
         this.config.telemetries.forEach((type) => {
             if (typeof type === 'string' && functor[type.toLowerCase()]) {
@@ -366,7 +375,7 @@ export class Orchestration {
      * Returns a functor which maps data collection categories to
      * instantiated plugins.
      */
-    private telemetryFunctor(): DataCollectionFunctor {
+    private telemetryFunctor(): TelemetriesFunctor {
         return {
             [TELEMETRY_TYPES.ERRORS]: (): Plugin[] => {
                 return [new JsErrorPlugin()];

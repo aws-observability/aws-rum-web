@@ -4,5 +4,4 @@ declare global {
         AwsRumClient: AwsRumClientInit;
     }
 }
-// tslint:disable:no-unused-expression
-new CommandQueue(window.AwsRumClient);
+new CommandQueue().init(window.AwsRumClient);

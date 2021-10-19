@@ -5,11 +5,21 @@ export function loader(
     applicationVersion,
     region,
     clientUri,
-    config
+    config,
+    remoteConfigUri
 ) {
-    (function (n, i, a, v, r, s, c, x, z) {
+    (function (n, i, a, v, r, s, c, u, x, z) {
         // The global object that the AWS RUM client will use to read configuration and commands.
-        x = window.AwsRumClient = { q: [], n: n, i: i, a: a, v: v, r: r, c: c };
+        x = window.AwsRumClient = {
+            q: [],
+            n: n,
+            i: i,
+            a: a,
+            v: v,
+            r: r,
+            c: c,
+            u: u
+        };
 
         // The AWS RUM client's JavaScript API
         window[n] = function (c, p) {
@@ -31,6 +41,7 @@ export function loader(
         applicationVersion,
         region,
         clientUri,
-        config
+        config,
+        remoteConfigUri
     );
 }

@@ -1,22 +1,47 @@
 import { TELEMETRY_TYPES, Orchestration } from '../Orchestration';
 import { Dispatch } from '../../dispatch/Dispatch';
+import { EventCache } from '../../event-cache/EventCache';
+import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
+import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
+import { PluginManager } from '../../plugins/PluginManager';
 
-// @ts-ignore
 global.fetch = jest.fn();
 
+const enableDispatch = jest.fn();
+const disableDispatch = jest.fn();
+
 jest.mock('../../dispatch/Dispatch', () => ({
-    Dispatch: jest.fn().mockImplementation(() => ({}))
+    Dispatch: jest.fn().mockImplementation(() => ({
+        enable: enableDispatch,
+        disable: disableDispatch
+    }))
 }));
 
+const enableEventCache = jest.fn();
+const disableEventCache = jest.fn();
+
 jest.mock('../../event-cache/EventCache', () => ({
-    EventCache: jest.fn().mockImplementation(() => ({}))
+    EventCache: jest.fn().mockImplementation(() => ({
+        enable: enableEventCache,
+        disable: disableEventCache
+    }))
 }));
 
 const addPlugin = jest.fn();
 
+const configurePluginSpy = jest.fn((p, q) => {
+    /*do nothing*/
+});
+
+const enablePlugins = jest.fn();
+const disablePlugins = jest.fn();
+
 jest.mock('../../plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
-        addPlugin: addPlugin
+        addPlugin: addPlugin,
+        configurePlugin: configurePluginSpy,
+        enable: enablePlugins,
+        disable: disablePlugins
     }))
 }));
 
@@ -27,7 +52,6 @@ describe('Orchestration tests', () => {
 
     test('when region is not provided then endpoint region defaults to us-west-2', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', undefined, {});
 
         // Assert
@@ -40,7 +64,6 @@ describe('Orchestration tests', () => {
 
     test('when region is provided then the endpoint uses that region', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {});
 
         // Assert
@@ -49,6 +72,90 @@ describe('Orchestration tests', () => {
         expect(Dispatch.mock.calls[0][2]).toEqual(
             'https://dataplane.us-east-1.gamma.rum.aws.dev'
         );
+    });
+
+    test('when enable is true in config then orchestration enables dispatch, pluginManager and event cache', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'b', 'c', undefined, {});
+
+        // Assert
+        expect(enableDispatch).toHaveBeenCalledTimes(1);
+        expect(enablePlugins).toHaveBeenCalledTimes(1);
+        expect(enableEventCache).toHaveBeenCalledTimes(1);
+    });
+
+    test('when enable is false in config then orchestration disables dispatch, pluginManager and event cache', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'b', 'c', undefined, {
+            enableRumClient: false
+        });
+
+        // Assert
+        expect(disableDispatch).toHaveBeenCalledTimes(1);
+        expect(disablePlugins).toHaveBeenCalledTimes(1);
+        expect(disableEventCache).toHaveBeenCalledTimes(1);
+    });
+
+    test('when eventPluginsToLoad is provided in config then it is added with default plugins', async () => {
+        // Init
+        const collections = ['errors', 'performance'];
+        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+            eventPluginsToLoad: [new DomEventPlugin(), new JsErrorPlugin()],
+            telemetries: collections
+        });
+
+        const expected = [
+            'com.amazonaws.rum.dom-event',
+            'com.amazonaws.rum.js-error',
+            'com.amazonaws.rum.js-error',
+            'com.amazonaws.rum.navigation',
+            'com.amazonaws.rum.paint',
+            'com.amazonaws.rum.resource',
+            'com.amazonaws.rum.web-vitals'
+        ];
+        const actual = [];
+
+        // Assert
+        expect(PluginManager).toHaveBeenCalledTimes(1);
+        expect(addPlugin).toHaveBeenCalledTimes(expected.length);
+
+        addPlugin.mock.calls.forEach((call) => {
+            actual.push(call[0].getPluginId());
+        });
+
+        expect(actual.sort()).toEqual(expected.sort());
+    });
+
+    test('when config is not provided then defaults are used', async () => {
+        // Init
+        const orchestration = new Orchestration(
+            'a',
+            undefined,
+            undefined,
+            undefined,
+            undefined
+        );
+
+        // Assert
+        expect(EventCache).toHaveBeenCalledTimes(1);
+        expect((EventCache as any).mock.calls[0][1]).toEqual({
+            allowCookies: false,
+            batchLimit: 100,
+            telemetries: ['errors', 'performance', 'journey', 'interaction'],
+            dispatchInterval: 5000,
+            endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
+            eventCacheSize: 200,
+            eventPluginsToLoad: [],
+            pageIdFormat: 'PATH',
+            pagesToExclude: [],
+            pagesToInclude: [],
+            sessionEventLimit: 200,
+            sessionLengthSeconds: 1800,
+            sessionSampleRate: 1,
+            userIdRetentionDays: 0,
+            enableRumClient: true,
+            fetchFunction: fetch
+        });
     });
 
     test('data collection defaults to errors, performance, journey and interaction', async () => {
