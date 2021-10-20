@@ -7,8 +7,8 @@ import {
     recordPageView
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../Plugin';
-import { defaultConfig } from '../../../orchestration/Orchestration';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
+import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
@@ -351,7 +351,7 @@ describe('JsErrorPlugin tests', () => {
             applicationName: 'a',
             applicationId: 'b',
             applicationVersion: '1.0',
-            config: defaultConfig,
+            config: DEFAULT_CONFIG,
             record,
             recordPageView,
             getSession
@@ -585,6 +585,5 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(2);
-        expect(record).toHaveBeenCalledTimes(2);
     });
 });

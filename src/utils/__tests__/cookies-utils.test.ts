@@ -1,167 +1,175 @@
 import * as utils from '../../utils/cookies-utils';
 
-const COOKIE_FRE_FIX = 'rum_cookies_util_test';
+const COOKIE_PREFIX = 'rum_cookies_util_test';
+
+const COOKIE_ATTRIBUTES = {
+    domain: 'amazon.com',
+    path: '/',
+    sameSite: 'Strict',
+    secure: true
+};
 
 describe('Cookies utils tests', () => {
     test('storeCookie()', async () => {
         // Init
-        const cookieName = COOKIE_FRE_FIX + '_' + new Date().getTime();
+        const cookieName = COOKIE_PREFIX + '_' + new Date().getTime();
         const cookieValue = new Date().toString();
 
         // Run
-        utils.storeCookie(cookieName, cookieValue);
+        utils.storeCookie(cookieName, cookieValue, COOKIE_ATTRIBUTES);
 
         // Assert
         expect(document.cookie).toEqual(cookieName + '=' + cookieValue);
 
         // Cleanup
-        document.cookie =
-            cookieName + '=; Expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES);
     });
 
     test('when storeCookie() given ttl=0 then cookie immediately expires', async () => {
         // Init
-        const cookieName = COOKIE_FRE_FIX + '_' + new Date().getTime();
+        const cookieName = COOKIE_PREFIX + '_' + new Date().getTime();
         const cookieValue = 'value';
 
         // Run
-        utils.storeCookie(cookieName, cookieValue, 0);
+        utils.storeCookie(cookieName, cookieValue, COOKIE_ATTRIBUTES, 0);
 
         // Assert
         expect(document.cookie).toBeFalsy();
 
         // Cleanup
-        document.cookie =
-            cookieName + '=; Expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES);
     });
 
     test('when storeCookie() given ttl > 0 then cookie does not immediately expire', async () => {
         // Init
-        const cookieName = COOKIE_FRE_FIX + '_' + new Date().getTime();
+        const cookieName = COOKIE_PREFIX + '_' + new Date().getTime();
         const cookieValue = 'value';
 
         // Run
-        utils.storeCookie(cookieName, cookieValue, 3600);
+        utils.storeCookie(cookieName, cookieValue, COOKIE_ATTRIBUTES, 3600);
 
         // Assert
         expect(document.cookie).toBeTruthy();
 
         // Cleanup
-        document.cookie =
-            cookieName + '=; Expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES);
+    });
+
+    test('storeCookie() cookies are stored under the domain', async () => {
+        // Init
+        const cookieName = COOKIE_PREFIX;
+        const cookieValueA = 'valueA';
+        const cookieValueB = 'valueB';
+
+        const COOKIE_ATTRIBUTES_A = {
+            domain: 'amazon.com',
+            path: '/',
+            sameSite: 'Strict',
+            secure: true
+        };
+
+        const COOKIE_ATTRIBUTES_B = {
+            domain: 'aws.amazon.com',
+            path: '/',
+            sameSite: 'Strict',
+            secure: true
+        };
+
+        // Run
+        utils.storeCookie(cookieName, cookieValueA, COOKIE_ATTRIBUTES_A, 3600);
+        utils.storeCookie(cookieName, cookieValueB, COOKIE_ATTRIBUTES_B, 3600);
+
+        // Assert
+        const cookies: string[] = document.cookie.replace(' ', '').split(';');
+        expect(cookies).toContain(`${COOKIE_PREFIX}=${cookieValueA}`);
+        expect(cookies).toContain(`${COOKIE_PREFIX}=${cookieValueB}`);
+
+        // Cleanup
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES_A);
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES_B);
+    });
+
+    test('storeCookie() cookies are stored under the path', async () => {
+        // Init
+        const cookieName = COOKIE_PREFIX;
+        const cookieValueA = 'valueA';
+        const cookieValueB = 'valueB';
+
+        const COOKIE_ATTRIBUTES_A = {
+            domain: 'amazon.com',
+            path: '/',
+            sameSite: 'Strict',
+            secure: true
+        };
+
+        const COOKIE_ATTRIBUTES_B = {
+            domain: 'amazon.com',
+            path: '/console',
+            sameSite: 'Strict',
+            secure: true
+        };
+
+        // Run
+        utils.storeCookie(cookieName, cookieValueA, COOKIE_ATTRIBUTES_A, 3600);
+        utils.storeCookie(cookieName, cookieValueB, COOKIE_ATTRIBUTES_B, 3600);
+
+        // Assert
+        const cookies: string[] = document.cookie.replace(' ', '').split(';');
+        expect(cookies).toContain(`${COOKIE_PREFIX}=${cookieValueA}`);
+        expect(cookies).toContain(`${COOKIE_PREFIX}=${cookieValueB}`);
+
+        // Cleanup
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES_A);
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES_B);
     });
 
     test('getCookie() when document.cookie has only one cookie, return the correct cookie value', async () => {
         // Init
-        const cookieName = COOKIE_FRE_FIX + '_' + new Date().getTime();
-        const cookieValue = new Date().toString();
-        document.cookie = cookieName + '=' + cookieValue;
+        const cookieName = COOKIE_PREFIX + '_' + new Date().getTime();
+        const cookieValue = 'value';
+
+        // Run
+        utils.storeCookie(cookieName, cookieValue, COOKIE_ATTRIBUTES, 3600);
 
         // Assert
         expect(utils.getCookie(cookieName)).toEqual(cookieValue);
 
         // Cleanup
-        document.cookie =
-            cookieName + '=; Expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES);
     });
 
     test('getCookie() when document.cookie has more than one cookie, return the correct cookie value', async () => {
         // Init
-        const cookieName1 = COOKIE_FRE_FIX + '_A';
+        const cookieName1 = COOKIE_PREFIX + '_' + new Date().getTime();
         const cookieValue1 = new Date().toString();
 
-        const cookieName2 = COOKIE_FRE_FIX + '_B';
+        const cookieName2 = COOKIE_PREFIX + '_' + new Date().getTime();
         const cookieValue2 = new Date().toString();
 
-        document.cookie = cookieName1 + '=' + cookieValue1;
-        document.cookie = cookieName2 + '=' + cookieValue2;
-
-        console.log(document.cookie);
+        utils.storeCookie(cookieName1, cookieValue1, COOKIE_ATTRIBUTES, 3600);
+        utils.storeCookie(cookieName2, cookieValue2, COOKIE_ATTRIBUTES, 3600);
 
         // Assert
         expect(utils.getCookie(cookieName1)).toEqual(cookieValue1);
         expect(utils.getCookie(cookieName2)).toEqual(cookieValue2);
 
         // Cleanup
-        document.cookie =
-            cookieName1 + '=; Expires=Thu, 01 Jan 1970 00:00:01 GMT';
-        document.cookie =
-            cookieName2 + '=; Expires=Thu, 01 Jan 1970 00:00:01 GMT';
+        utils.removeCookie(cookieName1, COOKIE_ATTRIBUTES);
+        utils.removeCookie(cookieName2, COOKIE_ATTRIBUTES);
     });
 
     test('removeCookie()', async () => {
         // Init
-        const cookieName = COOKIE_FRE_FIX + '_' + new Date().getTime();
-        const cookieValue = new Date().toString();
-        document.cookie = cookieName + '=' + cookieValue;
+        const cookieName = COOKIE_PREFIX + '_' + new Date().getTime();
+        const cookieValue = 'value';
 
         // Run
-        utils.removeCookie(cookieName);
+        utils.storeCookie(cookieName, cookieValue, COOKIE_ATTRIBUTES, 3600);
+
+        // Run
+        utils.removeCookie(cookieName, COOKIE_ATTRIBUTES);
 
         // Assert
         expect(document.cookie).toEqual('');
-    });
-
-    test('getCookieDomain() with root domain returns root domain', async () => {
-        jest.spyOn(utils, 'storeCookie').mockImplementation(
-            (
-                name: string,
-                value: string,
-                expires?: number,
-                domain?: string
-            ) => {
-                if (domain && domain === 'amazon.com') {
-                    document.cookie = name + '=' + value;
-                }
-            }
-        );
-
-        // Init
-        document.domain = 'amazon.com';
-
-        // Assert
-        expect(utils.getCookieDomain()).toEqual('amazon.com');
-    });
-
-    test('getCookieDomain() returns a root domain when given a sub-domain', async () => {
-        jest.spyOn(utils, 'storeCookie').mockImplementation(
-            (
-                name: string,
-                value: string,
-                expires?: number,
-                domain?: string
-            ) => {
-                if (domain && domain === 'amazon.com') {
-                    document.cookie = name + '=' + value;
-                }
-            }
-        );
-
-        // Init
-        document.domain = 'docs.aws.amazon.com';
-
-        // Assert
-        expect(utils.getCookieDomain()).toEqual('amazon.com');
-    });
-
-    test('getCookieDomain() returns localhost when given localhost domain', async () => {
-        jest.spyOn(utils, 'storeCookie').mockImplementation(
-            (
-                name: string,
-                value: string,
-                expires?: number,
-                domain?: string
-            ) => {
-                if (domain && domain === 'localhost') {
-                    document.cookie = name + '=' + value;
-                }
-            }
-        );
-
-        // Init
-        document.domain = 'localhost';
-
-        // Assert
-        expect(utils.getCookieDomain()).toEqual('localhost');
     });
 });

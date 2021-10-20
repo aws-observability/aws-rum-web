@@ -1,8 +1,8 @@
 import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
-import { defaultConfig } from '../../orchestration/Orchestration';
 import { Event } from '../../dispatch/dataplane';
+import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 describe('EventCache tests', () => {
     beforeAll(() => {
@@ -13,7 +13,7 @@ describe('EventCache tests', () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 allowCookies: false,
                 sessionLengthSeconds: 0
@@ -35,7 +35,7 @@ describe('EventCache tests', () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 allowCookies: false,
                 sessionLengthSeconds: 0

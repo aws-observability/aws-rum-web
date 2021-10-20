@@ -1,10 +1,10 @@
-import { CRED_COOKIE_NAME } from '../utils/constants';
 import { CognitoIdentityClient } from './CognitoIdentityClient';
 import { Config } from '../orchestration/Orchestration';
 import { Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
 import { storeCookie, getCookie } from '../utils/cookies-utils';
+import { CRED_COOKIE_NAME } from '../utils/constants';
 
 export class Authentication {
     private cognitoIdentityClient: CognitoIdentityClient;
@@ -113,7 +113,7 @@ export class Authentication {
                     storeCookie(
                         CRED_COOKIE_NAME,
                         btoa(JSON.stringify(credentials)),
-                        undefined,
+                        this.config.cookieAttributes,
                         undefined,
                         credentials.expiration
                     );

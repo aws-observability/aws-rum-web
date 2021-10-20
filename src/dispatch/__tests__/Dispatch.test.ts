@@ -2,7 +2,7 @@ import { Dispatch } from '../Dispatch';
 import * as Utils from '../../test-utils/test-utils';
 import { DataPlaneClient } from '../DataPlaneClient';
 import { CredentialProvider } from '@aws-sdk/types';
-import { defaultConfig } from '../../orchestration/Orchestration';
+import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const sendFetch = jest.fn(() => Promise.resolve());
 const sendBeacon = jest.fn(() => Promise.resolve());
@@ -36,7 +36,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
             }
         );
@@ -59,7 +59,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
             }
         );
@@ -89,7 +89,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
             }
         );
@@ -110,7 +110,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
             }
         );
@@ -133,7 +133,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
             }
         );
@@ -157,7 +157,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: 1 }
             }
         );
@@ -181,7 +181,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
             }
         );
@@ -205,7 +205,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: -1 }
             }
         );
@@ -229,7 +229,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: 1 }
             }
         );
@@ -254,7 +254,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: 1 }
             }
         );
@@ -280,7 +280,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: 1 }
             }
         );
@@ -302,7 +302,7 @@ describe('Dispatch tests', () => {
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 ...{ dispatchInterval: 1 }
             }
         );

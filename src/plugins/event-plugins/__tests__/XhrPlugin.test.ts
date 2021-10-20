@@ -8,8 +8,8 @@ import {
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
 import { GetSession, PluginContext } from '../../Plugin';
-import { defaultConfig } from '../../../orchestration/Orchestration';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
+import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
@@ -172,7 +172,7 @@ describe('JsErrorPlugin tests', () => {
     test('when XHR returns an error code then the plugin adds the error to the trace', async () => {
         // Init
         const config: HttpPluginConfig = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 logicalServiceName: 'sample.rum.aws.amazon.com',
                 urlsToInclude: [/response\.json/],
@@ -514,7 +514,7 @@ describe('JsErrorPlugin tests', () => {
             applicationName: 'a',
             applicationId: 'b',
             applicationVersion: '1.0',
-            config: defaultConfig,
+            config: DEFAULT_CONFIG,
             record,
             recordPageView,
             getSession

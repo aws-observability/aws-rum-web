@@ -118,7 +118,7 @@ describe('CommandQueue tests', () => {
         );
     });
 
-    test('when optional parameters are present then it creates nexusConfig with received inputs', async () => {
+    test('when optional parameters are present then create a config with received inputs', async () => {
         (fetch as any).mockReturnValue(
             Promise.resolve(
                 new Response(JSON.stringify(mockPartialOtaConfigFile))

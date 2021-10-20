@@ -1,6 +1,10 @@
 import { EventCache } from '../event-cache/EventCache';
 import { Credentials } from '@aws-sdk/types';
-import { Config, defaultConfig } from '../orchestration/Orchestration';
+import {
+    Config,
+    defaultConfig,
+    defaultCookieAttributes
+} from '../orchestration/Orchestration';
 import {
     GetSession,
     PluginContext,
@@ -56,8 +60,10 @@ export const LOG_EVENTS_REQUEST: LogEventsRequest = {
     }
 };
 
+export const DEFAULT_CONFIG: Config = defaultConfig(defaultCookieAttributes());
+
 export const createDefaultEventCache = (): EventCache => {
-    return new EventCache(APPLICATION_DETAILS, defaultConfig);
+    return new EventCache(APPLICATION_DETAILS, DEFAULT_CONFIG);
 };
 
 export const createEventCache = (config: Config): EventCache => {
@@ -67,7 +73,7 @@ export const createEventCache = (config: Config): EventCache => {
 export const createDefaultEventCacheWithEvents = (): EventCache => {
     const EVENT1_SCHEMA = 'com.amazon.rum.event1';
     const EVENT2_SCHEMA = 'com.amazon.rum.event2';
-    const eventCache = new EventCache(APPLICATION_DETAILS, defaultConfig);
+    const eventCache = new EventCache(APPLICATION_DETAILS, DEFAULT_CONFIG);
     eventCache.recordEvent(EVENT1_SCHEMA, {});
     eventCache.recordEvent(EVENT2_SCHEMA, {});
     return eventCache;
@@ -105,7 +111,7 @@ export const context: PluginContext = {
     applicationName: 'a',
     applicationId: 'b',
     applicationVersion: '1.0',
-    config: defaultConfig,
+    config: DEFAULT_CONFIG,
     record,
     recordPageView,
     getSession

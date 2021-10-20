@@ -46,10 +46,18 @@ export enum PAGE_ID_FORMAT {
     PATH_AND_HASH = 'PATH_AND_HASH'
 }
 
+export type PartialCookieAttributes = {
+    domain?: string;
+    path?: string;
+    sameSite?: string;
+    secure?: boolean;
+};
+
 export type PartialConfig = {
     allowCookies?: boolean;
     batchLimit?: number;
     clientBuilder?: ClientBuilder;
+    cookieAttributes?: PartialCookieAttributes;
     dispatchInterval?: number;
     enableRumClient?: boolean;
     endpoint?: string;
@@ -79,33 +87,53 @@ export type PartialConfig = {
     userIdRetentionDays?: number;
 };
 
-export const defaultConfig: Config = {
-    allowCookies: false,
-    batchLimit: 100,
-    dispatchInterval: 5 * 1000,
-    enableRumClient: true,
-    endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
-    eventCacheSize: 200,
-    eventPluginsToLoad: [],
-    pageIdFormat: PAGE_ID_FORMAT.PATH,
-    pagesToExclude: [],
-    pagesToInclude: [],
-    sessionEventLimit: 200,
-    sessionLengthSeconds: 60 * 30,
-    sessionSampleRate: 1,
-    telemetries: [
-        TELEMETRY_TYPES.ERRORS,
-        TELEMETRY_TYPES.PERFORMANCE,
-        TELEMETRY_TYPES.JOURNEY,
-        TELEMETRY_TYPES.INTERACTION
-    ],
-    userIdRetentionDays: 0
+export const defaultCookieAttributes = (): CookieAttributes => {
+    return {
+        domain: window.location.hostname,
+        path: '/',
+        sameSite: 'Strict',
+        secure: true
+    };
+};
+
+export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
+    return {
+        allowCookies: false,
+        batchLimit: 100,
+        cookieAttributes,
+        dispatchInterval: 5 * 1000,
+        enableRumClient: true,
+        endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
+        eventCacheSize: 200,
+        eventPluginsToLoad: [],
+        pageIdFormat: PAGE_ID_FORMAT.PATH,
+        pagesToExclude: [],
+        pagesToInclude: [],
+        sessionEventLimit: 200,
+        sessionLengthSeconds: 60 * 30,
+        sessionSampleRate: 1,
+        telemetries: [
+            TELEMETRY_TYPES.ERRORS,
+            TELEMETRY_TYPES.PERFORMANCE,
+            TELEMETRY_TYPES.JOURNEY,
+            TELEMETRY_TYPES.INTERACTION
+        ],
+        userIdRetentionDays: 0
+    };
+};
+
+export type CookieAttributes = {
+    domain: string;
+    path: string;
+    sameSite: string;
+    secure: boolean;
 };
 
 export type Config = {
     allowCookies: boolean;
     batchLimit: number;
     clientBuilder?: ClientBuilder;
+    cookieAttributes: CookieAttributes;
     dispatchInterval: number;
     enableRumClient: boolean;
     endpoint: string;
@@ -158,9 +186,15 @@ export class Orchestration {
             region = 'us-west-2';
         }
 
+        const cookieAttributes: CookieAttributes = {
+            ...defaultCookieAttributes(),
+            ...partialConfig.cookieAttributes
+        };
+        delete partialConfig.cookieAttributes;
+
         this.config = {
             ...{ fetchFunction: fetch },
-            ...defaultConfig,
+            ...defaultConfig(cookieAttributes),
             ...partialConfig
         } as Config;
 

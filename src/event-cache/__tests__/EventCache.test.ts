@@ -1,9 +1,9 @@
 import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
-import { defaultConfig } from '../../orchestration/Orchestration';
 import { SessionManager } from '../../sessions/SessionManager';
 import { EventBatch, Event } from '../../dispatch/dataplane';
+import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const getSession = jest.fn(() => ({
     sessionId: 'a',
@@ -116,7 +116,7 @@ describe('EventCache tests', () => {
         const EVENT2_SCHEMA = 'com.amazon.rum.event2';
         const BATCH_LIMIT = 1;
         const eventCache: EventCache = Utils.createEventCache({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ batchLimit: BATCH_LIMIT }
         });
 
@@ -139,7 +139,7 @@ describe('EventCache tests', () => {
         const EVENT2_SCHEMA = 'com.amazon.rum.event2';
         const BATCH_LIMIT = 1;
         const eventCache: EventCache = Utils.createEventCache({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ batchLimit: BATCH_LIMIT }
         });
 
@@ -165,7 +165,7 @@ describe('EventCache tests', () => {
         const BATCH_LIMIT = 20;
         const EVENT_LIMIT = 2;
         const eventCache: EventCache = Utils.createEventCache({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 batchLimit: BATCH_LIMIT,
                 eventCacheSize: EVENT_LIMIT
@@ -196,7 +196,7 @@ describe('EventCache tests', () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const eventCache: EventCache = Utils.createEventCache({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 pagesToExclude: [/.*/]
             }
@@ -213,7 +213,7 @@ describe('EventCache tests', () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const eventCache: EventCache = Utils.createEventCache({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 pagesToInclude: [/.*/]
             }
@@ -241,7 +241,7 @@ describe('EventCache tests', () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const eventCache: EventCache = Utils.createEventCache({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 pagesToInclude: [/.*/],
                 pagesToExclude: [/.*/]
@@ -330,7 +330,7 @@ describe('EventCache tests', () => {
         }));
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 sessionEventLimit: 1
             }
@@ -362,7 +362,7 @@ describe('EventCache tests', () => {
         }));
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{
                 sessionEventLimit: 0
             }
