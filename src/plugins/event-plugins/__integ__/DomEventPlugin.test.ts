@@ -1,6 +1,7 @@
 import { SESSION_START_EVENT_TYPE } from '../../../sessions/SessionManager';
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../../test-utils/integ-test-utils';
+import { DOM_EVENT_TYPE } from '../../utils/constant';
 
 const recordDocumentClicks: Selector = Selector(`#recordDocumentClicks`);
 const recordButton1Clicks: Selector = Selector(`#recordButton1Clicks`);
@@ -45,11 +46,16 @@ test('when document click events configured then button click is recorded', asyn
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(
+        await REQUEST_BODY.textContent
+    ).batch.events.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).elementId === 'button1'
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
 
     await t
         .expect(eventType)
@@ -72,11 +78,15 @@ test('when element without an id is clicked then node type is recorded', async (
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(
+        await REQUEST_BODY.textContent
+    ).batch.events.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE && JSON.parse(e.details).elementId === 'A'
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
 
     await t
         .expect(eventType)
