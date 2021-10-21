@@ -1,15 +1,32 @@
-import { CommandQueue } from '../CommandQueue';
+import { AwsRumClientInit, CommandQueue } from '../CommandQueue';
 import { Orchestration } from '../orchestration/Orchestration';
+import {
+    mockOtaConfigFile,
+    mockOtaConfigObject,
+    mockPartialOtaConfigFile,
+    mockPartialOtaConfigObject,
+    dummyOtaConfigURL
+} from '../test-utils/mock-remote-config';
+import { Response } from 'node-fetch';
+import * as RemoteConfig from '../remote-config/remote-config';
+
+const mockFetch = jest.fn();
+
+global.fetch = mockFetch;
+
+const initArgs: AwsRumClientInit = {
+    q: [],
+    n: 'cwr',
+    i: 'application_id',
+    a: 'application_name',
+    v: '1.0',
+    r: 'us-west-2'
+};
 
 const getCommandQueue = () => {
-    return new CommandQueue({
-        q: [],
-        n: 'cwr',
-        i: 'application_id',
-        a: 'application_name',
-        v: '1.0',
-        r: 'us-west-2'
-    });
+    const cq: CommandQueue = new CommandQueue();
+    cq.init(initArgs);
+    return cq;
 };
 
 const disable = jest.fn();
@@ -52,6 +69,120 @@ describe('CommandQueue tests', () => {
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(disable).toHaveBeenCalled();
+    });
+
+    test('when configUri is present then returns config', async () => {
+        const getConfigStub = jest
+            .spyOn(RemoteConfig, 'getRemoteConfig')
+            .mockReturnValue(Promise.resolve(mockOtaConfigObject));
+
+        await new CommandQueue().init({
+            ...initArgs,
+            c: {},
+            u: dummyOtaConfigURL
+        });
+
+        expect(getConfigStub).toBeCalledTimes(1);
+        expect(Orchestration).toHaveBeenCalledTimes(1);
+        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+            mockOtaConfigObject
+        );
+
+        getConfigStub.mockRestore();
+    });
+
+    test('when configUri is present then it downloads the file', async () => {
+        (fetch as any).mockReturnValue(
+            Promise.resolve(new Response(JSON.stringify(mockOtaConfigFile)))
+        );
+
+        await new CommandQueue().init({
+            ...initArgs,
+            c: {},
+            u: dummyOtaConfigURL
+        });
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetch).toHaveBeenCalledWith(dummyOtaConfigURL, {
+            mode: 'cors',
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        expect(Orchestration).toHaveBeenCalledTimes(1);
+
+        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+            mockOtaConfigObject
+        );
+    });
+
+    test('when optional parameters are present then it creates nexusConfig with received inputs', async () => {
+        (fetch as any).mockReturnValue(
+            Promise.resolve(
+                new Response(JSON.stringify(mockPartialOtaConfigFile))
+            )
+        );
+
+        await new CommandQueue().init({
+            ...initArgs,
+            c: {},
+            u: dummyOtaConfigURL
+        });
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetch).toHaveBeenCalledWith(dummyOtaConfigURL, {
+            mode: 'cors',
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+            mockPartialOtaConfigObject
+        );
+    });
+
+    test('when parameters in both snippet and OTA file then it combines both, prefers snippet details', async () => {
+        (fetch as any).mockReturnValue(
+            Promise.resolve(
+                new Response(JSON.stringify(mockPartialOtaConfigFile))
+            )
+        );
+
+        await new CommandQueue().init({
+            ...initArgs,
+            c: {
+                dispatchInterval: 10 * 1000,
+                sessionSampleRate: 0.8,
+                enableRumClient: false
+            },
+            u: dummyOtaConfigURL
+        });
+
+        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+            expect.objectContaining({
+                dispatchInterval: 10 * 1000,
+                sessionSampleRate: 0.8,
+                enableRumClient: false //prefer snippet config
+            })
+        );
+    });
+
+    test('when configUri  fails to download an error is thrown', async () => {
+        (fetch as any).mockReturnValue(Promise.reject('403'));
+
+        const cq: CommandQueue = new CommandQueue();
+
+        await expect(
+            cq.init({
+                ...initArgs,
+                c: {},
+                u: dummyOtaConfigURL
+            })
+        ).rejects.toEqual(Error('CWR: Failed to load remote config: 403'));
     });
 
     test('push() recordEvent throws UnsupportedOperationException', async () => {
@@ -131,7 +262,7 @@ describe('CommandQueue tests', () => {
         const cq: CommandQueue = getCommandQueue();
         await cq.push({
             c: 'recordPageView',
-            p: false
+            p: 'page1'
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(recordPageView).toHaveBeenCalled();
@@ -170,7 +301,7 @@ describe('CommandQueue tests', () => {
             .then((v) => fail('command should fail'))
             .catch((e) =>
                 expect(e.message).toEqual(
-                    'UnsupportedOperationException: badCommand'
+                    'CWR: UnsupportedOperationException: badCommand'
                 )
             );
     });

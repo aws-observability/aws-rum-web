@@ -1,0 +1,10 @@
+{
+    "clientConfig": {
+        "telemetries": [],
+        "guestRoleArn": "arn:aws:iam::000000000000:role/CWR-Monitor-us-west-2-000000000000-0000000000000-Unauth",
+        "enableRumClient": true,
+        "sessionSampleRate": 1,
+        "identityPoolId": "us-west-2:00000000-0000-0000-0000-000000000000",
+        "allowCookies": true
+    }
+}

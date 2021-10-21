@@ -20,7 +20,8 @@ module.exports = merge(common, {
         loader_pre_load_command_queue_test:
             './src/loader/loader-pre-load-command-queue-test.js',
         loader_post_load_command_queue_test:
-            './src/loader/loader-post-load-command-queue-test.js'
+            './src/loader/loader-post-load-command-queue-test.js',
+        loader_remote_config: './src/loader/loader-remote-config.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']
@@ -30,7 +31,7 @@ module.exports = merge(common, {
         filename: '[name].js'
     },
     devServer: {
-        contentBase: path.join(__dirname, '../build/dev'),
+        static: path.join(__dirname, '../build/dev'),
         port: 9000,
         https: false,
         hot: true
