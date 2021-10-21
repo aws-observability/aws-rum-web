@@ -92,10 +92,9 @@ export class CommandQueue {
     public async init(awsRum: AwsRumClientInit): Promise<void> {
         if (awsRum.u !== undefined) {
             // There is a remote config file -- fetch this file before initializing CWR.
-            return getRemoteConfig(awsRum).then((config) => {
-                awsRum.c = config;
-                this.initCwr(awsRum);
-            });
+            const config = await getRemoteConfig(awsRum);
+            awsRum.c = config;
+            this.initCwr(awsRum);
         } else {
             // Ther is no remote config file -- initialize CWR immediately.
             this.initCwr(awsRum);
