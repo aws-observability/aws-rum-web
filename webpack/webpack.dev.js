@@ -28,29 +28,14 @@ module.exports = merge(common, {
     },
     output: {
         path: path.join(__dirname, '../build/dev'),
-        filename: '[name].js'
+        filename: '[name].js',
+        publicPath: ''
     },
     devServer: {
         static: path.join(__dirname, '../build/dev'),
         port: 9000,
         https: false,
         hot: true
-    },
-    module: {
-        rules: [
-            {
-                test: [/\.ts$/],
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'ts-loader',
-                        options: {
-                            configFile: 'tsconfig.webpack.json'
-                        }
-                    }
-                ]
-            }
-        ]
     },
     plugins: [
         new CopyWebpackPlugin({

@@ -294,7 +294,8 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        // Wait a little extra time in case polyfill has added extra steps
+        await new Promise((resolve) => setTimeout(resolve, 10));
         const sessionTwo = sessionManager.getSession();
 
         // Assert
