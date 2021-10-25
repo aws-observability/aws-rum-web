@@ -1,8 +1,4 @@
-import {
-    storeCookie,
-    getCookie,
-    getCookieDomain
-} from '../utils/cookies-utils';
+import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
 import { Config } from '../orchestration/Orchestration';
@@ -63,7 +59,6 @@ export type Attributes = {
 export class SessionManager {
     private pageManager: PageManager;
 
-    private applicationId: string;
     private userExpiry: Date;
     private sessionExpiry: Date;
     private userId!: string;
@@ -73,12 +68,10 @@ export class SessionManager {
     private attributes: Attributes;
 
     constructor(
-        applicationId: string,
         config: Config,
         record: RecordSessionInitEvent,
         pageManager: PageManager
     ) {
-        this.applicationId = applicationId;
         this.config = config;
         this.record = record;
         this.pageManager = pageManager;
@@ -146,8 +139,8 @@ export class SessionManager {
             storeCookie(
                 SESSION_COOKIE_NAME,
                 btoa(JSON.stringify(session)),
+                this.config.cookieAttributes,
                 undefined,
-                getCookieDomain(),
                 expires
             );
         }
@@ -157,8 +150,8 @@ export class SessionManager {
         storeCookie(
             USER_COOKIE_NAME,
             userId,
+            this.config.cookieAttributes,
             undefined,
-            getCookieDomain(),
             expires
         );
     }

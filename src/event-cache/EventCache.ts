@@ -36,15 +36,11 @@ export class EventCache {
      * @param pageManager The pageManager returns page id.
      */
     constructor(applicationDetails: ApplicationDetails, config: Config) {
-        const applicationName = applicationDetails.name
-            ? applicationDetails.name
-            : '';
         this.applicationDetails = applicationDetails;
         this.config = config;
         this.enabled = true;
         this.pageManager = new PageManager(config, this.recordEvent);
         this.sessionManager = new SessionManager(
-            applicationName,
             config,
             this.recordSessionInitEvent,
             this.pageManager

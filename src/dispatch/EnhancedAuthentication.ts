@@ -2,11 +2,11 @@ import {
     CognitoIdentityClient,
     fromCognitoIdentityPool
 } from './CognitoIdentityClient';
-import { CRED_COOKIE_NAME } from '../utils/constants';
 import { Config } from '../orchestration/Orchestration';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { storeCookie, getCookie } from '../utils/cookies-utils';
+import { CRED_COOKIE_NAME } from '../utils/constants';
 
 export class EnhancedAuthentication {
     private cognitoIdentityClient: CognitoIdentityClient;
@@ -101,7 +101,7 @@ export class EnhancedAuthentication {
                 storeCookie(
                     CRED_COOKIE_NAME,
                     btoa(JSON.stringify(credentials)),
-                    undefined,
+                    this.config.cookieAttributes,
                     undefined,
                     credentials.expiration
                 );

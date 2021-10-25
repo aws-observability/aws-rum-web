@@ -1,5 +1,5 @@
 import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
-import { defaultConfig } from '../../orchestration/Orchestration';
+import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const EXPECTED_ATTRIBUTES = {
     title: 'Amazon AWS Console',
@@ -52,7 +52,7 @@ describe('PageManager tests', () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
-                ...defaultConfig
+                ...DEFAULT_CONFIG
             },
             record
         );
@@ -71,7 +71,7 @@ describe('PageManager tests', () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
-                ...defaultConfig
+                ...DEFAULT_CONFIG
             },
             record
         );
@@ -92,7 +92,7 @@ describe('PageManager tests', () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
-                ...defaultConfig
+                ...DEFAULT_CONFIG
             },
             record
         );
@@ -111,7 +111,7 @@ describe('PageManager tests', () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
-                ...defaultConfig
+                ...DEFAULT_CONFIG
             },
             record
         );
@@ -131,7 +131,7 @@ describe('PageManager tests', () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
-                ...defaultConfig,
+                ...DEFAULT_CONFIG,
                 // @ts-ignore
                 pageIdFormat: 'PAGE_AND_HASH'
             },

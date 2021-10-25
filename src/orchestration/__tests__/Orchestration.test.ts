@@ -56,8 +56,7 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        // @ts-ignore
-        expect(Dispatch.mock.calls[0][2]).toEqual(
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
             'https://dataplane.us-west-2.gamma.rum.aws.dev'
         );
     });
@@ -68,8 +67,7 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        // @ts-ignore
-        expect(Dispatch.mock.calls[0][2]).toEqual(
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
             'https://dataplane.us-east-1.gamma.rum.aws.dev'
         );
     });
@@ -141,6 +139,12 @@ describe('Orchestration tests', () => {
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             allowCookies: false,
             batchLimit: 100,
+            cookieAttributes: {
+                domain: window.location.hostname,
+                path: '/',
+                sameSite: 'Strict',
+                secure: true
+            },
             telemetries: ['errors', 'performance', 'journey', 'interaction'],
             dispatchInterval: 5000,
             endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
@@ -158,9 +162,27 @@ describe('Orchestration tests', () => {
         });
     });
 
+    test('when cookie attributes are provided then they are merged with defaults', async () => {
+        // Init
+        const orchestration = new Orchestration(
+            'a',
+            undefined,
+            undefined,
+            undefined,
+            { cookieAttributes: { path: '/console' } }
+        );
+
+        // Assert
+        expect(EventCache).toHaveBeenCalledTimes(1);
+        expect((EventCache as any).mock.calls[0][1]).toEqual(
+            expect.objectContaining({
+                cookieAttributes: expect.objectContaining({ path: '/console' })
+            })
+        );
+    });
+
     test('data collection defaults to errors, performance, journey and interaction', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {});
         const expected = [
             'com.amazonaws.rum.js-error',
@@ -184,7 +206,6 @@ describe('Orchestration tests', () => {
 
     test('when http data collection is set then the http plugins are instantiated', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['http']
         });
@@ -203,7 +224,6 @@ describe('Orchestration tests', () => {
 
     test('when performance data collection is set then the performance plugins are instantiated', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['performance']
         });
@@ -227,7 +247,6 @@ describe('Orchestration tests', () => {
 
     test('when error data collection is set then the error plugins are instantiated', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['errors']
         });
@@ -246,7 +265,6 @@ describe('Orchestration tests', () => {
 
     test('when interaction data collection is set then the interaction plugins are instantiated', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['interaction']
         });
@@ -265,7 +283,6 @@ describe('Orchestration tests', () => {
 
     test('when single page application views data collection is set then the page event plugin is instantiated', async () => {
         // Init
-        // @ts-ignore
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: [TELEMETRY_TYPES.SINGLE_PAGE_APP_VIEWS]
         });

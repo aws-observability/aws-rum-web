@@ -12,11 +12,11 @@ import {
 } from '../../utils/cookies-utils';
 import * as uuid from 'uuid';
 import { navigationEvent } from '../../test-utils/mock-data';
-import { APPLICATION_ID } from '../../test-utils/test-utils';
-import { Config, defaultConfig } from '../../orchestration/Orchestration';
+import { Config } from '../../orchestration/Orchestration';
 import { mockRandom } from 'jest-mock-random';
 import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
+import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const NAVIGATION = 'navigation';
 const SESSION_COOKIE_EXPIRES = 30 * 60;
@@ -53,7 +53,6 @@ const mockRecord = jest.fn();
 
 const defaultSessionManager = (config) => {
     return new SessionManager(
-        APPLICATION_ID,
         config,
         mockRecord,
         new PageManager(config, mockRecord)
@@ -73,8 +72,8 @@ describe('SessionManager tests', () => {
         // cookie enabled
         setNavigatorCookieEnabled(true);
 
-        removeCookie(SESSION_COOKIE_NAME);
-        removeCookie(USER_COOKIE_NAME);
+        removeCookie(SESSION_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
+        removeCookie(USER_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
 
         mockRecord.mockClear();
     });
@@ -88,7 +87,7 @@ describe('SessionManager tests', () => {
 
     test('When sessionId does not exist in cookie, then new sessionId is assigned', async () => {
         // Init
-        const sessionManager = defaultSessionManager(defaultConfig);
+        const sessionManager = defaultSessionManager(DEFAULT_CONFIG);
         const session = sessionManager.getSession();
 
         // Assert
@@ -99,15 +98,21 @@ describe('SessionManager tests', () => {
 
     test('When sessionId exists in cookie, then it returns the existing sessionId', async () => {
         // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
+
         const sessionId = uuid.v4();
         storeCookie(
             SESSION_COOKIE_NAME,
             btoa(JSON.stringify({ sessionId, record: true })),
+            config.cookieAttributes,
             SESSION_COOKIE_EXPIRES
         );
 
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
         });
 
@@ -118,12 +123,18 @@ describe('SessionManager tests', () => {
     test('when sessionId cookie is corrupt then getSession returns a new sessionId', async () => {
         // Init
         const sessionId = uuid.v4();
-        storeCookie(SESSION_COOKIE_NAME, sessionId, SESSION_COOKIE_EXPIRES);
-
-        const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+        const config = {
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
-        });
+        };
+        storeCookie(
+            SESSION_COOKIE_NAME,
+            sessionId,
+            config.cookieAttributes,
+            SESSION_COOKIE_EXPIRES
+        );
+
+        const sessionManager = defaultSessionManager(config);
 
         // Run
         const newSessionId: string = sessionManager.getSession().sessionId;
@@ -137,7 +148,7 @@ describe('SessionManager tests', () => {
         // Init
         setNavigatorCookieEnabled(false);
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
         });
 
@@ -148,7 +159,7 @@ describe('SessionManager tests', () => {
     test('When allowCookies is denied, then sessionId is assigned from sessionManager', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
         });
 
@@ -158,17 +169,19 @@ describe('SessionManager tests', () => {
 
     test('when cookies are disabled after being enabled then sessionId remains the same', async () => {
         // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
+
         const sessionId = uuid.v4();
         storeCookie(
             SESSION_COOKIE_NAME,
             btoa(JSON.stringify({ sessionId, record: true })),
+            config.cookieAttributes,
             SESSION_COOKIE_EXPIRES
         );
 
-        const config: Config = {
-            ...defaultConfig,
-            ...{ allowCookies: true }
-        };
         const sessionManager = defaultSessionManager(config);
         const sessionFromCookie = sessionManager.getSession();
 
@@ -178,10 +191,10 @@ describe('SessionManager tests', () => {
         // disallow
         config.allowCookies = false;
 
-        const sessionFromRumClient = sessionManager.getSession();
+        const sessionFromTracker = sessionManager.getSession();
 
         // Assert
-        expect(sessionFromRumClient.sessionId).toEqual(
+        expect(sessionFromTracker.sessionId).toEqual(
             sessionFromCookie.sessionId
         );
     });
@@ -190,7 +203,7 @@ describe('SessionManager tests', () => {
     test('When userId does not exist in cookie, then new userId is assigned', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ userIdRetentionDays: 90 }
         });
         const userId = sessionManager.getUserId();
@@ -201,10 +214,19 @@ describe('SessionManager tests', () => {
 
     test('When userId exists in cookie, then it returns the same userId', async () => {
         // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true, userIdRetentionDays: 90 }
+        };
         const userId = uuid.v4();
-        storeCookie(USER_COOKIE_NAME, userId, SESSION_COOKIE_EXPIRES);
+        storeCookie(
+            USER_COOKIE_NAME,
+            userId,
+            config.cookieAttributes,
+            SESSION_COOKIE_EXPIRES
+        );
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true, userIdRetentionDays: 90 }
         });
 
@@ -216,7 +238,7 @@ describe('SessionManager tests', () => {
         // Init
         setNavigatorCookieEnabled(false);
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ userIdRetentionDays: 90 }
         });
 
@@ -227,7 +249,7 @@ describe('SessionManager tests', () => {
     test('When allowCookies is denied, then userId is assigned from sessionManager', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true, userIdRetentionDays: 90 }
         });
 
@@ -237,12 +259,18 @@ describe('SessionManager tests', () => {
 
     test('When cookie is disabled or enabled, then userId value is consistent', async () => {
         // Init
-        const userId = uuid.v4();
-        storeCookie(USER_COOKIE_NAME, userId, SESSION_COOKIE_EXPIRES);
-        const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+        const config = {
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true, userIdRetentionDays: 90 }
-        });
+        };
+        const userId = uuid.v4();
+        storeCookie(
+            USER_COOKIE_NAME,
+            userId,
+            config.cookieAttributes,
+            SESSION_COOKIE_EXPIRES
+        );
+        const sessionManager = defaultSessionManager(config);
 
         let userIdFromCookie = sessionManager.getUserId(); // get value from cookie
 
@@ -252,44 +280,49 @@ describe('SessionManager tests', () => {
         // disable cookie
         setNavigatorCookieEnabled(false);
 
-        const userIdFromRumClient = sessionManager.getUserId(); // has to get value from RUM web client
+        const userIdFromTracker = sessionManager.getUserId(); // has to get value from tracker
 
         // Assert
-        expect(userIdFromRumClient).toEqual(userIdFromCookie);
+        expect(userIdFromTracker).toEqual(userIdFromCookie);
 
         // enableCookie
         setNavigatorCookieEnabled(true);
 
         userIdFromCookie = sessionManager.getUserId();
 
-        // cookie and client should store same values
-        expect(userIdFromCookie).toEqual(userIdFromRumClient);
+        // TrackerStore and localStorage should store same values
+        expect(userIdFromCookie).toEqual(userIdFromTracker);
     });
 
     test('when cookies are disabled after being enabled then the userId remains the same', async () => {
         // Init
-        const userId = uuid.v4();
-        storeCookie(USER_COOKIE_NAME, userId, SESSION_COOKIE_EXPIRES);
         const config: Config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true, userIdRetentionDays: 90 }
         };
+        const userId = uuid.v4();
+        storeCookie(
+            USER_COOKIE_NAME,
+            userId,
+            config.cookieAttributes,
+            SESSION_COOKIE_EXPIRES
+        );
         const sessionManager = defaultSessionManager(config);
 
         // Run
         const userIdFromCookie = sessionManager.getUserId();
         config.allowCookies = false;
-        const userIdFromRumClient = sessionManager.getUserId();
+        const userIdFromTracker = sessionManager.getUserId();
 
         // Assert
         expect(userId).toEqual(userIdFromCookie);
-        expect(userIdFromRumClient).toEqual(userIdFromCookie);
+        expect(userIdFromTracker).toEqual(userIdFromCookie);
     });
 
     test('when the sessionId cookie expires then a new sessionId is created', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionLengthSeconds: 0, allowCookies: true }
         });
 
@@ -304,11 +337,10 @@ describe('SessionManager tests', () => {
     test('When the sessionId cookie does not expire, sessionId remains the same', async () => {
         // Init
         const config: Config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionLengthSeconds: 3600, allowCookies: true }
         };
         const sessionManager = new SessionManager(
-            APPLICATION_ID,
             config,
             mockRecord,
             new PageManager(config, mockRecord)
@@ -324,7 +356,7 @@ describe('SessionManager tests', () => {
     test('when a new session starts then the session start event and page view event are emitted', async () => {
         // init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
         });
 
@@ -338,6 +370,10 @@ describe('SessionManager tests', () => {
 
     test('when a session is resumed then the session start event is not emitted', async () => {
         // init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
         const sessionId = uuid.v4();
         storeCookie(
             SESSION_COOKIE_NAME,
@@ -352,12 +388,10 @@ describe('SessionManager tests', () => {
                     }
                 })
             ),
+            config.cookieAttributes,
             SESSION_COOKIE_EXPIRES
         );
-        const sessionManager = defaultSessionManager({
-            ...defaultConfig,
-            ...{ allowCookies: true }
-        });
+        const sessionManager = defaultSessionManager(config);
 
         sessionManager.getSession();
 
@@ -369,7 +403,7 @@ describe('SessionManager tests', () => {
     test('when sessionSampleRate is one then session.record is true', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionSampleRate: 1, allowCookies: true }
         });
 
@@ -382,7 +416,7 @@ describe('SessionManager tests', () => {
     test('when sessionSampleRate is zero then session.record is false', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionSampleRate: 0, allowCookies: true }
         });
 
@@ -396,7 +430,7 @@ describe('SessionManager tests', () => {
         // Init
         mockRandom([0.5]);
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionSampleRate: 0.5, allowCookies: true }
         });
 
@@ -410,7 +444,7 @@ describe('SessionManager tests', () => {
         // Init
         mockRandom([0.4]);
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionSampleRate: 0.5, allowCookies: true }
         });
 
@@ -424,7 +458,7 @@ describe('SessionManager tests', () => {
         // Init
         mockRandom([0.6]);
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ sessionSampleRate: 0.5, allowCookies: true }
         });
 
@@ -437,7 +471,7 @@ describe('SessionManager tests', () => {
     test('when getSession creates a new session then session.eventCount is zero', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
         });
 
@@ -449,16 +483,18 @@ describe('SessionManager tests', () => {
 
     test('when cookies are allowed then incrementSessionEventCount increments session.eventCount in cookie', async () => {
         // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
         const sessionId = uuid.v4();
         storeCookie(
             SESSION_COOKIE_NAME,
             btoa(JSON.stringify({ sessionId, record: true, eventCount: 1 })),
+            config.cookieAttributes,
             SESSION_COOKIE_EXPIRES
         );
-        const sessionManager = defaultSessionManager({
-            ...defaultConfig,
-            ...{ allowCookies: true }
-        });
+        const sessionManager = defaultSessionManager(config);
 
         // tslint:disable:no-empty
         sessionManager.getSession();
@@ -472,7 +508,7 @@ describe('SessionManager tests', () => {
     test('when cookies are not allowed then incrementSessionEventCount increments session.eventCount in member', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: false }
         });
 
@@ -494,7 +530,7 @@ describe('SessionManager tests', () => {
         });
 
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: false }
         });
 
@@ -516,7 +552,7 @@ describe('SessionManager tests', () => {
         });
 
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: false }
         });
 
@@ -530,7 +566,7 @@ describe('SessionManager tests', () => {
 
     test('userIdRetentionDays defaults to zero and the the nil UUID', async () => {
         // Init
-        const sessionManager = defaultSessionManager(defaultConfig);
+        const sessionManager = defaultSessionManager(DEFAULT_CONFIG);
 
         // Assert
         expect(sessionManager.getUserId()).toEqual(NIL_UUID);
@@ -539,7 +575,7 @@ describe('SessionManager tests', () => {
     test('when userIdRetentionDays is zero then the user ID is the nil UUID', async () => {
         // Init
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ userIdRetentionDays: 0 }
         });
 
@@ -549,11 +585,20 @@ describe('SessionManager tests', () => {
 
     test('when userIdRetentionDays is zero then the user ID is not read from or written to a cookie', async () => {
         // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true, userIdRetentionDays: 0 }
+        };
         const userId = uuid.v4();
-        storeCookie(USER_COOKIE_NAME, userId, SESSION_COOKIE_EXPIRES);
+        storeCookie(
+            USER_COOKIE_NAME,
+            userId,
+            config.cookieAttributes,
+            SESSION_COOKIE_EXPIRES
+        );
 
         const sessionManager = defaultSessionManager({
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: true, userIdRetentionDays: 0 }
         });
 
@@ -567,7 +612,7 @@ describe('SessionManager tests', () => {
     test('when cookies are enabled after initialization then renewing the session stores user ID cookie', async () => {
         // Init
         const config = {
-            ...defaultConfig,
+            ...DEFAULT_CONFIG,
             ...{ allowCookies: false, userIdRetentionDays: 1 }
         };
 

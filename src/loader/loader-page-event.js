@@ -1,7 +1,6 @@
 import { loader } from './loader';
 import { showRequestClientBuilder } from '../test-utils/mock-http-handler';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
-import { defaultConfig } from '../plugins/utils/http-utils';
 
 loader(
     'cwr',
@@ -14,7 +13,7 @@ loader(
         allowCookies: true,
         dispatchInterval: 0,
         metaDataPluginsToLoad: [],
-        eventPluginsToLoad: [new PageViewPlugin(defaultConfig)],
+        eventPluginsToLoad: [new PageViewPlugin()],
         telemetries: [],
         pagesToInclude: [/\/(page_event.html|page_view_one|page_view_two)/],
         pagesToExclude: [/\/page_view_do_not_record/],
