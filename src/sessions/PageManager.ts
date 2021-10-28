@@ -1,9 +1,8 @@
-import { Config, PAGE_ID_FORMAT } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/Plugin';
 import { PageViewEvent } from '../events/page-view-event';
 
 export const PAGE_VIEW_TYPE = 'com.amazon.rum.page_view_event';
-export const PAGE_COOKIE_NAME = 'rum_page_id';
 
 export type Page = {
     pageId: string;
@@ -35,58 +34,90 @@ export class PageManager {
     private config: Config;
     private record: RecordEvent;
     private page: Page | undefined;
-    private attributes: Attributes;
+    private resumed: Page | undefined;
+    private attributes: Attributes | undefined;
+
+    /**
+     * A flag which keeps track of whether or not cookies have been enabled.
+     *
+     * We will only record the interaction (i.e., depth and parent) after
+     * cookies have been enabled once.
+     */
+    private recordInteraction: boolean;
 
     constructor(config: Config, record: RecordEvent) {
         this.config = config;
         this.record = record;
         this.page = undefined;
+        this.resumed = undefined;
+        this.recordInteraction = false;
     }
 
-    public getPage(): Page {
+    public getPage(): Page | undefined {
         return this.page;
     }
 
-    public getAttributes(): object {
+    public getAttributes(): Attributes | undefined {
         return this.attributes;
     }
 
-    public startSession(): PageViewEvent {
-        if (!this.page) {
-            this.page = {
-                pageId: this.createIdForCurrentPage(),
-                interaction: 0,
-                start: Date.now()
-            };
-        }
-        this.collectAttributes();
-        return this.createPageViewEvent();
-    }
-
     public resumeSession(pageId: string, interaction: number) {
-        this.page = {
-            pageId: this.createIdForCurrentPage(),
-            interaction: interaction + 1,
-            parentPageId: pageId,
-            start: Date.now()
+        this.recordInteraction = true;
+        this.resumed = {
+            pageId,
+            interaction,
+            start: 0
         };
-        this.collectAttributes();
-        this.recordPageViewEvent();
     }
 
     public recordPageView(pageId: string) {
-        if (this.page.pageId === pageId) {
+        if (this.useCookies()) {
+            this.recordInteraction = true;
+        }
+
+        if (!this.page && this.resumed) {
+            this.createResumedPage(pageId);
+        } else if (!this.page) {
+            this.createLandingPage(pageId);
+        } else if (this.page.pageId !== pageId) {
+            this.createNextPage(pageId);
+        } else {
             // The view has not changed.
             return;
         }
+
+        // Attributes will be added to all events as meta data
+        this.collectAttributes();
+
+        // The SessionManager will update its cookie with the new page
+        this.recordPageViewEvent();
+    }
+
+    private createResumedPage(pageId: string) {
+        this.page = {
+            pageId,
+            parentPageId: this.resumed.pageId,
+            interaction: this.resumed.interaction + 1,
+            start: Date.now()
+        };
+        this.resumed = undefined;
+    }
+
+    private createNextPage(pageId: string) {
         this.page = {
             pageId,
             parentPageId: this.page.pageId,
             interaction: this.page.interaction + 1,
             start: Date.now()
         };
-        this.collectAttributes();
-        this.recordPageViewEvent();
+    }
+
+    private createLandingPage(pageId: string) {
+        this.page = {
+            pageId,
+            interaction: 0,
+            start: Date.now()
+        };
     }
 
     private collectAttributes() {
@@ -97,12 +128,11 @@ export class PageManager {
             pageId: this.page.pageId
         };
 
-        if (this.page.interaction !== undefined) {
+        if (this.recordInteraction) {
             this.attributes.interaction = this.page.interaction;
-        }
-
-        if (this.page.parentPageId !== undefined) {
-            this.attributes.parentPageId = this.page.parentPageId;
+            if (this.page.parentPageId !== undefined) {
+                this.attributes.parentPageId = this.page.parentPageId;
+            }
         }
     }
 
@@ -112,18 +142,15 @@ export class PageManager {
             pageId: this.page.pageId
         };
 
-        if (this.page.interaction !== undefined) {
+        if (this.recordInteraction) {
             pageViewEvent.interaction = this.page.interaction;
             pageViewEvent.pageInteractionId =
                 this.page.pageId + '-' + this.page.interaction;
-        }
 
-        if (
-            this.page.parentPageId !== undefined &&
-            this.page.interaction !== undefined
-        ) {
-            pageViewEvent.parentPageInteractionId =
-                this.page.parentPageId + '-' + (this.page.interaction - 1);
+            if (this.page.parentPageId !== undefined) {
+                pageViewEvent.parentPageInteractionId =
+                    this.page.parentPageId + '-' + (this.page.interaction - 1);
+            }
         }
 
         return pageViewEvent;
@@ -133,24 +160,10 @@ export class PageManager {
         this.record(PAGE_VIEW_TYPE, this.createPageViewEvent());
     }
 
-    private createIdForCurrentPage(): string {
-        const path = document.location.pathname;
-        const hash = document.location.hash;
-        switch (this.config.pageIdFormat) {
-            case PAGE_ID_FORMAT.PATH_AND_HASH:
-                if (path && hash) {
-                    return path + hash;
-                } else if (path) {
-                    return path;
-                } else if (hash) {
-                    return hash;
-                }
-                return '';
-            case PAGE_ID_FORMAT.HASH:
-                return hash ? hash : '';
-            case PAGE_ID_FORMAT.PATH:
-            default:
-                return path ? path : '';
-        }
+    /**
+     * Returns true when cookies should be used to store user ID and session ID.
+     */
+    private useCookies() {
+        return navigator.cookieEnabled && this.config.allowCookies;
     }
 }

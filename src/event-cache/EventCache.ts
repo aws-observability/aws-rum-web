@@ -71,8 +71,6 @@ export class EventCache {
      */
     public recordPageView = (pageId: string) => {
         if (this.isCurrentUrlAllowed()) {
-            // There may not be an active session.
-            this.sessionManager.getSession();
             this.pageManager.recordPageView(pageId);
         }
     };

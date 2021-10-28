@@ -1,32 +1,10 @@
 import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
-
-const EXPECTED_ATTRIBUTES = {
-    title: 'Amazon AWS Console',
-    url:
-        'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback',
-    pageId: '/glue/ajax',
-    parentPageId: '/console/home',
-    interaction: 1
-};
-
-const EXPECTED_PAGE = {
-    pageId: '/console/home',
-    interaction: 0
-};
-
-const EXPECTED_ON_SESSION_START = {
-    pageId: '/console/home',
-    interaction: 0
-};
-
-const EXPECTED_ON_MANUAL = {
-    pageId: '/glue/ajax',
-    interaction: 1,
-    parentPageInteractionId: '/console/home-0'
-};
+import { Config } from '../../orchestration/Orchestration';
 
 const record = jest.fn();
+
+declare const jsdom: any;
 
 Object.defineProperty(document, 'referrer', {
     value: 'https://console.aws.amazon.com'
@@ -42,109 +20,180 @@ describe('PageManager tests', () => {
 
     beforeEach(() => {
         record.mockClear();
-        // @ts-ignore
         jsdom.reconfigure({
             url: url
         });
     });
 
-    test('When a session begins then PageManager returns a page view event.', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG
-            },
-            record
-        );
-
-        // Run
-        const pageViewEvent = pageManager.startSession();
-
-        // Assert
-        expect(pageViewEvent).toMatchObject(EXPECTED_ON_SESSION_START);
-
-        // @ts-ignore
-        window.removeEventListener('popstate', pageManager.popstateListener);
-    });
-
-    test('When a page is manually recorded then PageManager records a page view event.', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG
-            },
-            record
-        );
-
-        // Run
-        pageManager.startSession();
-        pageManager.recordPageView('/glue/ajax');
-
-        // Assert
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[0][1]).toMatchObject(EXPECTED_ON_MANUAL);
-
-        // @ts-ignore
-        window.removeEventListener('popstate', pageManager.popstateListener);
-    });
-
-    test('getPage returns the current page', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG
-            },
-            record
-        );
-
-        // Run
-        pageManager.startSession();
-
-        // Assert
-        expect(pageManager.getPage()).toMatchObject(EXPECTED_PAGE);
-
-        // @ts-ignore
-        window.removeEventListener('popstate', pageManager.popstateListener);
-    });
-
-    test('getAttributes returns the attributes for the current page', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG
-            },
-            record
-        );
-
-        // Run
-        pageManager.startSession();
-        pageManager.recordPageView('/glue/ajax');
-
-        // Assert
-        expect(pageManager.getAttributes()).toMatchObject(EXPECTED_ATTRIBUTES);
-
-        // @ts-ignore
-        window.removeEventListener('popstate', pageManager.popstateListener);
-    });
-
-    test('when pageIdFormat is not recognized then page ID defaults to PATH', async () => {
+    test('when a page is recorded then PageManager records a page view event.', async () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
                 ...DEFAULT_CONFIG,
-                // @ts-ignore
-                pageIdFormat: 'PAGE_AND_HASH'
+                allowCookies: true
             },
             record
         );
 
         // Run
-        const pageViewEvent = pageManager.startSession();
+        pageManager.recordPageView('/console/home');
 
         // Assert
-        expect(pageViewEvent).toMatchObject(EXPECTED_ON_SESSION_START);
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            pageId: '/console/home',
+            interaction: 0
+        });
 
-        // @ts-ignore
-        window.removeEventListener('popstate', pageManager.popstateListener);
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when no page view has been recorded then getPage returns undefined', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG
+            },
+            record
+        );
+
+        // Assert
+        expect(pageManager.getPage()).toEqual(undefined);
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when cookies are enabled then attributes include interaction', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        // Run
+        pageManager.recordPageView('/console/home');
+
+        // Assert
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/console/home',
+            interaction: 0
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when multipe pages are recorded then interaction increments', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        // Run
+        pageManager.recordPageView('/console/home');
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            parentPageId: '/console/home',
+            interaction: 1
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when cookies are disabled then interaction increments', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: false
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+
+        // Run
+        pageManager.recordPageView('/console/home');
+        config.allowCookies = true;
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            parentPageId: '/console/home',
+            interaction: 1
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when cookies are disabled then attributes do not include interaction', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: false
+            },
+            record
+        );
+
+        // Run
+        pageManager.recordPageView('/console/home');
+        pageManager.recordPageView('/rum/home');
+        const attributes = pageManager.getAttributes();
+
+        // Assert
+        expect(attributes.parentPageId).toEqual(undefined);
+        expect(attributes.parentPageId).toEqual(undefined);
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when session is resumed then interaction depth is resumed depth plus one', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.resumeSession('/console/home', 1);
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            parentPageId: '/console/home',
+            interaction: 2
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
     });
 });

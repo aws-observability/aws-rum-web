@@ -2,10 +2,9 @@ import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
 import { Config } from '../orchestration/Orchestration';
-import { Page, PageManager, PAGE_VIEW_TYPE } from './PageManager';
+import { Page, PageManager } from './PageManager';
 
 import { UAParser } from 'ua-parser-js';
-import { PageViewEvent } from '../events/page-view-event';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
@@ -97,7 +96,15 @@ export class SessionManager {
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (this.session.sessionId === NIL_UUID && this.useCookies()) {
+        if (this.session.sessionId !== NIL_UUID && !this.useCookies()) {
+            // Cookie access has been revoked. Revert to nil session.
+            this.session = {
+                sessionId: NIL_UUID,
+                record: this.sample(),
+                eventCount: 0,
+                page: this.session.page
+            };
+        } else if (this.session.sessionId === NIL_UUID && this.useCookies()) {
             // The session does not exist. Create a new one.
             this.createSession();
         } else if (
@@ -115,14 +122,15 @@ export class SessionManager {
     }
 
     public getUserId(): string {
-        return this.userId;
+        if (this.useCookies()) {
+            return this.userId;
+        }
+        return NIL_UUID;
     }
 
     public incrementSessionEventCount() {
-        if (this.session) {
-            this.session.eventCount++;
-            this.renewSession();
-        }
+        this.session.eventCount++;
+        this.renewSession();
     }
 
     private initializeUser() {
@@ -205,7 +213,6 @@ export class SessionManager {
             record: this.sample(),
             eventCount: 0
         };
-        const pageViewEvent: PageViewEvent = this.pageManager.startSession();
         this.session.page = this.pageManager.getPage();
         this.sessionExpiry = new Date(
             new Date().getTime() + this.config.sessionLengthSeconds * 1000
@@ -214,7 +221,6 @@ export class SessionManager {
         this.record(this.session, SESSION_START_EVENT_TYPE, {
             version: '1.0.0'
         });
-        this.record(this.session, PAGE_VIEW_TYPE, pageViewEvent);
     }
 
     private renewSession() {
