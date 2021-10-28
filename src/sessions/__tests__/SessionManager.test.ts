@@ -2,6 +2,7 @@
 import {
     Attributes,
     NIL_UUID,
+    Session,
     SessionManager,
     SESSION_START_EVENT_TYPE
 } from '../SessionManager';
@@ -118,6 +119,54 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(sessionManager.getSession().sessionId).toEqual(sessionId);
+    });
+
+    test('when cookies are not allowed then getSession returns the nil session', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: false }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        // Assert
+        expect(sessionManager.getSession().sessionId).toEqual(NIL_UUID);
+    });
+
+    test('when cookies are enabled during runtime then getSession returns a new sessionId', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: false }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        const sessionA: Session = sessionManager.getSession();
+        config.allowCookies = true;
+        const sessionB: Session = sessionManager.getSession();
+
+        // Assert
+        expect(sessionA.sessionId).toEqual(NIL_UUID);
+        expect(sessionB.sessionId).not.toEqual(NIL_UUID);
+    });
+
+    test('when cookies are disabled during runtime then getSession returns a new sessionId', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ sessionLengthSeconds: 0, allowCookies: true }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        const sessionA = sessionManager.getSession();
+        config.allowCookies = false;
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        const sessionB = sessionManager.getSession();
+
+        // Assert
+        expect(sessionA.sessionId).not.toEqual(sessionB.sessionId);
+        expect(sessionA.sessionId).not.toEqual(NIL_UUID);
+        expect(sessionB.sessionId).not.toEqual(NIL_UUID);
     });
 
     test('when sessionId cookie is corrupt then getSession returns a new sessionId', async () => {

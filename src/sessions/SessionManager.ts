@@ -62,7 +62,7 @@ export class SessionManager {
     private userExpiry: Date;
     private sessionExpiry: Date;
     private userId!: string;
-    private session: Session | undefined;
+    private session: Session;
     private config: Config;
     private record: RecordSessionInitEvent;
     private attributes: Attributes;
@@ -75,28 +75,38 @@ export class SessionManager {
         this.config = config;
         this.record = record;
         this.pageManager = pageManager;
-        this.session = undefined;
+
+        // Initialize the session to the nil session
+        this.session = {
+            sessionId: NIL_UUID,
+            record: this.sample(),
+            eventCount: 0
+        };
+
+        // Initialize or restore the user
         this.initializeUser();
+
+        // Collect the user agent and domain
+        this.collectAttributes();
+
+        // Attempt to restore the previous session
+        this.getSessionFromCookie();
     }
 
     /**
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (!this.session) {
-            // We do not store session attributes -- they must be collected for
-            // each new session.
-            this.collectAttributes();
-
-            // Try to restore the session from the session cookie.
-            this.getSessionFromCookie();
-        }
-
-        if (!this.session || new Date() > this.sessionExpiry) {
-            // The session does not exist or has expired. Create a new one.
+        if (this.session.sessionId === NIL_UUID && this.useCookies()) {
+            // The session does not exist. Create a new one.
+            this.createSession();
+        } else if (
+            this.session.sessionId !== NIL_UUID &&
+            new Date() > this.sessionExpiry
+        ) {
+            // The session has expired. Create a new one.
             this.createSession();
         }
-
         return this.session;
     }
 
@@ -192,7 +202,7 @@ export class SessionManager {
     private createSession() {
         this.session = {
             sessionId: v4(),
-            record: Math.random() < this.config.sessionSampleRate,
+            record: this.sample(),
             eventCount: 0
         };
         const pageViewEvent: PageViewEvent = this.pageManager.startSession();
@@ -238,5 +248,12 @@ export class SessionManager {
      */
     private useCookies() {
         return navigator.cookieEnabled && this.config.allowCookies;
+    }
+
+    /**
+     * Returns {@code true} when the session has been selected to be recorded.
+     */
+    private sample(): boolean {
+        return Math.random() < this.config.sessionSampleRate;
     }
 }
