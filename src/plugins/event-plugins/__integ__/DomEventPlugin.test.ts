@@ -1,4 +1,3 @@
-import { SESSION_START_EVENT_TYPE } from '../../../sessions/SessionManager';
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../../test-utils/integ-test-utils';
 import { DOM_EVENT_TYPE } from '../../utils/constant';
@@ -16,24 +15,6 @@ const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 
 fixture('DomEventPlugin').page('http://localhost:8080/dom_event.html');
-
-const removeUnwantedEvents = (json: any) => {
-    const newEventsList = [];
-    for (const event of json.batch.events) {
-        if (/(dispatch)/.test(event.details)) {
-            // Skip
-        } else if (/(session_start_event)/.test(event.type)) {
-            // Skip
-        } else if (/(page_view_event)/.test(event.type)) {
-            // Skip
-        } else {
-            newEventsList.push(event);
-        }
-    }
-
-    json.batch.events = newEventsList;
-    return json;
-};
 
 test('when document click events configured then button click is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
@@ -59,7 +40,7 @@ test('when document click events configured then button click is recorded', asyn
 
     await t
         .expect(eventType)
-        .eql('com.amazon.rum.dom_event')
+        .eql(DOM_EVENT_TYPE)
         .expect(eventDetails)
         .contains({
             event: 'click',
@@ -90,7 +71,7 @@ test('when element without an id is clicked then node type is recorded', async (
 
     await t
         .expect(eventType)
-        .eql('com.amazon.rum.dom_event')
+        .eql(DOM_EVENT_TYPE)
         .expect(eventDetails)
         .contains({
             event: 'click',
@@ -109,20 +90,18 @@ test('when element id click event configured then button click is recorded', asy
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(
+        await REQUEST_BODY.textContent
+    ).batch.events.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).elementId === 'button1'
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
 
-    await t
-        .expect(eventType)
-        .eql('com.amazon.rum.dom_event')
-        .expect(eventDetails)
-        .contains({
-            event: 'click',
-            elementId: 'button1'
-        });
+    await t.expect(JSON.parse(events[0].details)).contains({
+        event: 'click',
+        elementId: 'button1'
+    });
 });
 
 test('when client is disabled prior to config then button click is not recorded', async (t: TestController) => {
@@ -138,14 +117,11 @@ test('when client is disabled prior to config then button click is not recorded'
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const json = JSON.parse(await REQUEST_BODY.textContent);
-    const eventType = json.batch.events[0].type;
+    const events = JSON.parse(
+        await REQUEST_BODY.textContent
+    ).batch.events.filter((e) => e.type === DOM_EVENT_TYPE);
 
-    await t
-        .expect(json.batch.events.length)
-        .eql(2)
-        .expect(eventType)
-        .eql(SESSION_START_EVENT_TYPE);
+    await t.expect(events.length).eql(0);
 });
 
 test('when client is disabled after config then button click is not recorded', async (t: TestController) => {
@@ -161,14 +137,11 @@ test('when client is disabled after config then button click is not recorded', a
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const json = JSON.parse(await REQUEST_BODY.textContent);
-    const eventType = json.batch.events[0].type;
+    const events = JSON.parse(
+        await REQUEST_BODY.textContent
+    ).batch.events.filter((e) => e.type === DOM_EVENT_TYPE);
 
-    await t
-        .expect(json.batch.events.length)
-        .eql(2)
-        .expect(eventType)
-        .eql(SESSION_START_EVENT_TYPE);
+    await t.expect(events.length).eql(0);
 });
 
 test('when client is disabled and enabled then button click is recorded', async (t: TestController) => {
@@ -184,18 +157,16 @@ test('when client is disabled and enabled then button click is recorded', async 
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(
+        await REQUEST_BODY.textContent
+    ).batch.events.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).elementId === 'button1'
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
 
-    await t
-        .expect(eventType)
-        .eql('com.amazon.rum.dom_event')
-        .expect(eventDetails)
-        .contains({
-            event: 'click',
-            elementId: 'button1'
-        });
+    await t.expect(JSON.parse(events[0].details)).contains({
+        event: 'click',
+        elementId: 'button1'
+    });
 });

@@ -39,6 +39,7 @@ describe('FetchPlugin integ tests', () => {
 
         // Run
         orchestration.setAwsCredentials(createAwsCredentials());
+        orchestration.recordPageView('/home');
         orchestration.dispatch();
         await new Promise((resolve) => setTimeout(() => resolve(null), 0));
         orchestration.dispatch();

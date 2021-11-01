@@ -45,10 +45,6 @@ export class EventCache {
             this.recordSessionInitEvent,
             this.pageManager
         );
-
-        if (this.isCurrentUrlAllowed()) {
-            this.sessionManager.getSession();
-        }
     }
 
     /**
@@ -92,12 +88,7 @@ export class EventCache {
             const session: Session = this.sessionManager.getSession();
             this.sessionManager.incrementSessionEventCount();
 
-            if (
-                session.record &&
-                (session.eventCount <= this.config.sessionEventLimit ||
-                    this.config.sessionEventLimit <= 0)
-            ) {
-                // Only record the event if the session is being recorded.
+            if (session.record && this.eventLimit(session)) {
                 this.addRecordToCache(type, eventData);
             }
         }
@@ -159,9 +150,19 @@ export class EventCache {
         if (!this.enabled) {
             return;
         }
-        if (session.record) {
+
+        this.sessionManager.incrementSessionEventCount();
+
+        if (session.record && this.eventLimit(session)) {
             this.addRecordToCache(type, eventData);
         }
+    };
+
+    private eventLimit = (session): boolean => {
+        return (
+            session.eventCount <= this.config.sessionEventLimit ||
+            this.config.sessionEventLimit <= 0
+        );
     };
 
     /**

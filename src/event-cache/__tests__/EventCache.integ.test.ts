@@ -3,6 +3,7 @@ import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
 import { Event } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
 
 describe('EventCache tests', () => {
     beforeAll(() => {
@@ -15,7 +16,7 @@ describe('EventCache tests', () => {
         const config = {
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: false,
+                allowCookies: true,
                 sessionLengthSeconds: 0
             }
         };
@@ -28,7 +29,12 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        expect(eventCache.getEventBatch().events.length).toEqual(6);
+        expect(
+            eventCache
+                .getEventBatch()
+                .events.filter((e) => e.type === SESSION_START_EVENT_TYPE)
+                .length
+        ).toEqual(2);
     });
 
     test('meta data contains domain, user agent and page ID', async () => {
@@ -54,6 +60,7 @@ describe('EventCache tests', () => {
         };
 
         // Run
+        eventCache.recordPageView('/console/home');
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert

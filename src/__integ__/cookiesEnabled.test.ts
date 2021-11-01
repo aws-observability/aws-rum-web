@@ -16,12 +16,14 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const jsonOne = JSON.parse(await REQUEST_BODY.textContent);
-    const eventTypeOne = jsonOne.batch.events[0].type;
+    const jsonA = JSON.parse(await REQUEST_BODY.textContent);
+    const sessionStartEventsA = jsonA.batch.events.filter(
+        (e) => e.type == SESSION_START_EVENT_TYPE
+    );
 
     await t
-        .expect(eventTypeOne)
-        .eql(SESSION_START_EVENT_TYPE)
+        .expect(sessionStartEventsA.length)
+        .eql(1)
         .click(clear)
         .eval(() => location.reload());
 
@@ -29,9 +31,14 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
-        .expect(REQUEST_BODY.textContent)
-        .notContains(SESSION_START_EVENT_TYPE);
+        .contains('batch');
+
+    const jsonB = JSON.parse(await REQUEST_BODY.textContent);
+    const sessionStartEventsB = jsonB.batch.events.filter(
+        (e) => e.type == SESSION_START_EVENT_TYPE
+    );
+
+    await t.expect(sessionStartEventsB.length).eql(0);
 });
 
 test('when page is loaded with cookies enabled, session start includes meta data', async (t: TestController) => {
@@ -43,13 +50,12 @@ test('when page is loaded with cookies enabled, session start includes meta data
         .expect(REQUEST_BODY.textContent)
         .contains('batch');
 
-    const jsonOne = JSON.parse(await REQUEST_BODY.textContent);
-    const eventTypeOne = jsonOne.batch.events[0].type;
-    const metaDataOne = JSON.parse(jsonOne.batch.events[0].metadata);
+    const json = JSON.parse(await REQUEST_BODY.textContent);
+    const sessionStartEvents = json.batch.events.filter(
+        (e) => e.type == SESSION_START_EVENT_TYPE
+    );
 
-    await t
-        .expect(eventTypeOne)
-        .eql(SESSION_START_EVENT_TYPE)
-        .expect(metaDataOne.url)
-        .eql('http://localhost:8080/cookies_enabled.html');
+    const metaData = JSON.parse(sessionStartEvents[0].metadata);
+
+    await t.expect(metaData.pageId).eql('/cookies_enabled.html');
 });

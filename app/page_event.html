@@ -10,6 +10,8 @@
         />
 
         <script>
+            cwr('recordPageView', '/page_event.html');
+
             function pushStateOneToHistory() {
                 window.history.pushState(
                     { state: 'one' },

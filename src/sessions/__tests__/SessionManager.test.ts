@@ -15,7 +15,7 @@ import * as uuid from 'uuid';
 import { navigationEvent } from '../../test-utils/mock-data';
 import { Config } from '../../orchestration/Orchestration';
 import { mockRandom } from 'jest-mock-random';
-import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
+import { PageManager } from '../PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
@@ -333,7 +333,7 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         const sessionTwo = sessionManager.getSession();
 
         // Assert
