@@ -5,7 +5,7 @@ import {
 import { Config } from '../orchestration/Orchestration';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
-import { CRED_COOKIE_NAME } from '../utils/constants';
+import { CRED_KEY } from '../utils/constants';
 
 export class EnhancedAuthentication {
     private cognitoIdentityClient: CognitoIdentityClient;
@@ -64,9 +64,7 @@ export class EnhancedAuthentication {
         return new Promise<Credentials>((resolve, reject) => {
             let credentials;
             try {
-                credentials = JSON.parse(
-                    localStorage.getItem(CRED_COOKIE_NAME)
-                );
+                credentials = JSON.parse(localStorage.getItem(CRED_KEY));
             } catch (e) {
                 // Error decoding or parsing the cookie -- abort
                 reject();
@@ -99,10 +97,7 @@ export class EnhancedAuthentication {
 
         return credentialProvider().then((credentials) => {
             try {
-                localStorage.setItem(
-                    CRED_COOKIE_NAME,
-                    JSON.stringify(credentials)
-                );
+                localStorage.setItem(CRED_KEY, JSON.stringify(credentials));
             } catch (e) {
                 // Ignore
             }

@@ -1,4 +1,4 @@
-import { CRED_COOKIE_NAME } from '../../utils/constants';
+import { CRED_KEY } from '../../utils/constants';
 import { Credentials } from '@aws-sdk/types';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
 import { fromCognitoIdentityPool } from '../CognitoIdentityClient';
@@ -43,7 +43,7 @@ describe('EnhancedAuthentication tests', () => {
                     })
                 )
         );
-        localStorage.removeItem(CRED_COOKIE_NAME);
+        localStorage.removeItem(CRED_KEY);
     });
 
     // tslint:disable-next-line:max-line-length
@@ -60,7 +60,7 @@ describe('EnhancedAuthentication tests', () => {
         const auth = new EnhancedAuthentication(config);
 
         localStorage.setItem(
-            CRED_COOKIE_NAME,
+            CRED_KEY,
             JSON.stringify({
                 accessKeyId: 'a',
                 secretAccessKey: 'b',
@@ -95,7 +95,7 @@ describe('EnhancedAuthentication tests', () => {
 
         const auth = new EnhancedAuthentication(config);
 
-        localStorage.setItem(CRED_COOKIE_NAME, 'corrupt');
+        localStorage.setItem(CRED_KEY, 'corrupt');
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -148,7 +148,7 @@ describe('EnhancedAuthentication tests', () => {
         const auth = new EnhancedAuthentication(config);
 
         localStorage.setItem(
-            CRED_COOKIE_NAME,
+            CRED_KEY,
             JSON.stringify({
                 accessKeyId: 'a',
                 secretAccessKey: 'b',

@@ -3,7 +3,7 @@ import { Config } from '../orchestration/Orchestration';
 import { Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
-import { CRED_COOKIE_NAME } from '../utils/constants';
+import { CRED_KEY } from '../utils/constants';
 
 export class Authentication {
     private cognitoIdentityClient: CognitoIdentityClient;
@@ -67,9 +67,7 @@ export class Authentication {
         return new Promise<Credentials>((resolve, reject) => {
             let credentials;
             try {
-                credentials = JSON.parse(
-                    localStorage.getItem(CRED_COOKIE_NAME)
-                );
+                credentials = JSON.parse(localStorage.getItem(CRED_KEY));
             } catch (e) {
                 // Error retrieving, decoding or parsing the cred string -- abort
                 reject();
@@ -111,10 +109,7 @@ export class Authentication {
             )
             .then((credentials) => {
                 try {
-                    localStorage.setItem(
-                        CRED_COOKIE_NAME,
-                        JSON.stringify(credentials)
-                    );
+                    localStorage.setItem(CRED_KEY, JSON.stringify(credentials));
                 } catch (e) {
                     // Ignore
                 }

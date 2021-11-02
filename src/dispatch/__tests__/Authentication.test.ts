@@ -1,5 +1,5 @@
 import { Authentication } from '../Authentication';
-import { CRED_COOKIE_NAME } from '../../utils/constants';
+import { CRED_KEY } from '../../utils/constants';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const assumeRole = jest.fn();
@@ -40,7 +40,7 @@ describe('Authentication tests', () => {
             secretAccessKey: 'y',
             sessionToken: 'z'
         });
-        localStorage.removeItem(CRED_COOKIE_NAME);
+        localStorage.removeItem(CRED_KEY);
     });
 
     // tslint:disable-next-line:max-line-length
@@ -57,7 +57,7 @@ describe('Authentication tests', () => {
         const auth = new Authentication(config);
 
         localStorage.setItem(
-            CRED_COOKIE_NAME,
+            CRED_KEY,
             JSON.stringify({
                 accessKeyId: 'a',
                 secretAccessKey: 'b',
@@ -91,7 +91,7 @@ describe('Authentication tests', () => {
         };
         const auth = new Authentication(config);
 
-        localStorage.setItem(CRED_COOKIE_NAME, 'corrupt');
+        localStorage.setItem(CRED_KEY, 'corrupt');
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -145,7 +145,7 @@ describe('Authentication tests', () => {
         const auth = new Authentication(config);
 
         localStorage.setItem(
-            CRED_COOKIE_NAME,
+            CRED_KEY,
             JSON.stringify({
                 accessKeyId: 'a',
                 secretAccessKey: 'b',
