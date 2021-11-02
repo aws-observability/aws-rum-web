@@ -145,43 +145,7 @@ export class ResourcePlugin implements Plugin {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,
-                startTime: entryData.startTime,
-                redirectStart: entryData.redirectStart,
-                redirectTime: entryData.redirectEnd - entryData.redirectStart,
-                workerStart: entryData.workerStart,
-                workerTime:
-                    entryData.workerStart > 0
-                        ? entryData.fetchStart - entryData.workerStart
-                        : 0,
-
-                fetchStart: entryData.fetchStart,
-                domainLookupStart: entryData.domainLookupStart,
-                dns: entryData.domainLookupEnd - entryData.domainLookupStart,
-
-                nextHopProtocol: entryData.nextHopProtocol,
-                connectStart: entryData.connectStart,
-                connect: entryData.connectEnd - entryData.connectStart,
-                secureConnectionStart: entryData.secureConnectionStart,
-                tlsTime:
-                    entryData.secureConnectionStart > 0
-                        ? entryData.connectEnd - entryData.secureConnectionStart
-                        : 0,
-
-                requestStart: entryData.requestStart,
-                timeToFirstByte:
-                    entryData.responseStart - entryData.requestStart,
-                responseStart: entryData.responseStart,
-                responseTime:
-                    entryData.responseStart > 0
-                        ? entryData.responseEnd - entryData.responseStart
-                        : 0,
                 duration: entryData.duration,
-                headerSize: entryData.transferSize - entryData.encodedBodySize,
-                compressionRatio:
-                    entryData.encodedBodySize > 0
-                        ? entryData.decodedBodySize / entryData.encodedBodySize
-                        : 0,
-                transferSize: entryData.transferSize,
                 fileType: getResourceFileType(entryData.name)
             };
             this.recordEvent(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
