@@ -11,7 +11,6 @@ import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { NavigationPlugin } from '../plugins/event-plugins/NavigationPlugin';
-import { PaintPlugin } from '../plugins/event-plugins/PaintPlugin';
 import { ResourcePlugin } from '../plugins/event-plugins/ResourcePlugin';
 import { WebVitalsPlugin } from '../plugins/event-plugins/WebVitalsPlugin';
 import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
@@ -415,7 +414,6 @@ export class Orchestration {
             [TELEMETRY_TYPES.PERFORMANCE]: (): Plugin[] => {
                 return [
                     new NavigationPlugin(),
-                    new PaintPlugin(this.config.endpoint),
                     new ResourcePlugin(this.config.endpoint),
                     new WebVitalsPlugin()
                 ];
