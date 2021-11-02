@@ -17,7 +17,7 @@ const removeUnwantedEvents = (json: any) => {
     return json;
 };
 
-test('PageViewEventPlugin records page load event', async (t: TestController) => {
+test('PageViewEventPlugin records landing page view event', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
@@ -50,7 +50,7 @@ test('PageViewEventPlugin records page load event', async (t: TestController) =>
         });
 });
 
-test('PageViewEventPlugin records manual page view event', async (t: TestController) => {
+test('PageViewEventPlugin records page view event', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
 

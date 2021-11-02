@@ -260,8 +260,7 @@ describe('EventCache tests', () => {
         const getSession = jest.fn(() => ({ sessionId: 'a', record: true }));
         const getUserId = jest.fn(() => 'b');
         const incrementSessionEventCount = jest.fn();
-        // @ts-ignore
-        SessionManager.mockImplementation(() => ({
+        (SessionManager as any).mockImplementation(() => ({
             getSession,
             getUserId,
             incrementSessionEventCount
@@ -288,8 +287,7 @@ describe('EventCache tests', () => {
         const getUserId = jest.fn(() => 'b');
         const getAttributes = jest.fn(() => {});
         const incrementSessionEventCount = jest.fn();
-        // @ts-ignore
-        SessionManager.mockImplementation(() => ({
+        (SessionManager as any).mockImplementation(() => ({
             getSession,
             getUserId,
             getAttributes,
@@ -315,14 +313,13 @@ describe('EventCache tests', () => {
             return {
                 sessionId: 'a',
                 record: true,
-                eventCount: eventCount - 1
+                eventCount: eventCount
             };
         });
         const getUserId = jest.fn(() => 'b');
         const getAttributes = jest.fn(() => {});
         const incrementSessionEventCount = jest.fn();
-        // @ts-ignore
-        SessionManager.mockImplementation(() => ({
+        (SessionManager as any).mockImplementation(() => ({
             getSession,
             getUserId,
             getAttributes,
@@ -353,8 +350,7 @@ describe('EventCache tests', () => {
         const getUserId = jest.fn(() => 'b');
         const getAttributes = jest.fn(() => {});
         const incrementSessionEventCount = jest.fn();
-        // @ts-ignore
-        SessionManager.mockImplementation(() => ({
+        (SessionManager as any).mockImplementation(() => ({
             getSession,
             getUserId,
             getAttributes,

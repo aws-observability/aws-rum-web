@@ -2,6 +2,7 @@
 import {
     Attributes,
     NIL_UUID,
+    Session,
     SessionManager,
     SESSION_START_EVENT_TYPE
 } from '../SessionManager';
@@ -14,7 +15,7 @@ import * as uuid from 'uuid';
 import { navigationEvent } from '../../test-utils/mock-data';
 import { Config } from '../../orchestration/Orchestration';
 import { mockRandom } from 'jest-mock-random';
-import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
+import { PageManager } from '../PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
@@ -120,6 +121,53 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession().sessionId).toEqual(sessionId);
     });
 
+    test('when cookies are not allowed then getSession returns the nil session', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: false }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        // Assert
+        expect(sessionManager.getSession().sessionId).toEqual(NIL_UUID);
+    });
+
+    test('when cookies are enabled during runtime then getSession returns a new sessionId', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: false }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        const sessionA: Session = sessionManager.getSession();
+        config.allowCookies = true;
+        const sessionB: Session = sessionManager.getSession();
+
+        // Assert
+        expect(sessionA.sessionId).toEqual(NIL_UUID);
+        expect(sessionB.sessionId).not.toEqual(NIL_UUID);
+    });
+
+    test('when cookies are disabled during runtime then getSession returns the nil session', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ sessionLengthSeconds: 0, allowCookies: true }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        const sessionA = sessionManager.getSession();
+        config.allowCookies = false;
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        const sessionB = sessionManager.getSession();
+
+        // Assert
+        expect(sessionA.sessionId).not.toEqual(NIL_UUID);
+        expect(sessionB.sessionId).toEqual(NIL_UUID);
+    });
+
     test('when sessionId cookie is corrupt then getSession returns a new sessionId', async () => {
         // Init
         const sessionId = uuid.v4();
@@ -167,7 +215,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession()).toBeTruthy();
     });
 
-    test('when cookies are disabled after being enabled then sessionId remains the same', async () => {
+    test('when cookies are disabled after being enabled then getSession returns the nil session', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
@@ -183,20 +231,15 @@ describe('SessionManager tests', () => {
         );
 
         const sessionManager = defaultSessionManager(config);
-        const sessionFromCookie = sessionManager.getSession();
 
-        // Assert
-        expect(sessionId).toEqual(sessionFromCookie.sessionId);
-
-        // disallow
+        // Run
+        const sessionA = sessionManager.getSession();
         config.allowCookies = false;
-
-        const sessionFromTracker = sessionManager.getSession();
+        const sessionB = sessionManager.getSession();
 
         // Assert
-        expect(sessionFromTracker.sessionId).toEqual(
-            sessionFromCookie.sessionId
-        );
+        expect(sessionId).toEqual(sessionA.sessionId);
+        expect(sessionB.sessionId).toEqual(NIL_UUID);
     });
 
     // start
@@ -257,44 +300,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getUserId()).toBeTruthy();
     });
 
-    test('When cookie is disabled or enabled, then userId value is consistent', async () => {
-        // Init
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{ allowCookies: true, userIdRetentionDays: 90 }
-        };
-        const userId = uuid.v4();
-        storeCookie(
-            USER_COOKIE_NAME,
-            userId,
-            config.cookieAttributes,
-            SESSION_COOKIE_EXPIRES
-        );
-        const sessionManager = defaultSessionManager(config);
-
-        let userIdFromCookie = sessionManager.getUserId(); // get value from cookie
-
-        // Assert
-        expect(userId).toEqual(userIdFromCookie);
-
-        // disable cookie
-        setNavigatorCookieEnabled(false);
-
-        const userIdFromTracker = sessionManager.getUserId(); // has to get value from tracker
-
-        // Assert
-        expect(userIdFromTracker).toEqual(userIdFromCookie);
-
-        // enableCookie
-        setNavigatorCookieEnabled(true);
-
-        userIdFromCookie = sessionManager.getUserId();
-
-        // TrackerStore and localStorage should store same values
-        expect(userIdFromCookie).toEqual(userIdFromTracker);
-    });
-
-    test('when cookies are disabled after being enabled then the userId remains the same', async () => {
+    test('when cookies are disabled after being enabled then the userId reverts to nil', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
@@ -316,7 +322,7 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(userId).toEqual(userIdFromCookie);
-        expect(userIdFromTracker).toEqual(userIdFromCookie);
+        expect(userIdFromTracker).toEqual(NIL_UUID);
     });
 
     test('when the sessionId cookie expires then a new sessionId is created', async () => {
@@ -327,7 +333,7 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         const sessionTwo = sessionManager.getSession();
 
         // Assert
@@ -353,7 +359,7 @@ describe('SessionManager tests', () => {
         expect(sessionOne.sessionId).toEqual(sessionTwo.sessionId);
     });
 
-    test('when a new session starts then the session start event and page view event are emitted', async () => {
+    test('when a new session starts then the session start event is emitted', async () => {
         // init
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
@@ -363,9 +369,8 @@ describe('SessionManager tests', () => {
         sessionManager.getSession();
 
         // Assert
-        expect(mockRecord).toHaveBeenCalledTimes(2);
+        expect(mockRecord).toHaveBeenCalledTimes(1);
         expect(mockRecord.mock.calls[0][1]).toEqual(SESSION_START_EVENT_TYPE);
-        expect(mockRecord.mock.calls[1][1]).toEqual(PAGE_VIEW_TYPE);
     });
 
     test('when a session is resumed then the session start event is not emitted', async () => {
@@ -396,8 +401,7 @@ describe('SessionManager tests', () => {
         sessionManager.getSession();
 
         // Assert
-        expect(mockRecord).toHaveBeenCalledTimes(1);
-        expect(mockRecord.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(mockRecord).toHaveBeenCalledTimes(0);
     });
 
     test('when sessionSampleRate is one then session.record is true', async () => {
