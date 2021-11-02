@@ -5,7 +5,6 @@ import {
 import { Config } from '../orchestration/Orchestration';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
-import { storeCookie, getCookie } from '../utils/cookies-utils';
 import { CRED_COOKIE_NAME } from '../utils/constants';
 
 export class EnhancedAuthentication {
@@ -22,14 +21,15 @@ export class EnhancedAuthentication {
     }
 
     /**
-     * Provides credentials for an anonymous (guest) user. These credentials are retrieved from the first successful
+     * A credential provider which provides AWS credentials for an anonymous
+     * (guest) user. These credentials are retrieved from the first successful
      * provider in a chain.
      *
-     * Credentials are stored in and retrieved from a non-HttpOnly cookie. This prevents the client from having to
+     * Credentials are stored in and retrieved from localStorage. This prevents the client from having to
      * re-authenticate every time the client loads, which (1) improves the performance of the RUM web client and (2)
      * reduces the load on AWS services Cognito and STS.
      *
-     * While storing credentials in a non-HttpOnly cookie puts the cookie at greater risk of being leaked through an
+     * While storing credentials in localStorage puts the credential at greater risk of being leaked through an
      * XSS attack, there is no impact if the credentials were to be leaked. This is because (1) the identity pool ID
      * and role ARN are public and (2) the credentials are for an anonymous (guest) user.
      *
@@ -62,23 +62,24 @@ export class EnhancedAuthentication {
      */
     private AnonymousCookieCredentialsProvider = async (): Promise<Credentials> => {
         return new Promise<Credentials>((resolve, reject) => {
-            const credString = getCookie(CRED_COOKIE_NAME);
-            if (credString && this.useCookies() && atob) {
-                let credentials;
-                try {
-                    credentials = JSON.parse(atob(credString));
-                } catch (e) {
-                    // Error decoding or parsing the cookie -- abort
-                    reject();
-                }
-                // The expiration property of Credentials has a date type. Because the date was serialized as a string,
-                // we need to convert it back into a date, otherwise the AWS SDK signing middleware
-                // (@aws-sdk/middleware-signing) will throw an exception and no credentials will be returned.
-                credentials.expiration = new Date(credentials.expiration);
-                resolve(credentials);
-            } else {
+            let credentials;
+            try {
+                credentials = JSON.parse(
+                    localStorage.getItem(CRED_COOKIE_NAME)
+                );
+            } catch (e) {
+                // Error decoding or parsing the cookie -- abort
                 reject();
             }
+            // The expiration property of Credentials has a date type. Because the date was serialized as a string,
+            // we need to convert it back into a date, otherwise the AWS SDK signing middleware
+            // (@aws-sdk/middleware-signing) will throw an exception and no credentials will be returned.
+            credentials.expiration = new Date(credentials.expiration);
+            if (credentials.expiration < new Date()) {
+                // The credentials have expired.
+                reject();
+            }
+            resolve(credentials);
         });
     };
 
@@ -97,20 +98,15 @@ export class EnhancedAuthentication {
         });
 
         return credentialProvider().then((credentials) => {
-            if (btoa) {
-                storeCookie(
+            try {
+                localStorage.setItem(
                     CRED_COOKIE_NAME,
-                    btoa(JSON.stringify(credentials)),
-                    this.config.cookieAttributes,
-                    undefined,
-                    credentials.expiration
+                    JSON.stringify(credentials)
                 );
+            } catch (e) {
+                // Ignore
             }
             return credentials;
         });
     };
-
-    private useCookies() {
-        return navigator.cookieEnabled && this.config.allowCookies;
-    }
 }

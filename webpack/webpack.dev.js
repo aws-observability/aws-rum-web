@@ -11,6 +11,7 @@ module.exports = merge(common, {
         loader_standard: './src/loader/loader-standard.js',
         loader_page_event: './src/loader/loader-page-event.js',
         loader_dom_event: './src/loader/loader-dom-event.js',
+        loader_ingestion: './src/loader/loader-ingestion.js',
         loader_js_error_event: './src/loader/loader-js-error-event.js',
         loader_http_fetch_event: './src/loader/loader-http-fetch-event.js',
         loader_http_xhr_event: './src/loader/loader-http-xhr-event.js',

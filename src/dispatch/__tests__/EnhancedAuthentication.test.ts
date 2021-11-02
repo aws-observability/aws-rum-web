@@ -2,7 +2,6 @@ import { CRED_COOKIE_NAME } from '../../utils/constants';
 import { Credentials } from '@aws-sdk/types';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
 import { fromCognitoIdentityPool } from '../CognitoIdentityClient';
-import { removeCookie, storeCookie } from '../../utils/cookies-utils';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const mockGetId = jest.fn();
@@ -21,9 +20,7 @@ const GUEST_ROLE_ARN = 'arn:aws:iam::123:role/Unauth';
 
 describe('EnhancedAuthentication tests', () => {
     beforeEach(() => {
-        // @ts-ignore
         mockGetId.mockReset();
-        // @ts-ignore
         getCredentials.mockReset();
         mockGetId.mockResolvedValue({
             IdentityId: 'mock'
@@ -34,10 +31,8 @@ describe('EnhancedAuthentication tests', () => {
             sessionToken: 'z',
             expiration: new Date(Date.now() + 3600 * 1000)
         });
-        // @ts-ignore
-        fromCognitoIdentityPool.mockReset();
-        // @ts-ignore
-        fromCognitoIdentityPool.mockReturnValue(
+        (fromCognitoIdentityPool as any).mockReset();
+        (fromCognitoIdentityPool as any).mockReturnValue(
             () =>
                 new Promise<Credentials>((resolve) =>
                     resolve({
@@ -48,32 +43,30 @@ describe('EnhancedAuthentication tests', () => {
                     })
                 )
         );
-        removeCookie(CRED_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
+        localStorage.removeItem(CRED_COOKIE_NAME);
     });
 
     // tslint:disable-next-line:max-line-length
-    test('when auth cookie is in the store then authentication chain retrieves credentials from cookie', async () => {
+    test('when credential is in localStorage then authentication chain retrieves credential from localStorage', async () => {
         // Init
+        const expiration = new Date(Date.now() + 3600 * 1000);
         const config = {
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID
             }
         };
 
         const auth = new EnhancedAuthentication(config);
 
-        storeCookie(
+        localStorage.setItem(
             CRED_COOKIE_NAME,
-            btoa(
-                JSON.stringify({
-                    accessKeyId: 'a',
-                    secretAccessKey: 'b',
-                    sessionToken: 'c'
-                })
-            ),
-            config.cookieAttributes
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration
+            })
         );
 
         // Run
@@ -90,12 +83,11 @@ describe('EnhancedAuthentication tests', () => {
     });
 
     // tslint:disable-next-line:max-line-length
-    test('when auth cookie corrupt then authentication chain retrieves credentials from basic authflow', async () => {
+    test('when credential is corrupt then authentication chain retrieves credential from basic authflow', async () => {
         // Init
         const config = {
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID,
                 guestRoleArn: GUEST_ROLE_ARN
             }
@@ -103,15 +95,7 @@ describe('EnhancedAuthentication tests', () => {
 
         const auth = new EnhancedAuthentication(config);
 
-        storeCookie(
-            CRED_COOKIE_NAME,
-            JSON.stringify({
-                accessKeyId: 'a',
-                secretAccessKey: 'b',
-                sessionToken: 'c'
-            }),
-            config.cookieAttributes
-        );
+        localStorage.setItem(CRED_COOKIE_NAME, 'corrupt');
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -127,12 +111,11 @@ describe('EnhancedAuthentication tests', () => {
     });
 
     // tslint:disable-next-line:max-line-length
-    test('when auth cookie is not in the store authentication chain retrieves credentials from basic authflow', async () => {
+    test('when credential is not in the store authentication chain retrieves credential from basic authflow', async () => {
         // Init
         const auth = new EnhancedAuthentication({
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID
             }
         });
@@ -151,40 +134,12 @@ describe('EnhancedAuthentication tests', () => {
     });
 
     // tslint:disable-next-line:max-line-length
-    test('when cookies are not allowed then authentication chain retrieves credentials from basic authflow', async () => {
+    test('when credential expires then authentication chain retrieves credentials from basic authflow', async () => {
         // Init
+        const expiration = new Date(0);
         const config = {
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: false,
-                identityPoolId: IDENTITY_POOL_ID
-            }
-        };
-
-        const auth = new EnhancedAuthentication(config);
-
-        storeCookie(CRED_COOKIE_NAME, 'a:b:c', config.cookieAttributes);
-
-        // Run
-        const credentials = await auth.ChainAnonymousCredentialsProvider();
-
-        // Assert
-        expect(credentials).toEqual(
-            expect.objectContaining({
-                accessKeyId: 'x',
-                secretAccessKey: 'y',
-                sessionToken: 'z'
-            })
-        );
-    });
-
-    // tslint:disable-next-line:max-line-length
-    test('when cookie expires then authentication chain retrieves credentials from basic authflow', async () => {
-        // Init
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID,
                 guestRoleArn: GUEST_ROLE_ARN
             }
@@ -192,12 +147,14 @@ describe('EnhancedAuthentication tests', () => {
 
         const auth = new EnhancedAuthentication(config);
 
-        storeCookie(
+        localStorage.setItem(
             CRED_COOKIE_NAME,
-            'a:b:c',
-            config.cookieAttributes,
-            undefined,
-            new Date(0)
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration
+            })
         );
 
         // Run
@@ -214,11 +171,10 @@ describe('EnhancedAuthentication tests', () => {
     });
 
     // tslint:disable-next-line:max-line-length
-    test('when credential is retrieved from basic auth then next credential is retrieved from cookie store', async () => {
+    test('when credential is retrieved from basic auth then next credential is retrieved from localStorage', async () => {
         // Init
         const expiration = new Date(Date.now() + 3600 * 1000);
-        fromCognitoIdentityPool
-            // @ts-ignore
+        (fromCognitoIdentityPool as any)
             .mockReturnValueOnce(
                 () =>
                     new Promise<Credentials>((resolve) =>
@@ -245,7 +201,6 @@ describe('EnhancedAuthentication tests', () => {
         const auth = new EnhancedAuthentication({
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID,
                 guestRoleArn: GUEST_ROLE_ARN
             }
@@ -275,7 +230,6 @@ describe('EnhancedAuthentication tests', () => {
         const auth = new EnhancedAuthentication({
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID,
                 guestRoleArn: GUEST_ROLE_ARN
             }
@@ -294,7 +248,6 @@ describe('EnhancedAuthentication tests', () => {
         const auth = new EnhancedAuthentication({
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: true,
                 identityPoolId: IDENTITY_POOL_ID,
                 guestRoleArn: GUEST_ROLE_ARN
             }
