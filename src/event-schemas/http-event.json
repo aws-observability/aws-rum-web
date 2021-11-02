@@ -16,7 +16,7 @@
                 "url": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["method", "url"]
+            "required": ["method"]
         },
         "response": {
             "type": "object",

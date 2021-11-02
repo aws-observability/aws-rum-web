@@ -86,7 +86,6 @@
     "additionalProperties": false,
     "required": [
         "version",
-        "targetUrl",
         "initiatorType",
         "startTime",
         "redirectStart",

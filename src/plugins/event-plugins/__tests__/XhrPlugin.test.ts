@@ -14,7 +14,7 @@ import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
-describe('JsErrorPlugin tests', () => {
+describe('XhrPlugin tests', () => {
     beforeEach(() => {
         advanceTo(0);
         mock.setup();
@@ -52,8 +52,7 @@ describe('JsErrorPlugin tests', () => {
         // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET',
-                url: './response.json'
+                method: 'GET'
             },
             response: {
                 status: 200,
@@ -102,8 +101,7 @@ describe('JsErrorPlugin tests', () => {
             http: {
                 request: {
                     method: 'GET',
-                    traced: true,
-                    url: './response.json'
+                    traced: true
                 },
                 response: { status: 200 }
             }
@@ -210,8 +208,7 @@ describe('JsErrorPlugin tests', () => {
             http: {
                 request: {
                     method: 'GET',
-                    traced: true,
-                    url: './response.json'
+                    traced: true
                 }
             },
             cause: {
@@ -254,8 +251,7 @@ describe('JsErrorPlugin tests', () => {
         // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET',
-                url: './response.json'
+                method: 'GET'
             },
             error: {
                 type: 'XMLHttpRequest error',
@@ -341,8 +337,7 @@ describe('JsErrorPlugin tests', () => {
         // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET',
-                url: './response.json'
+                method: 'GET'
             },
             error: {
                 type: 'XMLHttpRequest timeout'
@@ -430,8 +425,7 @@ describe('JsErrorPlugin tests', () => {
         // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET',
-                url: './response.json'
+                method: 'GET'
             },
             error: {
                 type: 'XMLHttpRequest abort'

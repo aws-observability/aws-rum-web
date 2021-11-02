@@ -9,41 +9,47 @@ import {
 import { GetSession, PluginContext } from '../../Plugin';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
+import { HttpEvent } from '../../../events/http-event';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
-const mockFetch = jest.fn((input: RequestInfo, init?: RequestInit) =>
-    Promise.resolve({
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        body: '{}',
-        ok: true
-    })
+const mockFetch = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.resolve({
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            body: '{}',
+            ok: true
+        } as any)
 );
 
-const mockFetchWith500 = jest.fn((input: RequestInfo, init?: RequestInit) =>
-    Promise.resolve({
-        status: 500,
-        statusText: 'InternalError',
-        headers: {},
-        body: '',
-        ok: false
-    })
+global.fetch = mockFetch;
+
+const mockFetchWith500 = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.resolve({
+            status: 500,
+            statusText: 'InternalError',
+            headers: {},
+            body: '',
+            ok: false
+        } as any)
 );
 
-const mockFetchWithError = jest.fn((input: RequestInfo, init?: RequestInit) =>
-    Promise.reject('Timeout')
+const mockFetchWithError = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.reject('Timeout')
 );
 
 const mockFetchWithErrorObject = jest.fn(
-    (input: RequestInfo, init?: RequestInit) =>
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
         Promise.reject(new Error('Timeout'))
 );
 
 const mockFetchWithErrorObjectAndStack = jest.fn(
-    (input: RequestInfo, init?: RequestInit) =>
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
         Promise.reject({
             name: 'FetchError',
             message: 'timeout',
@@ -51,10 +57,7 @@ const mockFetchWithErrorObjectAndStack = jest.fn(
         })
 );
 
-// @ts-ignore
-global.fetch = mockFetch;
-
-describe('JsErrorPlugin tests', () => {
+describe('FetchPlugin tests', () => {
     beforeEach(() => {
         advanceTo(0);
         mockFetch.mockClear();
@@ -83,12 +86,10 @@ describe('JsErrorPlugin tests', () => {
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                url: 'https://aws.amazon.com'
+                method: 'GET'
             },
             response: {
                 status: 200,
@@ -114,17 +115,15 @@ describe('JsErrorPlugin tests', () => {
             // Expected
         });
         plugin.disable();
-        // @ts-ignore
+        // @s-ignore
         global.fetch = mockFetch;
 
         // Assert
         expect(mockFetchWithError).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                url: 'https://aws.amazon.com'
+                method: 'GET'
             },
             error: {
                 type: 'Timeout'
@@ -149,17 +148,14 @@ describe('JsErrorPlugin tests', () => {
             // Expected
         });
         plugin.disable();
-        // @ts-ignore
         global.fetch = mockFetch;
 
         // Assert
         expect(mockFetchWithErrorObject).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                url: 'https://aws.amazon.com'
+                method: 'GET'
             },
             error: {
                 type: 'Error',
@@ -186,9 +182,7 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             name: 'sample.rum.aws.amazon.com',
             id: '0000000000000000',
@@ -198,8 +192,7 @@ describe('JsErrorPlugin tests', () => {
             http: {
                 request: {
                     method: 'GET',
-                    traced: true,
-                    url: 'https://aws.amazon.com'
+                    traced: true
                 },
                 response: { status: 200 }
             }
@@ -223,14 +216,11 @@ describe('JsErrorPlugin tests', () => {
             // Expected
         });
         plugin.disable();
-        // @ts-ignore
         global.fetch = mockFetch;
 
         // Assert
         expect(mockFetchWithError).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             name: 'sample.rum.aws.amazon.com',
             id: '0000000000000000',
@@ -240,8 +230,7 @@ describe('JsErrorPlugin tests', () => {
             http: {
                 request: {
                     method: 'GET',
-                    traced: true,
-                    url: 'https://aws.amazon.com'
+                    traced: true
                 }
             },
             error: true,
@@ -294,7 +283,6 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 
@@ -390,17 +378,14 @@ describe('JsErrorPlugin tests', () => {
             console.log(error);
         });
         plugin.disable();
-        // @ts-ignore
         global.fetch = mockFetch;
 
         // Assert
         expect(mockFetchWithErrorObjectAndStack).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                url: 'https://aws.amazon.com'
+                method: 'GET'
             },
             error: {
                 type: 'FetchError',
@@ -428,25 +413,23 @@ describe('JsErrorPlugin tests', () => {
             console.log(error);
         });
         plugin.disable();
-        // @ts-ignore
         global.fetch = mockFetch;
 
         // Assert
         expect(mockFetchWithErrorObjectAndStack).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                url: 'https://aws.amazon.com'
+                method: 'GET'
             },
             error: {
                 type: 'FetchError',
                 message: 'timeout'
             }
         });
-        // @ts-ignore
-        expect(record.mock.calls[0][1].error.stack).toEqual(undefined);
+        expect((record.mock.calls[0][1] as HttpEvent).error.stack).toEqual(
+            undefined
+        );
     });
 
     test('when recordAllRequests is true then the plugin records a request with status OK', async () => {
@@ -489,7 +472,6 @@ describe('JsErrorPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin records a request with status 500', async () => {
         // Init
-        // @ts-ignore
         global.fetch = mockFetchWith500;
         const config: HttpPluginConfig = {
             urlsToInclude: [/aws\.amazon\.com/],
@@ -502,7 +484,6 @@ describe('JsErrorPlugin tests', () => {
         // Run
         await fetch('https://aws.amazon.com');
         plugin.disable();
-        // @ts-ignore
         global.fetch = mockFetch;
 
         // Assert

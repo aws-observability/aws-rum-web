@@ -57,8 +57,8 @@ test('when fetch is called then an http event is recorded', async (t: TestContro
     await t
         .expect(eventType)
         .eql(HTTP_EVENT_TYPE)
-        .expect(eventDetails.request.url)
-        .eql('https://aws.amazon.com')
+        .expect(eventDetails.request.method)
+        .eql('GET')
         .expect(eventDetails.response.status)
         .eql(200);
 });

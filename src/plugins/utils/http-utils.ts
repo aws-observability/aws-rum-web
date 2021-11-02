@@ -66,12 +66,10 @@ export const epochTime = () => {
 };
 
 export const createXRayTraceEventHttp = (
-    input: RequestInfo,
     init: RequestInit,
     traced: boolean
 ): Http => {
     const http: Http = { request: {} };
-    http.request.url = input.toString();
     http.request.method = init.method ? init.method : 'GET';
     http.request.traced = traced;
     return http;

@@ -144,7 +144,6 @@ export class ResourcePlugin implements Plugin {
         ) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
-                targetUrl: entryData.name,
                 initiatorType: entryData.initiatorType,
                 startTime: entryData.startTime,
                 redirectStart: entryData.redirectStart,

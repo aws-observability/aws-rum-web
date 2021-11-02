@@ -183,7 +183,6 @@ export class NavigationPlugin implements Plugin {
     performanceNavigationEventHandlerTimingLevel2 = (entryData: any): void => {
         const eventDataNavigationTimingLevel2: NavigationEvent = {
             version: '1.0.0',
-            targetUrl: entryData.name,
             initiatorType: entryData.initiatorType,
             navigationType: entryData.type,
             startTime: entryData.startTime,

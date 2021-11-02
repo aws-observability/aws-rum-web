@@ -16,7 +16,6 @@ import {
     PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../../utils/constant';
 
-const TARGET_URL = 'targetUrl';
 const INITIATOR_TYPE = 'initiatorType';
 const NAVIGATION_TYPE = 'navigationType';
 const START_TIME = 'startTime';
@@ -143,8 +142,6 @@ test('PerformanceEvent records navigation event', async (t: TestController) => {
     if (!isBrowserSafari) {
         await t
             .expect(REQUEST_BODY.textContent)
-            .contains(TARGET_URL)
-            .expect(REQUEST_BODY.textContent)
             .contains(REDIRECT_COUNT)
             .expect(REQUEST_BODY.textContent)
             .contains(NAVIGATION_TYPE)
@@ -229,9 +226,6 @@ test('PerformanceEvent records resource event', async (t: TestController) => {
         .contains(ID)
         .expect(REQUEST_BODY.textContent)
         .contains(TIMESTAMP)
-
-        .expect(REQUEST_BODY.textContent)
-        .contains(TARGET_URL)
         .expect(REQUEST_BODY.textContent)
         .contains(INITIATOR_TYPE)
         .expect(REQUEST_BODY.textContent)

@@ -74,7 +74,8 @@ export const resourceEvent = {
     serverTiming: [],
     startTime: 357.59500000131084,
     transferSize: 0,
-    workerStart: 0
+    workerStart: 0,
+    fileType: 'other'
 };
 
 export const resourceEvent2 = {
@@ -99,7 +100,8 @@ export const resourceEvent2 = {
     serverTiming: [],
     startTime: 386.37999998172745,
     transferSize: 368,
-    workerStart: 0
+    workerStart: 0,
+    fileType: 'image'
 };
 
 export const dataPlaneResourceEvent = {
@@ -125,7 +127,8 @@ export const dataPlaneResourceEvent = {
     serverTiming: [],
     startTime: 357.59500000131084,
     transferSize: 0,
-    workerStart: 0
+    workerStart: 0,
+    fileType: 'document'
 };
 
 export const scriptResourceEvent = {
@@ -150,7 +153,8 @@ export const scriptResourceEvent = {
     serverTiming: [],
     startTime: 386.37999998172745,
     transferSize: 368,
-    workerStart: 0
+    workerStart: 0,
+    fileType: 'script'
 };
 
 export const imageResourceEvent = {
@@ -175,7 +179,8 @@ export const imageResourceEvent = {
     serverTiming: [],
     startTime: 386.37999998172745,
     transferSize: 368,
-    workerStart: 0
+    workerStart: 0,
+    fileType: 'image'
 };
 
 export const cssResourceEvent = {
@@ -200,7 +205,8 @@ export const cssResourceEvent = {
     serverTiming: [],
     startTime: 386.37999998172745,
     transferSize: 368,
-    workerStart: 0
+    workerStart: 0,
+    fileType: 'stylesheet'
 };
 
 export interface ObserveInterface {
