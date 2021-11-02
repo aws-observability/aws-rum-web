@@ -3,7 +3,6 @@ import { showRequestClientBuilder } from '../test-utils/mock-http-handler';
 loader(
     'cwr',
     'abc123',
-    'appname',
     '1.0',
     'us-west-2',
     './rum_javascript_telemetry.js',

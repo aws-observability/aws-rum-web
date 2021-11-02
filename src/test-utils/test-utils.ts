@@ -108,7 +108,6 @@ export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     eventCount: 0
 }));
 export const context: PluginContext = {
-    applicationName: 'a',
     applicationId: 'b',
     applicationVersion: '1.0',
     config: DEFAULT_CONFIG,

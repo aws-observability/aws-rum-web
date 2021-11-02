@@ -4,7 +4,6 @@ import { JsErrorPlugin } from '../plugins/event-plugins/JsErrorPlugin';
 loader(
     'cwr',
     '[applicationId]',
-    '[applicationName]',
     '1.0',
     'us-west-2',
     './rum_javascript_telemetry.js',
