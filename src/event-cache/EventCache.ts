@@ -88,7 +88,7 @@ export class EventCache {
             const session: Session = this.sessionManager.getSession();
             this.sessionManager.incrementSessionEventCount();
 
-            if (session.record && this.eventLimit(session)) {
+            if (this.canRecord(session)) {
                 this.addRecordToCache(type, eventData);
             }
         }
@@ -153,15 +153,16 @@ export class EventCache {
 
         this.sessionManager.incrementSessionEventCount();
 
-        if (session.record && this.eventLimit(session)) {
+        if (this.canRecord(session)) {
             this.addRecordToCache(type, eventData);
         }
     };
 
-    private eventLimit = (session): boolean => {
+    private canRecord = (session): boolean => {
         return (
-            session.eventCount <= this.config.sessionEventLimit ||
-            this.config.sessionEventLimit <= 0
+            session.record &&
+            (session.eventCount <= this.config.sessionEventLimit ||
+                this.config.sessionEventLimit <= 0)
         );
     };
 
