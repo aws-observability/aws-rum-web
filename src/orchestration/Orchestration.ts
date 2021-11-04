@@ -3,7 +3,10 @@ import { Authentication } from '../dispatch/Authentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 import { PluginManager } from '../plugins/PluginManager';
 import { DomEventPlugin } from '../plugins/event-plugins/DomEventPlugin';
-import { JsErrorPlugin } from '../plugins/event-plugins/JsErrorPlugin';
+import {
+    JsErrorPlugin,
+    JS_ERROR_EVENT_PLUGIN_ID
+} from '../plugins/event-plugins/JsErrorPlugin';
 import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
@@ -22,16 +25,11 @@ const DATA_PLANE_DEFAULT_ENDPOINT =
 
 const DEFAULT_DISPATCH_INTERVAL = 5000;
 
-// Builtin plugin IDs
-const JS_ERROR_EVENT_PLUGIN_ID = 'com.amazonaws.rum.js-error';
-
 export enum TELEMETRY_TYPES {
     ERRORS = 'errors',
     PERFORMANCE = 'performance',
-    JOURNEY = 'journey',
     INTERACTION = 'interaction',
-    HTTP = 'http',
-    SINGLE_PAGE_APP_VIEWS = 'single-page-app-views'
+    HTTP = 'http'
 }
 
 type PluginInitializer = () => Plugin[];
@@ -58,6 +56,7 @@ export type PartialConfig = {
     batchLimit?: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes?: PartialCookieAttributes;
+    disableAutoPageView?: boolean;
     dispatchInterval?: number;
     enableRumClient?: boolean;
     endpoint?: string;
@@ -101,6 +100,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         allowCookies: false,
         batchLimit: 100,
         cookieAttributes,
+        disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
         endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
@@ -115,7 +115,6 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         telemetries: [
             TELEMETRY_TYPES.ERRORS,
             TELEMETRY_TYPES.PERFORMANCE,
-            TELEMETRY_TYPES.JOURNEY,
             TELEMETRY_TYPES.INTERACTION
         ],
         userIdRetentionDays: 0
@@ -134,6 +133,7 @@ export type Config = {
     batchLimit: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes: CookieAttributes;
+    disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
     endpoint: string;
@@ -365,6 +365,11 @@ export class Orchestration {
         // Initialize PluginManager
         const pluginManager: PluginManager = new PluginManager(pluginContext);
 
+        // Load page view plugin
+        if (!this.config.disableAutoPageView) {
+            pluginManager.addPlugin(new PageViewPlugin());
+        }
+
         // Load plugins
         PLUGINS.forEach((p) => {
             pluginManager.addPlugin(p);
@@ -415,17 +420,11 @@ export class Orchestration {
                     new WebVitalsPlugin()
                 ];
             },
-            [TELEMETRY_TYPES.JOURNEY]: (): Plugin[] => {
-                return [];
-            },
             [TELEMETRY_TYPES.INTERACTION]: (): Plugin[] => {
                 return [new DomEventPlugin()];
             },
             [TELEMETRY_TYPES.HTTP]: (): Plugin[] => {
                 return [new XhrPlugin(), new FetchPlugin()];
-            },
-            [TELEMETRY_TYPES.SINGLE_PAGE_APP_VIEWS]: (): Plugin[] => {
-                return [new PageViewPlugin()];
             }
         };
     }
