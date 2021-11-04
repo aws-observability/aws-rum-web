@@ -107,6 +107,7 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.js-error',
             'com.amazonaws.rum.js-error',
             'com.amazonaws.rum.navigation',
+            'com.amazonaws.rum.page-view',
             'com.amazonaws.rum.paint',
             'com.amazonaws.rum.resource',
             'com.amazonaws.rum.web-vitals'
@@ -115,7 +116,6 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(PluginManager).toHaveBeenCalledTimes(1);
-        expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
             actual.push(call[0].getPluginId());
@@ -145,7 +145,8 @@ describe('Orchestration tests', () => {
                 sameSite: 'Strict',
                 secure: true
             },
-            telemetries: ['errors', 'performance', 'journey', 'interaction'],
+            telemetries: ['errors', 'performance', 'interaction'],
+            disableAutoPageView: false,
             dispatchInterval: 5000,
             endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
             eventCacheSize: 200,
@@ -190,7 +191,8 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.paint',
             'com.amazonaws.rum.resource',
             'com.amazonaws.rum.web-vitals',
-            'com.amazonaws.rum.dom-event'
+            'com.amazonaws.rum.dom-event',
+            'com.amazonaws.rum.page-view'
         ];
         const actual = [];
 
@@ -209,7 +211,11 @@ describe('Orchestration tests', () => {
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['http']
         });
-        const expected = ['com.amazonaws.rum.xhr', 'com.amazonaws.rum.fetch'];
+        const expected = [
+            'com.amazonaws.rum.xhr',
+            'com.amazonaws.rum.fetch',
+            'com.amazonaws.rum.page-view'
+        ];
         const actual = [];
 
         // Assert
@@ -231,7 +237,8 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.navigation',
             'com.amazonaws.rum.paint',
             'com.amazonaws.rum.resource',
-            'com.amazonaws.rum.web-vitals'
+            'com.amazonaws.rum.web-vitals',
+            'com.amazonaws.rum.page-view'
         ];
         const actual = [];
 
@@ -250,7 +257,10 @@ describe('Orchestration tests', () => {
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['errors']
         });
-        const expected = ['com.amazonaws.rum.js-error'];
+        const expected = [
+            'com.amazonaws.rum.js-error',
+            'com.amazonaws.rum.page-view'
+        ];
         const actual = [];
 
         // Assert
@@ -268,7 +278,10 @@ describe('Orchestration tests', () => {
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
             telemetries: ['interaction']
         });
-        const expected = ['com.amazonaws.rum.dom-event'];
+        const expected = [
+            'com.amazonaws.rum.dom-event',
+            'com.amazonaws.rum.page-view'
+        ];
         const actual = [];
 
         // Assert
@@ -281,12 +294,31 @@ describe('Orchestration tests', () => {
         expect(actual.sort()).toEqual(expected.sort());
     });
 
-    test('when single page application views data collection is set then the page event plugin is instantiated', async () => {
+    test('the page view plugin is instantiated by default', async () => {
         // Init
         const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
-            telemetries: [TELEMETRY_TYPES.SINGLE_PAGE_APP_VIEWS]
+            telemetries: []
         });
         const expected = ['com.amazonaws.rum.page-view'];
+        const actual = [];
+
+        // Assert
+        expect(addPlugin).toHaveBeenCalledTimes(expected.length);
+
+        addPlugin.mock.calls.forEach((call) => {
+            actual.push(call[0].getPluginId());
+        });
+
+        expect(actual.sort()).toEqual(expected.sort());
+    });
+
+    test('when disableAutoPageViews is true then the page view plugin is not installed', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+            disableAutoPageView: true,
+            telemetries: []
+        });
+        const expected = [];
         const actual = [];
 
         // Assert
