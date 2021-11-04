@@ -8,7 +8,6 @@ export type GetSession = () => Session;
 
 export type PluginContext = {
     applicationId: string;
-    applicationName: string;
     applicationVersion: string;
     config: Config;
     record: RecordEvent;

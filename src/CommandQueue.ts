@@ -19,7 +19,7 @@ export type AwsRumClientInit = {
     q: [];
     n: string;
     i: string;
-    a: string;
+    a?: string; // deprecated
     r: string;
     v: string;
     c?: PartialConfig;
@@ -116,7 +116,6 @@ export class CommandQueue {
     private initCwr(awsRum: AwsRumClientInit) {
         this.orchestration = new Orchestration(
             awsRum.i,
-            awsRum.a,
             awsRum.v,
             awsRum.r,
             awsRum.c

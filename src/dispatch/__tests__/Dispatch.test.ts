@@ -316,4 +316,80 @@ describe('Dispatch tests', () => {
         // Assert
         expect(sendBeacon).not.toHaveBeenCalled();
     });
+
+    test('when dispatch does not have AWS credentials then dispatchFetch throws an error', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 0 }
+            }
+        );
+
+        // Run and Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('CWR: Cannot dispatch; no AWS credentials.')
+        );
+    });
+
+    test('when dispatch does not have AWS credentials then dispatchBeacon throws an error', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 0 }
+            }
+        );
+
+        // Run and Assert
+        await expect(dispatch.dispatchBeacon()).rejects.toEqual(
+            new Error('CWR: Cannot dispatch; no AWS credentials.')
+        );
+    });
+
+    test('when dispatch does not have AWS credentials then dispatchFetchFailSilent fails silently', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 1 }
+            }
+        );
+
+        // Run and Assert
+        await expect(dispatch.dispatchFetchFailSilent()).resolves.toEqual(
+            undefined
+        );
+    });
+
+    test('when dispatch does not have AWS credentials then dispatchBeaconFailSilent fails silently', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 1 }
+            }
+        );
+
+        // Run and Assert
+        await expect(dispatch.dispatchBeaconFailSilent()).resolves.toEqual(
+            undefined
+        );
+    });
 });

@@ -18,6 +18,14 @@ const initArgs: AwsRumClientInit = {
     q: [],
     n: 'cwr',
     i: 'application_id',
+    v: '1.0',
+    r: 'us-west-2'
+};
+
+const initArgsWithAppName: AwsRumClientInit = {
+    q: [],
+    n: 'cwr',
+    i: 'application_id',
     a: 'application_name',
     v: '1.0',
     r: 'us-west-2'
@@ -84,7 +92,7 @@ describe('CommandQueue tests', () => {
 
         expect(getConfigStub).toBeCalledTimes(1);
         expect(Orchestration).toHaveBeenCalledTimes(1);
-        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+        expect((Orchestration as any).mock.calls[0][3]).toEqual(
             mockOtaConfigObject
         );
 
@@ -113,7 +121,7 @@ describe('CommandQueue tests', () => {
         });
         expect(Orchestration).toHaveBeenCalledTimes(1);
 
-        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+        expect((Orchestration as any).mock.calls[0][3]).toEqual(
             mockOtaConfigObject
         );
     });
@@ -140,7 +148,7 @@ describe('CommandQueue tests', () => {
                 'Content-Type': 'application/json'
             }
         });
-        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+        expect((Orchestration as any).mock.calls[0][3]).toEqual(
             mockPartialOtaConfigObject
         );
     });
@@ -162,7 +170,7 @@ describe('CommandQueue tests', () => {
             u: dummyOtaConfigURL
         });
 
-        expect((Orchestration as any).mock.calls[0][4]).toEqual(
+        expect((Orchestration as any).mock.calls[0][3]).toEqual(
             expect.objectContaining({
                 dispatchInterval: 10 * 1000,
                 sessionSampleRate: 0.8,
@@ -304,5 +312,22 @@ describe('CommandQueue tests', () => {
                     'CWR: UnsupportedOperationException: badCommand'
                 )
             );
+    });
+
+    test('when application name is in the initialization object then it is ignored', async () => {
+        const cq: CommandQueue = getCommandQueue();
+        await cq.init({ ...initArgsWithAppName });
+        const result = await cq.push({
+            c: 'disable',
+            p: undefined
+        });
+        expect(Orchestration).toHaveBeenCalled();
+        expect(disable).toHaveBeenCalled();
+        expect((Orchestration as any).mock.calls[0]).toEqual([
+            'application_id',
+            '1.0',
+            'us-west-2',
+            undefined
+        ]);
     });
 });
