@@ -111,5 +111,8 @@
             "ts",
             "js"
         ]
-    }
+    },
+    "browserslist": [
+        "defaults"
+    ]
 }
