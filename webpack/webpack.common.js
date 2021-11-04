@@ -1,22 +1,7 @@
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
 const babelLoaderOptions = {
-    presets: [
-        [
-            '@babel/preset-env',
-            {
-                targets: {
-                    browsers: [
-                        'last 3 chrome versions',
-                        'last 3 firefox versions',
-                        'ie 11',
-                        'last 3 edge versions',
-                        'last 3 safari versions'
-                    ]
-                }
-            }
-        ]
-    ],
+    presets: [['@babel/preset-env', {}]],
     plugins: [
         [
             '@babel/plugin-transform-runtime',
