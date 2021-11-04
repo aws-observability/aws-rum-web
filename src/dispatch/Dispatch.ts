@@ -10,6 +10,17 @@ type SendFunction = (
     logEventsRequest: LogEventsRequest
 ) => Promise<{ response: HttpResponse }>;
 
+interface DataPlaneClientInterface {
+    sendFetch: (
+        logEventsRequest: LogEventsRequest
+    ) => Promise<{ response: HttpResponse }>;
+    sendBeacon: (
+        logEventsRequest: LogEventsRequest
+    ) => Promise<{ response: HttpResponse }>;
+}
+
+const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
+
 export type ClientBuilder = (
     endpoint: string,
     region: string,
@@ -21,7 +32,7 @@ export class Dispatch {
     private region: string;
     private endpoint: string;
     private eventCache: EventCache;
-    private rum: DataPlaneClient | undefined;
+    private rum: DataPlaneClientInterface;
     private enabled: boolean;
     private dispatchTimerId: number | undefined;
     private buildClient: ClientBuilder;
@@ -42,6 +53,14 @@ export class Dispatch {
         this.buildClient = config.clientBuilder || this.defaultClientBuilder;
         this.config = config;
         this.startDispatchTimer();
+        this.rum = {
+            sendFetch: (): Promise<{ response: HttpResponse }> => {
+                return Promise.reject(new Error(NO_CRED_MSG));
+            },
+            sendBeacon: (): Promise<{ response: HttpResponse }> => {
+                return Promise.reject(new Error(NO_CRED_MSG));
+            }
+        };
     }
 
     /**
@@ -84,24 +103,14 @@ export class Dispatch {
      * Send meta data and events to the AWS RUM data plane service via fetch.
      */
     public dispatchFetch = async (): Promise<{ response: HttpResponse }> => {
-        if (this.rum) {
-            return this.dispatch(this.rum.sendFetch);
-        }
-        return Promise.reject(
-            new Error('CWR: Cannot dispatch; no AWS credentials.')
-        );
+        return this.dispatch(this.rum.sendFetch);
     };
 
     /**
      * Send meta data and events to the AWS RUM data plane service via beacon.
      */
     public dispatchBeacon = async (): Promise<{ response: HttpResponse }> => {
-        if (this.rum) {
-            return this.dispatch(this.rum.sendBeacon);
-        }
-        return Promise.reject(
-            new Error('CWR: Cannot dispatch; no AWS credentials.')
-        );
+        return this.dispatch(this.rum.sendBeacon);
     };
 
     /**
