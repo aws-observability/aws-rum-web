@@ -2,7 +2,7 @@
     "compilerOptions": {
         "baseUrl": "src",
         "lib": ["dom", "es2018"],
-        "module": "commonjs",
+        "module": "es2020",
         "moduleResolution": "node",
         "sourceMap": true,
         "strict": false,
