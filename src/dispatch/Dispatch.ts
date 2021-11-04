@@ -10,6 +10,17 @@ type SendFunction = (
     logEventsRequest: LogEventsRequest
 ) => Promise<{ response: HttpResponse }>;
 
+interface DataPlaneClientInterface {
+    sendFetch: (
+        logEventsRequest: LogEventsRequest
+    ) => Promise<{ response: HttpResponse }>;
+    sendBeacon: (
+        logEventsRequest: LogEventsRequest
+    ) => Promise<{ response: HttpResponse }>;
+}
+
+const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
+
 export type ClientBuilder = (
     endpoint: string,
     region: string,
@@ -21,7 +32,7 @@ export class Dispatch {
     private region: string;
     private endpoint: string;
     private eventCache: EventCache;
-    private rum: DataPlaneClient | undefined;
+    private rum: DataPlaneClientInterface;
     private enabled: boolean;
     private dispatchTimerId: number | undefined;
     private buildClient: ClientBuilder;
@@ -42,6 +53,14 @@ export class Dispatch {
         this.buildClient = config.clientBuilder || this.defaultClientBuilder;
         this.config = config;
         this.startDispatchTimer();
+        this.rum = {
+            sendFetch: (): Promise<{ response: HttpResponse }> => {
+                return Promise.reject(new Error(NO_CRED_MSG));
+            },
+            sendBeacon: (): Promise<{ response: HttpResponse }> => {
+                return Promise.reject(new Error(NO_CRED_MSG));
+            }
+        };
     }
 
     /**
@@ -95,16 +114,43 @@ export class Dispatch {
     };
 
     /**
+     * Send meta data and events to the AWS RUM data plane service via fetch.
+     *
+     * Returns undefined on failure.
+     */
+    public dispatchFetchFailSilent = async (): Promise<{
+        response: HttpResponse;
+    } | void> => {
+        // tslint:disable-next-line:no-empty
+        return this.dispatchFetch().catch(() => {});
+    };
+
+    /**
+     * Send meta data and events to the AWS RUM data plane service via beacon.
+     *
+     * Returns undefined on failure.
+     */
+    public dispatchBeaconFailSilent = async (): Promise<{
+        response: HttpResponse;
+    } | void> => {
+        // tslint:disable-next-line:no-empty
+        return this.dispatchBeacon().catch(() => {});
+    };
+
+    /**
      * Automatically dispatch cached events.
      */
     public startDispatchTimer() {
-        document.addEventListener('visibilitychange', this.dispatchBeacon);
-        document.addEventListener('pagehide', this.dispatchBeacon);
+        document.addEventListener(
+            'visibilitychange',
+            this.dispatchBeaconFailSilent
+        );
+        document.addEventListener('pagehide', this.dispatchBeaconFailSilent);
         if (this.config.dispatchInterval <= 0 || this.dispatchTimerId) {
             return;
         }
         this.dispatchTimerId = window.setInterval(
-            this.dispatchFetch,
+            this.dispatchFetchFailSilent,
             this.config.dispatchInterval
         );
     }
@@ -113,8 +159,11 @@ export class Dispatch {
      * Stop automatically dispatching cached events.
      */
     public stopDispatchTimer() {
-        document.removeEventListener('visibilitychange', this.dispatchBeacon);
-        document.removeEventListener('pagehide', this.dispatchBeacon);
+        document.removeEventListener(
+            'visibilitychange',
+            this.dispatchBeaconFailSilent
+        );
+        document.removeEventListener('pagehide', this.dispatchBeaconFailSilent);
         if (this.dispatchTimerId) {
             window.clearInterval(this.dispatchTimerId);
             this.dispatchTimerId = undefined;
@@ -126,12 +175,6 @@ export class Dispatch {
     ): Promise<{ response: HttpResponse }> {
         if (!this.enabled) {
             return;
-        }
-
-        if (!this.rum) {
-            throw new Error(
-                'Cannot dispatch events: no valid AWS credentials.'
-            );
         }
 
         if (!this.eventCache.hasEvents()) {
