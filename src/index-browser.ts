@@ -4,4 +4,9 @@ declare global {
         AwsRumClient: AwsRumClientInit;
     }
 }
-new CommandQueue().init(window.AwsRumClient);
+if (typeof fetch === 'function' && typeof navigator.sendBeacon === 'function') {
+    new CommandQueue().init(window.AwsRumClient);
+} else {
+    // tslint:disable-next-line:no-empty
+    window[window.AwsRumClient.n] = () => {};
+}
