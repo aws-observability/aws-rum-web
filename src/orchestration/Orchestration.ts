@@ -175,7 +175,6 @@ export class Orchestration {
 
     constructor(
         applicationId: string,
-        applicationName: string,
         applicationVersion: string,
         region: string,
         partialConfig: PartialConfig = {}
@@ -202,14 +201,12 @@ export class Orchestration {
 
         this.eventCache = this.initEventCache(
             applicationId,
-            applicationName,
             applicationVersion
         );
 
         this.dispatchManager = this.initDispatch(region, applicationId);
         this.pluginManager = this.initPluginManager(
             applicationId,
-            applicationName,
             applicationVersion
         );
 
@@ -306,13 +303,11 @@ export class Orchestration {
 
     private initEventCache(
         applicationId: string,
-        applicationName: string,
         applicationVersion: string
     ): EventCache {
         return new EventCache(
             {
                 id: applicationId,
-                name: applicationName,
                 version: applicationVersion
             },
             this.config
@@ -350,7 +345,6 @@ export class Orchestration {
 
     private initPluginManager(
         applicationId: string,
-        applicationName: string,
         applicationVersion: string
     ) {
         const BUILTIN_PLUGINS: Plugin[] = this.constructBuiltinPlugins();
@@ -361,7 +355,6 @@ export class Orchestration {
 
         const pluginContext: PluginContext = {
             applicationId,
-            applicationName,
             applicationVersion,
             config: this.config,
             record: this.eventCache.recordEvent,

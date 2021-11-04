@@ -31,7 +31,7 @@ describe('FetchPlugin integ tests', () => {
             recordAllRequests: true
         };
 
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-west-2', {
+        const orchestration = new Orchestration('a', 'c', 'us-west-2', {
             dispatchInterval: 0,
             eventPluginsToLoad: [new FetchPlugin(config)],
             telemetries: []

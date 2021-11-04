@@ -52,7 +52,7 @@ describe('Orchestration tests', () => {
 
     test('when region is not provided then endpoint region defaults to us-west-2', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', undefined, {});
+        const orchestration = new Orchestration('a', 'c', undefined, {});
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
@@ -63,7 +63,7 @@ describe('Orchestration tests', () => {
 
     test('when region is provided then the endpoint uses that region', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {});
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
@@ -74,7 +74,7 @@ describe('Orchestration tests', () => {
 
     test('when enable is true in config then orchestration enables dispatch, pluginManager and event cache', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', undefined, {});
+        const orchestration = new Orchestration('a', 'c', undefined, {});
 
         // Assert
         expect(enableDispatch).toHaveBeenCalledTimes(1);
@@ -84,7 +84,7 @@ describe('Orchestration tests', () => {
 
     test('when enable is false in config then orchestration disables dispatch, pluginManager and event cache', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', undefined, {
+        const orchestration = new Orchestration('a', 'c', undefined, {
             enableRumClient: false
         });
 
@@ -97,7 +97,7 @@ describe('Orchestration tests', () => {
     test('when eventPluginsToLoad is provided in config then it is added with default plugins', async () => {
         // Init
         const collections = ['errors', 'performance'];
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             eventPluginsToLoad: [new DomEventPlugin(), new JsErrorPlugin()],
             telemetries: collections
         });
@@ -128,7 +128,6 @@ describe('Orchestration tests', () => {
         // Init
         const orchestration = new Orchestration(
             'a',
-            undefined,
             undefined,
             undefined,
             undefined
@@ -164,13 +163,9 @@ describe('Orchestration tests', () => {
 
     test('when cookie attributes are provided then they are merged with defaults', async () => {
         // Init
-        const orchestration = new Orchestration(
-            'a',
-            undefined,
-            undefined,
-            undefined,
-            { cookieAttributes: { path: '/console' } }
-        );
+        const orchestration = new Orchestration('a', undefined, undefined, {
+            cookieAttributes: { path: '/console' }
+        });
 
         // Assert
         expect(EventCache).toHaveBeenCalledTimes(1);
@@ -183,7 +178,7 @@ describe('Orchestration tests', () => {
 
     test('data collection defaults to errors, performance, journey and interaction', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {});
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
         const expected = [
             'com.amazonaws.rum.js-error',
             'com.amazonaws.rum.navigation',
@@ -206,7 +201,7 @@ describe('Orchestration tests', () => {
 
     test('when http data collection is set then the http plugins are instantiated', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: ['http']
         });
         const expected = ['com.amazonaws.rum.xhr', 'com.amazonaws.rum.fetch'];
@@ -224,7 +219,7 @@ describe('Orchestration tests', () => {
 
     test('when performance data collection is set then the performance plugins are instantiated', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: ['performance']
         });
         const expected = [
@@ -247,7 +242,7 @@ describe('Orchestration tests', () => {
 
     test('when error data collection is set then the error plugins are instantiated', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: ['errors']
         });
         const expected = ['com.amazonaws.rum.js-error'];
@@ -265,7 +260,7 @@ describe('Orchestration tests', () => {
 
     test('when interaction data collection is set then the interaction plugins are instantiated', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: ['interaction']
         });
         const expected = ['com.amazonaws.rum.dom-event'];
@@ -283,7 +278,7 @@ describe('Orchestration tests', () => {
 
     test('when single page application views data collection is set then the page event plugin is instantiated', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: [TELEMETRY_TYPES.SINGLE_PAGE_APP_VIEWS]
         });
         const expected = ['com.amazonaws.rum.page-view'];
