@@ -309,7 +309,7 @@ describe('Orchestration tests', () => {
 
     test('when disableAutoPageViews is true then the page view plugin is not installed', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'b', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             disableAutoPageView: true,
             telemetries: []
         });
