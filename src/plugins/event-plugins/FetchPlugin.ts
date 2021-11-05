@@ -84,7 +84,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         init: RequestInit
     ): XRayTraceEvent => {
         const startTime = epochTime();
-        const http: Http = createXRayTraceEventHttp(input, init, true);
+        const http: Http = createXRayTraceEventHttp(init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
             startTime,
@@ -158,8 +158,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         return {
             version: '1.0.0',
             request: {
-                method: init.method ? init.method : 'GET',
-                url: input.toString()
+                method: init.method ? init.method : 'GET'
             }
         };
     };

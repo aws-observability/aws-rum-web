@@ -48,9 +48,8 @@ describe('ResourcePlugin tests', () => {
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                targetUrl: resourceEvent.name,
-                duration: resourceEvent.duration,
-                startTime: resourceEvent.startTime
+                fileType: resourceEvent.fileType,
+                duration: resourceEvent.duration
             })
         );
     });
@@ -138,7 +137,7 @@ describe('ResourcePlugin tests', () => {
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                targetUrl: scriptResourceEvent.name
+                fileType: scriptResourceEvent.fileType
             })
         );
     });
@@ -164,22 +163,22 @@ describe('ResourcePlugin tests', () => {
         // Assert
         expect(record.mock.calls[1][1]).toEqual(
             expect.objectContaining({
-                targetUrl: cssResourceEvent.name
+                fileType: cssResourceEvent.fileType
             })
         );
         expect(record.mock.calls[2][1]).toEqual(
             expect.objectContaining({
-                targetUrl: imageResourceEvent.name
+                fileType: imageResourceEvent.fileType
             })
         );
         expect(record.mock.calls[4][1]).toEqual(
             expect.objectContaining({
-                targetUrl: imageResourceEvent.name
+                fileType: imageResourceEvent.fileType
             })
         );
         expect(record.mock.calls[5][1]).toEqual(
             expect.objectContaining({
-                targetUrl: cssResourceEvent.name
+                fileType: cssResourceEvent.fileType
             })
         );
     });

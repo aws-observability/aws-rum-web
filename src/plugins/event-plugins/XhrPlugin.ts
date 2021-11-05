@@ -232,7 +232,7 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         if (this.config.recordAllRequests || !this.statusOk(xhr.status)) {
             this.context.record(HTTP_EVENT_TYPE, {
                 version: '1.0.0',
-                request: { method: xhrDetails.method, url: xhrDetails.url },
+                request: { method: xhrDetails.method },
                 response: { status: xhr.status, statusText: xhr.statusText }
             });
         }
@@ -244,7 +244,7 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
     ) {
         const httpEvent: HttpEvent = {
             version: '1.0.0',
-            request: { method: xhrDetails.method, url: xhrDetails.url }
+            request: { method: xhrDetails.method }
         };
         httpEvent.error = errorEventToJsErrorEvent(
             {
@@ -269,7 +269,6 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
             startTime,
             {
                 request: {
-                    url: xhrDetails.url,
                     method: xhrDetails.method,
                     traced: true
                 }

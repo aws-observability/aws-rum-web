@@ -11,12 +11,9 @@ import {
 } from '../../../test-utils/integ-test-utils';
 import {
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_FIRST_CONTENTFUL_PAINT_EVENT_TYPE,
-    PERFORMANCE_FIRST_PAINT_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../../utils/constant';
 
-const TARGET_URL = 'targetUrl';
 const INITIATOR_TYPE = 'initiatorType';
 const NAVIGATION_TYPE = 'navigationType';
 const START_TIME = 'startTime';
@@ -143,8 +140,6 @@ test('PerformanceEvent records navigation event', async (t: TestController) => {
     if (!isBrowserSafari) {
         await t
             .expect(REQUEST_BODY.textContent)
-            .contains(TARGET_URL)
-            .expect(REQUEST_BODY.textContent)
             .contains(REDIRECT_COUNT)
             .expect(REQUEST_BODY.textContent)
             .contains(NAVIGATION_TYPE)
@@ -161,48 +156,6 @@ test('PerformanceEvent records navigation event', async (t: TestController) => {
             .expect(REQUEST_BODY.textContent)
             .contains(COMPRESSION_RATIO);
     }
-});
-
-test('PerformanceEvent records paint event', async (t: TestController) => {
-    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
-    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
-    await t.wait(300);
-
-    await t
-        .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
-        .click(PAYLOAD)
-        .pressKey('ctrl+a delete')
-        .click(SUBMIT);
-
-    await t.wait(300);
-
-    const isBrowserFirefox =
-        (await REQUEST_BODY.textContent).indexOf(FIREFOX) > -1;
-
-    /**
-     * Firefox and Safari browsers do not support First Contentful Paint API
-     */
-    if (!isBrowserFirefox) {
-        await t
-            .expect(REQUEST_BODY.textContent)
-            .contains(PERFORMANCE_FIRST_CONTENTFUL_PAINT_EVENT_TYPE);
-    }
-
-    await t
-        .expect(REQUEST_BODY.textContent)
-        .contains(ID)
-        .expect(REQUEST_BODY.textContent)
-        .contains(TIMESTAMP)
-
-        .expect(REQUEST_BODY.textContent)
-        .contains(PERFORMANCE_FIRST_PAINT_EVENT_TYPE)
-        .expect(REQUEST_BODY.textContent)
-        .contains(START_TIME)
-        .expect(REQUEST_BODY.textContent)
-        .contains(DURATION)
-
-        .expect(RESPONSE_STATUS.textContent)
-        .eql(STATUS_202.toString());
 });
 
 test('PerformanceEvent records resource event', async (t: TestController) => {
@@ -229,9 +182,6 @@ test('PerformanceEvent records resource event', async (t: TestController) => {
         .contains(ID)
         .expect(REQUEST_BODY.textContent)
         .contains(TIMESTAMP)
-
-        .expect(REQUEST_BODY.textContent)
-        .contains(TARGET_URL)
         .expect(REQUEST_BODY.textContent)
         .contains(INITIATOR_TYPE)
         .expect(REQUEST_BODY.textContent)

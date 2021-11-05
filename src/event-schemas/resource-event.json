@@ -84,30 +84,5 @@
         }
     },
     "additionalProperties": false,
-    "required": [
-        "version",
-        "targetUrl",
-        "initiatorType",
-        "startTime",
-        "redirectStart",
-        "redirectTime",
-        "workerStart",
-        "workerTime",
-        "fetchStart",
-        "domainLookupStart",
-        "dns",
-        "nextHopProtocol",
-        "connectStart",
-        "connect",
-        "secureConnectionStart",
-        "tlsTime",
-        "requestStart",
-        "timeToFirstByte",
-        "responseStart",
-        "responseTime",
-        "duration",
-        "headerSize",
-        "compressionRatio",
-        "fileType"
-    ]
+    "required": ["version", "initiatorType", "duration", "fileType"]
 }

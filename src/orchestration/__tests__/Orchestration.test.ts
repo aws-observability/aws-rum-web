@@ -108,7 +108,6 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.js-error',
             'com.amazonaws.rum.navigation',
             'com.amazonaws.rum.page-view',
-            'com.amazonaws.rum.paint',
             'com.amazonaws.rum.resource',
             'com.amazonaws.rum.web-vitals'
         ];
@@ -183,7 +182,6 @@ describe('Orchestration tests', () => {
         const expected = [
             'com.amazonaws.rum.js-error',
             'com.amazonaws.rum.navigation',
-            'com.amazonaws.rum.paint',
             'com.amazonaws.rum.resource',
             'com.amazonaws.rum.web-vitals',
             'com.amazonaws.rum.dom-event',
@@ -230,7 +228,6 @@ describe('Orchestration tests', () => {
         });
         const expected = [
             'com.amazonaws.rum.navigation',
-            'com.amazonaws.rum.paint',
             'com.amazonaws.rum.resource',
             'com.amazonaws.rum.web-vitals',
             'com.amazonaws.rum.page-view'

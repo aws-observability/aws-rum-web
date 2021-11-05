@@ -36,7 +36,6 @@ describe('NavigationPlugin tests', () => {
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                targetUrl: navigationEvent.name,
                 duration: navigationEvent.duration,
                 startTime: navigationEvent.startTime,
                 navigationType: navigationEvent.type
@@ -46,7 +45,6 @@ describe('NavigationPlugin tests', () => {
 
     test('When navigation timing level 2 API is not present then navigation timing level 1 API is recorded', async () => {
         jest.useFakeTimers();
-        // @ts-ignore
         mockPerformanceObject();
         mockPerformanceObserver();
 
