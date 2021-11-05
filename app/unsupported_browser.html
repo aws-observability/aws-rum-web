@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RUM Integ Test</title>
+        <script src="./loader_js_error_event.js"></script>
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+
+        <script>
+            function viewCommandQueueFunction() {
+                document.getElementById('cwr_function').innerText = window[
+                    window.AwsRumClient.n
+                ].toString();
+            }
+        </script>
+
+        <style>
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <p id="welcome">This application is used for RUM integ testing.</p>
+        <hr />
+        <button
+            id="viewCommandQueueFunction"
+            onclick="viewCommandQueueFunction()"
+        >
+            window[window.AwsRumClient.n].toString()
+        </button>
+        <hr />
+        <table>
+            <tr>
+                <td>cwr</td>
+                <td id="cwr_function"></td>
+            </tr>
+        </table>
+    </body>
+</html>

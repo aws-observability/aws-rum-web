@@ -28,7 +28,7 @@
         "integ:local:firefox:headless": "npm run build:dev && cross-env NODE_OPTIONS=--max-http-header-size=80000 testcafe firefox:headless --app \"http-server ./build/dev -s\"",
         "integ:local:safari": "npm run build:dev && cross-env NODE_OPTIONS=--max-http-header-size=80000 testcafe safari --app \"http-server ./build/dev -s\"",
         "integ:local:edge": "npm run build:dev && cross-env NODE_OPTIONS=--max-http-header-size=80000 testcafe edge --app \"http-server ./build/dev -s\"",
-        "integ:local:ie": "npm run build:dev && cross-env NODE_OPTIONS=--max-http-header-size=80000 testcafe ie --app \"http-server ./build/dev -s\"",
+        "integ:local:ie": "npm run build:dev && cross-env NODE_OPTIONS=--max-http-header-size=80000 testcafe ie --app \"http-server ./build/dev -s\" src/__integ__/unsupportedBrowser.test.ts",
         "preinteg:local:nightwatch": "http-server ./build/dev -s &",
         "integ:local:nightwatch": "nightwatch",
         "postinteg:local:nightwatch": "kill $(lsof -t -i:8080)",
