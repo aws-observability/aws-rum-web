@@ -27,7 +27,7 @@ describe('BeaconHttpHandler tests', () => {
         // Run
         // @ts-ignore
         const response: HttpResponse = (
-            await client.sendBeacon(Utils.LOG_EVENTS_REQUEST)
+            await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST)
         ).response;
 
         // Assert
@@ -48,7 +48,7 @@ describe('BeaconHttpHandler tests', () => {
         // Run
         // @ts-ignore
         const response: Promise<{ response: HttpResponse }> = client.sendBeacon(
-            Utils.LOG_EVENTS_REQUEST
+            Utils.PUT_RUM_EVENTS_REQUEST
         );
         // Assert
         expect(response).rejects.toEqual(undefined);
@@ -68,7 +68,7 @@ describe('BeaconHttpHandler tests', () => {
         // Run
         // @ts-ignore
         const response: HttpResponse = (
-            await client.sendBeacon(Utils.LOG_EVENTS_REQUEST)
+            await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST)
         ).response;
 
         // Assert

@@ -25,11 +25,9 @@ test('when document click events configured then button click is recorded', asyn
         .click(button1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter(
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
             e.type === DOM_EVENT_TYPE &&
             JSON.parse(e.details).elementId === 'button1'
@@ -57,11 +55,9 @@ test('when element without an id is clicked then node type is recorded', async (
         .click(link1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter(
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
             e.type === DOM_EVENT_TYPE && JSON.parse(e.details).elementId === 'A'
     );
@@ -88,11 +84,9 @@ test('when element id click event configured then button click is recorded', asy
         .click(button1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter(
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
             e.type === DOM_EVENT_TYPE &&
             JSON.parse(e.details).elementId === 'button1'
@@ -115,11 +109,11 @@ test('when client is disabled prior to config then button click is not recorded'
         .click(enable)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === DOM_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === DOM_EVENT_TYPE
+    );
 
     await t.expect(events.length).eql(0);
 });
@@ -135,11 +129,11 @@ test('when client is disabled after config then button click is not recorded', a
         .click(enable)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === DOM_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === DOM_EVENT_TYPE
+    );
 
     await t.expect(events.length).eql(0);
 });
@@ -155,11 +149,9 @@ test('when client is disabled and enabled then button click is recorded', async 
         .click(button1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter(
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
             e.type === DOM_EVENT_TYPE &&
             JSON.parse(e.details).elementId === 'button1'

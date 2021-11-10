@@ -50,7 +50,7 @@ describe('DataPlaneClient tests', () => {
         });
 
         // Run
-        await client.sendFetch(Utils.LOG_EVENTS_REQUEST);
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
         expect(fetchHandler).toHaveBeenCalledTimes(1);
@@ -67,17 +67,17 @@ describe('DataPlaneClient tests', () => {
         });
 
         // Run
-        await client.sendFetch(Utils.LOG_EVENTS_REQUEST);
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
         // @ts-ignore
         const signedRequest: HttpRequest = fetchHandler.mock.calls[0][0];
         expect(signedRequest.headers['x-amz-date']).toEqual('19700101T000000Z');
         expect(signedRequest.headers['X-Amz-Content-Sha256']).toEqual(
-            '396cba73944df10e0fa9919af498b340ab0230f953ce1378a9a620681e767425'
+            '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
         );
         expect(signedRequest.headers['authorization']).toEqual(
-            'AWS4-HMAC-SHA256 Credential=abc123/19700101/us-west-2/rum/aws4_request, SignedHeaders=content-type;host;x-amz-content-sha256;x-amz-date, Signature=3148cd0affbd3bb2b160d1f36a43f146e642783ee3710451de9eac4a78974565'
+            'AWS4-HMAC-SHA256 Credential=abc123/19700101/us-west-2/rum/aws4_request, SignedHeaders=content-type;host;x-amz-content-sha256;x-amz-date, Signature=bf3acf587b119ab12f0f8a86bf12acf7c460eb037584feb0ab5574f297def947'
         );
     });
 
@@ -92,7 +92,7 @@ describe('DataPlaneClient tests', () => {
         });
 
         // Run
-        await client.sendBeacon(Utils.LOG_EVENTS_REQUEST);
+        await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
         expect(beaconHandler).toHaveBeenCalledTimes(1);
@@ -109,7 +109,7 @@ describe('DataPlaneClient tests', () => {
         });
 
         // Run
-        await client.sendBeacon(Utils.LOG_EVENTS_REQUEST);
+        await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
         // @ts-ignore
@@ -118,7 +118,7 @@ describe('DataPlaneClient tests', () => {
             'AWS4-HMAC-SHA256'
         );
         expect(signedRequest.query['X-Amz-Content-Sha256']).toEqual(
-            '396cba73944df10e0fa9919af498b340ab0230f953ce1378a9a620681e767425'
+            '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
         );
         expect(signedRequest.query['X-Amz-Credential']).toEqual(
             'abc123/19700101/us-west-2/rum/aws4_request'
@@ -129,7 +129,7 @@ describe('DataPlaneClient tests', () => {
             'content-type;host'
         );
         expect(signedRequest.query['X-Amz-Signature']).toEqual(
-            'ba005a3be8cbc901e63fca2e83d257a76f45d13e9511df83f73a9ff9f2e23dfb'
+            'c5e418bbf3d0a922d4f468b1dd7a209711423750d407b5c679c01014ec34240c'
         );
     });
 });

@@ -9,9 +9,9 @@ const doNotRecordPageView = Selector(`#doNotRecordPageView`);
 fixture('PageViewEventPlugin').page('http://localhost:8080/page_event.html');
 
 const removeUnwantedEvents = (json: any) => {
-    for (let i = 0; i < json.batch.events.length; i++) {
-        if (/(session_start_event)/.test(json.batch.events[i].type)) {
-            json.batch.events.splice(i, 1);
+    for (let i = 0; i < json.RumEvents.length; i++) {
+        if (/(session_start_event)/.test(json.RumEvents[i].type)) {
+            json.RumEvents.splice(i, 1);
         }
     }
     return json;
@@ -24,14 +24,14 @@ test('PageViewEventPlugin records landing page view event', async (t: TestContro
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
-    const metaData = JSON.parse(json.batch.events[0].metadata);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
+    const metaData = JSON.parse(json.RumEvents[0].metadata);
 
     await t
         .expect(eventType)
@@ -58,19 +58,19 @@ test('PageViewEventPlugin records page view event', async (t: TestController) =>
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clear)
         .click(recordPageView)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
-    const metaData = JSON.parse(json.batch.events[0].metadata);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
+    const metaData = JSON.parse(json.RumEvents[0].metadata);
 
     await t
         .expect(eventType)
@@ -98,26 +98,22 @@ test('when page is denied then page view is not recorded', async (t: TestControl
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clear)
         .click(recordPageView)
         .click(doNotRecordPageView)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
 
-    await t
-        .expect(json.batch.events.length)
-        .eql(1)
-        .expect(eventDetails)
-        .contains({
-            pageId: '/page_view_two',
-            interaction: 1,
-            pageInteractionId: '/page_view_two-1'
-        });
+    await t.expect(json.RumEvents.length).eql(1).expect(eventDetails).contains({
+        pageId: '/page_view_two',
+        interaction: 1,
+        pageInteractionId: '/page_view_two-1'
+    });
 });

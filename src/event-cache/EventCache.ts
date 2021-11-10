@@ -4,10 +4,10 @@ import { MetaData } from '../events/meta-data';
 import { Config } from '../orchestration/Orchestration';
 import { PageManager } from '../sessions/PageManager';
 import {
-    ApplicationDetails,
-    EventBatch,
+    AppMonitorDetails,
+    PutRumEventsRequest,
     UserDetails,
-    Event
+    RumEvent
 } from '../dispatch/dataplane';
 
 /**
@@ -18,10 +18,10 @@ import {
  * and a new event is added.
  */
 export class EventCache {
-    private applicationDetails: ApplicationDetails;
+    private appMonitorDetails: AppMonitorDetails;
     private config: Config;
 
-    private events: Event[] = [];
+    private events: RumEvent[] = [];
 
     private sessionManager: SessionManager;
     private pageManager: PageManager;
@@ -35,8 +35,8 @@ export class EventCache {
      * @param sessionManager  The sessionManager returns user id, session id and handles session timeout.
      * @param pageManager The pageManager returns page id.
      */
-    constructor(applicationDetails: ApplicationDetails, config: Config) {
-        this.applicationDetails = applicationDetails;
+    constructor(applicationDetails: AppMonitorDetails, config: Config) {
+        this.appMonitorDetails = applicationDetails;
         this.config = config;
         this.enabled = true;
         this.pageManager = new PageManager(config, this.recordEvent);
@@ -115,28 +115,40 @@ export class EventCache {
     /**
      * Removes and returns the next batch of events.
      */
-    public getEventBatch(): EventBatch {
-        const eventBatch: EventBatch = {
-            application: this.applicationDetails,
-            batchId: v4(),
-            user: this.getUserDetails(),
-            events: []
-        };
+    public getEventBatch(): RumEvent[] {
+        let rumEvents: RumEvent[] = [];
 
         if (this.events.length === 0) {
-            return eventBatch;
+            return rumEvents;
         }
 
         if (this.events.length <= this.config.batchLimit) {
             // Return all events.
-            eventBatch.events = this.events;
+            rumEvents = this.events;
             this.events = [];
         } else {
             // Dispatch the front of the array and retain the back of the array.
-            eventBatch.events = this.events.splice(0, this.config.batchLimit);
+            rumEvents = this.events.splice(0, this.config.batchLimit);
         }
 
-        return eventBatch;
+        return rumEvents;
+    }
+
+    /**
+     * Returns an object containing the AppMonitor ID and application version.
+     */
+    public getAppMonitorDetails(): AppMonitorDetails {
+        return this.appMonitorDetails;
+    }
+
+    /**
+     * Returns an object containing the session ID and user ID.
+     */
+    public getUserDetails(): UserDetails {
+        return {
+            userId: this.sessionManager.getUserId(),
+            sessionId: this.sessionManager.getSession().sessionId
+        };
     }
 
     /**
@@ -220,12 +232,5 @@ export class EventCache {
         ) {
             return true;
         }
-    }
-
-    private getUserDetails(): UserDetails {
-        return {
-            userId: this.sessionManager.getUserId(),
-            sessionId: this.sessionManager.getSession().sessionId
-        };
     }
 }

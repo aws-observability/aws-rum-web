@@ -17,11 +17,11 @@ test('When configURI is provided, then remote config is used', async (t: TestCon
         .click(triggerTypeError)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === JS_ERROR_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === JS_ERROR_EVENT_TYPE
+    );
 
     // An error event should not have been recorded, since the error plugin is
     // omitted from the telemetries list in the remote config.

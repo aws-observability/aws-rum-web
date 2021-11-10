@@ -14,10 +14,10 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const jsonA = JSON.parse(await REQUEST_BODY.textContent);
-    const sessionStartEventsA = jsonA.batch.events.filter(
+    const sessionStartEventsA = jsonA.RumEvents.filter(
         (e) => e.type == SESSION_START_EVENT_TYPE
     );
 
@@ -31,10 +31,10 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const jsonB = JSON.parse(await REQUEST_BODY.textContent);
-    const sessionStartEventsB = jsonB.batch.events.filter(
+    const sessionStartEventsB = jsonB.RumEvents.filter(
         (e) => e.type == SESSION_START_EVENT_TYPE
     );
 
@@ -48,10 +48,10 @@ test('when page is loaded with cookies enabled, session start includes meta data
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = JSON.parse(await REQUEST_BODY.textContent);
-    const sessionStartEvents = json.batch.events.filter(
+    const sessionStartEvents = json.RumEvents.filter(
         (e) => e.type == SESSION_START_EVENT_TYPE
     );
 

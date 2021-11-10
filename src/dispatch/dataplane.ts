@@ -3,23 +3,16 @@
 //
 // We have not used the CloudWatch RUM SDK due to its size. While we could still
 // use the type definitions from the CloudWatch RUM SDK, we have made a copy of
-// them here to completely remove the dependency on the CloudWatch RUM SDK, at
-// least until it is publicly available.
+// them here to completely remove the dependency on the CloudWatch RUM SDK.
 
-export interface LogEventsRequest {
-    applicationId: string | undefined;
-    batch: EventBatch | undefined;
+export interface PutRumEventsRequest {
+    BatchId: string;
+    AppMonitorDetails: AppMonitorDetails;
+    UserDetails: UserDetails;
+    RumEvents: RumEvent[];
 }
 
-export interface EventBatch {
-    batchId: string | undefined;
-    application?: ApplicationDetails;
-    user: UserDetails | undefined;
-    events: Event[] | undefined;
-}
-
-export interface ApplicationDetails {
-    name?: string;
+export interface AppMonitorDetails {
     id?: string;
     version?: string;
 }
@@ -29,10 +22,10 @@ export interface UserDetails {
     sessionId?: string;
 }
 
-export interface Event {
-    id: string | undefined;
-    timestamp: Date | undefined;
-    type: string | undefined;
+export interface RumEvent {
+    id: string;
+    timestamp: Date;
+    type: string;
     metadata?: string;
-    details: string | undefined;
+    details: string;
 }

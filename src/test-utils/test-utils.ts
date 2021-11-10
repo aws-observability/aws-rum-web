@@ -12,8 +12,8 @@ import {
     RecordPageView
 } from '../plugins/Plugin';
 import {
-    ApplicationDetails,
-    LogEventsRequest,
+    AppMonitorDetails,
+    PutRumEventsRequest,
     UserDetails
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
@@ -33,8 +33,8 @@ export const EVENT_TYPE = 'com.amazon.rum.event1';
 export const EVENT_DETAILS = '{}';
 export const EVENT_TIMESTAMP = new Date(0);
 
-export const APPLICATION_DETAILS: ApplicationDetails = {
-    name: APPLICATION_ID,
+export const APP_MONITOR_DETAILS: AppMonitorDetails = {
+    id: APPLICATION_ID,
     version: APPLICATION_VERSION
 };
 
@@ -43,37 +43,34 @@ export const USER_DETAILS: UserDetails = {
     sessionId: SESSION_ID
 };
 
-export const LOG_EVENTS_REQUEST: LogEventsRequest = {
-    applicationId: APPLICATION_ID,
-    batch: {
-        batchId: BATCH_ID,
-        application: APPLICATION_DETAILS,
-        user: USER_DETAILS,
-        events: [
-            {
-                id: EVENT_ID,
-                timestamp: EVENT_TIMESTAMP,
-                type: EVENT_TYPE,
-                details: EVENT_DETAILS
-            }
-        ]
-    }
+export const PUT_RUM_EVENTS_REQUEST: PutRumEventsRequest = {
+    BatchId: BATCH_ID,
+    AppMonitorDetails: APP_MONITOR_DETAILS,
+    UserDetails: USER_DETAILS,
+    RumEvents: [
+        {
+            id: EVENT_ID,
+            timestamp: EVENT_TIMESTAMP,
+            type: EVENT_TYPE,
+            details: EVENT_DETAILS
+        }
+    ]
 };
 
 export const DEFAULT_CONFIG: Config = defaultConfig(defaultCookieAttributes());
 
 export const createDefaultEventCache = (): EventCache => {
-    return new EventCache(APPLICATION_DETAILS, DEFAULT_CONFIG);
+    return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
 };
 
 export const createEventCache = (config: Config): EventCache => {
-    return new EventCache(APPLICATION_DETAILS, config);
+    return new EventCache(APP_MONITOR_DETAILS, config);
 };
 
 export const createDefaultEventCacheWithEvents = (): EventCache => {
     const EVENT1_SCHEMA = 'com.amazon.rum.event1';
     const EVENT2_SCHEMA = 'com.amazon.rum.event2';
-    const eventCache = new EventCache(APPLICATION_DETAILS, DEFAULT_CONFIG);
+    const eventCache = new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
     eventCache.recordEvent(EVENT1_SCHEMA, {});
     eventCache.recordEvent(EVENT2_SCHEMA, {});
     return eventCache;

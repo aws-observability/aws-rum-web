@@ -116,7 +116,7 @@ export const dataPlaneResourceEvent = {
     fetchStart: 357.59500000131084,
     initiatorType: 'link',
     name:
-        'https://dataplane.us-west-2.beta.rum.aws.dev/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events',
+        'https://dataplane.rum.us-west-2.amazonaws.com/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events',
     nextHopProtocol: 'h2',
     redirectEnd: 0,
     redirectStart: 0,

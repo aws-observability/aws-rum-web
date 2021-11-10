@@ -12,15 +12,12 @@ jest.mock('../DataPlaneClient', () => ({
         .mockImplementation(() => ({ sendFetch, sendBeacon }))
 }));
 
-const APPLICATION_ID = 'abc123';
-
 describe('Dispatch tests', () => {
     beforeEach(() => {
         sendFetch.mockClear();
         sendBeacon.mockClear();
 
-        // @ts-ignore
-        DataPlaneClient.mockImplementation(() => {
+        (DataPlaneClient as any).mockImplementation(() => {
             return {
                 sendFetch,
                 sendBeacon
@@ -31,7 +28,6 @@ describe('Dispatch tests', () => {
     test('dispatch() sends data through client', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -54,7 +50,6 @@ describe('Dispatch tests', () => {
         // Init
         const credentialProvider: CredentialProvider = jest.fn();
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -76,15 +71,13 @@ describe('Dispatch tests', () => {
         const sendFetch = jest.fn(() =>
             Promise.reject('Something went wrong.')
         );
-        // @ts-ignore
-        DataPlaneClient.mockImplementation(() => {
+        (DataPlaneClient as any).mockImplementation(() => {
             return {
                 sendFetch
             };
         });
 
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -105,7 +98,6 @@ describe('Dispatch tests', () => {
     test('dispatch() does nothing when disabled', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -128,7 +120,6 @@ describe('Dispatch tests', () => {
     test('dispatch() sends when disabled then enabled', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -152,7 +143,6 @@ describe('Dispatch tests', () => {
     test('dispatch() automatically dispatches when interval > 0', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -176,7 +166,6 @@ describe('Dispatch tests', () => {
     test('dispatch() does not automatically  dispatch when interval = 0', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -200,7 +189,6 @@ describe('Dispatch tests', () => {
     test('dispatch() does not automatically  dispatch when interval < 0', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -224,7 +212,6 @@ describe('Dispatch tests', () => {
     test('dispatch() does not automatically dispatch when dispatch is disabled', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -249,7 +236,6 @@ describe('Dispatch tests', () => {
     test('dispatch() resumes when disabled and enabled', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -275,7 +261,6 @@ describe('Dispatch tests', () => {
     test('when visibilitychange event is triggered then beacon dispatch runs', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -297,7 +282,6 @@ describe('Dispatch tests', () => {
     test('when plugin is disabled then beacon dispatch does not run', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -320,7 +304,6 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchFetch throws an error', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -339,7 +322,6 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchBeacon throws an error', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -358,7 +340,6 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchFetchFailSilent fails silently', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -377,7 +358,6 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchBeaconFailSilent fails silently', async () => {
         // Init
         const dispatch = new Dispatch(
-            APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),

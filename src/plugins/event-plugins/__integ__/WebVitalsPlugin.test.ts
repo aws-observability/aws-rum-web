@@ -18,7 +18,7 @@ fixture('WebVitalEvent Plugin').page(
 
 const removeUnwantedEvents = (json: any) => {
     const newEventsList = [];
-    for (const event of json.batch.events) {
+    for (const event of json.RumEvents) {
         if (/(dispatch)/.test(event.details)) {
             // Skip
         } else if (/(session_start_event)/.test(event.type)) {
@@ -30,7 +30,7 @@ const removeUnwantedEvents = (json: any) => {
         }
     }
 
-    json.batch.events = newEventsList;
+    json.RumEvents = newEventsList;
     return json;
 };
 
@@ -46,15 +46,15 @@ test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
         .expect(RESPONSE_STATUS.textContent)
         .eql(STATUS_202.toString())
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventType1 = json.batch.events[0].type;
-    const eventDetails1 = JSON.parse(json.batch.events[0].details);
-    const eventType2 = json.batch.events[1].type;
-    const eventDetails2 = JSON.parse(json.batch.events[1].details);
+    const eventType1 = json.RumEvents[0].type;
+    const eventDetails1 = JSON.parse(json.RumEvents[0].details);
+    const eventType2 = json.RumEvents[1].type;
+    const eventDetails2 = JSON.parse(json.RumEvents[1].details);
 
     await t
         .expect(eventType1)

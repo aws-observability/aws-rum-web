@@ -17,12 +17,9 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 
-const DATA_PLANE_REGION_PLACEHOLDER = '[region]';
-
+const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
 const DATA_PLANE_DEFAULT_ENDPOINT =
-    'https://dataplane.[region].gamma.rum.aws.dev';
-
-const DEFAULT_DISPATCH_INTERVAL = 5000;
+    'https://dataplane.rum.${REGION}.amazonaws.com';
 
 export enum TELEMETRY_TYPES {
     ERRORS = 'errors',
@@ -102,7 +99,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
-        endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
+        endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
         eventPluginsToLoad: [],
         pageIdFormat: PAGE_ID_FORMAT.PATH,
@@ -203,7 +200,7 @@ export class Orchestration {
             applicationVersion
         );
 
-        this.dispatchManager = this.initDispatch(region, applicationId);
+        this.dispatchManager = this.initDispatch(region);
         this.pluginManager = this.initPluginManager(
             applicationId,
             applicationVersion
@@ -313,14 +310,8 @@ export class Orchestration {
         );
     }
 
-    private initDispatch(region: string, applicationId: string) {
-        const dispatchInterval: number =
-            typeof this.config.dispatchInterval === 'number'
-                ? this.config.dispatchInterval
-                : DEFAULT_DISPATCH_INTERVAL;
-
+    private initDispatch(region: string) {
         const dispatch: Dispatch = new Dispatch(
-            applicationId,
             region,
             this.config.endpoint,
             this.eventCache,

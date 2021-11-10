@@ -56,8 +56,8 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        expect((Dispatch as any).mock.calls[0][2]).toEqual(
-            'https://dataplane.us-west-2.gamma.rum.aws.dev'
+        expect((Dispatch as any).mock.calls[0][1]).toEqual(
+            'https://dataplane.rum.us-west-2.amazonaws.com'
         );
     });
 
@@ -67,8 +67,8 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        expect((Dispatch as any).mock.calls[0][2]).toEqual(
-            'https://dataplane.us-east-1.gamma.rum.aws.dev'
+        expect((Dispatch as any).mock.calls[0][1]).toEqual(
+            'https://dataplane.rum.us-east-1.amazonaws.com'
         );
     });
 
@@ -146,7 +146,7 @@ describe('Orchestration tests', () => {
             telemetries: ['errors', 'performance', 'interaction'],
             disableAutoPageView: false,
             dispatchInterval: 5000,
-            endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
+            endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
             eventCacheSize: 200,
             eventPluginsToLoad: [],
             pageIdFormat: 'PATH',
