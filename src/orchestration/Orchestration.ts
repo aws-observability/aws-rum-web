@@ -17,9 +17,9 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 
-const DATA_PLANE_REGION_PLACEHOLDER = '@';
-
-const DATA_PLANE_DEFAULT_ENDPOINT = 'https://dataplane.rum.@.amazonaws.com';
+const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
+const DATA_PLANE_DEFAULT_ENDPOINT =
+    'https://dataplane.rum.${REGION}.amazonaws.com';
 
 export enum TELEMETRY_TYPES {
     ERRORS = 'errors',

@@ -25,7 +25,7 @@ const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
 
 declare type SerializedRumEvent = {
     id: string;
-    timestamp: number;
+    timestamp: number; // unix timestamp in seconds
     type: string;
     metadata?: string;
     details: string;
