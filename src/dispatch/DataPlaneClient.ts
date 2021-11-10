@@ -10,10 +10,10 @@ import { Sha256 } from '@aws-crypto/sha256-js';
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { getHost, getScheme } from '../utils/common-utils';
 import {
-    ApplicationDetails,
-    LogEventsRequest,
+    AppMonitorDetails,
+    PutRumEventsRequest,
     UserDetails,
-    Event
+    RumEvent
 } from './dataplane';
 
 const SERVICE: string = 'rum';
@@ -23,21 +23,19 @@ const CONTENT_TYPE_TEXT: string = 'text/plain;charset=UTF-8';
 
 const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
 
-declare type SerializedEvent = {
-    id: string | undefined;
-    timestamp: Date | number | undefined;
-    type: string | undefined;
+declare type SerializedRumEvent = {
+    id: string;
+    timestamp: number;
+    type: string;
     metadata?: string;
-    details: string | undefined;
+    details: string;
 };
 
-declare type SerializedRequest = {
-    batch: {
-        batchId: string;
-        application: ApplicationDetails;
-        user: UserDetails;
-        events: SerializedEvent[];
-    };
+declare type SerializedPutRumEventsRequest = {
+    BatchId: string;
+    AppMonitorDetails: AppMonitorDetails;
+    UserDetails: UserDetails;
+    RumEvents: SerializedRumEvent[];
 };
 
 export declare type DataPlaneClientConfig = {
@@ -65,11 +63,11 @@ export class DataPlaneClient {
     }
 
     public sendFetch = async (
-        logEventsRequest: LogEventsRequest
+        putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
         const host = getHost(this.config.endpoint);
         const serializedRequest: string = JSON.stringify(
-            serializeRequest(logEventsRequest)
+            serializeRequest(putRumEventsRequest)
         );
         const request = new HttpRequest({
             method: METHOD,
@@ -80,12 +78,13 @@ export class DataPlaneClient {
             },
             protocol: getScheme(this.config.endpoint),
             hostname: host,
-            path: `/application/${logEventsRequest.applicationId}/events`,
+            path: `/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}/`,
             body: serializedRequest
         });
 
-        // @ts-ignore
-        const signedRequest: HttpRequest = await this.awsSigV4.sign(request);
+        const signedRequest: HttpRequest = (await this.awsSigV4.sign(
+            request
+        )) as any;
         const httpResponse: Promise<{
             response: HttpResponse;
         }> = this.config.fetchRequestHandler.handle(signedRequest);
@@ -93,11 +92,11 @@ export class DataPlaneClient {
     };
 
     public sendBeacon = async (
-        logEventsRequest: LogEventsRequest
+        putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
         const host = getHost(this.config.endpoint);
         const serializedRequest: string = JSON.stringify(
-            serializeRequest(logEventsRequest)
+            serializeRequest(putRumEventsRequest)
         );
         const request = new HttpRequest({
             method: METHOD,
@@ -108,15 +107,14 @@ export class DataPlaneClient {
             },
             protocol: getScheme(this.config.endpoint),
             hostname: host,
-            path: `/application/${logEventsRequest.applicationId}/events`,
+            path: `/application/${putRumEventsRequest.AppMonitorDetails.id}/events`,
             body: serializedRequest
         });
 
-        // @ts-ignore
-        const preSignedRequest: HttpRequest = await this.awsSigV4.presign(
+        const preSignedRequest: HttpRequest = (await this.awsSigV4.presign(
             request,
             REQUEST_PRESIGN_ARGS
-        );
+        )) as any;
         const httpResponse: Promise<{
             response: HttpResponse;
         }> = this.config.beaconRequestHandler.handle(preSignedRequest);
@@ -124,26 +122,26 @@ export class DataPlaneClient {
     };
 }
 
-const serializeRequest = (request: LogEventsRequest): SerializedRequest => {
+const serializeRequest = (
+    request: PutRumEventsRequest
+): SerializedPutRumEventsRequest => {
     //  If we were using the AWS SDK client here then the serialization would be handled for us through a generated
     //  serialization/deserialization library. However, since much of the generated code is unnecessary, we do the
     //  serialization ourselves with this function.
-    const serializedEvents: SerializedEvent[] = [];
-    request.batch.events.forEach((e) =>
-        serializedEvents.push(serializeEvent(e))
+    const serializedRumEvents: SerializedRumEvent[] = [];
+    request.RumEvents.forEach((e) =>
+        serializedRumEvents.push(serializeEvent(e))
     );
-    const serializedRequest: SerializedRequest = {
-        batch: {
-            batchId: request.batch.batchId,
-            application: request.batch.application,
-            user: request.batch.user,
-            events: serializedEvents
-        }
+    const serializedRequest: SerializedPutRumEventsRequest = {
+        BatchId: request.BatchId,
+        AppMonitorDetails: request.AppMonitorDetails,
+        UserDetails: request.UserDetails,
+        RumEvents: serializedRumEvents
     };
     return serializedRequest;
 };
 
-const serializeEvent = (event: Event): SerializedEvent => {
+const serializeEvent = (event: RumEvent): SerializedRumEvent => {
     return {
         id: event.id,
         // Dates must be converted to timestamps before serialization.

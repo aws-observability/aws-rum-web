@@ -3,19 +3,20 @@ import { EventCache } from '../event-cache/EventCache';
 import { DataPlaneClient } from './DataPlaneClient';
 import { BeaconHttpHandler } from './BeaconHttpHandler';
 import { FetchHttpHandler } from './FetchHttpHandler';
-import { LogEventsRequest } from './dataplane';
+import { PutRumEventsRequest } from './dataplane';
 import { Config } from '../orchestration/Orchestration';
+import { v4 } from 'uuid';
 
 type SendFunction = (
-    logEventsRequest: LogEventsRequest
+    putRumEventsRequest: PutRumEventsRequest
 ) => Promise<{ response: HttpResponse }>;
 
 interface DataPlaneClientInterface {
     sendFetch: (
-        logEventsRequest: LogEventsRequest
+        putRumEventsRequest: PutRumEventsRequest
     ) => Promise<{ response: HttpResponse }>;
     sendBeacon: (
-        logEventsRequest: LogEventsRequest
+        putRumEventsRequest: PutRumEventsRequest
     ) => Promise<{ response: HttpResponse }>;
 }
 
@@ -28,7 +29,6 @@ export type ClientBuilder = (
 ) => DataPlaneClient;
 
 export class Dispatch {
-    private applicationId: string;
     private region: string;
     private endpoint: string;
     private eventCache: EventCache;
@@ -39,13 +39,11 @@ export class Dispatch {
     private config: Config;
 
     constructor(
-        applicationId: string,
         region: string,
         endpoint: string,
         eventCache: EventCache,
         config: Config
     ) {
-        this.applicationId = applicationId;
         this.region = region;
         this.endpoint = endpoint;
         this.eventCache = eventCache;
@@ -181,12 +179,14 @@ export class Dispatch {
             return;
         }
 
-        const logEventsRequest: LogEventsRequest = {
-            applicationId: this.applicationId,
-            batch: this.eventCache.getEventBatch()
+        const putRumEventsRequest: PutRumEventsRequest = {
+            BatchId: v4(),
+            AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
+            UserDetails: this.eventCache.getUserDetails(),
+            RumEvents: this.eventCache.getEventBatch()
         };
 
-        return send(logEventsRequest);
+        return send(putRumEventsRequest);
     }
 
     /**
