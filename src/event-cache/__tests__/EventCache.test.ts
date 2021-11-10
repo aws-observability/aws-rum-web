@@ -2,7 +2,7 @@ import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
 import { SessionManager } from '../../sessions/SessionManager';
-import { EventBatch, Event } from '../../dispatch/dataplane';
+import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const getSession = jest.fn(() => ({
@@ -82,7 +82,7 @@ describe('EventCache tests', () => {
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const EVENT2_SCHEMA = 'com.amazon.rum.event2';
         const eventCache: EventCache = Utils.createDefaultEventCache();
-        const expectedEvents: Event[] = [
+        const expectedEvents: RumEvent[] = [
             {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
@@ -102,12 +102,10 @@ describe('EventCache tests', () => {
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
         eventCache.recordEvent(EVENT2_SCHEMA, {});
-        const eventBatch: EventBatch = eventCache.getEventBatch();
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
 
         // Assert
-        expect(eventBatch.events).toEqual(
-            expect.arrayContaining(expectedEvents)
-        );
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
     });
 
     test('getEventBatch limits number of events to batchLimit', async () => {
@@ -125,12 +123,9 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT2_SCHEMA, {});
 
         // Assert
-        // @ts-ignore
-        expect(eventCache.getEventBatch().events.length).toEqual(BATCH_LIMIT);
-        // @ts-ignore
-        expect(eventCache.getEventBatch().events.length).toEqual(BATCH_LIMIT);
-        // @ts-ignore
-        expect(eventCache.getEventBatch().events.length).toEqual(0);
+        expect(eventCache.getEventBatch().length).toEqual(BATCH_LIMIT);
+        expect(eventCache.getEventBatch().length).toEqual(BATCH_LIMIT);
+        expect(eventCache.getEventBatch().length).toEqual(0);
     });
 
     test('getEventBatch returns events in FIFO order', async () => {
@@ -148,14 +143,8 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT2_SCHEMA, {});
 
         // Assert
-        // @ts-ignore
-        expect(eventCache.getEventBatch().events[0].type).toEqual(
-            EVENT1_SCHEMA
-        );
-        // @ts-ignore
-        expect(eventCache.getEventBatch().events[0].type).toEqual(
-            EVENT2_SCHEMA
-        );
+        expect(eventCache.getEventBatch()[0].type).toEqual(EVENT1_SCHEMA);
+        expect(eventCache.getEventBatch()[0].type).toEqual(EVENT2_SCHEMA);
     });
 
     test('when cache size reached, recordEvent drops oldest event', async () => {
@@ -171,7 +160,7 @@ describe('EventCache tests', () => {
                 eventCacheSize: EVENT_LIMIT
             }
         });
-        const expectedEvents: Event[] = [
+        const expectedEvents: RumEvent[] = [
             {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
@@ -186,7 +175,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT2_SCHEMA, {});
 
         // Assert
-        expect((await eventCache.getEventBatch()).events).toEqual(
+        expect(await eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
         expect(eventCache.hasEvents()).toBeFalsy();
@@ -218,7 +207,7 @@ describe('EventCache tests', () => {
                 pagesToInclude: [/.*/]
             }
         });
-        const expectedEvents: Event[] = [
+        const expectedEvents: RumEvent[] = [
             {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
@@ -232,7 +221,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        expect((await eventCache.getEventBatch()).events).toEqual(
+        expect(await eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
     });
@@ -340,7 +329,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        expect(eventCache.getEventBatch().events.length).toEqual(1);
+        expect(eventCache.getEventBatch().length).toEqual(1);
     });
 
     test('when event limit is zero then recordEvent records all events', async () => {
@@ -369,6 +358,6 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        expect(eventCache.getEventBatch().events.length).toEqual(1);
+        expect(eventCache.getEventBatch().length).toEqual(1);
     });
 });

@@ -99,7 +99,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
-        endpoint: 'https://dataplane.us-west-2.gamma.rum.aws.dev',
+        endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
         eventPluginsToLoad: [],
         pageIdFormat: PAGE_ID_FORMAT.PATH,

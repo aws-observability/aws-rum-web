@@ -15,7 +15,7 @@ fixture('JSErrorEvent Plugin').page(
 
 const removeUnwantedEvents = (json: any) => {
     const newEventsList = [];
-    for (const event of json.batch.events) {
+    for (const event of json.RumEvents) {
         if (/(dispatch)/.test(event.details)) {
             // Skip
         } else if (/(session_start_event)/.test(event.type)) {
@@ -27,7 +27,7 @@ const removeUnwantedEvents = (json: any) => {
         }
     }
 
-    json.batch.events = newEventsList;
+    json.RumEvents = newEventsList;
     return json;
 };
 
@@ -39,13 +39,13 @@ test('when a TypeError is thrown then name and message are recorded', async (t: 
         .click(triggerTypeError)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
 
     await t
         .expect(eventType)
@@ -71,13 +71,13 @@ test('when stack trace is > 0 then stack trace is recorded', async (t: TestContr
         .click(triggerTypeError)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
 
     await t
         .expect(eventType)
@@ -94,13 +94,13 @@ test('when a string is thrown then name and message are recorded', async (t: Tes
         .click(throwErrorString)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
 
     await t
         .expect(eventType)
@@ -125,11 +125,11 @@ test('when the application records a caught error then the plugin records the er
         .click(recordCaughtError)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === JS_ERROR_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === JS_ERROR_EVENT_TYPE
+    );
 
     const eventType = events[0].type;
     const eventDetails = JSON.parse(events[0].details);

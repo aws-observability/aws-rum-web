@@ -18,16 +18,16 @@ test('when async XMLHttpRequest is called then a trace is recorded', async (t: T
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clearRequestResponse)
         .click(sendAsyncXhrRequest)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === XRAY_TRACE_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === XRAY_TRACE_EVENT_TYPE
+    );
 
     const eventType = events[0].type;
     const eventDetails = JSON.parse(events[0].details);
@@ -46,16 +46,16 @@ test('when sync XMLHttpRequest is called then a trace is recorded', async (t: Te
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clearRequestResponse)
         .click(sendSyncXhrRequest)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === XRAY_TRACE_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === XRAY_TRACE_EVENT_TYPE
+    );
 
     const eventType = events[0].type;
     const eventDetails = JSON.parse(events[0].details);
@@ -74,16 +74,16 @@ test('when sync XMLHttpRequest is called then an http event is recorded', async 
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clearRequestResponse)
         .click(sendSyncXhrRequest)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
-    const events = JSON.parse(
-        await REQUEST_BODY.textContent
-    ).batch.events.filter((e) => e.type === HTTP_EVENT_TYPE);
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === HTTP_EVENT_TYPE
+    );
 
     const eventType = events[0].type;
     const eventDetails = JSON.parse(events[0].details);

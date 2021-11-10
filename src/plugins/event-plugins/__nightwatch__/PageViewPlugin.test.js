@@ -26,9 +26,9 @@ describe('Page Event History Patch Plugin', function () {
             (await browser.getText('#request_body')).value
         );
 
-        const pages = request_body.batch.events
-            .filter((e) => e.type === 'com.amazon.rum.page_view_event')
-            .map((e) => JSON.parse(e.details).pageId);
+        const pages = request_body.RumEvents.filter(
+            (e) => e.type === 'com.amazon.rum.page_view_event'
+        ).map((e) => JSON.parse(e.details).pageId);
 
         browser.assert.equal(
             pages.includes('/page_event.html'),
@@ -66,9 +66,9 @@ describe('Page Event History Patch Plugin', function () {
             (await browser.getText('#request_body')).value
         );
 
-        const pages = request_body.batch.events
-            .filter((e) => e.type === 'com.amazon.rum.page_view_event')
-            .map((e) => JSON.parse(e.details).pageId);
+        const pages = request_body.RumEvents.filter(
+            (e) => e.type === 'com.amazon.rum.page_view_event'
+        ).map((e) => JSON.parse(e.details).pageId);
 
         browser.assert.equal(
             pages.includes('/page_event.html'),

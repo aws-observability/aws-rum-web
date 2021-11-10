@@ -375,7 +375,6 @@ describe('FetchPlugin tests', () => {
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
             // Expected
-            console.log(error);
         });
         plugin.disable();
         global.fetch = mockFetch;
@@ -410,7 +409,6 @@ describe('FetchPlugin tests', () => {
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
             // Expected
-            console.log(error);
         });
         plugin.disable();
         global.fetch = mockFetch;

@@ -18,16 +18,16 @@ test('when fetch is called then a trace is recorded', async (t: TestController) 
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clearRequestResponse)
         .click(sendFetchRequest)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = JSON.parse(await REQUEST_BODY.textContent);
-    const eventType = json.batch.events[0].type;
-    const eventDetails = JSON.parse(json.batch.events[0].details);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
 
     await t
         .expect(eventType)
@@ -43,16 +43,16 @@ test('when fetch is called then an http event is recorded', async (t: TestContro
         .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch')
+        .contains('BatchId')
         .click(clearRequestResponse)
         .click(sendFetchRequest)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = JSON.parse(await REQUEST_BODY.textContent);
-    const eventType = json.batch.events[1].type;
-    const eventDetails = JSON.parse(json.batch.events[1].details);
+    const eventType = json.RumEvents[1].type;
+    const eventDetails = JSON.parse(json.RumEvents[1].details);
 
     await t
         .expect(eventType)

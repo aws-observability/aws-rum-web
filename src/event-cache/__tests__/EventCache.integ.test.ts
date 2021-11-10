@@ -1,7 +1,7 @@
 import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
-import { Event } from '../../dispatch/dataplane';
+import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
 
@@ -32,8 +32,7 @@ describe('EventCache tests', () => {
         expect(
             eventCache
                 .getEventBatch()
-                .events.filter((e) => e.type === SESSION_START_EVENT_TYPE)
-                .length
+                .filter((e) => e.type === SESSION_START_EVENT_TYPE).length
         ).toEqual(2);
     });
 
@@ -64,7 +63,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        const events: Event[] = await eventCache.getEventBatch().events;
+        const events: RumEvent[] = await eventCache.getEventBatch();
         events.forEach((event) => {
             expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
         });

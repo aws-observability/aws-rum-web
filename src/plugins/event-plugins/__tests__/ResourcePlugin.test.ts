@@ -13,7 +13,7 @@ import { mockRandom } from 'jest-mock-random';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 
-const DATA_PLANE_URL = 'https://dataplane.us-west-2.beta.rum.aws.dev';
+const DATA_PLANE_URL = 'https://dataplane.rum.us-west-2.amazonaws.com';
 
 const buildResourcePlugin = () => {
     return new ResourcePlugin(DATA_PLANE_URL);

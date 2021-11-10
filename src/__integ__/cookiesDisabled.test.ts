@@ -15,10 +15,10 @@ test('when cookies are disabled, no session start event is dispatched', async (t
         .click(dispatch)
         .wait(300)
         .expect(REQUEST_BODY.textContent)
-        .contains('batch');
+        .contains('BatchId');
 
     const json = JSON.parse(await REQUEST_BODY.textContent);
-    const sessionStartEvents = json.batch.events.filter(
+    const sessionStartEvents = json.RumEvents.filter(
         (e) => e.eventType == SESSION_START_EVENT_TYPE
     );
 
