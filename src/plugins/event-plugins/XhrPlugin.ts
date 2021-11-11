@@ -3,14 +3,14 @@ import { XRayTraceEvent } from '../../events/xray-trace-event';
 import { HttpEvent } from '../../events/http-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
-    HttpPluginConfig,
+    PartialHttpPluginConfig,
     defaultConfig,
     epochTime,
     createXRayTraceEvent,
     getAmznTraceIdHeaderValue,
     X_AMZN_TRACE_ID,
     isUrlAllowed,
-    HttpPluginConfigWithDefaults
+    HttpPluginConfig
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
@@ -93,11 +93,11 @@ export const XHR_PLUGIN_ID = 'com.amazonaws.rum.xhr';
  */
 export class XhrPlugin extends MonkeyPatched implements Plugin {
     private pluginId: string;
-    private config: HttpPluginConfigWithDefaults;
+    private config: HttpPluginConfig;
     private xhrMap: Map<XMLHttpRequest, XhrDetails>;
     private context: PluginContext;
 
-    constructor(config?: HttpPluginConfig) {
+    constructor(config?: PartialHttpPluginConfig) {
         super();
         this.pluginId = XHR_PLUGIN_ID;
         this.config = { ...defaultConfig, ...config };
@@ -111,10 +111,6 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
 
     public getPluginId(): string {
         return this.pluginId;
-    }
-
-    public configure(config: HttpPluginConfig): void {
-        this.config = { ...this.config, ...config };
     }
 
     protected patches(): MonkeyPatch[] {

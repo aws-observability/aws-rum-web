@@ -9,7 +9,6 @@ import {
     REQUEST_BODY,
     RESPONSE_STATUS
 } from '../../test-utils/integ-test-utils';
-import { DOM_EVENT_PLUGIN_ID } from '../../plugins/event-plugins/DomEventPlugin';
 
 import { SESSION_START_EVENT_TYPE } from '../SessionManager';
 
@@ -23,9 +22,6 @@ const OS_NAME = 'osName';
 const OS_VERSION = 'osVersion';
 const DEVICE_TYPE = 'deviceType';
 const PLATFORM_TYPE = 'platformType';
-
-const CONFIGURE_DOM_EVENT_PLUGIN_COMMAND = 'configurePlugin';
-const CONFIGURE_DOM_EVENT_PLUGIN_PAYLOAD = `{"pluginId": "${DOM_EVENT_PLUGIN_ID}", "config": [{"event":"click", "elementId":"button1"}]}`;
 
 const button1: Selector = Selector(`#${BUTTON_ID_1}`);
 
@@ -79,16 +75,6 @@ test('UserAgentMetaDataPlugin records user agent metadata', async (t: TestContro
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t.wait(300);
-
-    // update configure, register click event for button1
-    await t
-        .typeText(COMMAND, CONFIGURE_DOM_EVENT_PLUGIN_COMMAND, {
-            replace: true
-        })
-        .typeText(PAYLOAD, CONFIGURE_DOM_EVENT_PLUGIN_PAYLOAD, {
-            replace: true
-        })
-        .click(SUBMIT);
 
     // click button
     await t.click(button1);

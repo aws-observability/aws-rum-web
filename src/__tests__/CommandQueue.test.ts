@@ -42,7 +42,6 @@ const enable = jest.fn();
 const dispatch = jest.fn();
 const dispatchBeacon = jest.fn();
 const setAwsCredentials = jest.fn();
-const configurePlugin = jest.fn();
 const allowCookies = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
@@ -53,7 +52,6 @@ jest.mock('../orchestration/Orchestration', () => ({
         dispatch,
         dispatchBeacon,
         setAwsCredentials,
-        configurePlugin,
         allowCookies,
         recordPageView,
         recordError
@@ -244,16 +242,6 @@ describe('CommandQueue tests', () => {
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(setAwsCredentials).toHaveBeenCalled();
-    });
-
-    test('configurePlugin calls Orchestration.configurePlugin', async () => {
-        const cq: CommandQueue = getCommandQueue();
-        const result = await cq.push({
-            c: 'configurePlugin',
-            p: { pluginId: 'myplugin', config: {} }
-        });
-        expect(Orchestration).toHaveBeenCalled();
-        expect(configurePlugin).toHaveBeenCalled();
     });
 
     test('allowCookies calls Orchestration.allowCookies', async () => {

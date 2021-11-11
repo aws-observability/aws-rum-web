@@ -39,13 +39,6 @@ export interface Plugin {
     getPluginId(): string;
 
     /**
-     * Configure the plugin. The plugin should start or stop recording events for
-     * which it is configured.
-     * @param config The configuration for the plugin (e.g., enable/disable events).
-     */
-    configure(config: object): void;
-
-    /**
      * Manually record an event.
      * @param data Data that the plugin will use to create an event.
      */

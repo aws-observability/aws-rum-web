@@ -28,11 +28,13 @@ export enum TELEMETRY_TYPES {
     HTTP = 'http'
 }
 
-type PluginInitializer = () => Plugin[];
+type PluginInitializer = (config: object) => Plugin[];
 
 interface TelemetriesFunctor {
     [key: string]: PluginInitializer;
 }
+
+type Telemetry = string | (string | object)[];
 
 export enum PAGE_ID_FORMAT {
     PATH = 'PATH',
@@ -78,7 +80,7 @@ export type PartialConfig = {
      * instantiate each plugin themselves. The toolkit will instantiate the
      * plugins which map to the selected categories.
      */
-    telemetries?: string[];
+    telemetries?: Telemetry[];
     userIdRetentionDays?: number;
 };
 
@@ -225,21 +227,11 @@ export class Orchestration {
     }
 
     /**
-     * Add an event plugin for collecting telemetry.
+     * Add a telemetry plugin.
      * @param plugin A plugin which adheres to the RUM web client's plugin interface.
-     * @param config An initial configuration for the plugin.
      */
-    public addPlugin(plugin: Plugin, config?: any): void {
-        this.pluginManager.addPlugin(plugin, config);
-    }
-
-    /**
-     * Configure a plugin.
-     * @param pluginId A unique identifier for the plugin being configured.
-     * @param config A configuration for the plugin (e.g., enable/disable events).
-     */
-    public configurePlugin(pluginId: string, config: object): void {
-        this.pluginManager.configurePlugin(pluginId, config);
+    public addPlugin(plugin: Plugin): void {
+        this.pluginManager.addPlugin(plugin);
     }
 
     /**
@@ -374,7 +366,12 @@ export class Orchestration {
 
         this.config.telemetries.forEach((type) => {
             if (typeof type === 'string' && functor[type.toLowerCase()]) {
-                plugins = [...plugins, ...functor[type.toLowerCase()]()];
+                plugins = [...plugins, ...functor[type.toLowerCase()]({})];
+            } else if (Array.isArray(type) && functor[type[0].toLowerCase()]) {
+                plugins = [
+                    ...plugins,
+                    ...functor[type[0].toLowerCase()](type[1])
+                ];
             }
         });
 
@@ -399,21 +396,21 @@ export class Orchestration {
      */
     private telemetryFunctor(): TelemetriesFunctor {
         return {
-            [TELEMETRY_TYPES.ERRORS]: (): Plugin[] => {
-                return [new JsErrorPlugin()];
+            [TELEMETRY_TYPES.ERRORS]: (config: object): Plugin[] => {
+                return [new JsErrorPlugin(config)];
             },
-            [TELEMETRY_TYPES.PERFORMANCE]: (): Plugin[] => {
+            [TELEMETRY_TYPES.PERFORMANCE]: (config: object): Plugin[] => {
                 return [
                     new NavigationPlugin(),
-                    new ResourcePlugin(this.config.endpoint),
+                    new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];
             },
-            [TELEMETRY_TYPES.INTERACTION]: (): Plugin[] => {
-                return [new DomEventPlugin()];
+            [TELEMETRY_TYPES.INTERACTION]: (config: object): Plugin[] => {
+                return [new DomEventPlugin(config)];
             },
-            [TELEMETRY_TYPES.HTTP]: (): Plugin[] => {
-                return [new XhrPlugin(), new FetchPlugin()];
+            [TELEMETRY_TYPES.HTTP]: (config: object): Plugin[] => {
+                return [new XhrPlugin(config), new FetchPlugin(config)];
             }
         };
     }

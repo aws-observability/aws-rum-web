@@ -62,12 +62,11 @@ test('when a TypeError is thrown then name and message are recorded', async (t: 
         .match(/\d+/);
 });
 
-test('when stack trace is > 0 then stack trace is recorded', async (t: TestController) => {
+test('stack trace is recorded by default', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
         .wait(300)
-        .click(recordStackTrace)
         .click(triggerTypeError)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)

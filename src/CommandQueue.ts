@@ -4,11 +4,6 @@ import { getRemoteConfig } from './remote-config/remote-config';
 
 /**
  * An AWS RUM Client command.
- *
- * A command is one of the following:
- * - <'setAwsCredentials', AWS.Credentials>
- * - <'addPlugin', TelemetryPlugin>
- * - <'configurePlugin', object>
  */
 export type Command = { c: string; p: any };
 
@@ -42,16 +37,6 @@ export class CommandQueue {
             payload: Credentials | CredentialProvider
         ): void => {
             this.orchestration.setAwsCredentials(payload);
-        },
-        configurePlugin: (payload: any): void => {
-            if (payload.pluginId && payload.config) {
-                this.orchestration.configurePlugin(
-                    payload.pluginId,
-                    payload.config
-                );
-            } else {
-                throw new Error('IncorrectParametersException');
-            }
         },
         recordPageView: (payload: string): void => {
             this.orchestration.recordPageView(payload);

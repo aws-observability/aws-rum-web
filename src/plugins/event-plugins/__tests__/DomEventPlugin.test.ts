@@ -10,12 +10,12 @@ describe('DomEventPlugin tests', () => {
     test('DomEventPlugin records events by default', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"/>';
-        const plugin: DomEventPlugin = new DomEventPlugin();
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', elementId: 'button1' }]
+        });
 
         // Run
         plugin.load(context);
-        plugin.configure([{ event: 'click', elementId: 'button1' }]);
-        // @ts-ignore
         document.getElementById('button1').click();
         plugin.disable();
 
@@ -26,13 +26,13 @@ describe('DomEventPlugin tests', () => {
     test('DomEventPlugin does not record events when disabled', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"/>';
-        const plugin: DomEventPlugin = new DomEventPlugin();
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', elementId: 'button1' }]
+        });
 
         // Run
         plugin.load(context);
-        plugin.configure([{ event: 'click', elementId: 'button1' }]);
         plugin.disable();
-        // @ts-ignore
         document.getElementById('button1').click();
 
         // Assert
@@ -42,14 +42,14 @@ describe('DomEventPlugin tests', () => {
     test('DomEventPlugin records events when disabled, then enabled', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"/>';
-        const plugin: DomEventPlugin = new DomEventPlugin();
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', elementId: 'button1' }]
+        });
 
         // Run
         plugin.load(context);
-        plugin.configure([{ event: 'click', elementId: 'button1' }]);
         plugin.disable();
         plugin.enable();
-        // @ts-ignore
         document.getElementById('button1').click();
         plugin.disable();
 
@@ -60,12 +60,12 @@ describe('DomEventPlugin tests', () => {
     test('when listening to document click and event target has an ID, element ID is used as ID', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"/>';
-        const plugin: DomEventPlugin = new DomEventPlugin();
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', element: document as any }]
+        });
 
         // Run
         plugin.load(context);
-        plugin.configure([{ event: 'click', element: document }]);
-        // @ts-ignore
         document.getElementById('button1').click();
         plugin.disable();
 
@@ -83,12 +83,12 @@ describe('DomEventPlugin tests', () => {
     test('when listening to document click and event target has no ID, element tag is used as ID', async () => {
         // Init
         document.body.innerHTML = '<button/>';
-        const plugin: DomEventPlugin = new DomEventPlugin();
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', element: document as any }]
+        });
 
         // Run
         plugin.load(context);
-        plugin.configure([{ event: 'click', element: document }]);
-        // @ts-ignore
         document.getElementsByTagName('button')[0].click();
         plugin.disable();
 

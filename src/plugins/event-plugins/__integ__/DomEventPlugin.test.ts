@@ -21,7 +21,6 @@ test('when document click events configured then button click is recorded', asyn
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
         .wait(300)
-        .click(recordDocumentClicks)
         .click(button1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
@@ -51,7 +50,6 @@ test('when element without an id is clicked then node type is recorded', async (
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
         .wait(300)
-        .click(recordDocumentClicks)
         .click(link1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
@@ -80,7 +78,6 @@ test('when element id click event configured then button click is recorded', asy
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
         .wait(300)
-        .click(recordButton1Clicks)
         .click(button1)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
@@ -98,32 +95,11 @@ test('when element id click event configured then button click is recorded', asy
     });
 });
 
-test('when client is disabled prior to config then button click is not recorded', async (t: TestController) => {
+test('when client is disabled then button click is not recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
         .wait(300)
-        .click(disable)
-        .click(recordButton1Clicks)
-        .click(button1)
-        .click(enable)
-        .click(dispatch)
-        .expect(REQUEST_BODY.textContent)
-        .contains('BatchId');
-
-    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
-        (e) => e.type === DOM_EVENT_TYPE
-    );
-
-    await t.expect(events.length).eql(0);
-});
-
-test('when client is disabled after config then button click is not recorded', async (t: TestController) => {
-    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
-    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
-    await t
-        .wait(300)
-        .click(recordButton1Clicks)
         .click(disable)
         .click(button1)
         .click(enable)
@@ -132,7 +108,9 @@ test('when client is disabled after config then button click is not recorded', a
         .contains('BatchId');
 
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
-        (e) => e.type === DOM_EVENT_TYPE
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).elementId === 'button1'
     );
 
     await t.expect(events.length).eql(0);
@@ -143,7 +121,6 @@ test('when client is disabled and enabled then button click is recorded', async 
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
         .wait(300)
-        .click(recordButton1Clicks)
         .click(disable)
         .click(enable)
         .click(button1)

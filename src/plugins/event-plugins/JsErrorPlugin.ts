@@ -4,6 +4,10 @@ import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 
 export const JS_ERROR_EVENT_PLUGIN_ID = 'com.amazonaws.rum.js-error';
 
+export type PartialJsErrorPluginConfig = {
+    stackTraceLength?: number;
+};
+
 export type JsErrorPluginConfig = {
     stackTraceLength: number;
 };
@@ -18,10 +22,10 @@ export class JsErrorPlugin implements Plugin {
     private config: JsErrorPluginConfig;
     private recordEvent: RecordEvent;
 
-    constructor(config?: JsErrorPluginConfig) {
+    constructor(config?: PartialJsErrorPluginConfig) {
         this.pluginId = JS_ERROR_EVENT_PLUGIN_ID;
         this.enabled = true;
-        this.config = config ? config : defaultConfig;
+        this.config = { ...defaultConfig, ...config };
     }
 
     load(context: PluginContext): void {
@@ -47,10 +51,6 @@ export class JsErrorPlugin implements Plugin {
 
     getPluginId(): string {
         return this.pluginId;
-    }
-
-    configure(config: JsErrorPluginConfig): void {
-        this.config = config;
     }
 
     record(error: any): void {

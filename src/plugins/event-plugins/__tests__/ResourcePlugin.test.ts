@@ -8,15 +8,15 @@ import {
     mockPerformanceObjectWithResources,
     resourceEvent
 } from '../../../test-utils/mock-data';
-import { defaultRepConfig, ResourcePlugin } from '../ResourcePlugin';
+import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 
 const DATA_PLANE_URL = 'https://dataplane.rum.us-west-2.amazonaws.com';
 
-const buildResourcePlugin = () => {
-    return new ResourcePlugin(DATA_PLANE_URL);
+const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
+    return new ResourcePlugin(config);
 };
 
 describe('ResourcePlugin tests', () => {
@@ -104,8 +104,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = buildResourcePlugin();
-        plugin.configure({ ...defaultRepConfig, ...{ eventLimit: 1 } });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
         // Run
         plugin.load(context);
@@ -123,8 +122,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObserver();
 
         // Run
-        const plugin: ResourcePlugin = buildResourcePlugin();
-        plugin.configure({ ...defaultRepConfig, ...{ eventLimit: 1 } });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
         plugin.load(context);
         window.dispatchEvent(new Event('load'));
@@ -147,8 +145,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = buildResourcePlugin();
-        plugin.configure({ ...defaultRepConfig, ...{ eventLimit: 3 } });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
 
         // Run
         plugin.load(context);

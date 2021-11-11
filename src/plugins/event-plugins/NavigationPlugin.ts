@@ -51,9 +51,6 @@ export class NavigationPlugin implements Plugin {
         return this.pluginId;
     }
 
-    // tslint:disable:no-empty
-    configure(config: string[]): void {}
-
     /**
      * Use Navigation timing Level 1 for all browsers by default -
      * https://developer.mozilla.org/en-US/docs/Web/API/Performance/timing

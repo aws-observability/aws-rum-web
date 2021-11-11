@@ -29,17 +29,12 @@ jest.mock('../../event-cache/EventCache', () => ({
 
 const addPlugin = jest.fn();
 
-const configurePluginSpy = jest.fn((p, q) => {
-    /*do nothing*/
-});
-
 const enablePlugins = jest.fn();
 const disablePlugins = jest.fn();
 
 jest.mock('../../plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
         addPlugin: addPlugin,
-        configurePlugin: configurePluginSpy,
         enable: enablePlugins,
         disable: disablePlugins
     }))
@@ -219,6 +214,21 @@ describe('Orchestration tests', () => {
         });
 
         expect(actual.sort()).toEqual(expected.sort());
+    });
+
+    test('when a config is passed to the http data collection then the config is added as a constructor arg', async () => {
+        // Init
+        new Orchestration('a', 'c', 'us-east-1', {
+            telemetries: [['http', { trace: true }]]
+        });
+
+        // Assert
+        addPlugin.mock.calls.forEach((call) => {
+            const plugin: any = call[0];
+            if (plugin.getPluginId() === 'com.amazonaws.rum.fetch') {
+                expect(plugin.config.trace).toEqual(true);
+            }
+        });
     });
 
     test('when performance data collection is set then the performance plugins are instantiated', async () => {

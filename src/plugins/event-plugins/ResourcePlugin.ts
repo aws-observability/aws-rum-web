@@ -13,13 +13,19 @@ export const RESOURCE_EVENT_PLUGIN_ID = 'com.amazonaws.rum.resource';
 const RESOURCE = 'resource';
 const LOAD = 'load';
 
+export type PartialResourcePluginConfig = {
+    eventLimit?: number;
+    recordAllTypes?: ResourceType[];
+    sampleTypes?: ResourceType[];
+};
+
 export type ResourcePluginConfig = {
     eventLimit: number;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
 };
 
-export const defaultRepConfig = {
+export const defaultConfig = {
     eventLimit: 10,
     recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
     sampleTypes: [
@@ -46,14 +52,14 @@ export class ResourcePlugin implements Plugin {
      */
     private dataPlaneEndpoint: string;
 
-    constructor(dataPlaneEndpoint) {
+    constructor(config?: PartialResourcePluginConfig) {
         this.pluginId = RESOURCE_EVENT_PLUGIN_ID;
         this.enabled = true;
-        this.dataPlaneEndpoint = dataPlaneEndpoint;
-        this.config = defaultRepConfig;
+        this.config = { ...defaultConfig, ...config };
     }
 
     load(context: PluginContext): void {
+        this.dataPlaneEndpoint = context.config.endpoint;
         this.recordEvent = context.record;
         window.addEventListener(LOAD, this.resourceEventListener);
     }
@@ -78,10 +84,6 @@ export class ResourcePlugin implements Plugin {
 
     getPluginId(): string {
         return this.pluginId;
-    }
-
-    configure(config: ResourcePluginConfig): void {
-        this.config = config;
     }
 
     resourceEventListener = (event: Event): void => {

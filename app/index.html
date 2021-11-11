@@ -16,10 +16,8 @@
             }
 
             function onSubmitCommand() {
-                //e.g. configurePlugin
                 const command = document.getElementById('command').value;
                 if (document.getElementById('payload').value) {
-                    //e.g. {"pluginId": "com.amazonaws.rum.dom-event", "config": [{"event":"click", "elementId":"button2"}]}
                     const payload = JSON.parse(
                         document.getElementById('payload').value
                     );
