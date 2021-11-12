@@ -34,20 +34,6 @@
                 throw 'thrown string';
             }
 
-            function recordStackTrace() {
-                cwr('configurePlugin', {
-                    pluginId: 'com.amazonaws.rum.js-error',
-                    config: { stackTraceLength: 150 }
-                });
-            }
-
-            function doNotRecordStackTrace() {
-                cwr('configurePlugin', {
-                    pluginId: 'com.amazonaws.rum.js-error',
-                    config: { stackTraceLength: 0 }
-                });
-            }
-
             function recordCaughtError() {
                 cwr('recordError', new Error('My error message'));
             }
@@ -84,9 +70,6 @@
         </button>
         <button id="throwErrorString" onclick="throwErrorString()">
             Throw error string
-        </button>
-        <button id="recordStackTrace" onclick="recordStackTrace()">
-            Record stack trace
         </button>
         <button id="recordCaughtError" onclick="recordCaughtError()">
             Record caught error

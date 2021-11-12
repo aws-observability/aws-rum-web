@@ -13,7 +13,7 @@ for (let i = 0; i < 256; i++) {
 
 export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
 
-export type HttpPluginConfig = {
+export type PartialHttpPluginConfig = {
     logicalServiceName?: string;
     urlsToInclude?: RegExp[];
     urlsToExclude?: RegExp[];
@@ -22,7 +22,7 @@ export type HttpPluginConfig = {
     recordAllRequests?: boolean;
 };
 
-export type HttpPluginConfigWithDefaults = {
+export type HttpPluginConfig = {
     logicalServiceName: string;
     urlsToInclude: RegExp[];
     urlsToExclude: RegExp[];
@@ -31,7 +31,7 @@ export type HttpPluginConfigWithDefaults = {
     recordAllRequests: boolean;
 };
 
-export const defaultConfig: HttpPluginConfigWithDefaults = {
+export const defaultConfig: HttpPluginConfig = {
     logicalServiceName: 'rum.aws.amazon.com',
     urlsToInclude: [/.*/],
     urlsToExclude: [
@@ -45,10 +45,7 @@ export const defaultConfig: HttpPluginConfigWithDefaults = {
     recordAllRequests: false
 };
 
-export const isUrlAllowed = (
-    url: string,
-    config: HttpPluginConfigWithDefaults
-) => {
+export const isUrlAllowed = (url: string, config: HttpPluginConfig) => {
     const include = config.urlsToInclude.some((urlPattern) =>
         urlPattern.test(url)
     );

@@ -28,27 +28,6 @@
             }
 
             // Specific to DOM Event plugin
-            function recordDocumentClicks() {
-                cwr('configurePlugin', {
-                    pluginId: 'com.amazonaws.rum.dom-event',
-                    config: [{ event: 'click', element: document }]
-                });
-            }
-
-            function recordButton1Clicks() {
-                cwr('configurePlugin', {
-                    pluginId: 'com.amazonaws.rum.dom-event',
-                    config: [{ event: 'click', elementId: 'button1' }]
-                });
-            }
-
-            function doNotRecordClicks() {
-                cwr('configurePlugin', {
-                    pluginId: 'com.amazonaws.rum.dom-event',
-                    config: []
-                });
-            }
-
             function disable() {
                 cwr('disable');
             }
@@ -76,15 +55,6 @@
     <body>
         <p id="welcome">This application is used for RUM integ testing.</p>
         <hr />
-        <button id="recordDocumentClicks" onclick="recordDocumentClicks()">
-            Record document Clicks
-        </button>
-        <button id="recordButton1Clicks" onclick="recordButton1Clicks()">
-            Record #button1 Clicks
-        </button>
-        <button id="doNotRecordClicks" onclick="doNotRecordClicks()">
-            Do Not Record Clicks
-        </button>
         <button id="disable" onclick="disable()">Disable</button>
         <button id="enable" onclick="enable()">Enable</button>
         <hr />

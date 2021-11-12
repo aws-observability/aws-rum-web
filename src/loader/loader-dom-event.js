@@ -5,7 +5,9 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     allowCookies: true,
     dispatchInterval: 0,
     metaDataPluginsToLoad: [],
-    eventPluginsToLoad: [new DomEventPlugin()],
+    eventPluginsToLoad: [
+        new DomEventPlugin({ events: [{ event: 'click', element: document }] })
+    ],
     telemetries: [],
     clientBuilder: showRequestClientBuilder
 });

@@ -46,13 +46,6 @@ export class DemoPlugin implements Plugin {
         return DEMO_PLUGIN_ID;
     }
 
-    configure(config: object): void {
-        this.configuration = {
-            ...this.configuration,
-            ...config
-        };
-    }
-
     record(data: any): void {
         const demoEvent = {
             eventData: data

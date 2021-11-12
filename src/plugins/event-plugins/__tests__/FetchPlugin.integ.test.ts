@@ -1,19 +1,19 @@
 import { Orchestration } from '../../../orchestration/Orchestration';
 import { createAwsCredentials } from '../../../test-utils/test-utils';
-import { HttpPluginConfig } from '../../utils/http-utils';
+import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { FetchPlugin } from '../FetchPlugin';
 
-const mockFetch = jest.fn((input: RequestInfo, init?: RequestInit) =>
-    Promise.resolve({
-        status: 200,
-        statusText: 'OK',
-        headers: [],
-        body: '{}',
-        ok: true
-    })
+const mockFetch = jest.fn(
+    (input: RequestInfo, init?: RequestInit) =>
+        Promise.resolve({
+            status: 200,
+            statusText: 'OK',
+            headers: [],
+            body: '{}',
+            ok: true
+        }) as any
 );
 
-// @ts-ignore
 global.fetch = mockFetch;
 global.Request = jest.fn().mockImplementation((url, requestOptions) => ({
     url,
@@ -27,7 +27,7 @@ describe('FetchPlugin integ tests', () => {
 
     test('dispatch requests are not recorded by the http plugin', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             recordAllRequests: true
         };
 

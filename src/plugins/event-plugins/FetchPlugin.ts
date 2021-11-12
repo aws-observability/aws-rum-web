@@ -2,12 +2,12 @@ import { Plugin, PluginContext } from '../Plugin';
 import { Http, XRayTraceEvent } from '../../events/xray-trace-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
-    HttpPluginConfig,
+    PartialHttpPluginConfig,
     defaultConfig,
     epochTime,
     createXRayTraceEvent,
     addAmznTraceIdHeader,
-    HttpPluginConfigWithDefaults,
+    HttpPluginConfig,
     createXRayTraceEventHttp,
     isUrlAllowed
 } from '../utils/http-utils';
@@ -39,10 +39,10 @@ export const FETCH_PLUGIN_ID = 'com.amazonaws.rum.fetch';
  */
 export class FetchPlugin extends MonkeyPatched implements Plugin {
     private pluginId: string;
-    private config: HttpPluginConfigWithDefaults;
+    private config: HttpPluginConfig;
     private context: PluginContext;
 
-    constructor(config?: HttpPluginConfig) {
+    constructor(config?: PartialHttpPluginConfig) {
         super();
         this.pluginId = FETCH_PLUGIN_ID;
         this.config = { ...defaultConfig, ...config };
@@ -55,10 +55,6 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
 
     public getPluginId(): string {
         return this.pluginId;
-    }
-
-    public configure(config: HttpPluginConfig): void {
-        this.config = { ...this.config, ...config };
     }
 
     protected patches(): MonkeyPatch[] {

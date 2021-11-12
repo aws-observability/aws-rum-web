@@ -32,9 +32,6 @@ export class PageViewPlugin extends MonkeyPatched implements Plugin {
         return this.pluginId;
     }
 
-    // tslint:disable-next-line:no-empty
-    public configure(config: any): void {}
-
     protected patches(): MonkeyPatch[] {
         return [
             {

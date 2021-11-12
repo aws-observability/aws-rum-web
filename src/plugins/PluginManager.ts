@@ -14,14 +14,10 @@ export class PluginManager {
     }
 
     /**
-     * Add an event plugin to PluginManager.
-     * It also:
-     * 1. config the plugin with in intial configuration
-     * 2. initialize the plugin
+     * Add an event plugin to PluginManager and initialize the plugin.
      * @param plugin The plugin which adheres to the RUM web client's plugin interface.
-     * @param config The initial configuration for the plugin.
      */
-    public addPlugin(plugin: Plugin, config?: any): void {
+    public addPlugin(plugin: Plugin): void {
         const pluginId: string = plugin.getPluginId();
 
         // add to plugin map
@@ -33,11 +29,6 @@ export class PluginManager {
 
         // initialize plugin
         plugin.load(this.context);
-
-        // config plugin
-        if (config) {
-            plugin.configure(config);
-        }
     }
 
     /**
@@ -60,22 +51,6 @@ export class PluginManager {
      */
     public hasPlugin(pluginId: string): boolean {
         return this.plugins.has(pluginId);
-    }
-
-    /**
-     * Configure a plugin.
-     * @param pluginId The unique identifier for the plugin being configured.
-     * @param config The configuration for the plugin (e.g., enable/disable events).
-     */
-    public configurePlugin(pluginId: string, config: object): void {
-        const plugin = this.plugins.get(pluginId);
-        if (plugin) {
-            plugin.configure(config);
-        } else {
-            throw new Error(
-                'AWS RUM Client configurePlugin: Invalid plugin ID'
-            );
-        }
     }
 
     /**

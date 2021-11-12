@@ -1,4 +1,4 @@
-import { HttpPluginConfig } from '../../utils/http-utils';
+import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import { XhrPlugin } from '../XhrPlugin';
 import {
@@ -23,7 +23,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR is called then the plugin records the http request/response', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: true
         };
@@ -63,7 +63,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR is called then the plugin records a trace', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],
             trace: true
@@ -110,7 +110,7 @@ describe('XhrPlugin tests', () => {
 
     test('when plugin is disabled then the plugin does not record any events', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             trace: true,
             recordAllRequests: true
@@ -138,7 +138,7 @@ describe('XhrPlugin tests', () => {
 
     test('when plugin is re-enabled then the plugin records a trace', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             trace: true
         };
@@ -169,7 +169,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR returns an error code then the plugin adds the error to the trace', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             ...DEFAULT_CONFIG,
             ...{
                 logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -223,7 +223,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR returns an error code then the plugin adds the error to the http event', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],
             trace: false
@@ -262,7 +262,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR times out then the plugin adds the error to the trace', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],
             trace: true
@@ -308,7 +308,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR times out then the plugin adds the error to the http event', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],
             trace: false
@@ -347,7 +347,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR aborts then the plugin adds the error to the trace', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],
             trace: true
@@ -395,7 +395,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR aborts then the plugin adds the error to the http event', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             trace: false
         };
@@ -436,7 +436,7 @@ describe('XhrPlugin tests', () => {
     test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         let header: string;
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             trace: true
         };
@@ -471,7 +471,7 @@ describe('XhrPlugin tests', () => {
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             trace: false
         };
@@ -512,7 +512,7 @@ describe('XhrPlugin tests', () => {
             recordPageView,
             getSession
         };
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -540,7 +540,7 @@ describe('XhrPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: true
         };
@@ -568,7 +568,7 @@ describe('XhrPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: false
         };
@@ -596,7 +596,7 @@ describe('XhrPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin records a request with status 500', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: false
         };
@@ -625,7 +625,7 @@ describe('XhrPlugin tests', () => {
 
     test('when a url is excluded then the plugin does not record a request to that url', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
             urlsToExclude: [/response\.json/]
         };
@@ -653,7 +653,7 @@ describe('XhrPlugin tests', () => {
 
     test('all urls are included by default', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             recordAllRequests: true
         };
 
@@ -680,7 +680,7 @@ describe('XhrPlugin tests', () => {
 
     test('when a request is made to cognito or sts using default exclude list then the requests are not recorded', async () => {
         // Init
-        const config: HttpPluginConfig = {
+        const config: PartialHttpPluginConfig = {
             recordAllRequests: true
         };
 

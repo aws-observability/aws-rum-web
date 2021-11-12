@@ -21,28 +21,42 @@ export type TargetDomEvent = {
     element?: HTMLElement;
 };
 
+export type PartialDomEventPluginConfig = {
+    events?: TargetDomEvent[];
+};
+
+export type DomEventPluginConfig = {
+    events: TargetDomEvent[];
+};
+
+const defaultConfig: DomEventPluginConfig = {
+    events: []
+};
+
 export class DomEventPlugin implements Plugin {
     private recordEvent: RecordEvent | undefined;
-    private configuration: TargetDomEvent[] = [];
     private pluginId: string;
     private eventListenerMap: Map<TargetDomEvent, EventListener>;
     private enabled: boolean;
+    private config: DomEventPluginConfig;
 
-    constructor() {
+    constructor(config?: PartialDomEventPluginConfig) {
         this.pluginId = DOM_EVENT_PLUGIN_ID;
         this.eventListenerMap = new Map<TargetDomEvent, EventListener>();
-        this.enabled = true;
+        this.config = { ...defaultConfig, ...config };
+        this.enabled = false;
     }
 
     load(context: PluginContext): void {
         this.recordEvent = context.record;
+        this.enable();
     }
 
     enable(): void {
         if (this.enabled) {
             return;
         }
-        this.addListeners(this.configuration);
+        this.addListeners();
         this.enabled = true;
     }
 
@@ -50,7 +64,7 @@ export class DomEventPlugin implements Plugin {
         if (!this.enabled) {
             return;
         }
-        this.removeListeners(this.configuration);
+        this.removeListeners();
         this.enabled = false;
     }
 
@@ -58,25 +72,20 @@ export class DomEventPlugin implements Plugin {
         return this.pluginId;
     }
 
-    configure(config: any): void {
-        if (this.enabled) {
-            this.removeListeners(this.configuration);
-            this.addListeners(config);
-        }
-        this.configuration = config;
+    private removeListeners() {
+        this.config.events.forEach((domEvent) =>
+            this.removeEventHandler(domEvent)
+        );
     }
 
-    private removeListeners(config: TargetDomEvent[]) {
-        config.forEach((domEvent) => this.removeEventHandler(domEvent));
-    }
-
-    private addListeners(config: TargetDomEvent[]) {
-        config.forEach((domEvent) => this.addEventHandler(domEvent));
+    private addListeners() {
+        this.config.events.forEach((domEvent) =>
+            this.addEventHandler(domEvent)
+        );
     }
 
     private getEventListener(): EventListener {
         return (event: Event): void => {
-            // @ts-ignore
             const eventData: DomEvent = {
                 version: '1.0.0',
                 event: event.type,
