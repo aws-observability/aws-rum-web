@@ -256,4 +256,81 @@ describe('EnhancedAuthentication tests', () => {
         // Assert
         expect(auth.ChainAnonymousCredentialsProvider()).toThrowError;
     });
+
+    // tslint:disable-next-line:max-line-length
+    test('when credential is in member then authentication chain retrieves credential from member', async () => {
+        // Init
+        const expiration = new Date(Date.now() + 3600 * 1000);
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN
+            }
+        };
+        const auth = new EnhancedAuthentication(config);
+
+        // Run
+        await auth.ChainAnonymousCredentialsProvider();
+
+        localStorage.setItem(
+            CRED_KEY,
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration
+            })
+        );
+
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
+
+    // tslint:disable-next-line:max-line-length
+    test('when credentials expire in member variable then authentication chain retrieves credential from basic auth flow', async () => {
+        // Init
+        getCredentials
+            .mockResolvedValueOnce({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration: new Date(0)
+            })
+            .mockResolvedValueOnce({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z',
+                expiration: new Date(0)
+            });
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN
+            }
+        };
+        const auth = new EnhancedAuthentication(config);
+
+        // Run
+        await auth.ChainAnonymousCredentialsProvider();
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
 });

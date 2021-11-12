@@ -5,11 +5,12 @@ import {
 import { Config } from '../orchestration/Orchestration';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
-import { CRED_KEY } from '../utils/constants';
+import { CRED_KEY, CRED_RENEW_MILLISECONDS } from '../utils/constants';
 
 export class EnhancedAuthentication {
     private cognitoIdentityClient: CognitoIdentityClient;
     private config: Config;
+    private credentials: Credentials | undefined;
 
     constructor(config: Config) {
         const region: string = config.identityPoolId.split(':')[0];
@@ -50,17 +51,32 @@ export class EnhancedAuthentication {
      * Implements CredentialsProvider = Provider<Credentials>
      */
     public ChainAnonymousCredentialsProvider = async (): Promise<Credentials> => {
-        return this.AnonymousCookieCredentialsProvider().catch(
-            this.AnonymousCognitoCredentialsProvider
-        );
+        return this.AnonymousCredentialsProvider()
+            .catch(this.AnonymousStorageCredentialsProvider)
+            .catch(this.AnonymousCognitoCredentialsProvider);
     };
 
     /**
-     * Provides credentials for an anonymous (guest) user. These credentials are read from a cookie.
+     * Provides credentials for an anonymous (guest) user. These credentials are read from a member variable.
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    private AnonymousCookieCredentialsProvider = async (): Promise<Credentials> => {
+    private AnonymousCredentialsProvider = async (): Promise<Credentials> => {
+        return new Promise<Credentials>((resolve, reject) => {
+            if (this.renewCredentials()) {
+                // The credentials have expired.
+                return reject();
+            }
+            resolve(this.credentials);
+        });
+    };
+
+    /**
+     * Provides credentials for an anonymous (guest) user. These credentials are read from localStorage.
+     *
+     * Implements CredentialsProvider = Provider<Credentials>
+     */
+    private AnonymousStorageCredentialsProvider = async (): Promise<Credentials> => {
         return new Promise<Credentials>((resolve, reject) => {
             let credentials;
             try {
@@ -73,10 +89,12 @@ export class EnhancedAuthentication {
             // we need to convert it back into a date, otherwise the AWS SDK signing middleware
             // (@aws-sdk/middleware-signing) will throw an exception and no credentials will be returned.
             credentials.expiration = new Date(credentials.expiration);
-            if (credentials.expiration < new Date()) {
+            this.credentials = credentials;
+            if (this.renewCredentials()) {
                 // The credentials have expired.
-                reject();
+                return reject();
             }
+            this.credentials = credentials;
             resolve(credentials);
         });
     };
@@ -96,6 +114,7 @@ export class EnhancedAuthentication {
         });
 
         return credentialProvider().then((credentials) => {
+            this.credentials = credentials;
             try {
                 localStorage.setItem(CRED_KEY, JSON.stringify(credentials));
             } catch (e) {
@@ -104,4 +123,14 @@ export class EnhancedAuthentication {
             return credentials;
         });
     };
+
+    private renewCredentials(): boolean {
+        if (!this.credentials || !this.credentials.expiration) {
+            return true;
+        }
+        const renewalTime: Date = new Date(
+            this.credentials.expiration.getTime() - CRED_RENEW_MILLISECONDS
+        );
+        return new Date() > renewalTime;
+    }
 }
