@@ -101,14 +101,16 @@ export class Dispatch {
      * Send meta data and events to the AWS RUM data plane service via fetch.
      */
     public dispatchFetch = async (): Promise<{ response: HttpResponse }> => {
-        return this.dispatch(this.rum.sendFetch);
+        return this.dispatch(this.rum.sendFetch)
+            .then(this.handleResponse)
+            .catch(this.handleReject);
     };
 
     /**
      * Send meta data and events to the AWS RUM data plane service via beacon.
      */
     public dispatchBeacon = async (): Promise<{ response: HttpResponse }> => {
-        return this.dispatch(this.rum.sendBeacon);
+        return this.dispatch(this.rum.sendBeacon).catch(this.handleReject);
     };
 
     /**
@@ -188,6 +190,28 @@ export class Dispatch {
 
         return send(putRumEventsRequest);
     }
+
+    private handleReject = (e: any): { response: HttpResponse } => {
+        // Terminate the dispatch process on any failure. We do not re-try
+        // requests for analytics data.
+        this.disable();
+        throw e;
+    };
+
+    private handleResponse = (response: {
+        response: HttpResponse;
+    }): { response: HttpResponse } => {
+        if (response && !this.isStatusCode2xx(response.response.statusCode)) {
+            // Terminate the dispatch process on any failure. We do not re-try
+            // requests for analytics data.
+            this.disable();
+        }
+        return response;
+    };
+
+    private isStatusCode2xx = (statusCode: number): boolean => {
+        return statusCode >= 200 && statusCode < 300;
+    };
 
     /**
      * The default method for creating data plane service clients.
