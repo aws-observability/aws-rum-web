@@ -7,7 +7,7 @@
             window.fetch = function (request, init) {
                 return Promise.resolve({
                     status: 200,
-                    headers: {},
+                    headers: new Headers({ 'Content-Length': 125 }),
                     body: '{}'
                 });
             };

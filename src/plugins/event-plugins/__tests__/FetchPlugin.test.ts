@@ -15,12 +15,16 @@ import { HttpEvent } from '../../../events/http-event';
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
+const headers = {
+    'Content-Length': '125'
+};
+
 const mockFetch = jest.fn(
     (input: RequestInfo, init?: RequestInit): Promise<Response> =>
         Promise.resolve({
             status: 200,
             statusText: 'OK',
-            headers: {},
+            headers: { get: (k) => headers[k] },
             body: '{}',
             ok: true
         } as any)
@@ -179,19 +183,28 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        const tmp = record.mock.calls[0][1];
         expect(record.mock.calls[0][1]).toMatchObject({
             name: 'sample.rum.aws.amazon.com',
             id: '0000000000000000',
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            http: {
-                request: {
-                    method: 'GET',
-                    traced: true
-                },
-                response: { status: 200 }
-            }
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: 'aws.amazon.com',
+                    start_time: 0,
+                    end_time: 0,
+                    http: {
+                        request: {
+                            method: 'GET',
+                            traced: true
+                        },
+                        response: { status: 200, content_length: 125 }
+                    }
+                }
+            ]
         });
     });
 
@@ -222,20 +235,28 @@ describe('FetchPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            http: {
-                request: {
-                    method: 'GET',
-                    traced: true
-                }
-            },
-            error: true,
-            cause: {
-                exceptions: [
-                    {
-                        type: 'Timeout'
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: 'aws.amazon.com',
+                    start_time: 0,
+                    end_time: 0,
+                    http: {
+                        request: {
+                            method: 'GET',
+                            traced: true
+                        }
+                    },
+                    error: true,
+                    cause: {
+                        exceptions: [
+                            {
+                                type: 'Timeout'
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         });
     });
 

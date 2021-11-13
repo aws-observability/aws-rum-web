@@ -1,5 +1,9 @@
 import { Plugin, PluginContext } from '../Plugin';
-import { Http, XRayTraceEvent } from '../../events/xray-trace-event';
+import {
+    Http,
+    Subsegment,
+    XRayTraceEvent
+} from '../../events/xray-trace-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
@@ -9,7 +13,9 @@ import {
     addAmznTraceIdHeader,
     HttpPluginConfig,
     createXRayTraceEventHttp,
-    isUrlAllowed
+    isUrlAllowed,
+    createXRaySubsegment,
+    requestInfoToHostname
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
@@ -83,11 +89,20 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         const http: Http = createXRayTraceEventHttp(init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
+            startTime
+        );
+        const subsegment: Subsegment = createXRaySubsegment(
+            requestInfoToHostname(input),
             startTime,
             http
         );
+        xRayTraceEvent.subsegments.push(subsegment);
 
-        addAmznTraceIdHeader(init, xRayTraceEvent.trace_id, xRayTraceEvent.id);
+        addAmznTraceIdHeader(
+            init,
+            xRayTraceEvent.trace_id,
+            xRayTraceEvent.subsegments[0].id
+        );
 
         return xRayTraceEvent;
     };
@@ -99,20 +114,31 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
     ) => {
         if (xRayTraceEvent) {
             const endTime = epochTime();
+            xRayTraceEvent.subsegments[0].end_time = endTime;
             xRayTraceEvent.end_time = endTime;
 
             if (response) {
-                xRayTraceEvent.http.response = {
+                xRayTraceEvent.subsegments[0].http.response = {
                     status: response.status
                 };
+                const cl = parseInt(response.headers.get('Content-Length'), 10);
+                if (!isNaN(cl)) {
+                    xRayTraceEvent.subsegments[0].http.response.content_length = cl;
+                }
             }
 
             if (error) {
-                xRayTraceEvent.error = true;
+                xRayTraceEvent.subsegments[0].error = true;
                 if (error instanceof Object) {
-                    this.appendErrorCauseFromObject(xRayTraceEvent, error);
+                    this.appendErrorCauseFromObject(
+                        xRayTraceEvent.subsegments[0],
+                        error
+                    );
                 } else {
-                    this.appendErrorCauseFromPrimitive(xRayTraceEvent, error);
+                    this.appendErrorCauseFromPrimitive(
+                        xRayTraceEvent.subsegments[0],
+                        error
+                    );
                 }
             }
 
@@ -120,11 +146,8 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         }
     };
 
-    private appendErrorCauseFromPrimitive(
-        xRayTraceEvent: XRayTraceEvent,
-        error: any
-    ) {
-        xRayTraceEvent.cause = {
+    private appendErrorCauseFromPrimitive(subsegment: Subsegment, error: any) {
+        subsegment.cause = {
             exceptions: [
                 {
                     type: error.toString()
@@ -133,11 +156,8 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         };
     }
 
-    private appendErrorCauseFromObject(
-        xRayTraceEvent: XRayTraceEvent,
-        error: Error
-    ) {
-        xRayTraceEvent.cause = {
+    private appendErrorCauseFromObject(subsegment: Subsegment, error: Error) {
+        subsegment.cause = {
             exceptions: [
                 {
                     type: error.name,
