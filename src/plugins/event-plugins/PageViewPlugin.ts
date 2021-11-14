@@ -26,6 +26,7 @@ export class PageViewPlugin extends MonkeyPatched implements Plugin {
     public load(context: PluginContext): void {
         this.context = context;
         this.addListener();
+        this.recordPageView();
     }
 
     public getPluginId(): string {
