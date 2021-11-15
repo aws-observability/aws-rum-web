@@ -107,7 +107,7 @@ export class DataPlaneClient {
             },
             protocol: getScheme(this.config.endpoint),
             hostname: host,
-            path: `/application/${putRumEventsRequest.AppMonitorDetails.id}/events`,
+            path: `/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
             body: serializedRequest
         });
 

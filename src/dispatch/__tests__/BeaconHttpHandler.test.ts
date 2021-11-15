@@ -75,7 +75,7 @@ describe('BeaconHttpHandler tests', () => {
         // @ts-ignore
         const url: string = sendBeacon.mock.calls[0][0];
         expect(url).toContain(
-            'https://rumservicelambda.us-west-2.amazonaws.com/application/application123/events?X-Amz-Algorithm=AWS4-HMAC-SHA256'
+            'https://rumservicelambda.us-west-2.amazonaws.com/appmonitors/application123?X-Amz-Algorithm=AWS4-HMAC-SHA256'
         );
     });
 });
