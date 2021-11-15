@@ -5,7 +5,7 @@ declare global {
         AwsRumClient: AwsRumClientInit;
     }
 }
-if (window.AwsNexusTelemetry) {
+if (!window.AwsRumClient && window.AwsNexusTelemetry) {
     window.AwsRumClient = window.AwsNexusTelemetry;
 }
 if (typeof fetch === 'function' && typeof navigator.sendBeacon === 'function') {
