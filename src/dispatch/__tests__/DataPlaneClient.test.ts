@@ -129,7 +129,7 @@ describe('DataPlaneClient tests', () => {
             'content-type;host'
         );
         expect(signedRequest.query['X-Amz-Signature']).toEqual(
-            'c5e418bbf3d0a922d4f468b1dd7a209711423750d407b5c679c01014ec34240c'
+            'd37eb756444ebf6f785233714d6d942f2b20f69292fb09533f6b69556eb0ff2b'
         );
     });
 });
