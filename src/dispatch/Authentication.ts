@@ -3,7 +3,7 @@ import { Config } from '../orchestration/Orchestration';
 import { Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
-import { CRED_KEY, CRED_RENEW_MILLISECONDS } from '../utils/constants';
+import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
 export class Authentication {
     private cognitoIdentityClient: CognitoIdentityClient;
@@ -142,7 +142,7 @@ export class Authentication {
             return true;
         }
         const renewalTime: Date = new Date(
-            this.credentials.expiration.getTime() - CRED_RENEW_MILLISECONDS
+            this.credentials.expiration.getTime() - CRED_RENEW_MS
         );
         return new Date() > renewalTime;
     }
