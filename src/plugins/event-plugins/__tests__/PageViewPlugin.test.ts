@@ -5,8 +5,11 @@ import { PageViewPlugin } from '../PageViewPlugin';
 const PAGE_VIEW_ONE_PATH = '/page_view_one?region=us-west-1#lang';
 const PAGE_VIEW_TWO_PATH = '/page_view_two?region=us-west-1#lang';
 
+const PAGE_VIEW_LANDING_EXPECTED_PAGE_ID = '/console/home';
 const PAGE_VIEW_ONE_EXPECTED_PAGE_ID = '/page_view_one';
 const PAGE_VIEW_TWO_EXPECTED_PAGE_ID = '/page_view_two';
+
+declare const jsdom: any;
 
 describe('PageViewPlugin tests', () => {
     let url;
@@ -16,9 +19,7 @@ describe('PageViewPlugin tests', () => {
     });
 
     beforeEach(() => {
-        // @ts-ignore
-        context.recordPageView.mockClear();
-        // @ts-ignore
+        (context.recordPageView as any).mockClear();
         jsdom.reconfigure({
             url: url
         });
@@ -42,12 +43,10 @@ describe('PageViewPlugin tests', () => {
         );
 
         // Assert
-        // @ts-ignore
-        expect(context.recordPageView.mock.calls[0][0]).toEqual(
+        expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
             PAGE_VIEW_ONE_EXPECTED_PAGE_ID
         );
-        // @ts-ignore
-        expect(context.recordPageView.mock.calls[1][0]).toEqual(
+        expect((context.recordPageView as any).mock.calls[2][0]).toEqual(
             PAGE_VIEW_TWO_EXPECTED_PAGE_ID
         );
 
@@ -68,13 +67,14 @@ describe('PageViewPlugin tests', () => {
         );
 
         // Assert
-        // @ts-ignore
-        expect(context.recordPageView.mock.calls[0][0]).toEqual(
+        expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
             PAGE_VIEW_ONE_EXPECTED_PAGE_ID
         );
 
-        // @ts-ignore
-        window.removeEventListener('popstate', plugin.popstateListener);
+        window.removeEventListener(
+            'popstate',
+            (plugin as any).popstateListener
+        );
     });
 
     test('when a popstate event occurs then a page view event is recorded', async () => {
@@ -87,13 +87,14 @@ describe('PageViewPlugin tests', () => {
         dispatchEvent(new PopStateEvent('popstate'));
 
         // Assert
-        // @ts-ignore
-        expect(context.recordPageView.mock.calls[0][0]).toEqual(
+        expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
             PAGE_VIEW_ONE_EXPECTED_PAGE_ID
         );
 
-        // @ts-ignore
-        window.removeEventListener('popstate', plugin.popstateListener);
+        window.removeEventListener(
+            'popstate',
+            (plugin as any).popstateListener
+        );
     });
 
     test('when PATH_AND_HASH is used then a the path and hash is recorded.', async () => {
@@ -110,14 +111,15 @@ describe('PageViewPlugin tests', () => {
         );
 
         // Assert
-        // @ts-ignore
-        expect(context.recordPageView.mock.calls[0][0]).toEqual(
+        expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
             '/page_view_one#lang'
         );
 
         context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
-        // @ts-ignore
-        window.removeEventListener('popstate', plugin.popstateListener);
+        window.removeEventListener(
+            'popstate',
+            (plugin as any).popstateListener
+        );
     });
 
     test('when HASH is used then a the hash is recorded.', async () => {
@@ -134,12 +136,15 @@ describe('PageViewPlugin tests', () => {
         );
 
         // Assert
-        // @ts-ignore
-        expect(context.recordPageView.mock.calls[0][0]).toEqual('#lang');
+        expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
+            '#lang'
+        );
 
         context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
-        // @ts-ignore
-        window.removeEventListener('popstate', plugin.popstateListener);
+        window.removeEventListener(
+            'popstate',
+            (plugin as any).popstateListener
+        );
     });
 
     test('when there is no hash in the URL then only the path is recorded.', async () => {
@@ -157,12 +162,32 @@ describe('PageViewPlugin tests', () => {
 
         // Assert
         // @ts-ignore
-        expect(context.recordPageView.mock.calls[0][0]).toEqual(
+        expect(context.recordPageView.mock.calls[1][0]).toEqual(
             PAGE_VIEW_ONE_EXPECTED_PAGE_ID
         );
 
         context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
-        // @ts-ignore
-        window.removeEventListener('popstate', plugin.popstateListener);
+        window.removeEventListener(
+            'popstate',
+            (plugin as any).popstateListener
+        );
+    });
+
+    test('when the plugin is loaded then a page view event is recorded.', async () => {
+        // Init
+        const plugin = new PageViewPlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect((context.recordPageView as any).mock.calls[0][0]).toEqual(
+            PAGE_VIEW_LANDING_EXPECTED_PAGE_ID
+        );
+
+        window.removeEventListener(
+            'popstate',
+            (plugin as any).popstateListener
+        );
     });
 });
