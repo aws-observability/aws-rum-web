@@ -17,7 +17,6 @@ export type PartialHttpPluginConfig = {
     logicalServiceName?: string;
     urlsToInclude?: RegExp[];
     urlsToExclude?: RegExp[];
-    trace?: boolean;
     stackTraceLength?: number;
     recordAllRequests?: boolean;
 };
@@ -26,7 +25,6 @@ export type HttpPluginConfig = {
     logicalServiceName: string;
     urlsToInclude: RegExp[];
     urlsToExclude: RegExp[];
-    trace: boolean;
     stackTraceLength: number;
     recordAllRequests: boolean;
 };
@@ -40,7 +38,6 @@ export const defaultConfig: HttpPluginConfig = {
         // STS endpoints https://docs.aws.amazon.com/general/latest/gr/sts.html
         /sts\.([^\.]*\.)?amazonaws\.com/
     ],
-    trace: false,
     stackTraceLength: 200,
     recordAllRequests: false
 };

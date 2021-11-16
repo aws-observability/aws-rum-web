@@ -2,13 +2,14 @@ import { FetchPlugin } from '../FetchPlugin';
 import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
-    context,
+    DEFAULT_CONFIG,
     record,
-    recordPageView
+    recordPageView,
+    xRayOffContext,
+    xRayOnContext
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../Plugin';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
-import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 import { HttpEvent } from '../../../events/http-event';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
@@ -72,12 +73,11 @@ describe('FetchPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/aws\.amazon\.com/],
-            trace: false,
             recordAllRequests: true
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -103,19 +103,17 @@ describe('FetchPlugin tests', () => {
         global.fetch = mockFetchWithError;
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: false
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
             // Expected
         });
         plugin.disable();
-        // @s-ignore
         global.fetch = mockFetch;
 
         // Assert
@@ -136,12 +134,11 @@ describe('FetchPlugin tests', () => {
         global.fetch = mockFetchWithErrorObject;
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: false
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
@@ -169,12 +166,11 @@ describe('FetchPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: true
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -204,12 +200,11 @@ describe('FetchPlugin tests', () => {
         global.fetch = mockFetchWithError;
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: true
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
@@ -248,12 +243,11 @@ describe('FetchPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: true
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
         plugin.disable();
 
         // Run
@@ -268,12 +262,11 @@ describe('FetchPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: true
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
         plugin.disable();
         plugin.enable();
 
@@ -290,12 +283,11 @@ describe('FetchPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: true
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         const init: RequestInit = {};
 
@@ -313,12 +305,11 @@ describe('FetchPlugin tests', () => {
     test('when trace is disabled then the plugin does not record a trace', async () => {
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: false
+            urlsToInclude: [/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -335,22 +326,21 @@ describe('FetchPlugin tests', () => {
             record: false,
             eventCount: 0
         }));
-        const context: PluginContext = {
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+        const xRayOnContext: PluginContext = {
             applicationId: 'b',
             applicationVersion: '1.0',
-            config: DEFAULT_CONFIG,
+            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
             record,
             recordPageView,
             getSession
         };
-        const config: PartialHttpPluginConfig = {
-            logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/],
-            trace: true
-        };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -370,7 +360,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
@@ -404,7 +394,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com').catch((error) => {
@@ -438,7 +428,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -457,7 +447,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -477,7 +467,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -498,7 +488,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -516,7 +506,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -534,7 +524,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://cognito-identity.us-west-2.amazonaws.com');
@@ -554,7 +544,7 @@ describe('FetchPlugin tests', () => {
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         await fetch('https://cognito-identity.us-west-2.amazonaws.com');

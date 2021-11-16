@@ -1,4 +1,4 @@
-import { TELEMETRY_TYPES, Orchestration } from '../Orchestration';
+import { Config, Orchestration } from '../Orchestration';
 import { Dispatch } from '../../dispatch/Dispatch';
 import { EventCache } from '../../event-cache/EventCache';
 import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
@@ -141,6 +141,7 @@ describe('Orchestration tests', () => {
             telemetries: ['errors', 'performance', 'interaction'],
             disableAutoPageView: false,
             dispatchInterval: 5000,
+            enableXRay: false,
             endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
             eventCacheSize: 200,
             eventPluginsToLoad: [],

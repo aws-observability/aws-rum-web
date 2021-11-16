@@ -113,6 +113,24 @@ export const context: PluginContext = {
     getSession
 };
 
+export const xRayOffContext: PluginContext = {
+    applicationId: 'b',
+    applicationVersion: '1.0',
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
+    record,
+    recordPageView,
+    getSession
+};
+
+export const xRayOnContext: PluginContext = {
+    applicationId: 'b',
+    applicationVersion: '1.0',
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
+    record,
+    recordPageView,
+    getSession
+};
+
 export const stringToUtf16 = (inputString: string) => {
     const utf16array = [];
     for (let index = 0; index < inputString.length; index++) {

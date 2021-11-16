@@ -7,7 +7,6 @@ const config = {
     ...defaultConfig,
     ...{
         logicalServiceName: 'sample.rum.aws.amazon.com',
-        trace: true,
         recordAllRequests: true
     }
 };
@@ -17,6 +16,7 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     dispatchInterval: 0,
     metaDataPluginsToLoad: [],
     eventPluginsToLoad: [new FetchPlugin(config)],
+    enableXRay: true,
     telemetries: [],
     clientBuilder: showRequestClientBuilder
 });
