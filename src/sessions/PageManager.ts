@@ -13,8 +13,6 @@ export type Page = {
 
 export type Attributes = {
     title: string;
-    url: string;
-    pageUrl: string;
     pageId: string;
     parentPageId?: string;
     interaction?: number;
@@ -123,8 +121,6 @@ export class PageManager {
     private collectAttributes() {
         this.attributes = {
             title: document.title,
-            url: document.location.toString(),
-            pageUrl: document.location.toString(),
             pageId: this.page.pageId
         };
 
