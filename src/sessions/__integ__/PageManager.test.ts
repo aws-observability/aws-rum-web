@@ -44,7 +44,6 @@ test('PageViewEventPlugin records landing page view event', async (t: TestContro
         })
         .expect(metaData)
         .contains({
-            url: 'http://localhost:8080/page_event.html',
             pageId: '/page_event.html',
             title: 'RUM Integ Test'
         });
@@ -84,7 +83,6 @@ test('PageViewEventPlugin records page view event', async (t: TestController) =>
         })
         .expect(metaData)
         .contains({
-            url: 'http://localhost:8080/page_event.html',
             pageId: '/page_view_two',
             title: 'RUM Integ Test'
         });
