@@ -150,7 +150,7 @@ describe('Orchestration tests', () => {
             sessionEventLimit: 200,
             sessionLengthSeconds: 1800,
             sessionSampleRate: 1,
-            userIdRetentionDays: 0,
+            userIdRetentionDays: 30,
             enableRumClient: true,
             fetchFunction: fetch
         });
