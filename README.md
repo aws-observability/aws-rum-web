@@ -1,40 +1,46 @@
-# AWS Real User Monitoring (RUM) Web Client
+# Amazon CloudWatch RUM Web Client
 
-This is the AWS RUM client source code repository which hosts the RUM agent for
-collecting real time user monitoring events from web clients to send to any AWS
-monitoring service.
+This is the CloudWatch RUM web client source code repository. It hosts a
+JavaScript library which performs real user monitoring (RUM) telemetry on web
+applications. Data collected by the RUM web client includes page load timing,
+JavaScript errors and HTTP requests.
 
 ## Installing
 
-The latest stable version of the RUM Web Client is available from NPM. For local
-development, install the SDK in your project directory with npm.
+The latest stable version of the web client is hosted on a content delivery
+network (CDN) hosted by CloudWatch RUM. See the [CloudWatch RUM
+documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html)
+for instructions on how to create an AppMonitor and generate a code snippet
+which will install the web client in your application.
 
-`npm install aws-rum-web`
+## Documentation
 
-Use the `--save` option to save the SDK as a dependency in your application's `package.json`.
-
-`npm install aws-rum-web --save`
+1. [Installing from CDN](docs/cdn_installation)
+2. [Executing Commands](docs/cdn_commands)
+3. [Using the Web Client with Angular](docs/cdn_angular)
+4. [Using the Web Client with React](docs/cdn_react)
 
 ## Getting Help
 
 Use the following community resources for getting help with the SDK. We use the GitHub issues for tracking bugs and feature requests.
 
+-   View the [CloudWatch RUM documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html).
 -   Ask a question in the [CloudWatch RUM Forum]().
 -   Open a support ticket with [AWS Support](https://docs.aws.amazon.com/awssupport/latest/user/getting-started.html).
 -   If you think you may have found a bug, open an [issue](https://github.com/aws-observability/aws-rum-web/issues/new).
 
 ## Opening Issues
 
-If you encounter a bug with the AWS RUM Web Client, we want to hear about it.
-Before opening a new issue, search the existing issues to see if others are also
-experiencing the issue. Include the version of the AWS RUM Web Client, Node.js
-runtime, and other dependencies if applicable. In addition, include the repro
-case when appropriate.
+If you encounter a bug with the CloudWatch RUM web client, we want to hear
+about it. Before opening a new issue, search the existing issues to see if
+others are also experiencing the issue. Include the version of the CloudWatch
+RUM Web Client, Node.js runtime, and other dependencies if applicable. In
+addition, include the repro case when appropriate.
 
 The GitHub issues are intended for bug reports and feature requests. For help
-and questions about using the AWS RUM Web Client, use the resources listed in
-the Getting Help section. Keeping the list of open issues lean helps us respond
-in a timely manner.
+and questions about using the CloudWatch RUM Web Client, use the resources
+listed in the Getting Help section. Keeping the list of open issues lean helps
+us respond in a timely manner.
 
 ## Contributing
 
@@ -56,9 +62,9 @@ To run (Jest) unit tests:
 
 To run (TestCafe) browser integration tests:
 
-`npm run integ:local`
+`npm run integ:local:chrome:headless`
 
-Some plugins perform monkey patching which is incompatible with TestCafe. In
+Some features perform monkey patching which is incompatible with TestCafe. In
 these cases, run Nightwatch as a separate browser integration test target:
 
 `npm run integ:local:nightwatch`
