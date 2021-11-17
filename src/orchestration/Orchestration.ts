@@ -110,11 +110,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
-        telemetries: [
-            TELEMETRY_TYPES.ERRORS,
-            TELEMETRY_TYPES.PERFORMANCE,
-            TELEMETRY_TYPES.INTERACTION
-        ],
+        telemetries: [],
         userIdRetentionDays: 0
     };
 };

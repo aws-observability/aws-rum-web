@@ -138,7 +138,7 @@ describe('Orchestration tests', () => {
                 sameSite: 'Strict',
                 secure: true
             },
-            telemetries: ['errors', 'performance', 'interaction'],
+            telemetries: [],
             disableAutoPageView: false,
             dispatchInterval: 5000,
             endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
@@ -171,17 +171,10 @@ describe('Orchestration tests', () => {
         );
     });
 
-    test('data collection defaults to errors, performance, journey and interaction', async () => {
+    test('data collection defaults to only page views', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
-        const expected = [
-            'com.amazonaws.rum.js-error',
-            'com.amazonaws.rum.navigation',
-            'com.amazonaws.rum.resource',
-            'com.amazonaws.rum.web-vitals',
-            'com.amazonaws.rum.dom-event',
-            'com.amazonaws.rum.page-view'
-        ];
+        new Orchestration('a', 'c', 'us-east-1', {});
+        const expected = ['com.amazonaws.rum.page-view'];
         const actual = [];
 
         // Assert
