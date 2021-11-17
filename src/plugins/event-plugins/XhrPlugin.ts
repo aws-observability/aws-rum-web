@@ -129,7 +129,7 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
     }
 
     private isTracingEnabled = () => {
-        return this.config.trace;
+        return this.context.config.enableXRay;
     };
 
     private isSessionRecorded = () => {

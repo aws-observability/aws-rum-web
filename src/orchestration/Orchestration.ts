@@ -57,6 +57,7 @@ export type PartialConfig = {
     disableAutoPageView?: boolean;
     dispatchInterval?: number;
     enableRumClient?: boolean;
+    enableXRay?: boolean;
     endpoint?: string;
     eventCacheSize?: number;
     eventPluginsToLoad?: Plugin[];
@@ -101,6 +102,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
+        enableXRay: false,
         endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
         eventPluginsToLoad: [],
@@ -130,6 +132,7 @@ export type Config = {
     disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
+    enableXRay: boolean;
     endpoint: string;
     eventCacheSize: number;
     eventPluginsToLoad: Plugin[];
@@ -150,7 +153,7 @@ export type Config = {
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
-    telemetries: string[];
+    telemetries: Telemetry[];
     userIdRetentionDays: number;
 };
 
@@ -363,10 +366,15 @@ export class Orchestration {
         this.config.telemetries.forEach((type) => {
             if (typeof type === 'string' && functor[type.toLowerCase()]) {
                 plugins = [...plugins, ...functor[type.toLowerCase()]({})];
-            } else if (Array.isArray(type) && functor[type[0].toLowerCase()]) {
+            } else if (
+                Array.isArray(type) &&
+                functor[(type[0] as string).toLowerCase()]
+            ) {
                 plugins = [
                     ...plugins,
-                    ...functor[type[0].toLowerCase()](type[1])
+                    ...functor[(type[0] as string).toLowerCase()](
+                        type[1] as object
+                    )
                 ];
             }
         });

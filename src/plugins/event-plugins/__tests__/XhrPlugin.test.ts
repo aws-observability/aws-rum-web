@@ -2,7 +2,8 @@ import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import { XhrPlugin } from '../XhrPlugin';
 import {
-    context,
+    xRayOffContext,
+    xRayOnContext,
     record,
     recordPageView
 } from '../../../test-utils/test-utils';
@@ -33,7 +34,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -47,9 +48,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
                 method: 'GET'
@@ -65,8 +64,7 @@ describe('XhrPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/response\.json/],
-            trace: true
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, {
@@ -74,7 +72,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -88,9 +86,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             in_progress: false,
             name: 'sample.rum.aws.amazon.com',
@@ -112,7 +108,6 @@ describe('XhrPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
-            trace: true,
             recordAllRequests: true
         };
 
@@ -121,7 +116,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
         plugin.disable();
 
         // Run
@@ -139,8 +134,7 @@ describe('XhrPlugin tests', () => {
     test('when plugin is re-enabled then the plugin records a trace', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            urlsToInclude: [/response\.json/],
-            trace: true
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, {
@@ -148,7 +142,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
         plugin.disable();
         plugin.enable();
 
@@ -163,7 +157,6 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 
@@ -173,15 +166,14 @@ describe('XhrPlugin tests', () => {
             ...DEFAULT_CONFIG,
             ...{
                 logicalServiceName: 'sample.rum.aws.amazon.com',
-                urlsToInclude: [/response\.json/],
-                trace: true
+                urlsToInclude: [/response\.json/]
             }
         };
 
         mock.get(/.*/, () => Promise.reject(new Error()));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -195,9 +187,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             in_progress: false,
             name: 'sample.rum.aws.amazon.com',
@@ -225,14 +215,13 @@ describe('XhrPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/response\.json/],
-            trace: false
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -246,9 +235,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
                 method: 'GET'
@@ -264,14 +251,13 @@ describe('XhrPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/response\.json/],
-            trace: true
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, () => new Promise(() => {}));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -286,9 +272,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             in_progress: false,
             name: 'sample.rum.aws.amazon.com',
@@ -310,14 +294,13 @@ describe('XhrPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/response\.json/],
-            trace: false
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, () => new Promise(() => {}));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -332,9 +315,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
                 method: 'GET'
@@ -349,8 +330,7 @@ describe('XhrPlugin tests', () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/response\.json/],
-            trace: true
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, {
@@ -358,7 +338,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -373,9 +353,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             in_progress: false,
             name: 'sample.rum.aws.amazon.com',
@@ -396,8 +374,7 @@ describe('XhrPlugin tests', () => {
     test('when XHR aborts then the plugin adds the error to the http event', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            urlsToInclude: [/response\.json/],
-            trace: false
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, {
@@ -405,7 +382,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -420,9 +397,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
                 method: 'GET'
@@ -437,11 +412,9 @@ describe('XhrPlugin tests', () => {
         // Init
         let header: string;
         const config: PartialHttpPluginConfig = {
-            urlsToInclude: [/response\.json/],
-            trace: true
+            urlsToInclude: [/response\.json/]
         };
 
-        // @ts-ignore
         mock.get(/.*/, (req, res) => {
             header = req.header('X-Amzn-Trace-Id');
             return res
@@ -450,7 +423,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -472,8 +445,7 @@ describe('XhrPlugin tests', () => {
     test('when trace is disabled then the plugin does not record a trace', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            urlsToInclude: [/response\.json/],
-            trace: false
+            urlsToInclude: [/response\.json/]
         };
 
         mock.get(/.*/, {
@@ -481,7 +453,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -550,7 +522,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -578,7 +550,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -607,7 +579,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -635,7 +607,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -662,7 +634,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
@@ -689,7 +661,7 @@ describe('XhrPlugin tests', () => {
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr_cognito = new XMLHttpRequest();
