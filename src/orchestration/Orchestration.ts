@@ -111,7 +111,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
         telemetries: [],
-        userIdRetentionDays: 0
+        userIdRetentionDays: 30
     };
 };
 
