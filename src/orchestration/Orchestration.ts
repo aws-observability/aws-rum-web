@@ -115,7 +115,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
             TELEMETRY_TYPES.PERFORMANCE,
             TELEMETRY_TYPES.INTERACTION
         ],
-        userIdRetentionDays: 0
+        userIdRetentionDays: 30
     };
 };
 
