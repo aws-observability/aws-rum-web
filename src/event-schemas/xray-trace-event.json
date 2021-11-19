@@ -110,6 +110,7 @@
                 "parent_id": { "type": "string" },
                 "type": { "type": "string", "value": "subsegment" },
                 "http": { "$ref": "#/definitions/http" },
+                "namespace": { "type": "string" },
                 "error": { "type": "boolean" },
                 "throttle": { "type": "boolean" },
                 "fault": { "type": "boolean" },

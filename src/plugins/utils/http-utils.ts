@@ -102,7 +102,8 @@ export const createXRaySubsegment = (
         name,
         start_time: startTime,
         end_time: undefined,
-        in_progress: false
+        in_progress: false,
+        namespace: 'remote'
     };
     if (http) {
         subsegment.http = http;

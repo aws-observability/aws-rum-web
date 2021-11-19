@@ -196,6 +196,7 @@ describe('FetchPlugin tests', () => {
                     name: 'aws.amazon.com',
                     start_time: 0,
                     end_time: 0,
+                    namespace: 'remote',
                     http: {
                         request: {
                             method: 'GET',

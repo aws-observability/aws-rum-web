@@ -102,6 +102,7 @@ describe('XhrPlugin tests', () => {
                     name: '',
                     start_time: 0,
                     end_time: 0,
+                    namespace: 'remote',
                     http: {
                         request: {
                             method: 'GET',
