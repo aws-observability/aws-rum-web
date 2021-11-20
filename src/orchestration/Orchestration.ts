@@ -66,6 +66,7 @@ export type PartialConfig = {
     pageIdFormat?: PAGE_ID_FORMAT;
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
+    recordResourceUrl?: boolean;
     sessionEventLimit?: number;
     sessionLengthSeconds?: number;
     sessionSampleRate?: number;
@@ -109,6 +110,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pageIdFormat: PAGE_ID_FORMAT.PATH,
         pagesToExclude: [],
         pagesToInclude: [],
+        recordResourceUrl: true,
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
@@ -150,6 +152,7 @@ export type Config = {
     pageIdFormat: PAGE_ID_FORMAT;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
+    recordResourceUrl: boolean;
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
