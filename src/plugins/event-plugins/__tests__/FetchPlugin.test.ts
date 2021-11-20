@@ -300,6 +300,30 @@ describe('FetchPlugin tests', () => {
             (init.headers['X-Amzn-Trace-Id'] =
                 'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1')
         );
+        expect(init.headers instanceof Array).toBeFalsy();
+    });
+
+    test('RequestInit is added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch('https://aws.amazon.com');
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                'X-Amzn-Trace-Id':
+                    'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
+            }
+        });
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {

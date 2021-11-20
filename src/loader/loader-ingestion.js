@@ -1,6 +1,5 @@
 import { loader } from './loader';
 import { showIntegRequestClientBuilder } from '../test-utils/integ-http-handler';
-import { JsErrorPlugin } from '../plugins/event-plugins/JsErrorPlugin';
 loader(
     'cwr',
     '[applicationId]',
@@ -14,9 +13,8 @@ loader(
         endpoint: '[endpoint]',
         guestRoleArn: '[guestRoleArn]',
         identityPoolId: '[identityPoolId]',
-        metaDataPluginsToLoad: [],
-        eventPluginsToLoad: [new JsErrorPlugin()],
         sessionSampleRate: 1,
-        telemetries: []
+        telemetries: ['performance', 'errors', 'http'],
+        enableXRay: true
     }
 );
