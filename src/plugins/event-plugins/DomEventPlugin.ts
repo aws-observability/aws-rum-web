@@ -128,8 +128,9 @@ export class DomEventPlugin implements Plugin {
     }
 
     private removeEventHandler(domEvent: TargetDomEvent): void {
-        const eventListener: EventListener | undefined =
-            this.eventListenerMap.get(domEvent);
+        const eventListener:
+            | EventListener
+            | undefined = this.eventListenerMap.get(domEvent);
 
         if (domEvent.elementId && eventListener) {
             const element = document.getElementById(domEvent.elementId);

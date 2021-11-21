@@ -104,8 +104,7 @@ export const getFragment = (path: string | undefined): string => {
 };
 
 export const getHost = (url: string): string => {
-    const urlPattern =
-        /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
+    const urlPattern = /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
     const match = url.match(urlPattern);
     if (!match || !match[4]) {
         return '';
@@ -114,8 +113,7 @@ export const getHost = (url: string): string => {
 };
 
 export const getScheme = (url: string): string => {
-    const urlPattern =
-        /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
+    const urlPattern = /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
     const match = url.match(urlPattern);
     if (!match || !match[2]) {
         return '';

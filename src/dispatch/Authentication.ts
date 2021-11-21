@@ -53,12 +53,11 @@ export class Authentication {
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    public ChainAnonymousCredentialsProvider =
-        async (): Promise<Credentials> => {
-            return this.AnonymousCredentialsProvider()
-                .catch(this.AnonymousStorageCredentialsProvider)
-                .catch(this.AnonymousCognitoCredentialsProvider);
-        };
+    public ChainAnonymousCredentialsProvider = async (): Promise<Credentials> => {
+        return this.AnonymousCredentialsProvider()
+            .catch(this.AnonymousStorageCredentialsProvider)
+            .catch(this.AnonymousCognitoCredentialsProvider);
+    };
 
     /**
      * Provides credentials for an anonymous (guest) user. These credentials are read from a member variable.
@@ -80,29 +79,28 @@ export class Authentication {
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    private AnonymousStorageCredentialsProvider =
-        async (): Promise<Credentials> => {
-            return new Promise<Credentials>((resolve, reject) => {
-                let credentials;
-                try {
-                    credentials = JSON.parse(localStorage.getItem(CRED_KEY));
-                } catch (e) {
-                    // Error retrieving, decoding or parsing the cred string -- abort
-                    return reject();
-                }
-                // The expiration property of Credentials has a date type. Because the date was serialized as a string,
-                // we need to convert it back into a date, otherwise the AWS SDK signing middleware
-                // (@aws-sdk/middleware-signing) will throw an exception and no credentials will be returned.
-                credentials.expiration = new Date(credentials.expiration);
-                this.credentials = credentials;
-                if (this.renewCredentials()) {
-                    // The credentials have expired.
-                    return reject();
-                }
-                this.credentials = credentials;
-                resolve(credentials);
-            });
-        };
+    private AnonymousStorageCredentialsProvider = async (): Promise<Credentials> => {
+        return new Promise<Credentials>((resolve, reject) => {
+            let credentials;
+            try {
+                credentials = JSON.parse(localStorage.getItem(CRED_KEY));
+            } catch (e) {
+                // Error retrieving, decoding or parsing the cred string -- abort
+                return reject();
+            }
+            // The expiration property of Credentials has a date type. Because the date was serialized as a string,
+            // we need to convert it back into a date, otherwise the AWS SDK signing middleware
+            // (@aws-sdk/middleware-signing) will throw an exception and no credentials will be returned.
+            credentials.expiration = new Date(credentials.expiration);
+            this.credentials = credentials;
+            if (this.renewCredentials()) {
+                // The credentials have expired.
+                return reject();
+            }
+            this.credentials = credentials;
+            resolve(credentials);
+        });
+    };
 
     /**
      * Provides credentials for an anonymous (guest) user. These credentials are retrieved from Cognito's basic
@@ -112,36 +110,32 @@ export class Authentication {
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    private AnonymousCognitoCredentialsProvider =
-        async (): Promise<Credentials> => {
-            return this.cognitoIdentityClient
-                .getId({
-                    IdentityPoolId: this.config.identityPoolId as string
+    private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
+        return this.cognitoIdentityClient
+            .getId({
+                IdentityPoolId: this.config.identityPoolId as string
+            })
+            .then((getIdResponse) =>
+                this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
+            )
+            .then((getOpenIdTokenResponse) =>
+                this.stsClient.assumeRoleWithWebIdentity({
+                    RoleArn: this.config.guestRoleArn as string,
+                    RoleSessionName: 'cwr',
+                    WebIdentityToken: getOpenIdTokenResponse.Token
                 })
-                .then((getIdResponse) =>
-                    this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
-                )
-                .then((getOpenIdTokenResponse) =>
-                    this.stsClient.assumeRoleWithWebIdentity({
-                        RoleArn: this.config.guestRoleArn as string,
-                        RoleSessionName: 'cwr',
-                        WebIdentityToken: getOpenIdTokenResponse.Token
-                    })
-                )
-                .then((credentials) => {
-                    this.credentials = credentials;
-                    try {
-                        localStorage.setItem(
-                            CRED_KEY,
-                            JSON.stringify(credentials)
-                        );
-                    } catch (e) {
-                        // Ignore
-                    }
+            )
+            .then((credentials) => {
+                this.credentials = credentials;
+                try {
+                    localStorage.setItem(CRED_KEY, JSON.stringify(credentials));
+                } catch (e) {
+                    // Ignore
+                }
 
-                    return credentials;
-                });
-        };
+                return credentials;
+            });
+    };
 
     private renewCredentials(): boolean {
         if (!this.credentials || !this.credentials.expiration) {
