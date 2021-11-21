@@ -197,7 +197,14 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
 
-        if (!isUrlAllowed(input.toString(), this.config)) {
+        let url: string;
+        if (typeof input === 'string') {
+            url = input;
+        } else {
+            url = input.url;
+        }
+
+        if (!isUrlAllowed(url, this.config)) {
             return original.apply(thisArg, argsArray);
         }
 
