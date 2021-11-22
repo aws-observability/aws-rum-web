@@ -1,3 +1,4 @@
+import { getHost } from '../../utils/common-utils';
 import {
     Http,
     Subsegment,
@@ -91,14 +92,33 @@ export const createXRayTraceEvent = (
     return traceEvent;
 };
 
-export const createXRaySubsegment = (name: string, startTime): Subsegment => {
-    return {
+export const createXRaySubsegment = (
+    name: string,
+    startTime,
+    http?: Http
+): Subsegment => {
+    const subsegment: Subsegment = {
         id: generateSegmentId(),
         name,
         start_time: startTime,
         end_time: undefined,
-        in_progress: false
+        in_progress: false,
+        namespace: 'remote'
     };
+    if (http) {
+        subsegment.http = http;
+    }
+    return subsegment;
+};
+
+export const requestInfoToHostname = (request: Request | URL | string) => {
+    if ((request as URL).hostname) {
+        return (request as URL).hostname;
+    } else if ((request as Request).url) {
+        return getHost((request as Request).url);
+    } else {
+        return getHost(request.toString());
+    }
 };
 
 export const addAmznTraceIdHeader = (

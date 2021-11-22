@@ -67,42 +67,6 @@ export const getResourceFileType = (url: string): ResourceType => {
     return ext;
 };
 
-export const getPath = (path: string | undefined): string => {
-    if (path === undefined) {
-        return '';
-    }
-    const uriPathPattern = /^([^?#]*)(\?([^#]*))?(#(.*))?/;
-    const pathMatch = path.match(uriPathPattern);
-    if (!pathMatch || !pathMatch[1]) {
-        return '';
-    }
-    return pathMatch[1];
-};
-
-export const getQuery = (path: string | undefined): string => {
-    if (path === undefined) {
-        return '';
-    }
-    const uriPathPattern = /^([^?#]*)(\?([^#]*))?(#(.*))?/;
-    const pathMatch = path.match(uriPathPattern);
-    if (!pathMatch || !pathMatch[2]) {
-        return '';
-    }
-    return pathMatch[2];
-};
-
-export const getFragment = (path: string | undefined): string => {
-    if (path === undefined) {
-        return '';
-    }
-    const uriPathPattern = /^([^?#]*)(\?([^#]*))?(#(.*))?/;
-    const pathMatch = path.match(uriPathPattern);
-    if (!pathMatch || !pathMatch[4]) {
-        return '';
-    }
-    return pathMatch[4];
-};
-
 export const getHost = (url: string): string => {
     const urlPattern = /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
     const match = url.match(urlPattern);
