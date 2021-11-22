@@ -20,6 +20,7 @@ export type PartialHttpPluginConfig = {
     urlsToExclude?: RegExp[];
     stackTraceLength?: number;
     recordAllRequests?: boolean;
+    addXRayTraceIdHeader?: boolean;
 };
 
 export type HttpPluginConfig = {
@@ -28,6 +29,15 @@ export type HttpPluginConfig = {
     urlsToExclude: RegExp[];
     stackTraceLength: number;
     recordAllRequests: boolean;
+    // Adding the trace ID header to the request is risky. It may:
+    // 1. Cause CORS to fail if the server's CORS configuration does not accept
+    //    the X-Amzn-Trace-Id header.
+    // 2. Cause sigv4 to fail on the server if the request has been signed.
+    //
+    // Applications that wish to link their client and server traces by enabling
+    // the X-Amzn-Trace-Id header should test their applications before enabling
+    // it in a production environment.
+    addXRayTraceIdHeader: boolean;
 };
 
 export const defaultConfig: HttpPluginConfig = {
@@ -40,7 +50,8 @@ export const defaultConfig: HttpPluginConfig = {
         /sts\.([^\.]*\.)?amazonaws\.com/
     ],
     stackTraceLength: 200,
-    recordAllRequests: false
+    recordAllRequests: false,
+    addXRayTraceIdHeader: false
 };
 
 export const isUrlAllowed = (url: string, config: HttpPluginConfig) => {
@@ -65,7 +76,7 @@ export const createXRayTraceEventHttp = (
     traced: boolean
 ): Http => {
     const http: Http = { request: {} };
-    http.request.method = init.method ? init.method : 'GET';
+    http.request.method = init?.method ? init.method : 'GET';
     http.request.traced = traced;
     return http;
 };

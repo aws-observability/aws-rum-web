@@ -301,11 +301,42 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 
-    test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+    test('when default config is used then X-Amzn-Trace-Id header is not added to ', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {};
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        const init: RequestInit = {};
+
+        // Run
+        await fetch('https://aws.amazon.com', init);
+        plugin.disable();
+
+        // Assert
+        expect(init.headers).toEqual(undefined);
+    });
+
+    test('when default config is used then RequestInit is not added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {};
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch('https://aws.amazon.com');
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
+    });
+
+    test('when addXRayTraceIdHeader is true then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/]
+            addXRayTraceIdHeader: true
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
@@ -325,11 +356,10 @@ describe('FetchPlugin tests', () => {
         expect(init.headers instanceof Array).toBeFalsy();
     });
 
-    test('RequestInit is added to the HTTP request', async () => {
+    test('when addXRayTraceIdHeader is true then RequestInit is added to the HTTP request', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            logicalServiceName: 'sample.rum.aws.amazon.com',
-            urlsToInclude: [/aws\.amazon\.com/]
+            addXRayTraceIdHeader: true
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);

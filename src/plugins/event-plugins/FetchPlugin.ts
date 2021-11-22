@@ -76,6 +76,10 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         ];
     }
 
+    private addXRayTraceIdHeader = () => {
+        return this.config.addXRayTraceIdHeader;
+    };
+
     private isTracingEnabled = () => {
         return this.context.config.enableXRay;
     };
@@ -86,7 +90,8 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
 
     private beginTrace = (
         input: RequestInfo,
-        init: RequestInit
+        init: RequestInit,
+        argsArray: IArguments
     ): XRayTraceEvent => {
         const startTime = epochTime();
         const http: Http = createXRayTraceEventHttp(init, true);
@@ -101,11 +106,17 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         );
         xRayTraceEvent.subsegments.push(subsegment);
 
-        addAmznTraceIdHeader(
-            init,
-            xRayTraceEvent.trace_id,
-            xRayTraceEvent.subsegments[0].id
-        );
+        if (this.addXRayTraceIdHeader()) {
+            if (!init) {
+                init = {};
+                [].push.call(argsArray, init);
+            }
+            addAmznTraceIdHeader(
+                init,
+                xRayTraceEvent.trace_id,
+                xRayTraceEvent.subsegments[0].id
+            );
+        }
 
         return xRayTraceEvent;
     };
@@ -234,11 +245,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            if (!init) {
-                init = {};
-                [].push.call(argsArray, init);
-            }
-            trace = this.beginTrace(input, init);
+            trace = this.beginTrace(input, init, argsArray);
         }
 
         return original

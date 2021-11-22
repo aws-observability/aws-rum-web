@@ -46,12 +46,30 @@
                 cwr('enable');
             }
 
-            function httpStat500() {
+            function httpStatFetch500() {
                 fetch('https://httpstat.us/500');
             }
 
-            function httpStat200() {
+            function httpStatFetch200() {
                 fetch('https://httpstat.us/200');
+            }
+
+            function httpStatXhr500() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/500', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+
+            function httpStatXhr200() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/200', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
             }
 
             function playGame() {
@@ -281,8 +299,18 @@
             Record caught error
         </button>
         <hr />
-        <button id="httpStat200" onclick="httpStat200()">httpstat 200</button>
-        <button id="httpStat500" onclick="httpStat500()">httpstat 500</button>
+        <button id="httpStatFetch200" onclick="httpStatFetch200()">
+            httpstat fetch 200
+        </button>
+        <button id="httpStatFetch500" onclick="httpStatFetch500()">
+            httpstat fetch 500
+        </button>
+        <button id="httpStatXhr200" onclick="httpStatXhr200()">
+            httpstat xhr 200
+        </button>
+        <button id="httpStatXhr500" onclick="httpStatXhr500()">
+            httpstat xhr 500
+        </button>
         <button id="playGame" onclick="playGame()">Send fetch requests</button>
         <hr />
         <button id="disable" onclick="disable()">Disable</button>
