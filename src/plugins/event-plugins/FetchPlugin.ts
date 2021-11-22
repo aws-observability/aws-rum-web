@@ -15,7 +15,7 @@ import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
 
-type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+type Fetch = typeof fetch;
 
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
