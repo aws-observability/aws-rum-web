@@ -18,7 +18,10 @@ import {
     requestInfoToHostname
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
-import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
+import {
+    errorEventToJsErrorEvent,
+    isErrorPrimitive
+} from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
 
 type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
@@ -134,7 +137,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
                         xRayTraceEvent.subsegments[0],
                         error
                     );
-                } else if (error !== Object(error)) {
+                } else if (isErrorPrimitive(error)) {
                     this.appendErrorCauseFromPrimitive(
                         xRayTraceEvent.subsegments[0],
                         error.toString()
