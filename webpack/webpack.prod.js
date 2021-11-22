@@ -7,7 +7,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = merge(common, {
     plugins: [new LicensePlugin()],
     mode: 'production',
-    devtool: 'nosources-source-map',
     optimization: {
         minimizer: [
             new TerserPlugin({
