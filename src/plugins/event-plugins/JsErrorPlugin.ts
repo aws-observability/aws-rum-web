@@ -1,3 +1,4 @@
+import { JSErrorEvent } from '../../schemas/js-error-event';
 import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
@@ -68,11 +69,28 @@ export class JsErrorPlugin implements Plugin {
         );
     };
 
+    private eventHandlerPromiseReject = (event: PromiseRejectionEvent) => {
+        const errorEvent: JSErrorEvent = {
+            version: '1.0.0',
+            type: event.type,
+            message: event.reason
+        };
+        this.recordEvent(JS_ERROR_EVENT_TYPE, errorEvent);
+    };
+
     private addEventHandler(): void {
         window.addEventListener('error', this.eventHandler);
+        window.addEventListener(
+            'unhandledrejection',
+            this.eventHandlerPromiseReject
+        );
     }
 
     private removeEventHandler(): void {
         window.removeEventListener('error', this.eventHandler);
+        window.removeEventListener(
+            'unhandledrejection',
+            this.eventHandlerPromiseReject
+        );
     }
 }

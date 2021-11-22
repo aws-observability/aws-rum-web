@@ -61,6 +61,37 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
+    test('when an unhanled rejection is thrown then the plugin records the name, message', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        // JSDOM has not implemented PromiseRejectionEvent, so we 'extend'
+        // Event to have the same functionality
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => {}),
+                reason: 'Something went wrong!'
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'unhandledrejection',
+                message: 'Something went wrong!'
+            })
+        );
+    });
+
     test('when an Error is thrown then the plugin records the name, message and stack', async () => {
         // Init
         document.body.innerHTML =
