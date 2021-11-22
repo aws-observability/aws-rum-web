@@ -43,14 +43,8 @@ export class ResourcePlugin implements Plugin {
     private pluginId: string;
     private enabled: boolean;
     private config: ResourcePluginConfig;
+    private context: PluginContext;
     private recordEvent: RecordEvent | undefined;
-
-    /**
-     * The data plane service endpoint. Resources from this endpoint will be
-     * ignored; i.e., this plugin will not generate resource performance events
-     * for them.
-     */
-    private dataPlaneEndpoint: string;
 
     constructor(config?: PartialResourcePluginConfig) {
         this.pluginId = RESOURCE_EVENT_PLUGIN_ID;
@@ -59,7 +53,7 @@ export class ResourcePlugin implements Plugin {
     }
 
     load(context: PluginContext): void {
-        this.dataPlaneEndpoint = context.config.endpoint;
+        this.context = context;
         this.recordEvent = context.record;
         window.addEventListener(LOAD, this.resourceEventListener);
     }
@@ -142,14 +136,18 @@ export class ResourcePlugin implements Plugin {
     recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
         if (
             this.recordEvent &&
-            getHost(entryData.name) !== getHost(this.dataPlaneEndpoint)
+            getHost(entryData.name) !== getHost(this.context.config.endpoint)
         ) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,
                 duration: entryData.duration,
-                fileType: getResourceFileType(entryData.name)
+                fileType: getResourceFileType(entryData.name),
+                transferSize: entryData.transferSize
             };
+            if (this.context.config.recordResourceUrl) {
+                eventData.targetUrl = entryData.name;
+            }
             this.recordEvent(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }
     };

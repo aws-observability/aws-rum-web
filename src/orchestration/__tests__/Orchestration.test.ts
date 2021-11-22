@@ -148,6 +148,7 @@ describe('Orchestration tests', () => {
             pageIdFormat: 'PATH',
             pagesToExclude: [],
             pagesToInclude: [],
+            recordResourceUrl: true,
             sessionEventLimit: 200,
             sessionLengthSeconds: 1800,
             sessionSampleRate: 1,

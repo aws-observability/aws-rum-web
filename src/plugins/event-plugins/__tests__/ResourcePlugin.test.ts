@@ -10,10 +10,16 @@ import {
 } from '../../../test-utils/mock-data';
 import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
-import { context, record } from '../../../test-utils/test-utils';
+import {
+    context,
+    DEFAULT_CONFIG,
+    getSession,
+    record,
+    recordPageView
+} from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
-
-const DATA_PLANE_URL = 'https://dataplane.rum.us-west-2.amazonaws.com';
+import { ResourceEvent } from '../../../events/resource-event';
+import { PluginContext } from '../../Plugin';
 
 const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
     return new ResourcePlugin(config);
@@ -49,9 +55,39 @@ describe('ResourcePlugin tests', () => {
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
                 fileType: resourceEvent.fileType,
-                duration: resourceEvent.duration
+                duration: resourceEvent.duration,
+                transferSize: resourceEvent.transferSize,
+                targetUrl: resourceEvent.name,
+                initiatorType: resourceEvent.initiatorType
             })
         );
+    });
+
+    test('when recordResourceUrl is false then the resource name is not recorded', async () => {
+        // Setup
+        mockRandom(0); // Retain order in shuffle
+        const context: PluginContext = {
+            applicationId: 'b',
+            applicationVersion: '1.0',
+            config: { ...DEFAULT_CONFIG, recordResourceUrl: false },
+            record,
+            recordPageView,
+            getSession
+        };
+        const plugin: ResourcePlugin = buildResourcePlugin();
+
+        // Run
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(
+            PERFORMANCE_RESOURCE_EVENT_TYPE
+        );
+        expect(
+            (record.mock.calls[0][1] as ResourceEvent).targetUrl
+        ).toBeUndefined();
     });
 
     test('when resource is from data plane endpoint then resource event is not recorded', async () => {
