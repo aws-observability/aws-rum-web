@@ -134,10 +134,10 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
                         xRayTraceEvent.subsegments[0],
                         error
                     );
-                } else {
+                } else if (error !== Object(error)) {
                     this.appendErrorCauseFromPrimitive(
                         xRayTraceEvent.subsegments[0],
-                        error
+                        error.toString()
                     );
                 }
             }
@@ -146,11 +146,14 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         }
     };
 
-    private appendErrorCauseFromPrimitive(subsegment: Subsegment, error: any) {
+    private appendErrorCauseFromPrimitive(
+        subsegment: Subsegment,
+        error: string
+    ) {
         subsegment.cause = {
             exceptions: [
                 {
-                    type: error.toString()
+                    type: error
                 }
             ]
         };
