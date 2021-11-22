@@ -521,6 +521,26 @@ describe('FetchPlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
+    test('when a Request url is excluded then the plugin does not record a request to that url', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/.*/],
+            urlsToExclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        // Run
+        await fetch({ url: 'https://aws.amazon.com' } as Request);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record).not.toHaveBeenCalled();
+    });
+
     test('all urls are included by default', async () => {
         // Init
         const config: PartialHttpPluginConfig = {

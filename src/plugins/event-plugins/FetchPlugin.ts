@@ -24,7 +24,7 @@ import {
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
 
-type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+type Fetch = typeof fetch;
 
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
@@ -223,7 +223,14 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
 
-        if (!isUrlAllowed(input.toString(), this.config)) {
+        let url: string;
+        if (typeof input === 'string') {
+            url = input;
+        } else {
+            url = input.url;
+        }
+
+        if (!isUrlAllowed(url, this.config)) {
             return original.apply(thisArg, argsArray);
         }
 
