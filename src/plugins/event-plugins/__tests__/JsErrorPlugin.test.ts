@@ -61,7 +61,7 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
-    test('when an unhanled rejection is thrown then the plugin records the name, message', async () => {
+    test('when an unhandled rejection is thrown then the plugin records the name, message', async () => {
         // Init
         const plugin: JsErrorPlugin = new JsErrorPlugin();
 

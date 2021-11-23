@@ -69,7 +69,7 @@ export class JsErrorPlugin implements Plugin {
         );
     };
 
-    private eventHandlerPromiseReject = (event: PromiseRejectionEvent) => {
+    private promiseRejectEventHandler = (event: PromiseRejectionEvent) => {
         const errorEvent: JSErrorEvent = {
             version: '1.0.0',
             type: event.type,
@@ -82,7 +82,7 @@ export class JsErrorPlugin implements Plugin {
         window.addEventListener('error', this.eventHandler);
         window.addEventListener(
             'unhandledrejection',
-            this.eventHandlerPromiseReject
+            this.promiseRejectEventHandler
         );
     }
 
@@ -90,7 +90,7 @@ export class JsErrorPlugin implements Plugin {
         window.removeEventListener('error', this.eventHandler);
         window.removeEventListener(
             'unhandledrejection',
-            this.eventHandlerPromiseReject
+            this.promiseRejectEventHandler
         );
     }
 }
