@@ -5,9 +5,11 @@
 
         <script>
             window.fetch = function (request, init) {
+                document.getElementById('fetchRequestHeaders').innerText =
+                    init.headers['X-Amzn-Trace-Id'];
                 return Promise.resolve({
                     status: 200,
-                    headers: {},
+                    headers: new Headers({ 'Content-Length': 125 }),
                     body: '{}'
                 });
             };
@@ -116,6 +118,12 @@
             <tr>
                 <td>Response Body</td>
                 <td id="response_body"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Mock Request Headers</td>
+                <td id="fetchRequestHeaders"></td>
             </tr>
         </table>
     </body>

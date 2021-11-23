@@ -6,6 +6,7 @@ const sendFetchRequest: Selector = Selector(`#sendFetchRequest`);
 const sendDataPlaneRequest: Selector = Selector(`#sendDataPlaneRequest`);
 const dispatch: Selector = Selector(`#dispatch`);
 const clearRequestResponse: Selector = Selector(`#clearRequestResponse`);
+const fetchRequestHeaders: Selector = Selector(`#fetchRequestHeaders`);
 
 fixture('X-Ray Fetch Plugin').page(
     'http://localhost:8080/http_fetch_event.html'
@@ -21,6 +22,8 @@ test('when fetch is called then a trace is recorded', async (t: TestController) 
         .contains('BatchId')
         .click(clearRequestResponse)
         .click(sendFetchRequest)
+        .expect(fetchRequestHeaders.textContent)
+        .match(/Root=1-[0-9a-f]{8}-[0-9a-f]{24};Parent=[0-9a-f]{16};Sampled=1/)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');

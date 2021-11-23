@@ -11,6 +11,7 @@ import mock from 'xhr-mock';
 import { GetSession, PluginContext } from '../../Plugin';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
+import { MockHeaders } from 'xhr-mock/lib/types';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
@@ -68,7 +69,8 @@ describe('XhrPlugin tests', () => {
         };
 
         mock.get(/.*/, {
-            body: JSON.stringify({ message: 'Hello World!' })
+            body: JSON.stringify({ message: 'Hello World!' }),
+            headers: { 'Content-Length': '125' } as MockHeaders
         });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
@@ -94,13 +96,22 @@ describe('XhrPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            http: {
-                request: {
-                    method: 'GET',
-                    traced: true
-                },
-                response: { status: 200 }
-            }
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: '',
+                    start_time: 0,
+                    end_time: 0,
+                    namespace: 'remote',
+                    http: {
+                        request: {
+                            method: 'GET',
+                            traced: true
+                        },
+                        response: { status: 200, content_length: 125 }
+                    }
+                }
+            ]
         });
     });
 
@@ -195,19 +206,27 @@ describe('XhrPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            http: {
-                request: {
-                    method: 'GET',
-                    traced: true
-                }
-            },
-            cause: {
-                exceptions: [
-                    {
-                        type: 'XMLHttpRequest error'
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: '',
+                    start_time: 0,
+                    end_time: 0,
+                    http: {
+                        request: {
+                            method: 'GET',
+                            traced: true
+                        }
+                    },
+                    cause: {
+                        exceptions: [
+                            {
+                                type: 'XMLHttpRequest error'
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         });
     });
 
@@ -280,13 +299,17 @@ describe('XhrPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            cause: {
-                exceptions: [
-                    {
-                        type: 'XMLHttpRequest timeout'
+            subsegments: [
+                {
+                    cause: {
+                        exceptions: [
+                            {
+                                type: 'XMLHttpRequest timeout'
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         });
     });
 
@@ -361,13 +384,17 @@ describe('XhrPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            cause: {
-                exceptions: [
-                    {
-                        type: 'XMLHttpRequest abort'
+            subsegments: [
+                {
+                    cause: {
+                        exceptions: [
+                            {
+                                type: 'XMLHttpRequest abort'
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         });
     });
 

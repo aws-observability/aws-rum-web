@@ -82,6 +82,10 @@ const appendErrorObjectDetails = (
     }
 };
 
+export const isErrorPrimitive = (error: any): boolean => {
+    return error !== Object(error) && error !== undefined && error !== null;
+};
+
 export const errorEventToJsErrorEvent = (
     errorEvent: ErrorEvent,
     stackTraceLength: number
@@ -90,7 +94,7 @@ export const errorEventToJsErrorEvent = (
     const error = errorEvent.error;
     if (isObject(error)) {
         appendErrorObjectDetails(rumEvent, error, stackTraceLength);
-    } else if (error !== undefined && error !== null) {
+    } else if (isErrorPrimitive(error)) {
         appendErrorPrimitiveDetails(rumEvent, error);
     }
     return rumEvent;

@@ -10,7 +10,9 @@ import {
     getAmznTraceIdHeaderValue,
     X_AMZN_TRACE_ID,
     isUrlAllowed,
-    HttpPluginConfig
+    HttpPluginConfig,
+    createXRaySubsegment,
+    requestInfoToHostname
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
@@ -142,9 +144,17 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         if (xhrDetails) {
             const endTime = epochTime();
             xhrDetails.trace.end_time = endTime;
-            xhrDetails.trace.http.response = {
+            xhrDetails.trace.subsegments[0].end_time = endTime;
+            xhrDetails.trace.subsegments[0].http.response = {
                 status: xhr.status
             };
+            const cl = parseInt(xhr.getResponseHeader('Content-Length'), 10);
+            if (!isNaN(cl)) {
+                xhrDetails.trace.subsegments[0].http.response.content_length = parseInt(
+                    xhr.getResponseHeader('Content-Length'),
+                    10
+                );
+            }
             this.recordTraceEvent(xhrDetails.trace);
             this.recordHttpEventWithResponse(xhrDetails, xhr);
         }
@@ -160,8 +170,9 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         if (xhrDetails) {
             const endTime = epochTime();
             xhrDetails.trace.end_time = endTime;
-            xhrDetails.trace.error = true;
-            xhrDetails.trace.cause = {
+            xhrDetails.trace.subsegments[0].end_time = endTime;
+            xhrDetails.trace.subsegments[0].error = true;
+            xhrDetails.trace.subsegments[0].cause = {
                 exceptions: [
                     {
                         type: errorName,
@@ -184,8 +195,9 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         if (xhrDetails) {
             const endTime = epochTime();
             xhrDetails.trace.end_time = endTime;
-            xhrDetails.trace.error = true;
-            xhrDetails.trace.cause = {
+            xhrDetails.trace.subsegments[0].end_time = endTime;
+            xhrDetails.trace.subsegments[0].error = true;
+            xhrDetails.trace.subsegments[0].cause = {
                 exceptions: [
                     {
                         type: errorName
@@ -204,8 +216,9 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         if (xhrDetails) {
             const endTime = epochTime();
             xhrDetails.trace.end_time = endTime;
-            xhrDetails.trace.error = true;
-            xhrDetails.trace.cause = {
+            xhrDetails.trace.subsegments[0].end_time = endTime;
+            xhrDetails.trace.subsegments[0].error = true;
+            xhrDetails.trace.subsegments[0].cause = {
                 exceptions: [
                     {
                         type: errorName
@@ -262,13 +275,19 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         const startTime = epochTime();
         xhrDetails.trace = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime,
-            {
-                request: {
-                    method: xhrDetails.method,
-                    traced: true
+            startTime
+        );
+        xhrDetails.trace.subsegments.push(
+            createXRaySubsegment(
+                requestInfoToHostname(xhrDetails.url),
+                startTime,
+                {
+                    request: {
+                        method: xhrDetails.method,
+                        traced: true
+                    }
                 }
-            }
+            )
         );
     };
 
@@ -293,7 +312,7 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
                             X_AMZN_TRACE_ID,
                             getAmznTraceIdHeaderValue(
                                 xhrDetails.trace.trace_id,
-                                xhrDetails.trace.id
+                                xhrDetails.trace.subsegments[0].id
                             )
                         );
                     }

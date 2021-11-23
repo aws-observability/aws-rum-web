@@ -1,5 +1,9 @@
 import { Plugin, PluginContext } from '../Plugin';
-import { Http, XRayTraceEvent } from '../../events/xray-trace-event';
+import {
+    Http,
+    Subsegment,
+    XRayTraceEvent
+} from '../../events/xray-trace-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
@@ -9,13 +13,18 @@ import {
     addAmznTraceIdHeader,
     HttpPluginConfig,
     createXRayTraceEventHttp,
-    isUrlAllowed
+    isUrlAllowed,
+    createXRaySubsegment,
+    requestInfoToHostname
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
-import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
+import {
+    errorEventToJsErrorEvent,
+    isErrorPrimitive
+} from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
 
-type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+type Fetch = typeof fetch;
 
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
@@ -83,11 +92,20 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         const http: Http = createXRayTraceEventHttp(init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
+            startTime
+        );
+        const subsegment: Subsegment = createXRaySubsegment(
+            requestInfoToHostname(input),
             startTime,
             http
         );
+        xRayTraceEvent.subsegments.push(subsegment);
 
-        addAmznTraceIdHeader(init, xRayTraceEvent.trace_id, xRayTraceEvent.id);
+        addAmznTraceIdHeader(
+            init,
+            xRayTraceEvent.trace_id,
+            xRayTraceEvent.subsegments[0].id
+        );
 
         return xRayTraceEvent;
     };
@@ -99,20 +117,31 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
     ) => {
         if (xRayTraceEvent) {
             const endTime = epochTime();
+            xRayTraceEvent.subsegments[0].end_time = endTime;
             xRayTraceEvent.end_time = endTime;
 
             if (response) {
-                xRayTraceEvent.http.response = {
+                xRayTraceEvent.subsegments[0].http.response = {
                     status: response.status
                 };
+                const cl = parseInt(response.headers.get('Content-Length'), 10);
+                if (!isNaN(cl)) {
+                    xRayTraceEvent.subsegments[0].http.response.content_length = cl;
+                }
             }
 
             if (error) {
-                xRayTraceEvent.error = true;
+                xRayTraceEvent.subsegments[0].error = true;
                 if (error instanceof Object) {
-                    this.appendErrorCauseFromObject(xRayTraceEvent, error);
-                } else {
-                    this.appendErrorCauseFromPrimitive(xRayTraceEvent, error);
+                    this.appendErrorCauseFromObject(
+                        xRayTraceEvent.subsegments[0],
+                        error
+                    );
+                } else if (isErrorPrimitive(error)) {
+                    this.appendErrorCauseFromPrimitive(
+                        xRayTraceEvent.subsegments[0],
+                        error.toString()
+                    );
                 }
             }
 
@@ -121,23 +150,20 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
     };
 
     private appendErrorCauseFromPrimitive(
-        xRayTraceEvent: XRayTraceEvent,
-        error: any
+        subsegment: Subsegment,
+        error: string
     ) {
-        xRayTraceEvent.cause = {
+        subsegment.cause = {
             exceptions: [
                 {
-                    type: error.toString()
+                    type: error
                 }
             ]
         };
     }
 
-    private appendErrorCauseFromObject(
-        xRayTraceEvent: XRayTraceEvent,
-        error: Error
-    ) {
-        xRayTraceEvent.cause = {
+    private appendErrorCauseFromObject(subsegment: Subsegment, error: Error) {
+        subsegment.cause = {
             exceptions: [
                 {
                     type: error.name,
@@ -154,7 +180,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         return {
             version: '1.0.0',
             request: {
-                method: init.method ? init.method : 'GET'
+                method: init?.method ? init.method : 'GET'
             }
         };
     };
@@ -193,15 +219,25 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         input: RequestInfo,
         init?: RequestInit
     ): Promise<Response> => {
-        init = init ? init : {};
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
 
-        if (!isUrlAllowed(input.toString(), this.config)) {
+        let url: string;
+        if (typeof input === 'string') {
+            url = input;
+        } else {
+            url = input.url;
+        }
+
+        if (!isUrlAllowed(url, this.config)) {
             return original.apply(thisArg, argsArray);
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
+            if (!init) {
+                init = {};
+                [].push.call(argsArray, init);
+            }
             trace = this.beginTrace(input, init);
         }
 

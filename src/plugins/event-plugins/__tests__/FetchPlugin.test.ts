@@ -15,12 +15,16 @@ import { HttpEvent } from '../../../events/http-event';
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
+const headers = {
+    'Content-Length': '125'
+};
+
 const mockFetch = jest.fn(
     (input: RequestInfo, init?: RequestInit): Promise<Response> =>
         Promise.resolve({
             status: 200,
             statusText: 'OK',
-            headers: {},
+            headers: { get: (k) => headers[k] },
             body: '{}',
             ok: true
         } as any)
@@ -179,19 +183,29 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        const tmp = record.mock.calls[0][1];
         expect(record.mock.calls[0][1]).toMatchObject({
             name: 'sample.rum.aws.amazon.com',
             id: '0000000000000000',
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            http: {
-                request: {
-                    method: 'GET',
-                    traced: true
-                },
-                response: { status: 200 }
-            }
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: 'aws.amazon.com',
+                    start_time: 0,
+                    end_time: 0,
+                    namespace: 'remote',
+                    http: {
+                        request: {
+                            method: 'GET',
+                            traced: true
+                        },
+                        response: { status: 200, content_length: 125 }
+                    }
+                }
+            ]
         });
     });
 
@@ -222,20 +236,28 @@ describe('FetchPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
-            http: {
-                request: {
-                    method: 'GET',
-                    traced: true
-                }
-            },
-            error: true,
-            cause: {
-                exceptions: [
-                    {
-                        type: 'Timeout'
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: 'aws.amazon.com',
+                    start_time: 0,
+                    end_time: 0,
+                    http: {
+                        request: {
+                            method: 'GET',
+                            traced: true
+                        }
+                    },
+                    error: true,
+                    cause: {
+                        exceptions: [
+                            {
+                                type: 'Timeout'
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         });
     });
 
@@ -300,6 +322,30 @@ describe('FetchPlugin tests', () => {
             (init.headers['X-Amzn-Trace-Id'] =
                 'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1')
         );
+        expect(init.headers instanceof Array).toBeFalsy();
+    });
+
+    test('RequestInit is added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch('https://aws.amazon.com');
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                'X-Amzn-Trace-Id':
+                    'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
+            }
+        });
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
@@ -492,6 +538,26 @@ describe('FetchPlugin tests', () => {
 
         // Run
         await fetch('https://aws.amazon.com');
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when a Request url is excluded then the plugin does not record a request to that url', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/.*/],
+            urlsToExclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        // Run
+        await fetch({ url: 'https://aws.amazon.com' } as Request);
         plugin.disable();
 
         // Assert
