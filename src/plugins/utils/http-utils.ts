@@ -127,7 +127,7 @@ export const addAmznTraceIdHeader = (
     segmentId: string
 ) => {
     if (!init.headers) {
-        init.headers = [];
+        init.headers = {};
     }
     init.headers[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
         traceId,

@@ -180,7 +180,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         return {
             version: '1.0.0',
             request: {
-                method: init.method ? init.method : 'GET'
+                method: init?.method ? init.method : 'GET'
             }
         };
     };
@@ -219,7 +219,6 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         input: RequestInfo,
         init?: RequestInit
     ): Promise<Response> => {
-        init = init ? init : {};
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
 
@@ -235,6 +234,10 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
+            if (!init) {
+                init = {};
+                [].push.call(argsArray, init);
+            }
             trace = this.beginTrace(input, init);
         }
 
