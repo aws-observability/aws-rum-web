@@ -14,7 +14,11 @@ loader(
         guestRoleArn: '[guestRoleArn]',
         identityPoolId: '[identityPoolId]',
         sessionSampleRate: 1,
-        telemetries: ['performance', 'errors', 'http'],
+        telemetries: [
+            'performance',
+            'errors',
+            ['http', { addXRayTraceIdHeader: true }]
+        ],
         enableXRay: true
     }
 );

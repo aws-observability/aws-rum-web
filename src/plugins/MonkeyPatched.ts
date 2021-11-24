@@ -8,15 +8,27 @@ export type MonkeyPatch = {
 };
 
 export abstract class MonkeyPatched {
+    private enabled: boolean;
+
+    constructor() {
+        this.enabled = false;
+    }
+
     public enable() {
-        for (const patch of this.patches()) {
-            shimmer.wrap(patch.nodule, patch.name, patch.wrapper());
+        if (!this.enabled) {
+            this.enabled = true;
+            for (const patch of this.patches()) {
+                shimmer.wrap(patch.nodule, patch.name, patch.wrapper());
+            }
         }
     }
 
     public disable() {
-        for (const patch of this.patches()) {
-            shimmer.unwrap(patch.nodule, patch.name);
+        if (this.enabled) {
+            this.enabled = false;
+            for (const patch of this.patches()) {
+                shimmer.unwrap(patch.nodule, patch.name);
+            }
         }
     }
 

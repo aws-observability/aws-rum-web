@@ -435,12 +435,40 @@ describe('XhrPlugin tests', () => {
         });
     });
 
+    test('when default config is used then X-Amzn-Trace-Id header is not to the HTTP request', async () => {
+        // Init
+        let header: string;
+        const config: PartialHttpPluginConfig = {};
+
+        mock.get(/.*/, (req, res) => {
+            header = req.header('X-Amzn-Trace-Id');
+            return res
+                .status(200)
+                .body(JSON.stringify({ message: 'Hello World!' }));
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.setRequestHeader('Blarb', 'gurggle');
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(header).toEqual(null);
+    });
+
     test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         let header: string;
-        const config: PartialHttpPluginConfig = {
-            urlsToInclude: [/response\.json/]
-        };
+        const config: PartialHttpPluginConfig = { addXRayTraceIdHeader: true };
 
         mock.get(/.*/, (req, res) => {
             header = req.header('X-Amzn-Trace-Id');

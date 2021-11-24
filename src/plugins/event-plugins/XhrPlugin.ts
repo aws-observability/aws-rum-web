@@ -130,6 +130,10 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
         ];
     }
 
+    private addXRayTraceIdHeader = () => {
+        return this.config.addXRayTraceIdHeader;
+    };
+
     private isTracingEnabled = () => {
         return this.context.config.enableXRay;
     };
@@ -307,7 +311,11 @@ export class XhrPlugin extends MonkeyPatched implements Plugin {
 
                     self.initializeTrace(xhrDetails);
 
-                    if (self.isTracingEnabled() && self.isSessionRecorded()) {
+                    if (
+                        self.isTracingEnabled() &&
+                        self.addXRayTraceIdHeader() &&
+                        self.isSessionRecorded()
+                    ) {
                         this.setRequestHeader(
                             X_AMZN_TRACE_ID,
                             getAmznTraceIdHeaderValue(
