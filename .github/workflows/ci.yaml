@@ -2,9 +2,9 @@ name: AWS RUM Web Client Continuous Build
 
 on:
     push:
-        branches: [dinesh-add-workflow]
+        branches: [main]
     pull_request:
-        branches: [dinesh-add-workflow]
+        branches: [main]
 
 jobs:
     unit-test:
@@ -73,4 +73,4 @@ jobs:
 
             - name: Run IE Integ Tests
               if: matrix.os == 'windows-latest'
-              run: npm run integ:local:firefox
+              run: npm run integ:local:ie
