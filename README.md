@@ -15,17 +15,16 @@ which will install the web client in your application.
 
 ## Documentation
 
-1. [Installing from CDN](docs/cdn_installation)
-2. [Executing Commands](docs/cdn_commands)
-3. [Using the Web Client with Angular](docs/cdn_angular)
-4. [Using the Web Client with React](docs/cdn_react)
+1. [Installing from CDN](docs/cdn_installation.md)
+2. [Executing Commands](docs/cdn_commands.md)
+3. [Using the Web Client with Angular](docs/cdn_angular.md)
+4. [Using the Web Client with React](docs/cdn_react.md)
 
 ## Getting Help
 
 Use the following community resources for getting help with the SDK. We use the GitHub issues for tracking bugs and feature requests.
 
 -   View the [CloudWatch RUM documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html).
--   Ask a question in the [CloudWatch RUM Forum]().
 -   Open a support ticket with [AWS Support](https://docs.aws.amazon.com/awssupport/latest/user/getting-started.html).
 -   If you think you may have found a bug, open an [issue](https://github.com/aws-observability/aws-rum-web/issues/new).
 
