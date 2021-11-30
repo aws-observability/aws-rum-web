@@ -61,6 +61,37 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
+    test('when an unhandled rejection is thrown then the plugin records the name, message', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        // JSDOM has not implemented PromiseRejectionEvent, so we 'extend'
+        // Event to have the same functionality
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => {}),
+                reason: 'Something went wrong!'
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'unhandledrejection',
+                message: 'Something went wrong!'
+            })
+        );
+    });
+
     test('when an Error is thrown then the plugin records the name, message and stack', async () => {
         // Init
         document.body.innerHTML =
@@ -243,6 +274,30 @@ describe('JsErrorPlugin tests', () => {
         // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('when plugin disabled then plugin does not record unhandled rejection events', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+
+        // Run
+        plugin.load(context);
+
+        // So that the error doesn't cause the test to fail.
+        window.addEventListener('error', () => {});
+        plugin.disable();
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => {}),
+                reason: 'Something went wrong!'
+            })
+        );
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
