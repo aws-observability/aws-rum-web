@@ -37,6 +37,8 @@ const removeUnwantedEvents = (json: any) => {
 test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    let browser = t.browser.name;
+    if (browser != 'Safari' && browser != 'Firefox') {
     await t.wait(300);
 
     await t
@@ -65,4 +67,5 @@ test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
         .eql(CLS_EVENT_TYPE)
         .expect(eventDetails2.value)
         .typeOf('number');
+    }
 });
