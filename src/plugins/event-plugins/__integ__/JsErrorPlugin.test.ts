@@ -6,6 +6,7 @@ const triggerTypeError: Selector = Selector(`#triggerTypeError`);
 const throwErrorString: Selector = Selector(`#throwErrorString`);
 const recordStackTrace: Selector = Selector(`#recordStackTrace`);
 const recordCaughtError: Selector = Selector(`#recordCaughtError`);
+const triggerPromiseRejection: Selector = Selector(`#uncaughtPromiseRejection`);
 
 const dispatch: Selector = Selector(`#dispatch`);
 
@@ -60,6 +61,31 @@ test('when a TypeError is thrown then name and message are recorded', async (t: 
         .match(/\d+/)
         .expect(eventDetails.colno)
         .match(/\d+/);
+});
+
+test('when a promise rejection is thrown then name is recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with tracker load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(triggerPromiseRejection)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const json = removeUnwantedEvents(
+        JSON.parse(await REQUEST_BODY.textContent)
+    );
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
+
+    await t
+        .expect(eventType)
+        .eql(JS_ERROR_EVENT_TYPE)
+        .expect(eventDetails.type)
+        .contains('unhandledrejection')
+        .expect(eventDetails.message)
+        .match(/promise is rejected/);
 });
 
 test('stack trace is recorded by default', async (t: TestController) => {
