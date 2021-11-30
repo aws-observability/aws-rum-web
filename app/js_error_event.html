@@ -30,6 +30,10 @@
                 undefined.foo();
             }
 
+            function triggerPromiseRejection() {
+                Promise.reject('promise is rejected');
+            }
+
             function throwErrorString() {
                 throw 'thrown string';
             }
@@ -67,6 +71,12 @@
         <hr />
         <button id="triggerTypeError" onclick="triggerTypeError()">
             Trigger TypeError
+        </button>
+        <button
+            id="uncaughtPromiseRejection"
+            onclick="triggerPromiseRejection()"
+        >
+            Trigger promiserejection
         </button>
         <button id="throwErrorString" onclick="throwErrorString()">
             Throw error string
