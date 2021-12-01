@@ -60,9 +60,9 @@ describe('StsClient tests', () => {
     });
 
     test('when STS fails, error is thrown', async () => {
-        // @ts-ignore
+        const e: Error = new Error('There are no STS credentials');
         fetchHandler.mockImplementation(() => {
-            throw new Error('There are no STS credentials');
+            throw e;
         });
 
         // Init
@@ -72,13 +72,12 @@ describe('StsClient tests', () => {
         });
 
         // Assert
-        expect(
+        return expect(
             client.assumeRoleWithWebIdentity({
                 RoleArn: 'mock-role-arn',
                 RoleSessionName: 'mock-session-name',
                 WebIdentityToken: 'mock-web-identity-token'
             })
-        ).toThrowError;
-        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        ).rejects.toEqual(e);
     });
 });

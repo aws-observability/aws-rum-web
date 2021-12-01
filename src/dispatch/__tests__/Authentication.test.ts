@@ -210,8 +210,9 @@ describe('Authentication tests', () => {
     });
 
     test('when assumeRole fails then throw error', async () => {
+        const e: Error = new Error('assumeRole error');
         assumeRole.mockImplementation(() => {
-            throw new Error('assumeRole error');
+            throw e;
         });
         // Init
         const auth = new Authentication({
@@ -223,12 +224,15 @@ describe('Authentication tests', () => {
         });
 
         // Assert
-        expect(auth.ChainAnonymousCredentialsProvider()).toThrowError;
+        return expect(auth.ChainAnonymousCredentialsProvider()).rejects.toEqual(
+            e
+        );
     });
 
     test('when mockGetId fails then throw error', async () => {
+        const e: Error = new Error('mockGetId error');
         mockGetId.mockImplementation(() => {
-            throw new Error('mockGetId error');
+            throw e;
         });
         // Init
         const auth = new Authentication({
@@ -240,12 +244,15 @@ describe('Authentication tests', () => {
         });
 
         // Assert
-        expect(auth.ChainAnonymousCredentialsProvider()).toThrowError;
+        return expect(auth.ChainAnonymousCredentialsProvider()).rejects.toEqual(
+            e
+        );
     });
 
     test('when mockGetIdToken fails then throw error', async () => {
+        const e: Error = new Error('mockGetId error');
         mockGetIdToken.mockImplementation(() => {
-            throw new Error('mockGetId error');
+            throw e;
         });
         // Init
         const auth = new Authentication({
@@ -257,7 +264,7 @@ describe('Authentication tests', () => {
         });
 
         // Assert
-        expect(auth.ChainAnonymousCredentialsProvider()).toThrowError;
+        expect(auth.ChainAnonymousCredentialsProvider()).rejects.toEqual(e);
     });
 
     // tslint:disable-next-line:max-line-length

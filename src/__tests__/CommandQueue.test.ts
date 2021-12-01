@@ -193,15 +193,14 @@ describe('CommandQueue tests', () => {
 
     test('push() recordEvent throws UnsupportedOperationException', async () => {
         const commandQueue: CommandQueue = getCommandQueue();
-        commandQueue
-            .push({
+        return expect(
+            commandQueue.push({
                 c: 'recordEvent',
                 p: { event: 'my_event' }
             })
-            .then(() => fail())
-            .catch((e) =>
-                expect(e).toMatch('UnsupportedOperationException: recordEvent')
-            );
+        ).rejects.toEqual(
+            new Error('CWR: UnsupportedOperationException: recordEvent')
+        );
     });
 
     test('enable calls Orchestration.enable', async () => {

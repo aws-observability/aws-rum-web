@@ -42,20 +42,17 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
                 type: 'TypeError',
-                message: "Cannot read property 'foo' of null",
+                message: expect.stringContaining('Cannot read'),
                 stack: expect.stringContaining('at HTMLButtonElement.onclick')
             })
         );
@@ -69,15 +66,12 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
@@ -102,16 +96,13 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
-        expect(record.mock.calls[0][1].stack).toEqual(undefined);
+        expect((record.mock.calls[0][1] as any).stack).toEqual(undefined);
     });
 
     test('when an object without a name, message and stack is thrown then type, message and stack default values', async () => {
@@ -124,15 +115,12 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
             type: 'error',
@@ -154,14 +142,11 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
             type: 'mystringerror',
@@ -181,14 +166,11 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
             type: '5',
@@ -208,14 +190,11 @@ describe('JsErrorPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
         // Assert
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
             type: 'false',
@@ -240,7 +219,6 @@ describe('JsErrorPlugin tests', () => {
         // So that the error doesn't cause the test to fail.
         window.addEventListener('error', () => {});
 
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
@@ -258,7 +236,6 @@ describe('JsErrorPlugin tests', () => {
         plugin.load(context);
         plugin.disable();
         plugin.enable();
-        // @ts-ignore
         document.getElementById('createJSError').click();
         plugin.disable();
 
@@ -277,9 +254,7 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
@@ -300,9 +275,7 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
@@ -331,9 +304,7 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
@@ -357,9 +328,7 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
@@ -386,9 +355,7 @@ describe('JsErrorPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        // @ts-ignore
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
-        // @ts-ignore
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',

@@ -59,7 +59,7 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getCredentialsForIdentity error, then an error is thrown', async () => {
-        // @ts-ignore
+        const e: Error = new Error('There are no credentials');
         fetchHandler.mockImplementation(() => {
             throw new Error('There are no credentials');
         });
@@ -71,9 +71,9 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Assert
-        expect(client.getCredentialsForIdentity('my-fake-identity-id'))
-            .toThrowError;
-        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        return expect(
+            client.getCredentialsForIdentity('my-fake-identity-id')
+        ).rejects.toEqual(e);
     });
 
     test('when getOpenIdToken is called, then token command is returned', async () => {
@@ -103,7 +103,7 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getOpenIdToken error, then an error is thrown', async () => {
-        // @ts-ignore
+        const e: Error = new Error('There are no credentials');
         fetchHandler.mockImplementation(() => {
             throw new Error('There are no credentials');
         });
@@ -119,8 +119,7 @@ describe('CognitoIdentityClient tests', () => {
             client.getOpenIdToken({
                 IdentityId: 'my-fake-identity-id'
             })
-        ).toThrowError;
-        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        ).rejects.toEqual(e);
     });
 
     test('when getId is called, then token command is returned', async () => {
@@ -149,7 +148,7 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getId error, then an error is thrown', async () => {
-        // @ts-ignore
+        const e: Error = new Error('There are no credentials');
         fetchHandler.mockImplementation(() => {
             throw new Error('There are no credentials');
         });
@@ -161,11 +160,10 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Assert
-        expect(
+        return expect(
             client.getId({
                 IdentityPoolId: 'my-fake-identity-pool-id'
             })
-        ).toThrowError;
-        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        ).rejects.toEqual(e);
     });
 });
