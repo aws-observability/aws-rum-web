@@ -5,12 +5,12 @@ import { HttpResponse } from '@aws-sdk/protocol-http';
 import { advanceTo } from 'jest-date-mock';
 
 const sendBeacon = jest.fn(() => true);
-global.navigator.sendBeacon = sendBeacon;
 
 describe('BeaconHttpHandler tests', () => {
     beforeEach(() => {
         advanceTo(0);
         sendBeacon.mockClear();
+        global.navigator.sendBeacon = sendBeacon;
     });
 
     test('when sendBeacon succeeds then HttpResponse status is 200', async () => {
@@ -25,7 +25,6 @@ describe('BeaconHttpHandler tests', () => {
         });
 
         // Run
-        // @ts-ignore
         const response: HttpResponse = (
             await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST)
         ).response;
@@ -36,6 +35,7 @@ describe('BeaconHttpHandler tests', () => {
 
     test('when sendBeacon fails then promise is rejected', async () => {
         // Init
+        global.navigator.sendBeacon = jest.fn(() => false);
         const beaconHandler = new BeaconHttpHandler();
         const client: DataPlaneClient = new DataPlaneClient({
             fetchRequestHandler: undefined,
@@ -46,12 +46,11 @@ describe('BeaconHttpHandler tests', () => {
         });
 
         // Run
-        // @ts-ignore
         const response: Promise<{ response: HttpResponse }> = client.sendBeacon(
             Utils.PUT_RUM_EVENTS_REQUEST
         );
         // Assert
-        expect(response).rejects.toEqual(undefined);
+        return expect(response).rejects.toEqual(undefined);
     });
 
     test('sendBeacon builds correct url', async () => {
@@ -66,14 +65,12 @@ describe('BeaconHttpHandler tests', () => {
         });
 
         // Run
-        // @ts-ignore
         const response: HttpResponse = (
             await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST)
         ).response;
 
         // Assert
-        // @ts-ignore
-        const url: string = sendBeacon.mock.calls[0][0];
+        const url: string = (sendBeacon.mock.calls[0] as any)[0];
         expect(url).toContain(
             'https://rumservicelambda.us-west-2.amazonaws.com/appmonitors/application123?X-Amz-Algorithm=AWS4-HMAC-SHA256'
         );
