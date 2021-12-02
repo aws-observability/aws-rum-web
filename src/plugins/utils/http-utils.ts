@@ -123,13 +123,15 @@ export const createXRaySubsegment = (
 };
 
 export const requestInfoToHostname = (request: Request | URL | string) => {
+    let hostname = '';
     if ((request as URL).hostname) {
-        return (request as URL).hostname;
+        hostname = (request as URL).hostname;
     } else if ((request as Request).url) {
-        return getHost((request as Request).url);
+        hostname = getHost((request as Request).url);
     } else {
-        return getHost(request.toString());
+        hostname = getHost(request.toString());
     }
+    return hostname ? hostname : window.location.hostname;
 };
 
 export const addAmznTraceIdHeader = (
