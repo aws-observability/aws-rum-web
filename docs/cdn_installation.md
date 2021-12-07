@@ -16,7 +16,7 @@ the following:
 
 ## Arguments
 
-The code snippet accepts six arguments. The snippet below shows these arguments with the body of the snippet's function ommitted for readability:
+The code snippet accepts six arguments. The snippet below shows these arguments with the body of the snippet's function omitted for readability:
 ```html
 <script>
     (function(n,i,v,r,s,c,u,x,z){...})(
@@ -41,9 +41,9 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
 
 ## Configuration
 
-The application-specific web client configuration is a JavaScript object whose fields are all optional. While these feilds are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` and `guestRoleArn` are both required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `cwr('setAwsCredentials', {...});`.
+The application-specific web client configuration is a JavaScript object whose fields are all optional. While these fields are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` and `guestRoleArn` are both required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `cwr('setAwsCredentials', {...});`.
 
-The snippet below shows several configuration opions with the body of the snippet's function ommitted for readability:
+The snippet below shows several configuration options with the body of the snippet's function omitted for readability:
 ```html
 <script>
     (function(n,i,v,r,s,c,u,x,z){...})(
@@ -77,7 +77,7 @@ The snippet below shows several configuration opions with the body of the snippe
 | pageIdFormat | String | `'PATH'` | The portion of the `window.location` that will be used as the page ID. Options include `PATH`, `HASH` and `PATH_AND_HASH`.<br/><br/>For example, consider the URL `https://amazonaws.com/home?param=true#content`<br/><br/>`PATH`: `/home`<br/>`HASH`: `#content`<br/>`PATH_AND_HASH`: `/home#content` |
 | pagesToInclude | RegExp[] | `[]` | A list of regular expressions which specify the `window.location` values for which the web client will record data. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToInclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be included,  and `https://amazonaws.com/` will not be included. |
 | pagesToExclude | RegExp[] | `[]` | A list of regular expressions which specify the `window.location` values for which the web client will record data. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToExclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be excluded,  and `https://amazonaws.com/` will not be excluded. |
-| recordResourceUrl | Boolean | `true` | When this field is `false`, the web client will not record the URLs of resources downloaded by your appliation.<br/><br/> Some types of resources (e.g., profile images) may be referenced by URLs which contain PII. If this applies to your application, you must set this field to `false` to comply with CloudWatch RUM's shared responsibility model. |
+| recordResourceUrl | Boolean | `true` | When this field is `false`, the web client will not record the URLs of resources downloaded by your application.<br/><br/> Some types of resources (e.g., profile images) may be referenced by URLs which contain PII. If this applies to your application, you must set this field to `false` to comply with CloudWatch RUM's shared responsibility model. |
 | sessionEventLimit | Number | `200` | The maximum number of events to record during a single session. |
 | sessionSampleRate | Number | `1` | The proportion of sessions that will be recorded by the web client, specified as a unit interval (a number greater than or equal to 0 and less than or equal to 1). When this field is `0`, no sessions will be recorded. When this field is `1`, all sessions will be recorded. |
 | telemetries | [Telemetry Config Array](#telemetry-config-array) | `[]` | See [Telemetry Config Array](#telemetry-config-array) |

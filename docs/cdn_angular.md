@@ -54,7 +54,7 @@ export class MyComponent implements OnInit {
 
 ## Instrument Error Handling to Record Errors
 
-Angular intercepts uncaught JavaScript errors that origininate within the
+Angular intercepts uncaught JavaScript errors that originate within the
 Angular application. Because Angular intercepts these errors, they will not be
 recorded by the web client. This can be fixed by creating an error handler that
 records uncaught errors using the web client's `recordError` command:
