@@ -49,15 +49,8 @@ jobs:
 
             - name: Publish to CloudWatch RUM CDN
               run: |
-                  minorUpdate=$(echo ${{ github.event.inputs.version }} | sed -En "s/([0-9]+\.)[0-9]+\.[0-9]+/\1x/p")
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key "content/$minorUpdate/cwr.js" --body build/assets/cwr.js
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key "content/$minorUpdate/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY
-                  patchUpdate=$(echo ${{ github.event.inputs.version }} | sed -En "s/([0-9]+\.[0-9]+\.)[0-9]+/\1x/p")
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key "content/$patchUpdate/cwr.js" --body build/assets/cwr.js
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key "content/$patchUpdate/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY
-                  exact=$(echo ${{ github.event.inputs.version }})
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key "content/$exact/cwr.js" --body build/assets/cwr.js
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key "content/$exact/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY
+                  chmod u+x .github/scripts/deploy.sh
+                  .github/scripts/deploy.sh ${{ github.event.inputs.version }} ${{ secrets.BUCKET }}
 
             - name: Create GitHub Release
               id: create_release
