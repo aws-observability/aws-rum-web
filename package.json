@@ -7,6 +7,10 @@
     },
     "main": "dist/cjs/index.js",
     "module": "dist/es/index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aws-observability/aws-rum-web.git"
+    },
     "scripts": {
         "build": "npm run build:schemas && webpack --config webpack/webpack.prod.js && npm run build:es && npm run build:cjs",
         "build:es": "tsc --project ./tsconfig.es.json",
