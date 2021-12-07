@@ -11,6 +11,7 @@ jobs:
     publish_to_cdn:
         name: Publish New Release
         runs-on: ubuntu-latest
+        environment: cdn-prod-release
         permissions: write-all
         steps:
             - name: Checkout AWS RUM Web Client Repository
@@ -19,11 +20,11 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v1
               with:
-                  node-version: 14
+                  node-version: 16
 
             - name: Fetch AWS Credentials
               run: |
-                  export AWS_ROLE_ARN=${{ secrets.PROD_US_EAST_1_ROLE }}
+                  export AWS_ROLE_ARN=${{ secrets.ROLE }}
                   export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
                   export AWS_DEFAULT_REGION=us-east-1
 
@@ -48,8 +49,8 @@ jobs:
 
             - name: Publish to CloudWatch RUM CDN
               run: |
-                  aws s3api put-object --bucket ${{ secrets.PROD_US_EAST_1_BUCKET }} --key 'content/${{ github.event.inputs.version }}/cwr.js' --body build/assets/cwr.js
-                  aws s3api put-object --bucket ${{ secrets.PROD_US_EAST_1_BUCKET }} --key 'content/${{ github.event.inputs.version }}/LICENSE-THIRD-PARTY' --body LICENSE-THIRD-PARTY
+                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key 'content/${{ github.event.inputs.version }}/cwr.js' --body build/assets/cwr.js
+                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key 'content/${{ github.event.inputs.version }}/LICENSE-THIRD-PARTY' --body LICENSE-THIRD-PARTY
 
             - name: Create GitHub Release
               id: create_release
