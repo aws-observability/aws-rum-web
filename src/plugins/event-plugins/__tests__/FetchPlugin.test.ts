@@ -650,4 +650,26 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
+
+    test('when a url is relative then the subsegment name is location.hostname', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {};
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch('/resource');
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            subsegments: [
+                {
+                    name: 'us-east-1.console.aws.amazon.com'
+                }
+            ]
+        });
+    });
 });

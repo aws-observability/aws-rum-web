@@ -99,7 +99,6 @@ describe('XhrPlugin tests', () => {
             subsegments: [
                 {
                     id: '0000000000000000',
-                    name: '',
                     start_time: 0,
                     end_time: 0,
                     namespace: 'remote',
@@ -209,7 +208,6 @@ describe('XhrPlugin tests', () => {
             subsegments: [
                 {
                     id: '0000000000000000',
-                    name: '',
                     start_time: 0,
                     end_time: 0,
                     http: {
@@ -738,5 +736,36 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when a url is relative then the subsegment name is location.hostname', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {};
+
+        mock.get(/.*/, () => Promise.reject(new Error()));
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            subsegments: [
+                {
+                    name: 'us-east-1.console.aws.amazon.com'
+                }
+            ]
+        });
     });
 });
