@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version=$1
-bucket=$2
+version=$(npm pkg get version | sed 's/"//g')
+bucket=$1
 
 aws s3api put-object --bucket $bucket --key "content/$version/cwr.js" --body build/assets/cwr.js
 aws s3api put-object --bucket $bucket --key "content/$version/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY

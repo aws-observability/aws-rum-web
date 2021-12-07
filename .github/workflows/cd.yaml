@@ -2,10 +2,6 @@ name: AWS RUM Web Client Release
 
 on:
     workflow_dispatch:
-        inputs:
-            version:
-                description: The version to tag the release with, e.g., 1.2.0, 1.2.1-alpha.1
-                required: true
 
 jobs:
     publish_to_cdn:
@@ -50,7 +46,7 @@ jobs:
             - name: Publish to CloudWatch RUM CDN
               run: |
                   chmod u+x .github/scripts/deploy.sh
-                  .github/scripts/deploy.sh ${{ github.event.inputs.version }} ${{ secrets.BUCKET }}
+                  .github/scripts/deploy.sh ${{ secrets.BUCKET }}
 
             - name: Create GitHub Release
               id: create_release
