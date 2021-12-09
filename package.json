@@ -1,6 +1,6 @@
 {
     "name": "aws-rum-web",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "npm-pretty-much": {
         "runRelease": "release",
         "runTest": "never"
