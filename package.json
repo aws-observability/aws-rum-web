@@ -6,6 +6,12 @@
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
     "main": "dist/cjs/index.js",
     "module": "dist/es/index.js",
+    "files": [
+        "dist/",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE-THIRD-PARTY"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/aws-observability/aws-rum-web.git"
@@ -19,6 +25,7 @@
         "clean": "rm -rf ./build && rm -rf ./node_modules & rm package-lock.json",
         "server": "webpack-dev-server --config webpack/webpack.dev.js",
         "release": "npm run test && npm run build",
+        "prepublishOnly": "npm run release",
         "lint": "node node_modules/tslint/bin/tslint --config ./tslint.json --project ./tsconfig.webpack.json --format verbose || exit 1",
         "lint:fix": "node node_modules/tslint/bin/tslint -c ./tslint.json -p ./tsconfig.webpack.json --format verbose --fix",
         "prettier": "npx prettier --check .",
