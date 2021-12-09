@@ -1,7 +1,14 @@
 # Changelog for AWS RUM Web Client
 
-<!--LATEST=1.0.2-->
+<!--LATEST=1.0.3-->
 <!--ENTRYINSERT-->
+
+## 1.0.3
+
+-   fix: Fix X-Ray subsegment name when path is relative
+-   fix: Fix unit test promise assertions
+-   fix: Skip webvitals integ tests when browser is Firefox or Safari
+-   improvement: Record uncaught promise rejection events
 
 ## 1.0.2
 
