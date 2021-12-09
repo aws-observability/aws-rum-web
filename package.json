@@ -1,12 +1,15 @@
 {
     "name": "aws-rum-web",
     "version": "1.0.2",
-    "npm-pretty-much": {
-        "runRelease": "release",
-        "runTest": "never"
-    },
+    "description": "The Amazon CloudWatch RUM web client.",
+    "license": "Apache-2.0",
+    "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
     "main": "dist/cjs/index.js",
     "module": "dist/es/index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aws-observability/aws-rum-web.git"
+    },
     "scripts": {
         "build": "npm run build:schemas && webpack --config webpack/webpack.prod.js && npm run build:es && npm run build:cjs",
         "build:es": "tsc --project ./tsconfig.es.json",
@@ -39,7 +42,6 @@
         "integ:local:nightwatch:firefox": "nightwatch -e firefox",
         "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)"
     },
-    "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
     "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.6.3",
