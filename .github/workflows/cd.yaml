@@ -18,9 +18,10 @@ jobs:
               uses: actions/checkout@v2
 
             - name: Setup Node
-              uses: actions/setup-node@v1
+              uses: actions/setup-node@v2
               with:
-                  node-version: 16
+                  node-version: '16.x'
+                  registry-url: 'https://registry.npmjs.org'
 
             - name: Fetch AWS Credentials
               run: |
@@ -44,13 +45,18 @@ jobs:
 
             - name: Build Release
               run: |
-                  npm install
+                  npm ci
                   npm run release
 
             - name: Publish to CloudWatch RUM CDN
               run: |
                   aws s3api put-object --bucket ${{ secrets.BUCKET }} --key 'content/${{ github.event.inputs.version }}/cwr.js' --body build/assets/cwr.js
                   aws s3api put-object --bucket ${{ secrets.BUCKET }} --key 'content/${{ github.event.inputs.version }}/LICENSE-THIRD-PARTY' --body LICENSE-THIRD-PARTY
+
+            - name: Publish to NPM
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Create GitHub Release
               id: create_release
