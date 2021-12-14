@@ -2,10 +2,6 @@ name: AWS RUM Web Client Release
 
 on:
     workflow_dispatch:
-        inputs:
-            version:
-                description: The version to tag the release with, e.g., 1.2.0, 1.2.1-alpha.1
-                required: true
 
 jobs:
     publish_to_cdn:
@@ -50,8 +46,8 @@ jobs:
 
             - name: Publish to CloudWatch RUM CDN
               run: |
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key 'content/${{ github.event.inputs.version }}/cwr.js' --body build/assets/cwr.js
-                  aws s3api put-object --bucket ${{ secrets.BUCKET }} --key 'content/${{ github.event.inputs.version }}/LICENSE-THIRD-PARTY' --body LICENSE-THIRD-PARTY
+                  chmod u+x .github/scripts/deploy.sh
+                  .github/scripts/deploy.sh ${{ secrets.BUCKET }}
 
             - name: Publish to NPM
               run: npm publish
