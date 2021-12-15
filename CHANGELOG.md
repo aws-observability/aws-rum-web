@@ -1,7 +1,11 @@
 # Changelog for AWS RUM Web Client
 
-<!--LATEST=1.0.3-->
+<!--LATEST=1.0.4-->
 <!--ENTRYINSERT-->
+
+## 1.0.4
+
+-   fix: Added npm prepublish script
 
 ## 1.0.3
 
