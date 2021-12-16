@@ -64,7 +64,18 @@ Verify the IAM role has the following permission:
 }
 ```
 
-Verify the IAM role has the following trust relationship:
+---
+## AWS token vending (Cognito or STS) fails
+
+The CloudWatch RUM web client has a default authorization mechanism that uses a
+a token vended by an unauthenticated Cognito identity to retrieve temporary AWS
+credentials from STS.
+
+### Cognito is not authorized to assume IAM role
+
+If the STS `AssumeRoleWithWebIdentity` operation fails, the Cognito identity may
+not have permission to assume the IAM role. Verify the IAM role has the
+following trust relationship:
 
 ```json
 {
@@ -88,8 +99,29 @@ Verify the IAM role has the following trust relationship:
   ]
 }
 ```
----
 
+### Cognito's basic authflow is not enabled
+
+When the CloudWatch RUM web client is provided with both `identityPoolId` and `guestRoleArn`, the web client will use Cognito's [basic (classic) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html). If the Cognito `GetCredentialsForIdentity` operation fails, this may be because the basic (classic) authflow is not enabled for the identity pool. In this case, the response may look similar to the following:
+
+```
+<Error>
+  <Type>Sender</Type>
+  <Code>InvalidIdentityToken</Code>
+  <Message>The ID Token provided is not a valid JWT. (You may see this error if you sent an Access Token)</Message>
+</Error>
+```
+
+Using the Amazon Cognito console or CLI (i.e, the `aws cognito-identity
+describe-identity-pool` command), verify that the identity pool
+configuration does **not** contain `AllowClassicFlow: false`. If it does, then
+update the configuration so that it contains `AllowClassicFlow: true`.
+
+See also:
+1. `AllowClassicFlow` in the [update-identity-pool CLI reference](https://docs.aws.amazon.com/cli/latest/reference/cognito-identity/update-identity-pool.html).
+1. [Identity pool (federated identities) authentication flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
+
+---
 ## Content security policy blocks the web client
 
 If your web application uses a content security policy, it likely needs to be
