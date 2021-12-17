@@ -30,7 +30,7 @@ export function loader(
         z.src = s;
         document.head.insertBefore(
             z,
-            document.getElementsByTagName('script')[0]
+            document.head.getElementsByTagName('script')[0]
         );
     })(
         namespace,
