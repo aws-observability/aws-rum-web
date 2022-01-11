@@ -427,6 +427,35 @@ describe('FetchPlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
+    test('when getSession returns undefined then the plugin does not record a trace', async () => {
+        const getSession: jest.MockedFunction<GetSession> = jest.fn(
+            () => undefined
+        );
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+        const xRayOnContext: PluginContext = {
+            applicationId: 'b',
+            applicationVersion: '1.0',
+            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
+            record,
+            recordPageView,
+            getSession
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch('https://aws.amazon.com');
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record).not.toHaveBeenCalled();
+    });
+
     test('the plugin records a stack trace by default', async () => {
         // Init
         global.fetch = mockFetchWithErrorObjectAndStack;
