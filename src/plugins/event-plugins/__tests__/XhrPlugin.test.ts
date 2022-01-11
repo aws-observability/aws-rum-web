@@ -563,6 +563,46 @@ describe('XhrPlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
+    test('when getSession returns undefined then the plugin does not record a trace', async () => {
+        // Init
+        const getSession: jest.MockedFunction<GetSession> = jest.fn(
+            () => undefined
+        );
+        const context: PluginContext = {
+            applicationId: 'b',
+            applicationVersion: '1.0',
+            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
+            record,
+            recordPageView,
+            getSession
+        };
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/response\.json/],
+            recordAllRequests: true
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(context);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+    });
+
     test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
         // Init
         const config: PartialHttpPluginConfig = {

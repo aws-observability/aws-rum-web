@@ -85,7 +85,7 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
     };
 
     private isSessionRecorded = () => {
-        return this.context.getSession().record;
+        return this.context.getSession()?.record || false;
     };
 
     private beginTrace = (
