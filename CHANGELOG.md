@@ -1,7 +1,11 @@
 # Changelog for AWS RUM Web Client
 
-<!--LATEST=1.0.4-->
+<!--LATEST=1.0.5-->
 <!--ENTRYINSERT-->
+
+## 1.0.5
+
+-   fix: Fixed uncaught TypeError when include/exclude URLs are used with tracing enabled
 
 ## 1.0.4
 
