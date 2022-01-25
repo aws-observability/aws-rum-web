@@ -17,7 +17,11 @@ import { Config } from '../../orchestration/Orchestration';
 import { mockRandom } from 'jest-mock-random';
 import { PageManager } from '../PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import {
+    APPLICATION_ID,
+    APP_MONITOR_DETAILS,
+    DEFAULT_CONFIG
+} from '../../test-utils/test-utils';
 
 const NAVIGATION = 'navigation';
 const SESSION_COOKIE_EXPIRES = 30 * 60;
@@ -54,6 +58,7 @@ const mockRecord = jest.fn();
 
 const defaultSessionManager = (config) => {
     return new SessionManager(
+        APP_MONITOR_DETAILS,
         config,
         mockRecord,
         new PageManager(config, mockRecord)
@@ -347,6 +352,7 @@ describe('SessionManager tests', () => {
             ...{ sessionLengthSeconds: 3600, allowCookies: true }
         };
         const sessionManager = new SessionManager(
+            APP_MONITOR_DETAILS,
             config,
             mockRecord,
             new PageManager(config, mockRecord)
@@ -631,5 +637,32 @@ describe('SessionManager tests', () => {
         // Assert
         expect(userIdFromCookie1).toEqual('');
         expect(userIdFromCookie2).toEqual(sessionManager.getUserId());
+    });
+
+    test('when unique cookie names are used then the application id is appended to the cookie names', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                allowCookies: true,
+                userIdRetentionDays: 1,
+                cookieAttributes: {
+                    ...DEFAULT_CONFIG.cookieAttributes,
+                    ...{ unique: true }
+                }
+            }
+        };
+
+        const sessionManager = defaultSessionManager(config);
+
+        sessionManager.getSession();
+        const sessionIdFromCookie = JSON.parse(
+            atob(getCookie(`${SESSION_COOKIE_NAME}_${APPLICATION_ID}`))
+        ).sessionId;
+
+        // Assert
+        expect(sessionIdFromCookie).toEqual(
+            sessionManager.getSession().sessionId
+        );
     });
 });

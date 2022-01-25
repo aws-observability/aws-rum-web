@@ -1,4 +1,4 @@
-import { Config, Orchestration } from '../Orchestration';
+import { Orchestration } from '../Orchestration';
 import { Dispatch } from '../../dispatch/Dispatch';
 import { EventCache } from '../../event-cache/EventCache';
 import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
@@ -133,6 +133,7 @@ describe('Orchestration tests', () => {
             allowCookies: false,
             batchLimit: 100,
             cookieAttributes: {
+                unique: false,
                 domain: window.location.hostname,
                 path: '/',
                 sameSite: 'Strict',

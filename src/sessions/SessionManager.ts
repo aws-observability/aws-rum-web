@@ -6,6 +6,7 @@ import { Page, PageManager } from './PageManager';
 
 import { UAParser } from 'ua-parser-js';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
+import { AppMonitorDetails } from '../dispatch/dataplane';
 
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -58,6 +59,7 @@ export type Attributes = {
 export class SessionManager {
     private pageManager: PageManager;
 
+    private appMonitorDetails: AppMonitorDetails;
     private userExpiry: Date;
     private sessionExpiry: Date;
     private userId!: string;
@@ -67,10 +69,12 @@ export class SessionManager {
     private attributes: Attributes;
 
     constructor(
+        appMonitorDetails: AppMonitorDetails,
         config: Config,
         record: RecordSessionInitEvent,
         pageManager: PageManager
     ) {
+        this.appMonitorDetails = appMonitorDetails;
         this.config = config;
         this.record = record;
         this.pageManager = pageManager;
@@ -155,7 +159,7 @@ export class SessionManager {
     private createOrRenewSessionCookie(session: Session, expires: Date) {
         if (btoa) {
             storeCookie(
-                SESSION_COOKIE_NAME,
+                this.sessionCookieName(),
                 btoa(JSON.stringify(session)),
                 this.config.cookieAttributes,
                 undefined,
@@ -180,7 +184,7 @@ export class SessionManager {
 
     private getSessionFromCookie() {
         if (this.useCookies()) {
-            const cookie: string = getCookie(SESSION_COOKIE_NAME);
+            const cookie: string = getCookie(this.sessionCookieName());
 
             if (cookie && atob) {
                 try {
@@ -261,5 +265,12 @@ export class SessionManager {
      */
     private sample(): boolean {
         return Math.random() < this.config.sessionSampleRate;
+    }
+
+    private sessionCookieName(): string {
+        if (this.config.cookieAttributes.unique) {
+            return `${SESSION_COOKIE_NAME}_${this.appMonitorDetails.id}`;
+        }
+        return SESSION_COOKIE_NAME;
     }
 }
