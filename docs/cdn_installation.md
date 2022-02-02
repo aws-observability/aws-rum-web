@@ -16,7 +16,7 @@ the following:
 
 ## Arguments
 
-The code snippet accepts six arguments. The snippet below shows these arguments with the body of the snippet's function ommitted for readability:
+The code snippet accepts six arguments. The snippet below shows these arguments with the body of the snippet's function omitted for readability:
 ```html
 <script>
     (function(n,i,v,r,s,c,u,x,z){...})(
@@ -41,9 +41,9 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
 
 ## Configuration
 
-The application-specific web client configuration is a JavaScript object whose fields are all optional. While these feilds are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` and `guestRoleArn` are both required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `cwr('setAwsCredentials', {...});`.
+The application-specific web client configuration is a JavaScript object whose fields are all optional. While these fields are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` and `guestRoleArn` are both required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `cwr('setAwsCredentials', {...});`.
 
-The snippet below shows several configuration opions with the body of the snippet's function ommitted for readability:
+The snippet below shows several configuration options with the body of the snippet's function omitted for readability:
 ```html
 <script>
     (function(n,i,v,r,s,c,u,x,z){...})(

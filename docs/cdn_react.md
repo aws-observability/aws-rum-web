@@ -57,10 +57,10 @@ export default Container;
 
 ## Instrument Error Handling to Record Errors
 
-React intercepts uncaught JavaScript errors that origininate within the React
+React intercepts uncaught JavaScript errors that originate within the React
 application. Because React intercepts these errors, they will not be recorded by
 the web client. This can be fixed by adding [error
-boundries](https://reactjs.org/blog/2017/07/26/error-handling-in-react-16.html)
+boundaries](https://reactjs.org/blog/2017/07/26/error-handling-in-react-16.html)
 that record uncaught errors using the web client's `recordError` command:
 
 ```typescript
