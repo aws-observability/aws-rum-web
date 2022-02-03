@@ -51,6 +51,43 @@ export const navigationEvent = {
     navigationTimingLevel: 2
 };
 
+export const navigationEventNotLoaded = {
+    connectEnd: 6.495000001450535,
+    connectStart: 6.495000001450535,
+    decodedBodySize: 149690,
+    domComplete: 904.4250000006286,
+    domContentLoadedEventEnd: 405.5950000001758,
+    domContentLoadedEventStart: 380.26000000172644,
+    domInteractive: 380.2250000007916,
+    domainLookupEnd: 6.495000001450535,
+    domainLookupStart: 6.495000001450535,
+    duration: 905.125000001135,
+    encodedBodySize: 35941,
+    entryType: 'navigation',
+    fetchStart: 6.495000001450535,
+    initiatorType: 'navigation',
+    loadEventEnd: 0,
+    loadEventStart: 0,
+    name:
+        'https://stackoverflow.com/questions/53224116/nodejs-performance-hooks-crash-when-calling-performance-getentriesbytype',
+    nextHopProtocol: 'h2',
+    redirectCount: 0,
+    redirectEnd: 0,
+    redirectStart: 0,
+    requestStart: 30.170000001817243,
+    responseEnd: 356.44999999931315,
+    responseStart: 174.32499999995343,
+    secureConnectionStart: 6.495000001450535,
+    serverTiming: [],
+    startTime: 0,
+    transferSize: 36525,
+    type: 'navigate',
+    unloadEventEnd: 0,
+    unloadEventStart: 0,
+    workerStart: 0,
+    navigationTimingLevel: 2
+};
+
 export const resourceEvent = {
     connectEnd: 0,
     connectStart: 0,
@@ -271,6 +308,40 @@ export const performanceEvent = {
             getEntriesByType: (entryType: string) => {
                 if (entryType === 'navigation') {
                     return [navigationEvent];
+                }
+
+                if (entryType === 'resource') {
+                    return [resourceEvent2];
+                }
+
+                if (entryType === 'paint') {
+                    return [firstPaintEvent, firstContentfulPaintEvent];
+                }
+                return [];
+            },
+            now: () => {
+                return Date.now();
+            },
+            timing: MockPerformanceTiming
+        };
+        Object.defineProperty(window, 'performance', {
+            configurable: true,
+            enumerable: true,
+            value: performance,
+            writable: true
+        });
+        return window.performance;
+    },
+    PerformanceObserver: MockPerformanceObserver
+};
+
+export const performanceEventNotLoaded = {
+    performance: () => {
+        delete (window as any).performance;
+        const performance = {
+            getEntriesByType: (entryType: string) => {
+                if (entryType === 'navigation') {
+                    return [navigationEventNotLoaded];
                 }
 
                 if (entryType === 'resource') {

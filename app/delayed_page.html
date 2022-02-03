@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RUM Integ Test</title>
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+        <script>
+            function createJSError() {
+                // TypeError: null has no properties
+                null.foo;
+            }
+
+            function onSubmitCommand() {
+                const command = document.getElementById('command').value;
+                if (document.getElementById('payload').value) {
+                    const payload = JSON.parse(
+                        document.getElementById('payload').value
+                    );
+                    cwr(command, payload);
+                } else {
+                    cwr(command);
+                }
+            }
+        </script>
+
+        <style>
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <p id="welcome">This application is used for RUM integ testing.</p>
+        <form>
+            <label for="command">Command : </label>
+            <input type="text" id="command" /><br /><br />
+            <label for="payload">Payload : </label>
+            <textarea id="payload"></textarea><br /><br />
+            <input
+                type="button"
+                id="submit"
+                value="Submit"
+                onclick="onSubmitCommand()"
+            />
+        </form>
+        <br />
+        <button id="button1">Test ClickEvent1</button>
+        <button id="button2">Test ClickEvent2</button>
+        <button id="createJSError" onclick="createJSError()">
+            Create JS Error
+        </button>
+        <script>
+            function createJSError() {
+                // TypeError: null has no properties
+                null.foo;
+            }
+        </script>
+        <script>
+            function createHTTPError() {
+                var xhr = new XMLHttpRequest();
+                xhr.open(
+                    'POST',
+                    'https://www.google-analytics.com/collect',
+                    true
+                );
+                xhr.setRequestHeader('Content-type', 'application/json');
+                xhr.send();
+            }
+        </script>
+        <script>
+            function disallowCookies() {
+                cwr('allowCookies', false);
+            }
+        </script>
+        <button id="createHTTPError" onclick="createHTTPError()">
+            Create HTTP Error
+        </button>
+        <button id="randomSessionClick">Random Session click</button>
+        <button id="disallowCookies" onclick="disallowCookies()">
+            Disallow Cookies
+        </button>
+        <span id="request"></span>
+        <span id="response"></span>
+        <table>
+            <tr>
+                <td>Request URL</td>
+                <td id="request_url"></td>
+            </tr>
+            <tr>
+                <td>Request Header</td>
+                <td id="request_header"></td>
+            </tr>
+            <tr>
+                <td>Request Body</td>
+                <td id="request_body"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Response Status Code</td>
+                <td id="response_status"></td>
+            </tr>
+            <tr>
+                <td>Response Header</td>
+                <td id="response_header"></td>
+            </tr>
+            <tr>
+                <td>Response Body</td>
+                <td id="response_body"></td>
+            </tr>
+        </table>
+        <script>
+            window.onload = function () {
+                var scriptElement = document.createElement('script');
+                scriptElement.type = 'text/javascript';
+                scriptElement.src = './loader_standard.js';
+                document.head.appendChild(scriptElement);
+            };
+        </script>
+    </body>
+</html>

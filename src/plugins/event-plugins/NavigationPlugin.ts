@@ -22,10 +22,20 @@ export class NavigationPlugin implements Plugin {
         this.enabled = true;
     }
 
+    /**
+     * If the client is initialized after the window has fired a load event,
+     * invoke the callback method directly to trigger the record event.
+     * Otherwise, keep the original implementation to add callback method to eventListener.
+     * However, if the page finishes loading right before adding addEventListener, we still cannot provide data
+     */
     load(context: PluginContext): void {
         this.recordEvent = context.record;
         if (this.enabled) {
-            window.addEventListener(LOAD, this.eventListener);
+            if (this.hasTheWindowLoadEventFired()) {
+                this.eventListener();
+            } else {
+                window.addEventListener(LOAD, this.eventListener);
+            }
         }
     }
 
@@ -47,6 +57,24 @@ export class NavigationPlugin implements Plugin {
         }
     }
 
+    /**
+     * Use the loadEventEnd field from window.performance to check if the website
+     * has loaded already.
+     * @returns boolean
+     */
+    hasTheWindowLoadEventFired() {
+        if (
+            window.performance &&
+            window.performance.getEntriesByType(NAVIGATION).length
+        ) {
+            const navData = window.performance.getEntriesByType(
+                NAVIGATION
+            )[0] as PerformanceNavigationTiming;
+            return Boolean(navData.loadEventEnd);
+        }
+        return false;
+    }
+
     getPluginId(): string {
         return this.pluginId;
     }
@@ -57,23 +85,18 @@ export class NavigationPlugin implements Plugin {
      *
      * If browser provides support, use Navigation Timing Level 2 specification -
      * https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming
+     *
+     * Only the current document resource is included in the performance timeline;
+     * there is only one PerformanceNavigationTiming object in the performance timeline.
+     * https://www.w3.org/TR/navigation-timing-2/
      */
     eventListener = () => {
         if (performance.getEntriesByType(NAVIGATION).length === 0) {
             this.performanceNavigationEventHandlerTimingLevel1();
         } else {
-            const navigationObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((event) => {
-                    if (event.entryType === NAVIGATION) {
-                        this.performanceNavigationEventHandlerTimingLevel2(
-                            event
-                        );
-                    }
-                });
-            });
-            navigationObserver.observe({
-                entryTypes: [NAVIGATION]
-            });
+            this.performanceNavigationEventHandlerTimingLevel2(
+                performance.getEntriesByType(NAVIGATION)[0]
+            );
         }
     };
 
