@@ -3,6 +3,7 @@ import * as utils from '../../utils/cookies-utils';
 const COOKIE_PREFIX = 'rum_cookies_util_test';
 
 const COOKIE_ATTRIBUTES = {
+    unique: false,
     domain: 'amazon.com',
     path: '/',
     sameSite: 'Strict',
@@ -62,6 +63,7 @@ describe('Cookies utils tests', () => {
         const cookieValueB = 'valueB';
 
         const COOKIE_ATTRIBUTES_A = {
+            unique: false,
             domain: 'amazon.com',
             path: '/',
             sameSite: 'Strict',
@@ -69,6 +71,7 @@ describe('Cookies utils tests', () => {
         };
 
         const COOKIE_ATTRIBUTES_B = {
+            unique: false,
             domain: 'aws.amazon.com',
             path: '/',
             sameSite: 'Strict',
@@ -96,6 +99,7 @@ describe('Cookies utils tests', () => {
         const cookieValueB = 'valueB';
 
         const COOKIE_ATTRIBUTES_A = {
+            unique: false,
             domain: 'amazon.com',
             path: '/',
             sameSite: 'Strict',
@@ -103,6 +107,7 @@ describe('Cookies utils tests', () => {
         };
 
         const COOKIE_ATTRIBUTES_B = {
+            unique: false,
             domain: 'amazon.com',
             path: '/console',
             sameSite: 'Strict',

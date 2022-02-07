@@ -5,7 +5,6 @@ import { Config } from '../orchestration/Orchestration';
 import { PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
-    PutRumEventsRequest,
     UserDetails,
     RumEvent
 } from '../dispatch/dataplane';
@@ -41,6 +40,7 @@ export class EventCache {
         this.enabled = true;
         this.pageManager = new PageManager(config, this.recordEvent);
         this.sessionManager = new SessionManager(
+            applicationDetails,
             config,
             this.recordSessionInitEvent,
             this.pageManager

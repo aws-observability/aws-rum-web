@@ -43,6 +43,7 @@ export enum PAGE_ID_FORMAT {
 }
 
 export type PartialCookieAttributes = {
+    unique?: boolean;
     domain?: string;
     path?: string;
     sameSite?: string;
@@ -88,6 +89,7 @@ export type PartialConfig = {
 
 export const defaultCookieAttributes = (): CookieAttributes => {
     return {
+        unique: false,
         domain: window.location.hostname,
         path: '/',
         sameSite: 'Strict',
@@ -120,6 +122,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
 };
 
 export type CookieAttributes = {
+    unique: boolean;
     domain: string;
     path: string;
     sameSite: string;
