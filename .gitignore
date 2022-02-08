@@ -16,3 +16,4 @@ geckodriver.log
 safaridriver.log
 tests_output
 app/smoke.html
+logs
