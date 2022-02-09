@@ -89,7 +89,7 @@ export const createXRayTraceEvent = (
     const traceEvent: XRayTraceEvent = {
         version: '1.0.0',
         name,
-        origin: 'AWS::RUM::Application',
+        origin: 'AWS::RUM::AppMonitor',
         id: generateSegmentId(),
         start_time: startTime,
         trace_id: generateTraceId(),
