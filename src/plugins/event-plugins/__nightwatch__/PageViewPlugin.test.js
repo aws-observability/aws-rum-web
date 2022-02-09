@@ -22,9 +22,7 @@ describe('Page Event History Patch Plugin', function () {
             .click(pushStateTwo)
             .click(dispatch);
 
-        const request_body = JSON.parse(
-            (await browser.getText('#request_body')).value
-        );
+        const request_body = JSON.parse(await browser.getText('#request_body'));
 
         const pages = request_body.RumEvents.filter(
             (e) => e.type === 'com.amazon.rum.page_view_event'
@@ -62,9 +60,7 @@ describe('Page Event History Patch Plugin', function () {
             .click(back)
             .click(dispatch);
 
-        const request_body = JSON.parse(
-            (await browser.getText('#request_body')).value
-        );
+        const request_body = JSON.parse(await browser.getText('#request_body'));
 
         const pages = request_body.RumEvents.filter(
             (e) => e.type === 'com.amazon.rum.page_view_event'
