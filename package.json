@@ -1,6 +1,6 @@
 {
     "name": "aws-rum-web",
-    "version": "1.0.5",
+    "version": "1.1.0",
     "description": "The Amazon CloudWatch RUM web client.",
     "license": "Apache-2.0",
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
@@ -25,6 +25,7 @@
         "build:webpack:prod": "npm run build:schemas && webpack --config webpack/webpack.prod.js",
         "build:es": "npm run build:schemas && tsc --project ./tsconfig.es.json",
         "build:cjs": "npm run build:schemas && tsc --project ./tsconfig.cjs.json",
+        "version": "standard-version",
         "lint": "npx tslint --config ./tslint.json --project ./tsconfig.webpack.json --format verbose",
         "lint:fix": "npx tslint -c ./tslint.json -p ./tsconfig.webpack.json --format verbose --fix",
         "prettier": "npx prettier --check .",
@@ -73,6 +74,7 @@
         "node-fetch": "^2.6.1",
         "pre-commit": "^1.2.2",
         "prettier": "2.2.1",
+        "standard-version": "^9.3.2",
         "testcafe": "^1.16.1",
         "testcafe-reporter-html": "^1.4.6",
         "testcafe-reporter-json": "^1.0.0",

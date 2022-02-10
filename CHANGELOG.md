@@ -1,7 +1,18 @@
-# Changelog for AWS RUM Web Client
+# Changelog
 
-<!--LATEST=1.0.5-->
-<!--ENTRYINSERT-->
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## 1.1.0 (2022-02-10)
+
+### Features
+
+* Support cookie names unique to appmonitor. ([#82](https://github.com/aws-observability/aws-rum-web/issues/82)) ([143f6f0](https://github.com/aws-observability/aws-rum-web/commit/143f6f0a011500585e81896e9b4755c189a51053))
+
+### Bug Fixes
+
+* capture PerformanceNavigationTiming events even when window.load fires before plugin loads ([#81](https://github.com/aws-observability/aws-rum-web/issues/81)) ([ece1306](https://github.com/aws-observability/aws-rum-web/commit/ece1306d82f51453d4009701eed4051d91708810))
+* change RUM origin from AWS::RUM::Application to AWS::RUM::AppMonitor ([#85](https://github.com/aws-observability/aws-rum-web/issues/85)) ([ead3b41](https://github.com/aws-observability/aws-rum-web/commit/ead3b410bc7421c83bcd963d370ade7cbfb39a4e))
+* documentation typos ([#80](https://github.com/aws-observability/aws-rum-web/issues/80)) ([5492091](https://github.com/aws-observability/aws-rum-web/commit/549209115ac27d999820d5b6ff0c25586eb98ef3))
 
 ## 1.0.5
 
