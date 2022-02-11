@@ -6,7 +6,12 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     dispatchInterval: 0,
     metaDataPluginsToLoad: [],
     eventPluginsToLoad: [
-        new DomEventPlugin({ events: [{ event: 'click', element: document }] })
+        new DomEventPlugin({
+            events: [
+                { event: 'click', element: document },
+                { event: 'click', cssLocator: '[label="label1"]' }
+            ]
+        })
     ],
     telemetries: [],
     clientBuilder: showRequestClientBuilder

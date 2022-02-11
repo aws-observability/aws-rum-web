@@ -11,6 +11,9 @@ const enable: Selector = Selector(`#enable`);
 const button1: Selector = Selector(`#button1`);
 const link1: Selector = Selector(`a`);
 
+const button2: Selector = Selector(`#button2`);
+const button3: Selector = Selector(`#button3`);
+
 const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 
@@ -138,4 +141,93 @@ test('when client is disabled and enabled then button click is recorded', async 
         event: 'click',
         elementId: 'button1'
     });
+});
+
+test('when element not identified by a CSS selector is clicked then node type is recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(link1)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE && JSON.parse(e.details).elementId === 'A'
+    );
+
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
+
+    await t
+        .expect(eventType)
+        .eql(DOM_EVENT_TYPE)
+        .expect(eventDetails)
+        .contains({
+            event: 'click',
+            cssLocator: 'A'
+        });
+});
+
+test('when element identified by a CSS selector is clicked then CSS selector is recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(button2)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).cssLocator === '[label="label1"]'
+    );
+
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
+
+    await t
+        .expect(eventType)
+        .eql(DOM_EVENT_TYPE)
+        .expect(eventDetails)
+        .contains({
+            event: 'click',
+            cssLocator: '[label="label1"]'
+        });
+});
+
+test('when two elements identified by a CSS selector are clicked then CSS selector is recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(button2)
+        .click(button3)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).cssLocator === '[label="label1"]'
+    );
+
+    for (let i = 0; i < events.length; i++) {
+        let eventType = events[i].type;
+        let eventDetails = JSON.parse(events[i].details);
+
+        await t
+            .expect(eventType)
+            .eql(DOM_EVENT_TYPE)
+            .expect(eventDetails)
+            .contains({
+                event: 'click',
+                cssLocator: '[label="label1"]'
+            });
+    }
 });

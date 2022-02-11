@@ -16,6 +16,11 @@ export type TargetDomEvent = {
     elementId?: string;
 
     /**
+     * DOM element map to identify one element attribute and its expected value
+     */
+    cssLocator?: string;
+
+    /**
      * DOM element
      */
     element?: HTMLElement;
@@ -84,12 +89,13 @@ export class DomEventPlugin implements Plugin {
         );
     }
 
-    private getEventListener(): EventListener {
+    private getEventListener(domEvent?: TargetDomEvent): EventListener {
         return (event: Event): void => {
             const eventData: DomEvent = {
                 version: '1.0.0',
                 event: event.type,
-                elementId: this.getElementId(event)
+                elementId: this.getElementId(event),
+                cssLocator: this.getElementCSSLocator(event, domEvent)
             };
             if (this.recordEvent) {
                 this.recordEvent(DOM_EVENT_TYPE, eventData);
@@ -113,15 +119,33 @@ export class DomEventPlugin implements Plugin {
         return '';
     }
 
+    private getElementCSSLocator(event: Event, domEvent: TargetDomEvent) {
+        if (!event.target) {
+            return '';
+        }
+
+        if (event.target instanceof Element && domEvent.cssLocator) {
+            return domEvent.cssLocator;
+        }
+
+        if (event.target instanceof Node) {
+            return event.target.nodeName;
+        }
+    }
     private addEventHandler(domEvent: TargetDomEvent): void {
         const eventType = domEvent.event;
-        const eventListener = this.getEventListener();
+        const eventListener = this.getEventListener(domEvent);
         this.eventListenerMap.set(domEvent, eventListener);
 
         if (domEvent.elementId) {
             document
                 .getElementById(domEvent.elementId)
                 ?.addEventListener(eventType, eventListener);
+        } else if (domEvent.cssLocator) {
+            const elementList = document.querySelectorAll(domEvent.cssLocator);
+            for (let i = 0; i < elementList.length; i++) {
+                elementList[i].addEventListener(eventType, eventListener);
+            }
         } else if (domEvent.element) {
             domEvent.element.addEventListener(eventType, eventListener);
         }
