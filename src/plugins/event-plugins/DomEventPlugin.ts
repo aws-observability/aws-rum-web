@@ -143,9 +143,9 @@ export class DomEventPlugin implements Plugin {
                 ?.addEventListener(eventType, eventListener);
         } else if (domEvent.cssLocator) {
             const elementList = document.querySelectorAll(domEvent.cssLocator);
-            for (let i = 0; i < elementList.length; i++) {
-                elementList[i].addEventListener(eventType, eventListener);
-            }
+            elementList.forEach((element: HTMLElement) => {
+                element.addEventListener(eventType, eventListener);
+            });
         } else if (domEvent.element) {
             domEvent.element.addEventListener(eventType, eventListener);
         }
