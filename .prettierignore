@@ -1,4 +1,5 @@
 build
+CHANGELOG.md
 dist
 coverage
 src/events
