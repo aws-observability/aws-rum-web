@@ -136,8 +136,8 @@ export class DomEventPlugin implements Plugin {
         const eventType = domEvent.event;
 
         this.eventListenerMap.set(domEvent, this.identifierToEventListenerMap);
-        let eventListenerCSS = this.getEventListener(domEvent);
-        let eventListenerID = this.getEventListener();
+        const eventListenerCSS = this.getEventListener(domEvent);
+        const eventListenerID = this.getEventListener();
         this.identifierToEventListenerMap.set('CSS', eventListenerCSS);
         this.identifierToEventListenerMap.set('ID', eventListenerID);
 
@@ -147,7 +147,7 @@ export class DomEventPlugin implements Plugin {
         if (domEvent.cssLocator) {
             const elementList = document.querySelectorAll(domEvent.cssLocator);
             elementList.forEach((element: HTMLElement) => {
-                if (document.getElementById(domEvent.elementId) == element) {
+                if (document.getElementById(domEvent.elementId) === element) {
                     isElementIdentifiedByLocator = true;
                 }
                 element.addEventListener(eventType, eventListenerCSS);
@@ -181,7 +181,7 @@ export class DomEventPlugin implements Plugin {
         if (domEvent.cssLocator) {
             const elementList = document.querySelectorAll(domEvent.cssLocator);
             elementList.forEach((element: HTMLElement) => {
-                if (document.getElementById(domEvent.elementId) == element) {
+                if (document.getElementById(domEvent.elementId) === element) {
                     isElementIdentifiedByLocator = true;
                 }
                 element.removeEventListener(domEvent.event, eventListenerCSS);
