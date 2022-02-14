@@ -115,7 +115,6 @@ describe('DomEventPlugin tests', () => {
             '[label="label1"]'
         ) as HTMLElement;
         element.click();
-        // document.getElementsByTagName('button')[0].click();
         plugin.disable();
 
         // Assert
@@ -133,7 +132,7 @@ describe('DomEventPlugin tests', () => {
     test('when listening to document click and two event targets have the same CSS selector, element CSS selector is used as CSS selector for both', async () => {
         // Init
         document.body.innerHTML =
-            '<button label="label1"/> <button label="label1"/>';
+            '<button label="label1"></button> <button label="label1"></button>';
         const plugin: DomEventPlugin = new DomEventPlugin({
             events: [{ event: 'click', cssLocator: '[label="label1"]' }]
         });
@@ -162,7 +161,7 @@ describe('DomEventPlugin tests', () => {
         }
     });
 
-    test('when listening to document click and event target has no CSS selector, element tag is used as CSS selector', async () => {
+    test('when listening to document click and CSS selector is not specified, CSS selector field not recorded as part of event data', async () => {
         // Init
         document.body.innerHTML = '<button/>';
         const plugin: DomEventPlugin = new DomEventPlugin({
@@ -180,9 +179,108 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
-                event: 'click',
-                cssLocator: 'BUTTON'
+                event: 'click'
             })
         );
+        expect('cssLocator' in record.mock.calls[0][1]).toEqual(false);
+    });
+
+    test('when listening to document click and both element ID and CSS selector is specified, element CSS selector is used as CSS selector for only element identified by CSS selector', async () => {
+        // Init
+        document.body.innerHTML =
+            '<button id="button1"></button> <button id = "button2" label="label1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [
+                {
+                    event: 'click',
+                    elementId: 'button1',
+                    cssLocator: '[label="label1"]'
+                }
+            ]
+        });
+
+        // Run
+        plugin.load(context);
+        document.getElementById('button1').click();
+        let element: HTMLElement = document.querySelector(
+            '[label="label1"]'
+        ) as HTMLElement;
+        element.click();
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+
+        const noCSSLocator = {
+            version: '1.0.0',
+            event: 'click',
+            elementId: 'button1'
+        };
+
+        const includeCSSLocator = {
+            version: '1.0.0',
+            event: 'click',
+            elementId: 'button2',
+            cssLocator: '[label="label1"]'
+        };
+
+        let expectedObject: {
+            version: string;
+            event: string;
+            elementId: string;
+            cssLocator?: string;
+        };
+
+        for (let i = 0; i < record.mock.calls.length; i++) {
+            if (i == 0) expectedObject = noCSSLocator;
+            else expectedObject = includeCSSLocator;
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining(expectedObject)
+            );
+        }
+    });
+
+    test('when listening to document click and both element ID and CSS selector is specified and element identified by ID is also identified by CSS selector, CSS selector is used as CSS selector for all elements', async () => {
+        // Init
+        document.body.innerHTML =
+            '<button id="button1" label="label1"></button> <button id = "button2" label="label1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [
+                {
+                    event: 'click',
+                    elementId: 'button1',
+                    cssLocator: '[label="label1"]'
+                }
+            ]
+        });
+
+        // Run
+        plugin.load(context);
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '[label="label1"]'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+
+        let button: string;
+        for (let i = 0; i < record.mock.calls.length; i++) {
+            if (i == 0) button = 'button1';
+            else button = 'button2';
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining({
+                    version: '1.0.0',
+                    event: 'click',
+                    elementId: button,
+                    cssLocator: '[label="label1"]'
+                })
+            );
+        }
     });
 });

@@ -23,5 +23,5 @@
         }
     },
     "additionalProperties": false,
-    "required": ["version", "event", "elementId", "cssLocator"]
+    "required": ["version", "event", "elementId"]
 }

@@ -41,13 +41,18 @@ const defaultConfig: DomEventPluginConfig = {
 export class DomEventPlugin implements Plugin {
     private recordEvent: RecordEvent | undefined;
     private pluginId: string;
-    private eventListenerMap: Map<TargetDomEvent, EventListener>;
+    private eventListenerMap: Map<TargetDomEvent, Map<string, EventListener>>;
+    private identifierToEventListenerMap: Map<string, EventListener>;
     private enabled: boolean;
     private config: DomEventPluginConfig;
 
     constructor(config?: PartialDomEventPluginConfig) {
         this.pluginId = DOM_EVENT_PLUGIN_ID;
-        this.eventListenerMap = new Map<TargetDomEvent, EventListener>();
+        this.eventListenerMap = new Map<
+            TargetDomEvent,
+            Map<string, EventListener>
+        >();
+        this.identifierToEventListenerMap = new Map<string, EventListener>();
         this.config = { ...defaultConfig, ...config };
         this.enabled = false;
     }
@@ -94,9 +99,11 @@ export class DomEventPlugin implements Plugin {
             const eventData: DomEvent = {
                 version: '1.0.0',
                 event: event.type,
-                elementId: this.getElementId(event),
-                cssLocator: this.getElementCSSLocator(event, domEvent)
+                elementId: this.getElementId(event)
             };
+            if (domEvent?.cssLocator) {
+                eventData.cssLocator = this.getElementCSSLocator(domEvent);
+            }
             if (this.recordEvent) {
                 this.recordEvent(DOM_EVENT_TYPE, eventData);
             }
@@ -119,50 +126,82 @@ export class DomEventPlugin implements Plugin {
         return '';
     }
 
-    private getElementCSSLocator(event: Event, domEvent: TargetDomEvent) {
-        if (!event.target) {
-            return '';
-        }
-
-        if (event.target instanceof Element && domEvent.cssLocator) {
+    private getElementCSSLocator(domEvent: TargetDomEvent) {
+        if (domEvent.cssLocator) {
             return domEvent.cssLocator;
         }
-
-        if (event.target instanceof Node) {
-            return event.target.nodeName;
-        }
+        return undefined;
     }
     private addEventHandler(domEvent: TargetDomEvent): void {
         const eventType = domEvent.event;
-        const eventListener = this.getEventListener(domEvent);
-        this.eventListenerMap.set(domEvent, eventListener);
 
-        if (domEvent.elementId) {
-            document
-                .getElementById(domEvent.elementId)
-                ?.addEventListener(eventType, eventListener);
-        } else if (domEvent.cssLocator) {
+        this.eventListenerMap.set(domEvent, this.identifierToEventListenerMap);
+        let eventListenerCSS = this.getEventListener(domEvent);
+        let eventListenerID = this.getEventListener();
+        this.identifierToEventListenerMap.set('CSS', eventListenerCSS);
+        this.identifierToEventListenerMap.set('ID', eventListenerID);
+
+        let isElementIdentifiedByLocator = false;
+
+        // first add event listener to all elements identified by the CSS locator
+        if (domEvent.cssLocator) {
             const elementList = document.querySelectorAll(domEvent.cssLocator);
             elementList.forEach((element: HTMLElement) => {
-                element.addEventListener(eventType, eventListener);
+                if (document.getElementById(domEvent.elementId) == element) {
+                    isElementIdentifiedByLocator = true;
+                }
+                element.addEventListener(eventType, eventListenerCSS);
             });
+        }
+
+        // add event listener to element identified by the element ID if no CSS locator provided or
+        // the element is not one of the elements identified by the CSS locator
+        if (domEvent.elementId && !isElementIdentifiedByLocator) {
+            document
+                .getElementById(domEvent.elementId)
+                ?.addEventListener(eventType, eventListenerID);
+
+            // safe default
         } else if (domEvent.element) {
-            domEvent.element.addEventListener(eventType, eventListener);
+            domEvent.element.addEventListener(eventType, eventListenerID);
         }
     }
 
     private removeEventHandler(domEvent: TargetDomEvent): void {
-        const eventListener:
+        const eventListenerID:
             | EventListener
-            | undefined = this.eventListenerMap.get(domEvent);
+            | undefined = this.eventListenerMap.get(domEvent).get('ID');
+        const eventListenerCSS:
+            | EventListener
+            | undefined = this.eventListenerMap.get(domEvent).get('CSS');
 
-        if (domEvent.elementId && eventListener) {
+        let isElementIdentifiedByLocator = false;
+
+        // first remove event listener from all elements identified by the CSS locator
+        if (domEvent.cssLocator) {
+            const elementList = document.querySelectorAll(domEvent.cssLocator);
+            elementList.forEach((element: HTMLElement) => {
+                if (document.getElementById(domEvent.elementId) == element) {
+                    isElementIdentifiedByLocator = true;
+                }
+                element.removeEventListener(domEvent.event, eventListenerCSS);
+            });
+        }
+
+        // remove event listener from element identified by the element ID if no CSS locator provided or
+        // the element is not one of the elements identified by the CSS locator
+        if (domEvent.elementId && eventListenerID) {
             const element = document.getElementById(domEvent.elementId);
             if (element) {
-                element.removeEventListener(domEvent.event, eventListener);
+                element.removeEventListener(domEvent.event, eventListenerID);
             }
-        } else if (domEvent.element && eventListener) {
-            domEvent.element.removeEventListener(domEvent.event, eventListener);
+
+            // remove event listener from default
+        } else if (domEvent.element && eventListenerID) {
+            domEvent.element.removeEventListener(
+                domEvent.event,
+                eventListenerID
+            );
         }
         this.eventListenerMap.delete(domEvent);
     }

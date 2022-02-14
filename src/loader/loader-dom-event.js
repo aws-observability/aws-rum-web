@@ -9,7 +9,11 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
         new DomEventPlugin({
             events: [
                 { event: 'click', element: document },
-                { event: 'click', cssLocator: '[label="label1"]' }
+                {
+                    event: 'click',
+                    elementId: 'button2',
+                    cssLocator: '[label="label1"]'
+                }
             ]
         })
     ],
