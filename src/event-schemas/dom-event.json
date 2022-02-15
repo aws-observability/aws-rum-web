@@ -16,6 +16,10 @@
         "elementId": {
             "type": "string",
             "description": "DOM element ID."
+        },
+        "cssLocator": {
+            "type": "string",
+            "description": "CSS Locator string."
         }
     },
     "additionalProperties": false,

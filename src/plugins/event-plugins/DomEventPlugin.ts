@@ -16,6 +16,11 @@ export type TargetDomEvent = {
     elementId?: string;
 
     /**
+     * DOM element map to identify one element attribute and its expected value
+     */
+    cssLocator?: string;
+
+    /**
      * DOM element
      */
     element?: HTMLElement;
@@ -84,13 +89,16 @@ export class DomEventPlugin implements Plugin {
         );
     }
 
-    private getEventListener(): EventListener {
+    private getEventListener(cssLocator?: string): EventListener {
         return (event: Event): void => {
             const eventData: DomEvent = {
                 version: '1.0.0',
                 event: event.type,
                 elementId: this.getElementId(event)
             };
+            if (cssLocator !== undefined) {
+                eventData.cssLocator = cssLocator;
+            }
             if (this.recordEvent) {
                 this.recordEvent(DOM_EVENT_TYPE, eventData);
             }
@@ -115,10 +123,16 @@ export class DomEventPlugin implements Plugin {
 
     private addEventHandler(domEvent: TargetDomEvent): void {
         const eventType = domEvent.event;
-        const eventListener = this.getEventListener();
+        const eventListener = this.getEventListener(domEvent.cssLocator);
         this.eventListenerMap.set(domEvent, eventListener);
 
-        if (domEvent.elementId) {
+        // first add event listener to all elements identified by the CSS locator
+        if (domEvent.cssLocator) {
+            const elementList = document.querySelectorAll(domEvent.cssLocator);
+            elementList.forEach((element: HTMLElement) => {
+                element.addEventListener(eventType, eventListener);
+            });
+        } else if (domEvent.elementId) {
             document
                 .getElementById(domEvent.elementId)
                 ?.addEventListener(eventType, eventListener);
@@ -132,7 +146,12 @@ export class DomEventPlugin implements Plugin {
             | EventListener
             | undefined = this.eventListenerMap.get(domEvent);
 
-        if (domEvent.elementId && eventListener) {
+        if (domEvent.cssLocator && eventListener) {
+            const elementList = document.querySelectorAll(domEvent.cssLocator);
+            elementList.forEach((element: HTMLElement) => {
+                element.removeEventListener(domEvent.event, eventListener);
+            });
+        } else if (domEvent.elementId && eventListener) {
             const element = document.getElementById(domEvent.elementId);
             if (element) {
                 element.removeEventListener(domEvent.event, eventListener);
