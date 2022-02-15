@@ -17,7 +17,7 @@ const button3: Selector = Selector(`#button3`);
 const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 
-fixture('DomEventPlugin').page('http://localhost:9000/dom_event.html');
+fixture('DomEventPlugin').page('http://localhost:8080/dom_event.html');
 
 test('when document click events configured then button click is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
