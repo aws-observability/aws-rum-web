@@ -185,7 +185,7 @@ describe('DomEventPlugin tests', () => {
         expect('cssLocator' in record.mock.calls[0][1]).toEqual(false);
     });
 
-    test('when listening to document click and both element ID and CSS selector is specified, element CSS selector is used as CSS selector for only element identified by CSS selector', async () => {
+    test('when listening to document click and both element ID and CSS selector is specified, only event for element identified by CSS selector is recorded', async () => {
         // Init
         document.body.innerHTML =
             '<button id="button1"></button> <button id = "button2" label="label1"></button>';
@@ -209,78 +209,50 @@ describe('DomEventPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(2);
-
-        const noCSSLocator = {
-            version: '1.0.0',
-            event: 'click',
-            elementId: 'button1'
-        };
-
-        const includeCSSLocator = {
-            version: '1.0.0',
-            event: 'click',
-            elementId: 'button2',
-            cssLocator: '[label="label1"]'
-        };
-
-        let expectedObject: {
-            version: string;
-            event: string;
-            elementId: string;
-            cssLocator?: string;
-        };
-
-        for (let i = 0; i < record.mock.calls.length; i++) {
-            if (i == 0) expectedObject = noCSSLocator;
-            else expectedObject = includeCSSLocator;
-            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
-            expect(record.mock.calls[i][1]).toMatchObject(
-                expect.objectContaining(expectedObject)
-            );
-        }
+        expect(record).toHaveBeenCalledTimes(1);
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                event: 'click',
+                cssLocator: '[label="label1"]'
+            })
+        );
     });
 
-    test('when listening to document click and both element ID and CSS selector is specified and element identified by ID is also identified by CSS selector, CSS selector is used as CSS selector for all elements', async () => {
+    test('when listening to document click and both element ID and element is specified, only event for element identified by ID is recorded', async () => {
         // Init
         document.body.innerHTML =
-            '<button id="button1" label="label1"></button> <button id = "button2" label="label1"></button>';
+            '<button id="button1"></button> <button id = "button2"></button>';
         const plugin: DomEventPlugin = new DomEventPlugin({
             events: [
                 {
                     event: 'click',
                     elementId: 'button1',
-                    cssLocator: '[label="label1"]'
+                    element: document as any
                 }
             ]
         });
 
         // Run
         plugin.load(context);
-        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
-            '[label="label1"]'
-        ) as NodeListOf<HTMLElement>;
-        for (let i = 0; i < elementList.length; i++) {
-            elementList[i].click();
-        }
+        document.getElementById('button1').click();
+        document.getElementById('button2').click();
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(2);
-
-        let button: string;
-        for (let i = 0; i < record.mock.calls.length; i++) {
-            if (i == 0) button = 'button1';
-            else button = 'button2';
-            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
-            expect(record.mock.calls[i][1]).toMatchObject(
-                expect.objectContaining({
-                    version: '1.0.0',
-                    event: 'click',
-                    elementId: button,
-                    cssLocator: '[label="label1"]'
-                })
-            );
-        }
+        expect(record).toHaveBeenCalledTimes(1);
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                event: 'click',
+                elementId: 'button1'
+            })
+        );
     });
 });

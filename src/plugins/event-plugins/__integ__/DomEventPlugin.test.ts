@@ -17,7 +17,7 @@ const button3: Selector = Selector(`#button3`);
 const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 
-fixture('DomEventPlugin').page('http://localhost:8080/dom_event.html');
+fixture('DomEventPlugin').page('http://localhost:9000/dom_event.html');
 
 test('when document click events configured then button click is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
@@ -193,6 +193,8 @@ test('when two elements identified by a CSS selector are clicked then CSS select
         let eventDetails = JSON.parse(events[i].details);
 
         await t
+            .expect(events.length)
+            .eql(2)
             .expect(eventType)
             .eql(DOM_EVENT_TYPE)
             .expect(eventDetails)
@@ -231,7 +233,7 @@ test('when element not identified by a CSS selector is clicked then CSS selector
         });
 });
 
-test('when element ID and CSS selector are specified and one element identified by ID and another by CSS selector are clicked, CSS selector is recorded for only element identified by CSS selector', async (t: TestController) => {
+test('when element ID and CSS selector are specified then only event for element identified by CSS selector is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
@@ -244,79 +246,17 @@ test('when element ID and CSS selector are specified and one element identified 
 
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
-            (e.type === DOM_EVENT_TYPE &&
-                JSON.parse(e.details).elementId === 'button1') ||
-            JSON.parse(e.details).cssLocator === '[label="label1"]'
-    );
-
-    const noCSSLocator = {
-        version: '1.0.0',
-        event: 'click',
-        elementId: 'button1'
-    };
-
-    const includeCSSLocator = {
-        version: '1.0.0',
-        event: 'click',
-        elementId: 'button3',
-        cssLocator: '[label="label1"]'
-    };
-
-    let expectedObject: {
-        version: string;
-        event: string;
-        elementId: string;
-        cssLocator?: string;
-    };
-
-    for (let i = 0; i < events.length; i++) {
-        if (i == 0) expectedObject = noCSSLocator;
-        else expectedObject = includeCSSLocator;
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
-
-        await t
-            .expect(eventType)
-            .eql(DOM_EVENT_TYPE)
-            .expect(eventDetails)
-            .contains(expectedObject);
-    }
-});
-
-test('when element ID and CSS selector are specified and one element identified by only CSS selector and one element identified by both ID and CSS selector are clicked, CSS selector is recorded for both', async (t: TestController) => {
-    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
-    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
-    await t
-        .wait(300)
-        .click(button2)
-        .click(button3)
-        .click(dispatch)
-        .expect(REQUEST_BODY.textContent)
-        .contains('BatchId');
-
-    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
-        (e) =>
             e.type === DOM_EVENT_TYPE &&
-            JSON.parse(e.details).elementId === 'button2' &&
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
 
-    let button: string;
-    for (let i = 0; i < events.length; i++) {
-        if (i == 0) button = 'button2';
-        else button = 'button3';
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
-
-        await t
-            .expect(eventType)
-            .eql(DOM_EVENT_TYPE)
-            .expect(eventDetails)
-            .contains({
-                version: '1.0.0',
-                event: 'click',
-                elementId: button,
-                cssLocator: '[label="label1"]'
-            });
-    }
+    await t
+        .expect(eventType)
+        .eql(DOM_EVENT_TYPE)
+        .expect(eventDetails)
+        .notContains({
+            elementId: 'button1'
+        });
 });
