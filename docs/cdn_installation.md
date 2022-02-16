@@ -137,7 +137,7 @@ telemetries: [
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| events | Array | `[]` | An array of target DOM events to record. <br/><br/>For example, to record a single element with Id `mybutton`, use `[{event: 'click', elementId: 'mybutton' }]`. To record a complete clickstream, use `[{ event: 'click', element: document }]`. |
+| events | Array | `[]` | An array of target DOM events to record. <br/><br/>For example: <br/>To record all elements identified by CSS selector `[label="label1"]`, use `[{ event: 'click', cssLocator: '[label="label1"]'`. <br/>To record a single element with ID `mybutton`, use `[{ event: 'click', elementId: 'mybutton' }]`. <br/>To record a complete clickstream, use `[{ event: 'click', element: document }]`. <br/><br/>In the case that 2 or more selectors are provided, the selectors will be honored in the following precedence: CSS selector > ID > element. For example, if both CSS selector and ID are provided, it will only record elements identified by the CSS selector.|
 
 ## Performance
 
