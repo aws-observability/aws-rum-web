@@ -89,7 +89,6 @@
         "webpack-cli": "^4.9.0",
         "webpack-dev-middleware": "^5.2.1",
         "webpack-dev-server": "^4.3.1",
-        "webpack-license-plugin": "^4.2.1",
         "webpack-merge": "^5.8.0",
         "xhr-mock": "^2.5.1"
     },

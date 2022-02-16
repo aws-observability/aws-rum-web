@@ -1,17 +1,19 @@
 const path = require('path');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
-const LicensePlugin = require('webpack-license-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = merge(common, {
-    plugins: [new LicensePlugin()],
     mode: 'production',
     optimization: {
         minimizer: [
             new TerserPlugin({
                 parallel: true,
-                extractComments: true
+                extractComments: {
+                    banner: (licenseFile) => {
+                        return `License information can be found in LICENSE and LICENSE-THIRD-PARTY`;
+                    }
+                }
             })
         ]
     },
