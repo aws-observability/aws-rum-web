@@ -10,12 +10,13 @@ import {
     defaultConfig,
     epochTime,
     createXRayTraceEvent,
-    addAmznTraceIdHeader,
+    addAmznTraceIdHeaderToInit,
     HttpPluginConfig,
     createXRayTraceEventHttp,
     isUrlAllowed,
     createXRaySubsegment,
-    requestInfoToHostname
+    requestInfoToHostname,
+    addAmznTraceIdHeaderToHeaders
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -76,10 +77,6 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         ];
     }
 
-    private addXRayTraceIdHeader = () => {
-        return this.config.addXRayTraceIdHeader;
-    };
-
     private isTracingEnabled = () => {
         return this.context.config.enableXRay;
     };
@@ -106,19 +103,37 @@ export class FetchPlugin extends MonkeyPatched implements Plugin {
         );
         xRayTraceEvent.subsegments.push(subsegment);
 
-        if (this.addXRayTraceIdHeader()) {
-            if (!init) {
-                init = {};
-                [].push.call(argsArray, init);
-            }
-            addAmznTraceIdHeader(
-                init,
+        if (this.config.addXRayTraceIdHeader) {
+            this.addXRayTraceIdHeader(input, init, argsArray, xRayTraceEvent);
+        }
+
+        return xRayTraceEvent;
+    };
+
+    private addXRayTraceIdHeader = (
+        input: RequestInfo,
+        init: RequestInit,
+        argsArray: IArguments,
+        xRayTraceEvent: XRayTraceEvent
+    ) => {
+        if ((input as Request).headers) {
+            return addAmznTraceIdHeaderToHeaders(
+                (input as Request).headers,
                 xRayTraceEvent.trace_id,
                 xRayTraceEvent.subsegments[0].id
             );
         }
 
-        return xRayTraceEvent;
+        if (!init) {
+            init = {};
+            [].push.call(argsArray, init);
+        }
+
+        addAmznTraceIdHeaderToInit(
+            init,
+            xRayTraceEvent.trace_id,
+            xRayTraceEvent.subsegments[0].id
+        );
     };
 
     private endTrace = (

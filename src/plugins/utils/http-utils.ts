@@ -134,7 +134,7 @@ export const requestInfoToHostname = (request: Request | URL | string) => {
     return hostname ? hostname : window.location.hostname;
 };
 
-export const addAmznTraceIdHeader = (
+export const addAmznTraceIdHeaderToInit = (
     init: RequestInit,
     traceId: string,
     segmentId: string
@@ -146,6 +146,14 @@ export const addAmznTraceIdHeader = (
         traceId,
         segmentId
     );
+};
+
+export const addAmznTraceIdHeaderToHeaders = (
+    headers: Headers,
+    traceId: string,
+    segmentId: string
+) => {
+    headers.set(X_AMZN_TRACE_ID, getAmznTraceIdHeaderValue(traceId, segmentId));
 };
 
 export const getAmznTraceIdHeaderValue = (
