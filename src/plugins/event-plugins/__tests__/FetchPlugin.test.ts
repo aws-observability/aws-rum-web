@@ -1,5 +1,8 @@
 import { FetchPlugin } from '../FetchPlugin';
-import { PartialHttpPluginConfig } from '../../utils/http-utils';
+import {
+    PartialHttpPluginConfig,
+    X_AMZN_TRACE_ID
+} from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
     DEFAULT_CONFIG,
@@ -15,8 +18,40 @@ import { HttpEvent } from '../../../events/http-event';
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
-const headers = {
-    'Content-Length': '125'
+const TRACE_ID =
+    'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1';
+
+const Headers = function (init?: Record<string, string>) {
+    const headers = init ? init : {};
+    this.get = function (name: string) {
+        return headers[name];
+    };
+    this.set = function (name: string, value: string) {
+        headers[name] = value;
+    };
+};
+
+const Request = function (input: RequestInfo, init?: RequestInit) {
+    if (typeof input === 'string') {
+        this.url = input;
+        this.method = 'GET';
+        this.headers = new Headers();
+    } else {
+        this.url = input.url;
+        this.method = input.method ? input.method : 'GET';
+        this.headers = input.headers ? input.headers : new Headers();
+    }
+    if (init) {
+        this.method = init.method ? init.method : this.method;
+        if (
+            this.headers &&
+            typeof (init.headers as Headers).get === 'function'
+        ) {
+            this.headers = init.headers;
+        } else if (this.headers) {
+            this.headers = new Headers(init.headers as Record<string, string>);
+        }
+    }
 };
 
 const mockFetch = jest.fn(
@@ -24,7 +59,7 @@ const mockFetch = jest.fn(
         Promise.resolve({
             status: 200,
             statusText: 'OK',
-            headers: { get: (k) => headers[k] },
+            headers: new Headers({ 'Content-Length': '125' }),
             body: '{}',
             ok: true
         } as any)
@@ -349,10 +384,7 @@ describe('FetchPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(
-            (init.headers['X-Amzn-Trace-Id'] =
-                'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1')
-        );
+        expect((init.headers[X_AMZN_TRACE_ID] = TRACE_ID));
         expect(init.headers instanceof Array).toBeFalsy();
     });
 
@@ -372,8 +404,7 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch.mock.calls[0][1]).toMatchObject({
             headers: {
-                'X-Amzn-Trace-Id':
-                    'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
+                [X_AMZN_TRACE_ID]: TRACE_ID
             }
         });
     });
@@ -700,5 +731,35 @@ describe('FetchPlugin tests', () => {
                 }
             ]
         });
+    });
+
+    test('when fetch uses request object then trace headers are added to the request object', async () => {
+        // Init
+        const SIGN_HEADER_KEY = 'x-amzn-security-token';
+        const SIGN_HEADER_VAL = 'abc123';
+
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: true,
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        const init: RequestInit = {
+            headers: {
+                [SIGN_HEADER_KEY]: SIGN_HEADER_VAL
+            }
+        };
+
+        const request: Request = new Request('https://aws.amazon.com', init);
+
+        // Run
+        await fetch(request);
+        plugin.disable();
+
+        // Assert
+        expect(request.headers.get(X_AMZN_TRACE_ID)).toEqual(TRACE_ID);
+        expect(request.headers.get(SIGN_HEADER_KEY)).toEqual(SIGN_HEADER_VAL);
     });
 });
