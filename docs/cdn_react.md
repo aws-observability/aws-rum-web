@@ -64,7 +64,7 @@ boundaries](https://reactjs.org/blog/2017/07/26/error-handling-in-react-16.html)
 that record uncaught errors using the web client's `recordError` command:
 
 ```typescript
-declare function nexus(operation: string, payload: any): void;
+declare function cwr(operation: string, payload: any): void;
 
 class App extends Component {
 ...
