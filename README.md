@@ -19,6 +19,8 @@ which will install the web client in your application.
 2. [Executing Commands](docs/cdn_commands.md)
 3. [Using the Web Client with Angular](docs/cdn_angular.md)
 4. [Using the Web Client with React](docs/cdn_react.md)
+5. [Using the Web Client with React](docs/cdn_react.md)
+6. [Troubleshooting CDN Installations](docs/cdn_troubleshooting.md)
 
 ## Getting Help
 
