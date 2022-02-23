@@ -9,6 +9,8 @@ aws s3api put-object --bucket $bucket --key "content/$version/LICENSE" --body LI
 
 if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
 then
+    echo $version | aws s3 cp - s3://$bucket/content/current
+
     minorUpdate=$(echo $version | sed -En "s/^([0-9]+\.)[0-9]+\.[0-9]+/\1x/p")
     aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr.js" --body build/assets/cwr.js --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$minorUpdate/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY --cache-control max-age=7200
