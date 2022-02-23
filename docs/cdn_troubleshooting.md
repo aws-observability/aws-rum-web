@@ -167,9 +167,9 @@ configurations removed for readability.
 
 > :warning: Enabling `addXRayTraceIdHeader` will cause a new header to be added
 to all HTTP requests. Adding headers can modify CORS behavior, including causing
-the request to fail. Adding headers after SigV4 signing will invalidate the
-request signature, causing the request to fail. Test your application with this
-header enabled before enabling this option in a production environment.
+the request to fail. Adding headers may also alter  the request signature,
+causing the request to fail. Test your application with this header enabled
+before enabling this option in a production environment.
 
 ```html
 <script>
