@@ -45,6 +45,7 @@ jobs:
                   npm run release
 
             - name: Publish to CloudWatch RUM CDN
+              id: publish-cdn
               run: |
                   chmod u+x .github/scripts/deploy.sh
                   .github/scripts/deploy.sh ${{ secrets.BUCKET }}
@@ -60,8 +61,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: 'aws-rum-web@${{ github.event.inputs.version }}'
-                  release_name: 'Release ${{ github.event.inputs.version }}'
-                  body: 'Please see [CHANGELOG](https://github.com/aws/aws-rum-web/blob/master/CHANGELOG.md) for details.'
+                  tag_name: 'v${{ steps.publish-cdn.outputs.current-version }}'
+                  release_name: 'Release ${{ steps.publish-cdn.outputs.current-version }}'
+                  body: 'See [CHANGELOG](https://github.com/aws/aws-rum-web/blob/master/CHANGELOG.md) for details.'
                   draft: true
                   prerelease: false

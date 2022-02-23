@@ -3,6 +3,8 @@
 version=$(npm pkg get version | sed 's/"//g')
 bucket=$1
 
+echo ::set-output name=current-version::$version
+
 aws s3api put-object --bucket $bucket --key "content/$version/cwr.js" --body build/assets/cwr.js --cache-control max-age=604800
 aws s3api put-object --bucket $bucket --key "content/$version/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY --cache-control max-age=604800
 aws s3api put-object --bucket $bucket --key "content/$version/LICENSE" --body LICENSE --cache-control max-age=604800
