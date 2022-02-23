@@ -16,11 +16,10 @@ which will install the web client in your application.
 ## Documentation
 
 1. [Installing from CDN](docs/cdn_installation.md)
-2. [Executing Commands](docs/cdn_commands.md)
-3. [Using the Web Client with Angular](docs/cdn_angular.md)
-4. [Using the Web Client with React](docs/cdn_react.md)
-5. [Using the Web Client with React](docs/cdn_react.md)
-6. [Troubleshooting CDN Installations](docs/cdn_troubleshooting.md)
+1. [Executing Commands](docs/cdn_commands.md)
+1. [Using the Web Client with Angular](docs/cdn_angular.md)
+1. [Using the Web Client with React](docs/cdn_react.md)
+1. [Troubleshooting CDN Installations](docs/cdn_troubleshooting.md)
 
 ## Getting Help
 
@@ -49,26 +48,64 @@ We support and accept PRs from the community.
 
 See [CONTRIBUTING](./CONTRIBUTING.md)
 
+## Build from Source
+
+The CloudWatch RUM web client is developed and built using Node.js version 16 or higher.
+
+To build the CloudWatch RUM web client, run the release process:
+
+```
+npm install
+npm run release
+```
+
+The release process creates (1) a web bundle and a debug map for distribution via CDN, and (2) JavaScript modules and TypeScript declaration files for distribution via NPM.
+
+The CDN files are:
+
+```
+./build/assets/cwr.js
+./build/assets/cwr.map.js
+```
+
+The NPM files are:
+
+```
+./dist/es/index.js
+./dist/es/index.d.ts
+./dist/cjs/index.js
+./dist/cjs/index.d.ts
+```
+
 ## Run Tests from Source
 
 To perform exploratory testing, run the Webpack DevServer:
 
-`npm run server`
+```
+npm install
+npm run server
+```
 
 In a browser, navigate to http://localhost:9000.
 
 To run (Jest) unit tests:
 
-`npm run test`
+```
+npm run test
+```
 
 To run (TestCafe) browser integration tests:
 
-`npm run integ:local:chrome:headless`
+```
+npm run integ:local:chrome:headless
+```
 
 Some features perform monkey patching which is incompatible with TestCafe. In
 these cases, run Nightwatch as a separate browser integration test target:
 
-`npm run integ:local:nightwatch`
+```
+npm run integ:local:nightwatch
+```
 
 ## Pre-commit Tasks
 
@@ -78,11 +115,15 @@ resolved.
 
 Attempt to automatically repair linter warnings:
 
-`npm run lint:fix`
+```
+npm run lint:fix
+```
 
 Format code:
 
-`npm run prettier:fix`
+```
+npm run prettier:fix
+```
 
 ## Security
 
