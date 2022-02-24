@@ -12,12 +12,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* add Cache-Control max-age to CDN files ([#76](https://github.com/aws-observability/aws-rum-web/issues/76)) ([fad8fb9](https://github.com/aws-observability/aws-rum-web/commit/fad8fb9cc39fbd11b5e58501468b0a1971cc4279))
-* find the first script tag in head instead of the entire document ([#72](https://github.com/aws-observability/aws-rum-web/issues/72)) ([dc86ec6](https://github.com/aws-observability/aws-rum-web/commit/dc86ec609c5dadb975508faab0ce721147dca7e3))
 * Point to correct license files in bundle banner. ([#91](https://github.com/aws-observability/aws-rum-web/issues/91)) ([1082f23](https://github.com/aws-observability/aws-rum-web/commit/1082f2308ca7cb3b4bf99c00ce6bf60d56a52b1c))
 * Set aws api call xray subsegment namespace to aws ([#90](https://github.com/aws-observability/aws-rum-web/issues/90)) ([36d4e3c](https://github.com/aws-observability/aws-rum-web/commit/36d4e3c822df113c310af4d1c03301c484182651))
 * Set x-amzn-trace-id header directly in request headers ([#93](https://github.com/aws-observability/aws-rum-web/issues/93)) ([706d93e](https://github.com/aws-observability/aws-rum-web/commit/706d93e84bd4ef1feb3e728d42c98be8cec10348))
-* Uncaught TypeError: Cannot read the properties of undefined (reading 'record') ([#75](https://github.com/aws-observability/aws-rum-web/issues/75)) ([0193480](https://github.com/aws-observability/aws-rum-web/commit/019348075d0c0aadf618f18eb89e09d827351bd5))
 
 ## 1.1.0 (2022-02-10)
 
@@ -34,6 +31,9 @@ All notable changes to this project will be documented in this file. See [standa
 ## 1.0.5
 
 -   fix: Fixed uncaught TypeError when include/exclude URLs are used with tracing enabled
+-   fix: add Cache-Control max-age to CDN files ([#76](https://github.com/aws-observability/aws-rum-web/issues/76)) ([fad8fb9](https://github.com/aws-observability/aws-rum-web/commit/fad8fb9cc39fbd11b5e58501468b0a1971cc4279))
+-   fix: find the first script tag in head instead of the entire document ([#72](https://github.com/aws-observability/aws-rum-web/issues/72)) ([dc86ec6](https://github.com/aws-observability/aws-rum-web/commit/dc86ec609c5dadb975508faab0ce721147dca7e3))
+-   fix: Uncaught TypeError: Cannot read the properties of undefined (reading 'record') ([#75](https://github.com/aws-observability/aws-rum-web/issues/75)) ([0193480](https://github.com/aws-observability/aws-rum-web/commit/019348075d0c0aadf618f18eb89e09d827351bd5))
 
 ## 1.0.4
 
