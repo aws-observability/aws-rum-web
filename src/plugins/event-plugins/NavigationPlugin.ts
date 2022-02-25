@@ -1,7 +1,6 @@
 import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
-import { addAmznTraceIdHeaderToHeaders } from 'plugins/utils/http-utils';
 
 export const NAVIGATION_EVENT_PLUGIN_ID = 'com.amazonaws.rum.navigation';
 
