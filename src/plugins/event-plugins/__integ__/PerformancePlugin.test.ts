@@ -131,7 +131,9 @@ test('PerformanceEvent records navigation event', async (t: TestController) => {
         .contains(DURATION)
 
         .expect(RESPONSE_STATUS.textContent)
-        .eql(STATUS_202.toString());
+        .eql(STATUS_202.toString())
+        .expect((await REQUEST_BODY.textContent).indexOf(DURATION))
+        .gt(0);
 
     /**
      * Deprecated Timing Level1 used for Safari browser do not contain following attributes

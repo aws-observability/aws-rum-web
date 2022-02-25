@@ -23,16 +23,19 @@ export class NavigationPlugin implements Plugin {
     }
 
     /**
-     * If the client is initialized after the window has fired a load event,
-     * invoke the callback method directly to trigger the record event.
-     * Otherwise, keep the original implementation to add callback method to eventListener.
-     * However, if the page finishes loading right before adding addEventListener, we still cannot provide data
+     * loadEventEnd is populated as 0 if the web page has not loaded completely, even though LOAD has been fired.
+     * As a result, if loadEventEnd is populated, we can ignore eventListener and record the data directly.
+     * On the other hand, if not, we have to use eventListener to initializes PerformanceObserver.
+     * PerformanceObserver will act as a second check for the final load timings.
      */
     load(context: PluginContext): void {
         this.recordEvent = context.record;
         if (this.enabled) {
             if (this.hasTheWindowLoadEventFired()) {
-                this.eventListener();
+                const navData = window.performance.getEntriesByType(
+                    NAVIGATION
+                )[0] as PerformanceNavigationTiming;
+                this.performanceNavigationEventHandlerTimingLevel2(navData);
             } else {
                 window.addEventListener(LOAD, this.eventListener);
             }
@@ -94,9 +97,18 @@ export class NavigationPlugin implements Plugin {
         if (performance.getEntriesByType(NAVIGATION).length === 0) {
             this.performanceNavigationEventHandlerTimingLevel1();
         } else {
-            this.performanceNavigationEventHandlerTimingLevel2(
-                performance.getEntriesByType(NAVIGATION)[0]
-            );
+            const navigationObserver = new PerformanceObserver((list) => {
+                list.getEntries().forEach((event) => {
+                    if (event.entryType === NAVIGATION) {
+                        this.performanceNavigationEventHandlerTimingLevel2(
+                            event
+                        );
+                    }
+                });
+            });
+            navigationObserver.observe({
+                entryTypes: [NAVIGATION]
+            });
         }
     };
 

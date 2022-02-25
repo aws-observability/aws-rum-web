@@ -122,7 +122,9 @@ test('when plugin loads after window.load then navigation timing events are reco
         .contains(DURATION)
 
         .expect(RESPONSE_STATUS.textContent)
-        .eql(STATUS_202.toString());
+        .eql(STATUS_202.toString())
+        .expect((await REQUEST_BODY.textContent).indexOf(DURATION))
+        .gt(0);
 
     /**
      * Deprecated Timing Level1 used for Safari browser do not contain following attributes
