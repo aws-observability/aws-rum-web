@@ -38,16 +38,22 @@ const defaultConfig: DomEventPluginConfig = {
     events: []
 };
 
+type ElementMap = {
+    element: HTMLElement;
+    eventListener: EventListener;
+};
+
 export class DomEventPlugin implements Plugin {
     private recordEvent: RecordEvent | undefined;
     private pluginId: string;
-    private eventListenerMap: Map<TargetDomEvent, EventListener>;
+    private eventListenerMap: Map<TargetDomEvent, ElementMap[]>;
     private enabled: boolean;
     private config: DomEventPluginConfig;
+    private observer: MutationObserver;
 
     constructor(config?: PartialDomEventPluginConfig) {
         this.pluginId = DOM_EVENT_PLUGIN_ID;
-        this.eventListenerMap = new Map<TargetDomEvent, EventListener>();
+        this.eventListenerMap = new Map<TargetDomEvent, ElementMap[]>();
         this.config = { ...defaultConfig, ...config };
         this.enabled = false;
     }
@@ -62,6 +68,7 @@ export class DomEventPlugin implements Plugin {
             return;
         }
         this.addListeners();
+        this.observeDOMMutation();
         this.enabled = true;
     }
 
@@ -70,11 +77,27 @@ export class DomEventPlugin implements Plugin {
             return;
         }
         this.removeListeners();
+        this.observer.disconnect();
         this.enabled = false;
     }
 
     getPluginId(): string {
         return this.pluginId;
+    }
+
+    getPluginConfig(): DomEventPluginConfig {
+        return this.config;
+    }
+
+    update(config: DomEventPluginConfig): void {
+        if (config.events) {
+            config.events.forEach((domEvent) => {
+                this.addEventHandler(domEvent);
+            });
+
+            const newConfigs = { ...this.config, ...config };
+            this.config = newConfigs;
+        }
     }
 
     private removeListeners() {
@@ -83,9 +106,9 @@ export class DomEventPlugin implements Plugin {
         );
     }
 
-    private addListeners() {
+    private addListeners(targetElement?: HTMLElement) {
         this.config.events.forEach((domEvent) =>
-            this.addEventHandler(domEvent)
+            this.addEventHandler(domEvent, targetElement)
         );
     }
 
@@ -121,44 +144,91 @@ export class DomEventPlugin implements Plugin {
         return '';
     }
 
-    private addEventHandler(domEvent: TargetDomEvent): void {
+    private addEventHandler(
+        domEvent: TargetDomEvent,
+        targetElement?: HTMLElement
+    ): void {
         const eventType = domEvent.event;
         const eventListener = this.getEventListener(domEvent.cssLocator);
-        this.eventListenerMap.set(domEvent, eventListener);
+        const elementsList = [];
 
         // first add event listener to all elements identified by the CSS locator
         if (domEvent.cssLocator) {
+            let element: HTMLElement;
             const elementList = document.querySelectorAll(domEvent.cssLocator);
-            elementList.forEach((element: HTMLElement) => {
-                element.addEventListener(eventType, eventListener);
+            elementList.forEach((identifiedElement: HTMLElement) => {
+                if (targetElement) {
+                    if (targetElement === identifiedElement) {
+                        element = targetElement;
+                    }
+                } else {
+                    element = identifiedElement;
+                }
+
+                if (element) {
+                    element.addEventListener(eventType, eventListener);
+                    elementsList.push(element);
+                }
             });
-        } else if (domEvent.elementId) {
-            document
-                .getElementById(domEvent.elementId)
-                ?.addEventListener(eventType, eventListener);
-        } else if (domEvent.element) {
-            domEvent.element.addEventListener(eventType, eventListener);
+        } else {
+            let element: HTMLElement;
+            if (domEvent.elementId) {
+                if (targetElement && targetElement.id === domEvent.elementId) {
+                    element = targetElement;
+                } else {
+                    element = document.getElementById(domEvent.elementId);
+                }
+            } else if (domEvent.element) {
+                if (targetElement && targetElement === domEvent.element) {
+                    element = targetElement;
+                } else {
+                    element = domEvent.element;
+                }
+            }
+            if (element) {
+                element.addEventListener(eventType, eventListener);
+                elementsList.push(element);
+            }
         }
+
+        elementsList.forEach((element) => {
+            const elementMap: ElementMap = {
+                element,
+                eventListener
+            };
+            if (this.eventListenerMap.has(domEvent)) {
+                this.eventListenerMap.get(domEvent).push(elementMap);
+            } else {
+                this.eventListenerMap.set(domEvent, [elementMap]);
+            }
+        });
     }
 
     private removeEventHandler(domEvent: TargetDomEvent): void {
-        const eventListener:
-            | EventListener
-            | undefined = this.eventListenerMap.get(domEvent);
-
-        if (domEvent.cssLocator && eventListener) {
-            const elementList = document.querySelectorAll(domEvent.cssLocator);
-            elementList.forEach((element: HTMLElement) => {
-                element.removeEventListener(domEvent.event, eventListener);
+        const elementMapList = this.eventListenerMap.get(domEvent);
+        if (elementMapList) {
+            elementMapList.forEach((elementMap) => {
+                elementMap.element.removeEventListener(
+                    domEvent.event,
+                    elementMap.eventListener
+                );
             });
-        } else if (domEvent.elementId && eventListener) {
-            const element = document.getElementById(domEvent.elementId);
-            if (element) {
-                element.removeEventListener(domEvent.event, eventListener);
-            }
-        } else if (domEvent.element && eventListener) {
-            domEvent.element.removeEventListener(domEvent.event, eventListener);
+            this.eventListenerMap.delete(domEvent);
         }
-        this.eventListenerMap.delete(domEvent);
+    }
+
+    private observeDOMMutation() {
+        this.observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                mutation.addedNodes.forEach((node) => {
+                    //  we track only elements, skip other nodes (e.g. text nodes)
+                    if (node instanceof HTMLElement) {
+                        this.addListeners(node);
+                    }
+                });
+            }
+        });
+
+        this.observer.observe(document, { childList: true, subtree: true });
     }
 }
