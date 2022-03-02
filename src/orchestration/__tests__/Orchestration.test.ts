@@ -28,6 +28,7 @@ jest.mock('../../event-cache/EventCache', () => ({
 }));
 
 const addPlugin = jest.fn();
+const updatePlugin = jest.fn();
 
 const enablePlugins = jest.fn();
 const disablePlugins = jest.fn();
@@ -36,7 +37,8 @@ jest.mock('../../plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
         addPlugin: addPlugin,
         enable: enablePlugins,
-        disable: disablePlugins
+        disable: disablePlugins,
+        updatePlugin: updatePlugin
     }))
 }));
 
@@ -327,5 +329,28 @@ describe('Orchestration tests', () => {
         });
 
         expect(actual.sort()).toEqual(expected.sort());
+    });
+
+    test('when an additional DOM event is provided then it is added to the DOM event plugin config', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            eventPluginsToLoad: [new DomEventPlugin()]
+        });
+
+        orchestration.registerDomEvents([
+            { event: 'click', cssLocator: '[label="label1"]' }
+        ]);
+
+        const expected = { event: 'click', cssLocator: '[label="label1"]' };
+        let actual;
+
+        // Assert
+        expect(updatePlugin).toHaveBeenCalledTimes(1);
+
+        updatePlugin.mock.calls.forEach((call) => {
+            actual = call[1][0];
+        });
+
+        expect(actual).toEqual(expected);
     });
 });

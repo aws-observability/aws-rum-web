@@ -43,4 +43,10 @@ export interface Plugin {
      * @param data Data that the plugin will use to create an event.
      */
     record?(data: any): void;
+
+    /**
+     * Update the plugin.
+     * @param config Data that the plugin will use to update its config.
+     */
+    update?(config: object): void;
 }

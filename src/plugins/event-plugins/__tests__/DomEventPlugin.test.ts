@@ -255,4 +255,24 @@ describe('DomEventPlugin tests', () => {
             })
         );
     });
+    test('DomEventPlugin registers new DOM events when plugin is updated', async () => {
+        // Init
+        const plugin: DomEventPlugin = new DomEventPlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Update plugin by adding new DOM events
+        plugin.update([{ event: 'click', cssLocator: '[label="label1"]' }]);
+
+        plugin.disable();
+
+        const expected = {
+            events: [{ event: 'click', cssLocator: '[label="label1"]' }]
+        };
+        const actual = plugin.getPluginConfig();
+
+        // Assert
+        expect(actual).toEqual(expected);
+    });
 });
