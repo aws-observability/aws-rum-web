@@ -143,6 +143,7 @@ describe('Orchestration tests', () => {
             disableAutoPageView: false,
             dispatchInterval: 5000,
             enableXRay: false,
+            enableSpaTracking: false,
             endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
             eventCacheSize: 200,
             eventPluginsToLoad: [],

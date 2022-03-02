@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta charset="utf-8" />
+
+        <title>Single Page App for Test</title>
+
+        <link
+            href="http://fonts.googleapis.com/css?family=Open+Sans:400"
+            rel="stylesheet"
+        />
+        <link href="assets/css/styles.css" rel="stylesheet" />
+        <script src="./loader_spa.js"></script>
+        <style>
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <p id="welcome">This application is used for RUM integ testing.</p>
+        <form>
+            <label for="command">Command : </label>
+            <input type="text" id="command" /><br /><br />
+            <label for="payload">Payload : </label>
+            <textarea id="payload"></textarea><br /><br />
+            <input
+                type="button"
+                id="submit"
+                value="Submit"
+                onclick="onSubmitCommand()"
+            />
+        </form>
+        <br />
+        <span id="request"></span>
+        <span id="response"></span>
+        <table>
+            <tr>
+                <td>Request URL</td>
+                <td id="request_url"></td>
+            </tr>
+            <tr>
+                <td>Request Header</td>
+                <td id="request_header"></td>
+            </tr>
+            <tr>
+                <td>Request Body</td>
+                <td id="request_body"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Response Status Code</td>
+                <td id="response_status"></td>
+            </tr>
+            <tr>
+                <td>Response Header</td>
+                <td id="response_header"></td>
+            </tr>
+            <tr>
+                <td>Response Body</td>
+                <td id="response_body"></td>
+            </tr>
+        </table>
+
+        <div class="main-content">
+            <div class="all-products page">
+                <div class="filters">
+                    <form>
+                        <div class="filter-criteria">
+                            <span>Manufacturer</span>
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    name="manufacturer"
+                                    value="apple"
+                                />Apple</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    name="manufacturer"
+                                    value="samsung"
+                                />Samsung</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    name="manufacturer"
+                                    value="htc"
+                                />HTC</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    name="manufacturer"
+                                    value="nokia"
+                                />Nokia</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    name="manufacturer"
+                                    value="zte"
+                                />ZTE</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    name="manufacturer"
+                                    value="sony"
+                                />Sony</label
+                            >
+                        </div>
+
+                        <div class="filter-criteria">
+                            <span>Screen Size</span>
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="16"
+                                    name="storage"
+                                />16 GB</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="32"
+                                    name="storage"
+                                />32 GB</label
+                            >
+                        </div>
+
+                        <div class="filter-criteria">
+                            <span>OS</span>
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="android"
+                                    name="os"
+                                />Android</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="ios"
+                                    name="os"
+                                />iOS</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="windows"
+                                    name="os"
+                                />Windows</label
+                            >
+                        </div>
+
+                        <div class="filter-criteria">
+                            <span>Camera</span>
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="5"
+                                    name="camera"
+                                />5 Mpx</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="8"
+                                    name="camera"
+                                />8 Mpx</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="12"
+                                    name="camera"
+                                />12 Mpx</label
+                            >
+                            <label
+                                ><input
+                                    type="checkbox"
+                                    value="15"
+                                    name="camera"
+                                />15 Mpx</label
+                            >
+                        </div>
+
+                        <button>Clear filters</button>
+                    </form>
+                </div>
+
+                <ul class="products-list">
+                    <script id="products-template" type="x-handlebars-template">
+                        ​
+                        					{{#each this}}
+                        						<li data-index="{{id}}">
+                        							<a href="#" class="product-photo"><img src="{{image.small}}" height="130" alt="{{name}}"/></a>
+                        							<h2><a href="#"> {{name}} </a></h2>
+                        							<ul class="product-description">
+                        								<li><span>Manufacturer: </span>{{specs.manufacturer}}</li>
+                        								<li><span>Storage: </span>{{specs.storage}} GB</li>
+                        								<li><span>OS: </span>{{specs.os}}</li>
+                        								<li><span>Camera: </span>{{specs.camera}} Mpx</li>
+                        							</ul>
+                        							<button id='single_product'>Buy Now!</button>
+                        							<p class="product-price">{{price}}$</p>
+                        							<div class="highlight"></div>
+                        						</li>
+                        					{{/each}}
+                    </script>
+                </ul>
+            </div>
+
+            <div class="single-product page">
+                <div class="overlay" id="overlay"></div>
+
+                <div class="preview-large">
+                    <h3>Single product view</h3>
+                    <img src="" />
+                    <p></p>
+
+                    <span id="close" class="close">×</span>
+                </div>
+            </div>
+
+            <div class="error page">
+                <h3>Sorry, something went wrong :(</h3>
+            </div>
+        </div>
+
+        <script>
+            function getRandomInt(max) {
+                return Math.floor(Math.random() * max);
+            }
+            function onSubmitCommand() {
+                const command = document.getElementById('command').value;
+                if (document.getElementById('payload').value) {
+                    const payload = JSON.parse(
+                        document.getElementById('payload').value
+                    );
+                    cwr(command, payload);
+                } else {
+                    cwr(command);
+                }
+            }
+            function jsError() {
+                const messageArray = [
+                    'Script error',
+                    'This is a js error',
+                    'Js error: Unterminated string constant',
+                    'Unexpected identifier',
+                    "'Could not parse input'"
+                ];
+                const message = messageArray[getRandomInt(messageArray.length)];
+                throw `${message}`;
+            }
+            function httpError() {
+                fetch('https://ww.randfnreog.com');
+            }
+        </script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
+        <script src="assets/js/script.js"></script>
+    </body>
+</html>

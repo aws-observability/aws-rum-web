@@ -1,10 +1,15 @@
+import { Page } from '../sessions/PageManager';
 import { Config } from '../orchestration/Orchestration';
 import { Session } from '../sessions/SessionManager';
 
 export type RecordEvent = (type: string, eventData: object) => void;
-export type RecordPageView = (pageId: string) => void;
-
+export type RecordPageView = (pageId: string, invokeType: string) => void;
 export type GetSession = () => Session;
+export type GetCurrentUrl = () => string;
+export type GetCurrentPage = () => Page;
+export type GetRequestCache = () => Set<string | XMLHttpRequest>;
+export type IncrementFetch = () => void;
+export type DecrementFetch = () => void;
 
 export type PluginContext = {
     applicationId: string;
@@ -13,6 +18,11 @@ export type PluginContext = {
     record: RecordEvent;
     recordPageView: RecordPageView;
     getSession: GetSession;
+    getCurrentUrl: GetCurrentUrl;
+    getCurrentPage: GetCurrentPage;
+    getRequestCache: GetRequestCache;
+    incrementFetch: IncrementFetch;
+    decrementFetch: DecrementFetch;
 };
 
 export interface Plugin {

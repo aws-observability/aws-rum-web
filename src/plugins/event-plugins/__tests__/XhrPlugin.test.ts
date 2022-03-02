@@ -5,7 +5,12 @@ import {
     xRayOffContext,
     xRayOnContext,
     record,
-    recordPageView
+    recordPageView,
+    getCurrentUrl,
+    getCurrentPage,
+    getRequestCache,
+    incrementFetch,
+    decrementFetch
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
 import { GetSession, PluginContext } from '../../Plugin';
@@ -535,7 +540,12 @@ describe('XhrPlugin tests', () => {
             config: DEFAULT_CONFIG,
             record,
             recordPageView,
-            getSession
+            getSession,
+            getCurrentUrl,
+            getCurrentPage,
+            getRequestCache,
+            incrementFetch,
+            decrementFetch
         };
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -574,7 +584,12 @@ describe('XhrPlugin tests', () => {
             config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
             record,
             recordPageView,
-            getSession
+            getSession,
+            getCurrentUrl,
+            getCurrentPage,
+            getRequestCache,
+            incrementFetch,
+            decrementFetch
         };
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
