@@ -436,9 +436,7 @@ describe('DomEventPlugin tests', () => {
         plugin.load(context);
 
         // Update plugin by adding new DOM events
-        plugin.update({
-            events: [{ event: 'click', cssLocator: '[label="label1"]' }]
-        });
+        plugin.update([{ event: 'click', cssLocator: '[label="label1"]' }]);
 
         plugin.disable();
 

@@ -89,15 +89,11 @@ export class DomEventPlugin implements Plugin {
         return this.config;
     }
 
-    update(config: DomEventPluginConfig): void {
-        if (config.events) {
-            config.events.forEach((domEvent) => {
-                this.addEventHandler(domEvent);
-            });
-
-            const newConfigs = { ...this.config, ...config };
-            this.config = newConfigs;
-        }
+    update(config: Array<TargetDomEvent>): void {
+        config.forEach((domEvent) => {
+            this.addEventHandler(domEvent);
+            this.config.events.push(domEvent);
+        });
     }
 
     private removeListeners() {
