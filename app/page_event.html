@@ -68,7 +68,7 @@
             }
 
             function recordPageView() {
-                cwr('recordPageView', '/page_view_two');
+                cwr('recordPageView', ['/page_view_two', 'route_change']);
             }
 
             const parseEvents = () => {
