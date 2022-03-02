@@ -1,5 +1,6 @@
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../test-utils/integ-test-utils';
+import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 
 const recordPageView: Selector = Selector(`#recordPageView`);
 const dispatch: Selector = Selector(`#dispatch`);
@@ -35,7 +36,7 @@ test('PageViewEventPlugin records landing page view event', async (t: TestContro
 
     await t
         .expect(eventType)
-        .eql('com.amazon.rum.page_view_event')
+        .eql(PAGE_VIEW_EVENT_TYPE)
         .expect(eventDetails)
         .contains({
             pageId: '/page_event.html',
@@ -73,7 +74,7 @@ test('PageViewEventPlugin records page view event', async (t: TestController) =>
 
     await t
         .expect(eventType)
-        .eql('com.amazon.rum.page_view_event')
+        .eql(PAGE_VIEW_EVENT_TYPE)
         .expect(eventDetails)
         .contains({
             pageId: '/page_view_two',
@@ -104,12 +105,13 @@ test('when page is denied then page view is not recorded', async (t: TestControl
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
-    );
-    const eventDetails = JSON.parse(json.RumEvents[0].details);
+    const request_body = JSON.parse(await REQUEST_BODY.textContent);
 
-    await t.expect(json.RumEvents.length).eql(1).expect(eventDetails).contains({
+    const pages = request_body.RumEvents.filter(
+        (e) => e.type === PAGE_VIEW_EVENT_TYPE
+    ).map((e) => JSON.parse(e.details));
+
+    await t.expect(pages.length).eql(1).expect(pages[0]).contains({
         pageId: '/page_view_two',
         interaction: 1,
         pageInteractionId: '/page_view_two-1'

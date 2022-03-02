@@ -152,6 +152,8 @@ describe('Orchestration tests', () => {
             pagesToExclude: [],
             pagesToInclude: [],
             recordResourceUrl: true,
+            routeChangeComplete: 100,
+            routeChangeTimeout: 1000,
             sessionEventLimit: 200,
             sessionLengthSeconds: 1800,
             sessionSampleRate: 1,

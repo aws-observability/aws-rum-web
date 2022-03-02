@@ -2,8 +2,9 @@ import { Dispatch } from '../Dispatch';
 import * as Utils from '../../test-utils/test-utils';
 import { DataPlaneClient } from '../DataPlaneClient';
 import { CredentialProvider } from '@aws-sdk/types';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 
+global.fetch = mockFetch;
 const sendFetch = jest.fn(() => Promise.resolve());
 const sendBeacon = jest.fn(() => Promise.resolve());
 jest.mock('../DataPlaneClient', () => ({

@@ -2,9 +2,10 @@ import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
 import { RumEvent } from '../../dispatch/dataplane';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
 
+global.fetch = mockFetch;
 describe('EventCache tests', () => {
     beforeAll(() => {
         advanceTo(0);

@@ -3,8 +3,9 @@ import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
 import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 
+global.fetch = mockFetch;
 const getSession = jest.fn(() => ({
     sessionId: 'a',
     record: true,
