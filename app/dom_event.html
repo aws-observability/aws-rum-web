@@ -35,20 +35,20 @@
             }
 
             function registerDomEvents() {
-                cwr('registerDomEvents', {
-                    events: [{ event: 'click', cssLocator: '[label="label1"]' }]
-                });
-            }
+                cwr('registerDomEvents', { events: [
+                    { event: 'click', cssLocator: '[label="label1"]' }
+                ]})
 
+            }
+            
             function dynamicallyCreateButton() {
-                const parentButton = document.getElementById(
-                    'dynamicallyCreateButton'
-                );
+                const parentButton = document.getElementById('dynamicallyCreateButton');
                 const newButton = document.createElement('button');
-                newButton.innerHTML = 'Button Four';
+                newButton.innerHTML = "Button Four";
                 newButton.id = 'button4';
                 newButton.setAttribute('label', 'label1');
                 parentButton.insertAdjacentElement('afterend', newButton);
+                
             }
         </script>
 
@@ -79,15 +79,8 @@
         <button id="button2" label="label1">Button Two</button>
         <button id="button3" label="label1">Button Three</button>
         <hr />
-        <button id="registerDomEvents" onclick="registerDomEvents()">
-            Update Plugin
-        </button>
-        <button
-            id="dynamicallyCreateButton"
-            onclick="dynamicallyCreateButton()"
-        >
-            Add Button
-        </button>
+        <button id="registerDomEvents" onclick="registerDomEvents()">Update Plugin</button>
+        <button id="dynamicallyCreateButton" onclick="dynamicallyCreateButton()">Add Button</button>
         <hr />
         <button id="dispatch" onclick="dispatch()">Dispatch</button>
         <button id="clearRequestResponse" onclick="clearRequestResponse()">
