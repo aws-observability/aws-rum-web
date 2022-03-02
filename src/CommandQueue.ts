@@ -44,6 +44,9 @@ export class CommandQueue {
         recordError: (payload: any): void => {
             this.orchestration.recordError(payload);
         },
+        registerDomEvents: (payload: object): void => {
+            this.orchestration.registerDomEvents(payload);
+        },
         dispatch: (): void => {
             this.orchestration.dispatch();
         },

@@ -255,4 +255,197 @@ describe('DomEventPlugin tests', () => {
             })
         );
     });
+
+    test('when listening for a click on a dynamically added element given an element id, the event is recorded', async () => {
+        // Init
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', elementId: 'button1' }]
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.id = 'button1';
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        document.getElementById('button1').click();
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                event: 'click',
+                elementId: 'button1'
+            })
+        );
+    });
+
+    test('when listening for a click on a dynamically added element given a CSS selector, the event is recorded', async () => {
+        // Init
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '[label="label1"]' }]
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.setAttribute('label', 'label1');
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        let element: HTMLElement = document.querySelector(
+            '[label="label1"]'
+        ) as HTMLElement;
+        element.click();
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                event: 'click',
+                cssLocator: '[label="label1"]'
+            })
+        );
+    });
+
+    test('when listening for a click given an element id on an existing element and a dynamically added element, both events are recorded', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '#button1' }]
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.id = 'button1';
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '#button1'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        for (let i = 0; i < record.length; i++) {
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining({
+                    version: '1.0.0',
+                    event: 'click',
+                    elementId: 'button1'
+                })
+            );
+        }
+    });
+
+    test('DomEventPlugin does not record event for dynamically added element when disabled', async () => {
+        // Init
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '[label="label1"]' }]
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.setAttribute('label', 'label1');
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        plugin.disable();
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '[label="label1"]'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('DomEventPlugin does not record events when disabled for an existing element and a dynamically added element', async () => {
+        // Init
+        document.body.innerHTML =
+            '<button id = "button2" label="label1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '[label="label1"]' }]
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.setAttribute('label', 'label1');
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        plugin.disable();
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '[label="label1"]'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('DomEventPlugin registers new DOM events when plugin is updated', async () => {
+        // Init
+        const plugin: DomEventPlugin = new DomEventPlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Update plugin by adding new DOM events
+        plugin.update([{ event: 'click', cssLocator: '[label="label1"]' }]);
+
+        plugin.disable();
+
+        const expected = {
+            events: [{ event: 'click', cssLocator: '[label="label1"]' }]
+        };
+        const actual = plugin.getPluginConfig();
+
+        // Assert
+        expect(actual).toEqual(expected);
+    });
 });

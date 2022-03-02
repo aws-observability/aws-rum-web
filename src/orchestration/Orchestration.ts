@@ -2,7 +2,10 @@ import { Plugin, PluginContext } from '../plugins/Plugin';
 import { Authentication } from '../dispatch/Authentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 import { PluginManager } from '../plugins/PluginManager';
-import { DomEventPlugin } from '../plugins/event-plugins/DomEventPlugin';
+import {
+    DomEventPlugin,
+    DOM_EVENT_PLUGIN_ID
+} from '../plugins/event-plugins/DomEventPlugin';
 import {
     JsErrorPlugin,
     JS_ERROR_EVENT_PLUGIN_ID
@@ -292,6 +295,14 @@ export class Orchestration {
      */
     public recordError(error: any) {
         this.pluginManager.record(JS_ERROR_EVENT_PLUGIN_ID, error);
+    }
+
+    /**
+     * Update DOM plugin to record the (additional) provided DOM events.
+     * @param pluginConfig Target DOM events.
+     */
+    public registerDomEvents(pluginConfig: object) {
+        this.pluginManager.updatePlugin(DOM_EVENT_PLUGIN_ID, pluginConfig);
     }
 
     private initEventCache(
