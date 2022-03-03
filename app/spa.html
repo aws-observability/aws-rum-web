@@ -1,17 +1,72 @@
 <!DOCTYPE html>
 <html>
-    <head lang="en">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta charset="utf-8" />
-
-        <title>Single Page App for Test</title>
+    <head>
+        <title>RUM Integ Test for SPA</title>
+        <script src="./loader_spa.js"></script>
 
         <link
-            href="http://fonts.googleapis.com/css?family=Open+Sans:400"
-            rel="stylesheet"
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
         />
-        <link href="assets/css/styles.css" rel="stylesheet" />
-        <script src="./loader_spa.js"></script>
+        <link href="assets/css/style.css" rel="stylesheet" />
+        <script>
+            function createJSError() {
+                // TypeError: null has no properties
+                null.foo;
+            }
+
+            function onSubmitCommand() {
+                const command = document.getElementById('command').value;
+                if (document.getElementById('payload').value) {
+                    const payload = JSON.parse(
+                        document.getElementById('payload').value
+                    );
+                    cwr(command, payload);
+                } else {
+                    cwr(command);
+                }
+            }
+
+            function renderStrawberry() {
+                // Invoke AJAX requests via XMLHttpRequest and fetch prior to route change detection
+                createXMLRequest();
+                sendFetchWithParam();
+                sendFetchWithoutParam();
+                window.location.hash = 'strawberries';
+            }
+
+            // Dummy AJAX Request
+            function createXMLRequest() {
+                var xhr = new XMLHttpRequest((async = true));
+                var url =
+                    'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/abc123/';
+                xhr.open('GET', url, true);
+                xhr.send();
+            }
+
+            // Dummy Fetch Request with parameters
+            function sendFetchWithParam() {
+                fetch(
+                    'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/abc123/',
+                    {
+                        method: 'POST',
+                        body: JSON.stringify('data'),
+                        headers: new Headers({
+                            'Content-Type': 'application/json; charset=UTF-8'
+                        })
+                    }
+                );
+            }
+
+            // Dummy Fetch Request without parameters
+            function sendFetchWithoutParam() {
+                fetch(
+                    'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/abc123/'
+                );
+            }
+        </script>
+
         <style>
             table {
                 border-collapse: collapse;
@@ -43,6 +98,41 @@
             />
         </form>
         <br />
+        <button id="button1">Test ClickEvent1</button>
+        <button id="button2">Test ClickEvent2</button>
+        <button id="createJSError" onclick="createJSError()">
+            Create JS Error
+        </button>
+        <script>
+            function createJSError() {
+                // TypeError: null has no properties
+                null.foo;
+            }
+        </script>
+        <script>
+            function createHTTPError() {
+                var xhr = new XMLHttpRequest();
+                xhr.open(
+                    'POST',
+                    'https://www.google-analytics.com/collect',
+                    true
+                );
+                xhr.setRequestHeader('Content-type', 'application/json');
+                xhr.send();
+            }
+        </script>
+        <script>
+            function disallowCookies() {
+                cwr('allowCookies', false);
+            }
+        </script>
+        <button id="createHTTPError" onclick="createHTTPError()">
+            Create HTTP Error
+        </button>
+        <button id="randomSessionClick">Random Session click</button>
+        <button id="disallowCookies" onclick="disallowCookies()">
+            Disallow Cookies
+        </button>
         <span id="request"></span>
         <span id="response"></span>
         <table>
@@ -73,207 +163,25 @@
                 <td id="response_body"></td>
             </tr>
         </table>
-
         <div class="main-content">
-            <div class="all-products page">
-                <div class="filters">
-                    <form>
-                        <div class="filter-criteria">
-                            <span>Manufacturer</span>
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    name="manufacturer"
-                                    value="apple"
-                                />Apple</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    name="manufacturer"
-                                    value="samsung"
-                                />Samsung</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    name="manufacturer"
-                                    value="htc"
-                                />HTC</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    name="manufacturer"
-                                    value="nokia"
-                                />Nokia</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    name="manufacturer"
-                                    value="zte"
-                                />ZTE</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    name="manufacturer"
-                                    value="sony"
-                                />Sony</label
-                            >
-                        </div>
-
-                        <div class="filter-criteria">
-                            <span>Screen Size</span>
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="16"
-                                    name="storage"
-                                />16 GB</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="32"
-                                    name="storage"
-                                />32 GB</label
-                            >
-                        </div>
-
-                        <div class="filter-criteria">
-                            <span>OS</span>
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="android"
-                                    name="os"
-                                />Android</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="ios"
-                                    name="os"
-                                />iOS</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="windows"
-                                    name="os"
-                                />Windows</label
-                            >
-                        </div>
-
-                        <div class="filter-criteria">
-                            <span>Camera</span>
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="5"
-                                    name="camera"
-                                />5 Mpx</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="8"
-                                    name="camera"
-                                />8 Mpx</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="12"
-                                    name="camera"
-                                />12 Mpx</label
-                            >
-                            <label
-                                ><input
-                                    type="checkbox"
-                                    value="15"
-                                    name="camera"
-                                />15 Mpx</label
-                            >
-                        </div>
-
-                        <button>Clear filters</button>
-                    </form>
-                </div>
-
-                <ul class="products-list">
-                    <script id="products-template" type="x-handlebars-template">
-                        ​
-                        					{{#each this}}
-                        						<li data-index="{{id}}">
-                        							<a href="#" class="product-photo"><img src="{{image.small}}" height="130" alt="{{name}}"/></a>
-                        							<h2><a href="#"> {{name}} </a></h2>
-                        							<ul class="product-description">
-                        								<li><span>Manufacturer: </span>{{specs.manufacturer}}</li>
-                        								<li><span>Storage: </span>{{specs.storage}} GB</li>
-                        								<li><span>OS: </span>{{specs.os}}</li>
-                        								<li><span>Camera: </span>{{specs.camera}} Mpx</li>
-                        							</ul>
-                        							<button id='single_product'>Buy Now!</button>
-                        							<p class="product-price">{{price}}$</p>
-                        							<div class="highlight"></div>
-                        						</li>
-                        					{{/each}}
-                    </script>
-                </ul>
+            <div class="base page">
+                <button id="click-me" onclick="renderStrawberry()">
+                    I want Strawberries
+                </button>
             </div>
 
-            <div class="single-product page">
+            <div class="strawberry page">
                 <div class="overlay" id="overlay"></div>
-
-                <div class="preview-large">
-                    <h3>Single product view</h3>
+                <div class="strawberry-large">
+                    <h3>STRAWBERRY</h3>
                     <img src="" />
                     <p></p>
-
                     <span id="close" class="close">×</span>
                 </div>
             </div>
-
-            <div class="error page">
-                <h3>Sorry, something went wrong :(</h3>
-            </div>
         </div>
-
-        <script>
-            function getRandomInt(max) {
-                return Math.floor(Math.random() * max);
-            }
-            function onSubmitCommand() {
-                const command = document.getElementById('command').value;
-                if (document.getElementById('payload').value) {
-                    const payload = JSON.parse(
-                        document.getElementById('payload').value
-                    );
-                    cwr(command, payload);
-                } else {
-                    cwr(command);
-                }
-            }
-            function jsError() {
-                const messageArray = [
-                    'Script error',
-                    'This is a js error',
-                    'Js error: Unterminated string constant',
-                    'Unexpected identifier',
-                    "'Could not parse input'"
-                ];
-                const message = messageArray[getRandomInt(messageArray.length)];
-                throw `${message}`;
-            }
-            function httpError() {
-                fetch('https://ww.randfnreog.com');
-            }
-        </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
-        <script src="assets/js/script.js"></script>
+        <script src="assets/js/new_script.js"></script>
     </body>
 </html>

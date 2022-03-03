@@ -10,14 +10,14 @@ import {
     PERFORMANCE_NAVIGATION_EVENT_TYPE
 } from '../../utils/constant';
 
-const singleProduct: Selector = Selector(`#single_product`);
+const button: Selector = Selector(`#click-me`);
 const close: Selector = Selector('#close');
 fixture('SPA TrackerPlugin').page('http://localhost:8080/spa.html');
 
 const navigation_paths = [
     { pageId: '/spa.html', interaction: 0, initiatorType: 'navigation' },
     {
-        pageId: '/spa.html#product/1',
+        pageId: '/spa.html#strawberries',
         interaction: 1,
         initiatorType: 'route_change'
     },
@@ -27,9 +27,10 @@ const navigation_paths = [
 test('when route change is triggered two times then virtual page load is recorded two times', async (t: TestController) => {
     await t
         .wait(300)
-        .click(singleProduct)
-        .wait(100)
+        .click(button)
+        .wait(300)
         .click(close)
+        .wait(100)
         .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
         .click(SUBMIT)
         .expect(REQUEST_BODY.textContent)
