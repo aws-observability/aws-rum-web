@@ -77,12 +77,8 @@ export class DomEventPlugin implements Plugin {
         return this.pluginId;
     }
 
-    getPluginConfig(): DomEventPluginConfig {
-        return this.config;
-    }
-
-    update(config: TargetDomEvent[]): void {
-        config.forEach((domEvent) => {
+    update(events: TargetDomEvent[]): void {
+        events.forEach((domEvent) => {
             this.addEventHandler(domEvent);
             this.config.events.push(domEvent);
         });

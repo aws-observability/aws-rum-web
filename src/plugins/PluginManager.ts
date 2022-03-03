@@ -38,9 +38,8 @@ export class PluginManager {
      */
     public updatePlugin(pluginId: string, config: object) {
         const plugin = this.plugins.get(pluginId);
-        switch (pluginId) {
-            case DOM_EVENT_PLUGIN_ID:
-                plugin.update(config);
+        if (plugin && plugin.update instanceof Function) {
+            plugin.update(config);
         }
     }
 
