@@ -12,7 +12,7 @@ import {
 
 const singleProduct: Selector = Selector(`#single_product`);
 const close: Selector = Selector('#close');
-fixture('SPA TrackerPlugin').page('http://localhost:9000/spa.html');
+fixture('SPA TrackerPlugin').page('http://localhost:8080/spa.html');
 
 const navigation_paths = [
     { pageId: '/spa.html', interaction: 0, initiatorType: 'navigation' },
@@ -45,7 +45,7 @@ test('when route change is triggered two times then virtual page load is recorde
 
     await t
         .expect(nav_events.length)
-        .eql(3)
+        .eql(navigation_paths.length)
         .expect(nav_events.length)
         .eql(page_view_events.length);
 

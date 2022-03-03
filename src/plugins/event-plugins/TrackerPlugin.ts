@@ -135,17 +135,14 @@ export class TrackerPlugin extends MonkeyPatched implements Plugin {
         init?: RequestInit
     ): Promise<Response> => {
         const self = this;
-        return original.apply(thisArg, argsArray).then((response: Response) => {
-            const currPage = self.context.getCurrentPage();
-            // If page is not loaded, update the latestEndTime
-            if (!currPage.isLoaded) {
-                currPage.latestEndTime = Math.max(
-                    Date.now(),
-                    currPage.latestEndTime
-                );
-            }
-            self.context.decrementFetch();
-        });
+        return original
+            .apply(thisArg, argsArray)
+            .then((response: Response) => {
+                self.fetchHandler();
+            })
+            .catch((error) => {
+                self.fetchHandler();
+            });
     };
 
     /**
@@ -194,5 +191,19 @@ export class TrackerPlugin extends MonkeyPatched implements Plugin {
         } else if (requestCache.has(item)) {
             requestCache.delete(item);
         }
+    }
+
+    /**
+     * Helper method to decrement fetch counter
+     */
+    private fetchHandler() {
+        const currPage = this.context.getCurrentPage();
+        if (!currPage.isLoaded) {
+            currPage.latestEndTime = Math.max(
+                Date.now(),
+                currPage.latestEndTime
+            );
+        }
+        this.context.decrementFetch();
     }
 }

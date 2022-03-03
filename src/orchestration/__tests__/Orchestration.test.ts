@@ -329,4 +329,24 @@ describe('Orchestration tests', () => {
 
         expect(actual.sort()).toEqual(expected.sort());
     });
+
+    test('when spaTracking is true then the trackerPlugin is installed', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            enableSpaTracking: true,
+            disableAutoPageView: true,
+            telemetries: []
+        });
+        const expected = ['com.amazonaws.rum.tracker'];
+        const actual = [];
+
+        // Assert
+        expect(addPlugin).toHaveBeenCalledTimes(expected.length);
+
+        addPlugin.mock.calls.forEach((call) => {
+            actual.push(call[0].getPluginId());
+        });
+
+        expect(actual.sort()).toEqual(expected.sort());
+    });
 });
