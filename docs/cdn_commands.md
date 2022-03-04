@@ -17,7 +17,7 @@ Commands may be sent to the web client after the snippet has executed. In the fo
             disableAutoPageView: true
         }
     );
-    cwr('recordPageView', window.location.hash);
+    cwr('recordPageView', '[window.location.hash, initial_load]');
     const awsCreds = localStorage.getItem('customAwsCreds');
     if(awsCreds) cwr('setAwsCredentials', awsCreds)
 </script>
@@ -30,6 +30,6 @@ Commands may be sent to the web client after the snippet has executed. In the fo
 | dispatch | None | `cwr('dispatch');` | Flush RUM events from the cache and dispatch them to CloudWatch RUM using [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). 
 | dispatchBeacon | None | `cwr('dispatchBeacon');` | Flush RUM events from the cache and dispatch them to CloudWatch RUM using [`sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Beacon_API). 
 | enable | None | `cwr('enable');` | Start recording and dispatching RUM events.
-| recordPageView | String | `cwr('recordPageView', '/home');` | Record a page view event.<br/><br/>By default, the web client records page views when (1) the page first loads and (2) the browser's [history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) is called. The page ID is `window.location.pathname`.<br/><br/>In some cases, the web client's instrumentation will not record the desired page ID. In this case, the web client's page view automation must be disabled using the `disableAutoPageView` configuration, and the application must be instrumented to record page views using this command.
+| recordPageView | String | `cwr('recordPageView', '[/home, {initial_load|route_change}]');` | Record a page view event.<br/><br/>By default, the web client records page views when (1) the page first loads and (2) the browser's [history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) is called. The page ID is `window.location.pathname`.<br/><br/>In some cases, the web client's instrumentation will not record the desired page ID. In this case, the web client's page view automation must be disabled using the `disableAutoPageView` configuration, and the application must be instrumented to record page views using this command. When using the command, the second parameter consists of two elements, one is the desired page ID and the second is the page invoke type. If you wish to record the base page (for single page applications), use `initial_load`. On the other hand, if you want to capture a virtual page, use `route_change`.
 | recordError | Error \|&nbsp;ErrorEvent \|&nbsp;String | `try {...} catch(e) { cwr('recordError', e); }` | Record a caught error.
 | setAwsCredentials | [Credentials](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Credentials.html) \|&nbsp;[CredentialProvider](https://www.npmjs.com/package/@aws-sdk/credential-providers) | `cwr('setAwsCredentials', cred);` | Forward AWS credentials to the web client. The web client requires AWS credentials with permission to call the `PutRumEvents` API. If you have not set `identityPoolId` and `guestRoleArn` in the web client configuration, you must forward AWS credentials to the web client using this command.
