@@ -77,6 +77,13 @@ export class DomEventPlugin implements Plugin {
         return this.pluginId;
     }
 
+    update(events: TargetDomEvent[]): void {
+        events.forEach((domEvent) => {
+            this.addEventHandler(domEvent);
+            this.config.events.push(domEvent);
+        });
+    }
+
     private removeListeners() {
         this.config.events.forEach((domEvent) =>
             this.removeEventHandler(domEvent)
