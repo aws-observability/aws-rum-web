@@ -38,7 +38,7 @@ const defaultConfig: DomEventPluginConfig = {
     events: []
 };
 
-type ElementMap = {
+export type ElementEventListener = {
     element: HTMLElement;
     eventListener: EventListener;
 };
@@ -46,14 +46,17 @@ type ElementMap = {
 export class DomEventPlugin implements Plugin {
     private recordEvent: RecordEvent | undefined;
     private pluginId: string;
-    private eventListenerMap: Map<TargetDomEvent, ElementMap[]>;
+    private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
     private enabled: boolean;
     private config: DomEventPluginConfig;
     private observer: MutationObserver;
 
     constructor(config?: PartialDomEventPluginConfig) {
         this.pluginId = DOM_EVENT_PLUGIN_ID;
-        this.eventListenerMap = new Map<TargetDomEvent, ElementMap[]>();
+        this.eventListenerMap = new Map<
+            TargetDomEvent,
+            ElementEventListener[]
+        >();
         this.config = { ...defaultConfig, ...config };
         this.enabled = false;
     }
@@ -91,9 +94,9 @@ export class DomEventPlugin implements Plugin {
         );
     }
 
-    private addListeners(targetElement?: HTMLElement) {
+    private addListeners() {
         this.config.events.forEach((domEvent) =>
-            this.addEventHandler(domEvent, targetElement)
+            this.addEventHandler(domEvent)
         );
     }
 
@@ -129,74 +132,51 @@ export class DomEventPlugin implements Plugin {
         return '';
     }
 
-    private addEventHandler(
-        domEvent: TargetDomEvent,
-        targetElement?: HTMLElement
-    ): void {
+    private addEventHandler(domEvent: TargetDomEvent): void {
         const eventType = domEvent.event;
         const eventListener = this.getEventListener(domEvent.cssLocator);
-        const elementsList = [];
+
+        const identifiedElementList = [];
+        const elementEventListenerList: ElementEventListener[] = this.eventListenerMap.has(
+            domEvent
+        )
+            ? this.eventListenerMap.get(domEvent)
+            : [];
 
         // first add event listener to all elements identified by the CSS locator
         if (domEvent.cssLocator) {
-            let element: HTMLElement;
-            const elementList = document.querySelectorAll(domEvent.cssLocator);
-            elementList.forEach((identifiedElement: HTMLElement) => {
-                if (targetElement) {
-                    if (targetElement === identifiedElement) {
-                        element = targetElement;
-                    }
-                } else {
-                    element = identifiedElement;
-                }
-
-                if (element) {
-                    element.addEventListener(eventType, eventListener);
-                    elementsList.push(element);
-                }
+            const cssLocatedElements = document.querySelectorAll(
+                domEvent.cssLocator
+            );
+            cssLocatedElements.forEach((element) => {
+                identifiedElementList.push(element);
             });
-        } else {
-            let element: HTMLElement;
-            if (domEvent.elementId) {
-                if (targetElement && targetElement.id === domEvent.elementId) {
-                    element = targetElement;
-                } else {
-                    element = document.getElementById(domEvent.elementId);
-                }
-            } else if (domEvent.element) {
-                if (targetElement && targetElement === domEvent.element) {
-                    element = targetElement;
-                } else {
-                    element = domEvent.element;
-                }
+        } else if (domEvent.elementId) {
+            const identifiedElement = document.getElementById(
+                domEvent.elementId
+            );
+            if (identifiedElement) {
+                identifiedElementList.push(identifiedElement);
             }
-            if (element) {
-                element.addEventListener(eventType, eventListener);
-                elementsList.push(element);
-            }
+        } else if (domEvent.element) {
+            identifiedElementList.push(domEvent.element);
         }
 
-        elementsList.forEach((element) => {
-            const elementMap: ElementMap = {
-                element,
-                eventListener
-            };
-            if (this.eventListenerMap.has(domEvent)) {
-                this.eventListenerMap.get(domEvent).push(elementMap);
-            } else {
-                this.eventListenerMap.set(domEvent, [elementMap]);
-            }
+        identifiedElementList.forEach((element) => {
+            element.addEventListener(eventType, eventListener);
+            elementEventListenerList.push({ element, eventListener });
         });
+
+        this.eventListenerMap.set(domEvent, elementEventListenerList);
     }
 
     private removeEventHandler(domEvent: TargetDomEvent): void {
-        const elementMapList = this.eventListenerMap.get(domEvent);
-        if (elementMapList) {
-            elementMapList.forEach((elementMap) => {
-                elementMap.element.removeEventListener(
-                    domEvent.event,
-                    elementMap.eventListener
-                );
+        const elementEventListenerList = this.eventListenerMap.get(domEvent);
+        if (elementEventListenerList) {
+            elementEventListenerList.forEach((elementEventListener) => {
+                const element = elementEventListener.element;
+                const eventListener = elementEventListener.eventListener;
+                element.removeEventListener(domEvent.event, eventListener);
             });
             this.eventListenerMap.delete(domEvent);
         }
@@ -204,16 +184,12 @@ export class DomEventPlugin implements Plugin {
 
     private observeDOMMutation() {
         this.observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                mutation.addedNodes.forEach((node) => {
-                    //  we track only elements, skip other nodes (e.g. text nodes)
-                    if (node instanceof HTMLElement) {
-                        this.addListeners(node);
-                    }
-                });
-            }
+            mutations.forEach(() => {
+                this.removeListeners();
+                this.addListeners();
+            });
         });
-
+        //  we track only changes to nodes/DOM elements, not attributes or characterData
         this.observer.observe(document, { childList: true, subtree: true });
     }
 }

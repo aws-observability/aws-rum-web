@@ -366,7 +366,7 @@ describe('DomEventPlugin tests', () => {
         }
     });
 
-    test('DomEventPlugin does not record event for dynamically added element when disabled', async () => {
+    test('when DomEventPlugin is disabled then event for dynamically added element is not recorded', async () => {
         // Init
         const plugin: DomEventPlugin = new DomEventPlugin({
             events: [{ event: 'click', cssLocator: '[label="label1"]' }]
@@ -396,7 +396,7 @@ describe('DomEventPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(0);
     });
 
-    test('DomEventPlugin does not record events when disabled for an existing element and a dynamically added element', async () => {
+    test('when DomEventPlugin is disabled then events for both existing element and a dynamically added element are not recorded', async () => {
         // Init
         document.body.innerHTML =
             '<button id = "button2" label="label1"></button>';
