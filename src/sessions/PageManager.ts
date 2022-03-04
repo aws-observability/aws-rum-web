@@ -15,7 +15,7 @@ export type Page = {
     interaction: number;
     parentPageId?: string;
     start: number;
-    ongoingActivity: Set<string | XMLHttpRequest>;
+    ongoingActivity: Set<XMLHttpRequest>;
     latestEndTime: number;
     isLoaded?: boolean;
 };
@@ -46,7 +46,7 @@ export class PageManager {
     private periodicCheckId;
     private timeoutCheckId;
     private domMutationObserver: MutationObserver;
-    private requestCache: Set<string | XMLHttpRequest>;
+    private requestCache: Set<XMLHttpRequest>;
     private fetchCounter: number;
 
     private PERIODIC_TIME: number;
@@ -111,12 +111,12 @@ export class PageManager {
             pageId,
             interaction,
             start: 0,
-            ongoingActivity: new Set<string | XMLHttpRequest>(),
+            ongoingActivity: new Set<XMLHttpRequest>(),
             latestEndTime: 0
         };
     }
 
-    public getRequestCache(): Set<string | XMLHttpRequest> {
+    public getRequestCache(): Set<XMLHttpRequest> {
         return this.requestCache;
     }
 
@@ -179,7 +179,7 @@ export class PageManager {
                 parentPageId: this.resumed.pageId,
                 interaction: this.resumed.interaction + 1,
                 start: Date.now(),
-                ongoingActivity: new Set<string | XMLHttpRequest>(),
+                ongoingActivity: new Set<XMLHttpRequest>(),
                 latestEndTime: Date.now()
             };
             this.resumed = undefined;
@@ -188,7 +188,7 @@ export class PageManager {
                 pageId,
                 interaction: 0,
                 start: Date.now(),
-                ongoingActivity: new Set<string | XMLHttpRequest>(),
+                ongoingActivity: new Set<XMLHttpRequest>(),
                 latestEndTime: Date.now()
             };
         } else {
@@ -197,7 +197,7 @@ export class PageManager {
                 parentPageId: this.page.pageId,
                 interaction: this.page.interaction + 1,
                 start: Date.now(),
-                ongoingActivity: new Set<string | XMLHttpRequest>(),
+                ongoingActivity: new Set<XMLHttpRequest>(),
                 latestEndTime: Date.now()
             };
         }

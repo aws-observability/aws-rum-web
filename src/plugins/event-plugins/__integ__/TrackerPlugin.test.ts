@@ -30,12 +30,13 @@ test('when route change is triggered two times then virtual page load is recorde
         .click(button)
         .wait(300)
         .click(close)
-        .wait(100)
+        .wait(300)
         .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
         .click(SUBMIT)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
+    await t.wait(300);
     const nav_events = JSON.parse(
         await REQUEST_BODY.textContent
     ).RumEvents.filter((e) => e.type === PERFORMANCE_NAVIGATION_EVENT_TYPE);

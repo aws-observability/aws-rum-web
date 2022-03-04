@@ -110,7 +110,7 @@ export class EventCache {
     /**
      * Returns the PageManager's requestCache.
      */
-    public getRequestCache = (): Set<string | XMLHttpRequest> => {
+    public getRequestCache = (): Set<XMLHttpRequest> => {
         return this.pageManager.getRequestCache();
     };
 

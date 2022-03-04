@@ -37,7 +37,14 @@ $(function () {
 
         if (keyword == '#strawberries') {
             renderStrawberryPage();
+        } else {
+            renderBasePage();
         }
+    }
+
+    function renderBasePage() {
+        var page = $('.base');
+        page.addClass('visible');
     }
 
     function renderStrawberryPage() {

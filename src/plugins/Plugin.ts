@@ -7,7 +7,7 @@ export type RecordPageView = (pageId: string, invokeType: string) => void;
 export type GetSession = () => Session;
 export type GetCurrentUrl = () => string;
 export type GetCurrentPage = () => Page;
-export type GetRequestCache = () => Set<string | XMLHttpRequest>;
+export type GetRequestCache = () => Set<XMLHttpRequest>;
 export type IncrementFetch = () => void;
 export type DecrementFetch = () => void;
 

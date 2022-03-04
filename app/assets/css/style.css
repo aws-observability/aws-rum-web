@@ -47,8 +47,10 @@
     top: 50%;
     margin-top: -275px;
     pointer-events: none;
+
     border-radius: 6px;
     background-color: #ffffff;
+
     z-index: 102;
     opacity: 0;
     transition: 0.4s;
