@@ -33,6 +33,7 @@
             function enable() {
                 cwr('enable');
             }
+
             function dynamicallyCreateButton() {
                 const parentButton = document.getElementById(
                     'dynamicallyCreateButton'
@@ -42,6 +43,11 @@
                 newButton.id = 'button4';
                 newButton.setAttribute('label', 'label1');
                 parentButton.insertAdjacentElement('afterend', newButton);
+
+            function registerDomEvents() {
+                cwr('registerDomEvents', [
+                    { event: 'click', cssLocator: '[label="label2"]' }
+                ]);
             }
         </script>
 
@@ -78,6 +84,10 @@
         >
             Add Button
         </button>
+        <button id="registerDomEvents" onclick="registerDomEvents()">
+            Update Plugin
+        </button>
+        <button id="button5" label="label2">Button Five</button>
         <hr />
         <button id="dispatch" onclick="dispatch()">Dispatch</button>
         <button id="clearRequestResponse" onclick="clearRequestResponse()">

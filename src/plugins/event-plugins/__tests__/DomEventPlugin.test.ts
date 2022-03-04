@@ -255,7 +255,35 @@ describe('DomEventPlugin tests', () => {
             })
         );
     });
+  
+    test('when a DOM event is added at runtime then the DOM event is recorded', async () => {
+        // Init
+        document.body.innerHTML =
+            '<button id="button1" label="label1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin();
 
+        // Run
+        plugin.load(context);
+
+        // Update plugin by registering new DOM event
+        plugin.update([{ event: 'click', cssLocator: '[label="label1"]' }]);
+
+        document.getElementById('button1').click();
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                event: 'click',
+                cssLocator: '[label="label1"]'
+            })
+        );
+    });
+  
     test('when listening for a click on a dynamically added element given an element id, the event is recorded', async () => {
         // Init
         const plugin: DomEventPlugin = new DomEventPlugin({

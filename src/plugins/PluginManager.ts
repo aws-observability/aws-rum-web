@@ -1,4 +1,5 @@
 import { Plugin, PluginContext } from './Plugin';
+import { DOM_EVENT_PLUGIN_ID } from '../plugins/event-plugins/DomEventPlugin';
 
 /**
  * The plugin manager maintains a list of plugins
@@ -29,6 +30,17 @@ export class PluginManager {
 
         // initialize plugin
         plugin.load(this.context);
+    }
+
+    /**
+     * Update an event plugin
+     * @param config The config to update the plugin with.
+     */
+    public updatePlugin(pluginId: string, config: object) {
+        const plugin = this.plugins.get(pluginId);
+        if (plugin && plugin.update instanceof Function) {
+            plugin.update(config);
+        }
     }
 
     /**
