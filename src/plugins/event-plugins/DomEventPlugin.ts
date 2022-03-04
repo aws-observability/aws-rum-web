@@ -190,11 +190,9 @@ export class DomEventPlugin implements Plugin {
     }
 
     private observeDOMMutation() {
-        this.observer = new MutationObserver((mutations) => {
-            mutations.forEach(() => {
-                this.removeListeners();
-                this.addListeners();
-            });
+        this.observer = new MutationObserver(() => {
+            this.removeListeners();
+            this.addListeners();
         });
         //  we track only changes to nodes/DOM elements, not attributes or characterData
         this.observer.observe(document, { childList: true, subtree: true });
