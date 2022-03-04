@@ -34,6 +34,17 @@
                 cwr('enable');
             }
 
+            function dynamicallyCreateButton() {
+                const parentButton = document.getElementById(
+                    'dynamicallyCreateButton'
+                );
+                const newButton = document.createElement('button');
+                newButton.innerHTML = 'Button Four';
+                newButton.id = 'button4';
+                newButton.setAttribute('label', 'label1');
+                parentButton.insertAdjacentElement('afterend', newButton);
+            }
+
             function registerDomEvents() {
                 cwr('registerDomEvents', [
                     { event: 'click', cssLocator: '[label="label2"]' }
@@ -68,6 +79,12 @@
         <button id="button2" label="label1">Button Two</button>
         <button id="button3" label="label1">Button Three</button>
         <hr />
+        <button
+            id="dynamicallyCreateButton"
+            onclick="dynamicallyCreateButton()"
+        >
+            Add Button
+        </button>
         <button id="registerDomEvents" onclick="registerDomEvents()">
             Update Plugin
         </button>
