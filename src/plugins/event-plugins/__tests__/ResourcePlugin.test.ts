@@ -15,12 +15,7 @@ import {
     DEFAULT_CONFIG,
     getSession,
     record,
-    recordPageView,
-    getCurrentUrl,
-    getCurrentPage,
-    getRequestCache,
-    incrementFetch,
-    decrementFetch
+    recordPageView
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
@@ -77,12 +72,7 @@ describe('ResourcePlugin tests', () => {
             config: { ...DEFAULT_CONFIG, recordResourceUrl: false },
             record,
             recordPageView,
-            getSession,
-            getCurrentUrl,
-            getCurrentPage,
-            getRequestCache,
-            incrementFetch,
-            decrementFetch
+            getSession
         };
         const plugin: ResourcePlugin = buildResourcePlugin();
 

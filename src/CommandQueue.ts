@@ -39,7 +39,7 @@ export class CommandQueue {
             this.orchestration.setAwsCredentials(payload);
         },
         recordPageView: (payload: string): void => {
-            this.orchestration.recordPageView(payload[0], payload[1]);
+            this.orchestration.recordPageView(payload);
         },
         recordError: (payload: any): void => {
             this.orchestration.recordError(payload);

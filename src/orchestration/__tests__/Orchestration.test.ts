@@ -143,7 +143,6 @@ describe('Orchestration tests', () => {
             disableAutoPageView: false,
             dispatchInterval: 5000,
             enableXRay: false,
-            enableSpaTracking: false,
             endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
             eventCacheSize: 200,
             eventPluginsToLoad: [],
@@ -333,7 +332,6 @@ describe('Orchestration tests', () => {
     test('when spaTracking is true then the trackerPlugin is installed', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {
-            enableSpaTracking: true,
             disableAutoPageView: true,
             telemetries: []
         });

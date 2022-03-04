@@ -9,12 +9,7 @@ import {
     record,
     recordPageView,
     xRayOffContext,
-    xRayOnContext,
-    getCurrentUrl,
-    getCurrentPage,
-    getRequestCache,
-    incrementFetch,
-    decrementFetch
+    xRayOnContext
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../Plugin';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
@@ -448,12 +443,7 @@ describe('FetchPlugin tests', () => {
             config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
             record,
             recordPageView,
-            getSession,
-            getCurrentUrl,
-            getCurrentPage,
-            getRequestCache,
-            incrementFetch,
-            decrementFetch
+            getSession
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
@@ -482,12 +472,7 @@ describe('FetchPlugin tests', () => {
             config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
             record,
             recordPageView,
-            getSession,
-            getCurrentUrl,
-            getCurrentPage,
-            getRequestCache,
-            incrementFetch,
-            decrementFetch
+            getSession
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);

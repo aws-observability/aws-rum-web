@@ -4,7 +4,6 @@ import * as Utils from '../../test-utils/test-utils';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
-import { PAGE_INVOKE_TYPE } from '../../orchestration/Orchestration';
 
 describe('EventCache tests', () => {
     beforeAll(() => {
@@ -60,10 +59,7 @@ describe('EventCache tests', () => {
         };
 
         // Run
-        eventCache.recordPageView(
-            '/console/home',
-            PAGE_INVOKE_TYPE.INITIAL_LOAD
-        );
+        eventCache.recordPageView('/console/home');
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert

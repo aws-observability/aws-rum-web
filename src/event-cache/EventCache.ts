@@ -1,7 +1,7 @@
 import { Session, SessionManager } from '../sessions/SessionManager';
 import { v4 } from 'uuid';
 import { MetaData } from '../events/meta-data';
-import { Config, PAGE_INVOKE_TYPE } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/Orchestration';
 import { PageManager, Page } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
@@ -62,18 +62,11 @@ export class EventCache {
     }
 
     /**
-     * Returns the current Page object's pageId/URL.
-     */
-    public getCurrentPageUrl = () => {
-        return this.pageManager.getCurrentUrl();
-    };
-
-    /**
      * Update the current page interaction for the session.
      */
-    public recordPageView = (pageId: string, invokeType: PAGE_INVOKE_TYPE) => {
+    public recordPageView = (pageId: string) => {
         if (this.isCurrentUrlAllowed()) {
-            this.pageManager.recordPageView(pageId, invokeType);
+            this.pageManager.recordPageView(pageId);
         }
     };
 
@@ -105,13 +98,6 @@ export class EventCache {
      */
     public getCurrentPage = (): Page => {
         return this.pageManager.getPage();
-    };
-
-    /**
-     * Returns the PageManager's requestCache.
-     */
-    public getRequestCache = (): Set<XMLHttpRequest> => {
-        return this.pageManager.getRequestCache();
     };
 
     /**
@@ -170,14 +156,6 @@ export class EventCache {
             sessionId: this.sessionManager.getSession().sessionId
         };
     }
-
-    public incrementFetch = () => {
-        this.pageManager.incrementFetchCounter();
-    };
-
-    public decrementFetch = () => {
-        this.pageManager.decrementFetchCounter();
-    };
 
     /**
      * Add a session start event to the cache.

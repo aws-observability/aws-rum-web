@@ -257,7 +257,7 @@ describe('CommandQueue tests', () => {
         const cq: CommandQueue = getCommandQueue();
         await cq.push({
             c: 'recordPageView',
-            p: '[page1, route_change]'
+            p: 'page1'
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(recordPageView).toHaveBeenCalled();

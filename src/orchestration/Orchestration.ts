@@ -16,7 +16,6 @@ import { WebVitalsPlugin } from '../plugins/event-plugins/WebVitalsPlugin';
 import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
-import { TrackerPlugin } from '../plugins/event-plugins/TrackerPlugin';
 
 const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
 const DATA_PLANE_DEFAULT_ENDPOINT =
@@ -36,11 +35,6 @@ interface TelemetriesFunctor {
 }
 
 type Telemetry = string | (string | object)[];
-
-export enum PAGE_INVOKE_TYPE {
-    ROUTE_CHANGE = 'route_change',
-    INITIAL_LOAD = 'initial_load'
-}
 
 export enum PAGE_TYPE {
     RESUME = 'resume_page',
@@ -70,7 +64,6 @@ export type PartialConfig = {
     disableAutoPageView?: boolean;
     dispatchInterval?: number;
     enableRumClient?: boolean;
-    enableSpaTracking?: boolean;
     enableXRay?: boolean;
     endpoint?: string;
     eventCacheSize?: number;
@@ -84,7 +77,7 @@ export type PartialConfig = {
     sessionEventLimit?: number;
     sessionLengthSeconds?: number;
     sessionSampleRate?: number;
-    spaTimeoutLimit?: number;
+    spaActivityTimeoutLimit?: number;
     /**
      * Application owners think about data collection in terms of the categories
      * of data being collected. For example, JavaScript errors, page load
@@ -119,7 +112,6 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
-        enableSpaTracking: false,
         enableXRay: false,
         endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
@@ -152,7 +144,6 @@ export type Config = {
     disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
-    enableSpaTracking: boolean;
     enableXRay: boolean;
     endpoint: string;
     eventCacheSize: number;
@@ -175,7 +166,7 @@ export type Config = {
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
-    spaTimeoutLimit?: number;
+    spaActivityTimeoutLimit?: number;
     telemetries: Telemetry[];
     userIdRetentionDays: number;
 };
@@ -299,8 +290,8 @@ export class Orchestration {
      * Update the current page the user is interacting with.
      * @param pageId The unique ID for the page within the application.
      */
-    public recordPageView(pageId: string, invokeType = null) {
-        this.eventCache.recordPageView(pageId, invokeType);
+    public recordPageView(pageId: string) {
+        this.eventCache.recordPageView(pageId);
     }
 
     /**
@@ -363,12 +354,7 @@ export class Orchestration {
             config: this.config,
             record: this.eventCache.recordEvent,
             recordPageView: this.eventCache.recordPageView,
-            getSession: this.eventCache.getSession,
-            getCurrentUrl: this.eventCache.getCurrentPageUrl,
-            getCurrentPage: this.eventCache.getCurrentPage,
-            getRequestCache: this.eventCache.getRequestCache,
-            incrementFetch: this.eventCache.incrementFetch,
-            decrementFetch: this.eventCache.decrementFetch
+            getSession: this.eventCache.getSession
         };
 
         // Initialize PluginManager
@@ -377,11 +363,6 @@ export class Orchestration {
         // Load page view plugin
         if (!this.config.disableAutoPageView) {
             pluginManager.addPlugin(new PageViewPlugin());
-        }
-
-        // Load SPA Tracker plugin
-        if (this.config.enableSpaTracking) {
-            pluginManager.addPlugin(new TrackerPlugin());
         }
 
         // Load plugins

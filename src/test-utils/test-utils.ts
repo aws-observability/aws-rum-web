@@ -9,12 +9,7 @@ import {
     GetSession,
     PluginContext,
     RecordEvent,
-    RecordPageView,
-    GetCurrentPage,
-    GetCurrentUrl,
-    GetRequestCache,
-    IncrementFetch,
-    DecrementFetch
+    RecordPageView
 } from '../plugins/Plugin';
 import {
     AppMonitorDetails,
@@ -109,11 +104,6 @@ export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     record: true,
     eventCount: 0
 }));
-export const getCurrentUrl: jest.MockedFunction<GetCurrentUrl> = jest.fn();
-export const getCurrentPage: jest.MockedFunction<GetCurrentPage> = jest.fn();
-export const getRequestCache: jest.MockedFunction<GetRequestCache> = jest.fn();
-export const incrementFetch: jest.MockedFunction<IncrementFetch> = jest.fn();
-export const decrementFetch: jest.MockedFunction<DecrementFetch> = jest.fn();
 
 export const context: PluginContext = {
     applicationId: 'b',
@@ -121,12 +111,7 @@ export const context: PluginContext = {
     config: DEFAULT_CONFIG,
     record,
     recordPageView,
-    getSession,
-    getCurrentUrl,
-    getCurrentPage,
-    getRequestCache,
-    incrementFetch,
-    decrementFetch
+    getSession
 };
 
 export const xRayOffContext: PluginContext = {
@@ -135,12 +120,7 @@ export const xRayOffContext: PluginContext = {
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
     record,
     recordPageView,
-    getSession,
-    getCurrentUrl,
-    getCurrentPage,
-    getRequestCache,
-    incrementFetch,
-    decrementFetch
+    getSession
 };
 
 export const xRayOnContext: PluginContext = {
@@ -149,12 +129,7 @@ export const xRayOnContext: PluginContext = {
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
     record,
     recordPageView,
-    getSession,
-    getCurrentUrl,
-    getCurrentPage,
-    getRequestCache,
-    incrementFetch,
-    decrementFetch
+    getSession
 };
 
 export const stringToUtf16 = (inputString: string) => {

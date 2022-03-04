@@ -1,13 +1,12 @@
-import {
-    Config,
-    PAGE_INVOKE_TYPE,
-    PAGE_TYPE
-} from '../orchestration/Orchestration';
+import { Config, PAGE_TYPE } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/Plugin';
 import { PageViewEvent } from '../events/page-view-event';
 import { NavigationEvent } from '../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
+import { MonkeyPatch, MonkeyPatched } from '../plugins/MonkeyPatched';
 
+type Fetch = typeof fetch;
+type Send = () => void;
 export const PAGE_VIEW_TYPE = 'com.amazon.rum.page_view_event';
 
 export type Page = {
@@ -37,20 +36,29 @@ export type Attributes = {
  *
  * The interaction level is the order of a page in the sequence of pages sorted by the time they were viewed.
  */
-export class PageManager {
+export class PageManager extends MonkeyPatched {
     private config: Config;
     private record: RecordEvent;
     private page: Page | undefined;
     private resumed: Page | undefined;
     private attributes: Attributes | undefined;
-    private periodicCheckId;
-    private timeoutCheckId;
+
+    /** Unique ID of periodic activity checker for virtual page loads. */
+    private periodicActivityCheckerId;
+    /** Unique ID of activity timeout Timer object */
+    private activityTimeoutCheckerId;
+    /** Observer to liten for DOM changes */
     private domMutationObserver: MutationObserver;
-    private requestCache: Set<XMLHttpRequest>;
+
+    /** Buffer to hold outgoing XMLHttpRequests before new page is created. */
+    private requestBuffer: Set<XMLHttpRequest>;
+    /** Indicate the number of active Fetch requests. */
     private fetchCounter: number;
 
-    private PERIODIC_TIME: number;
-    private TIMEOUT_TIME: number;
+    /** Soft timeout for periodic checker to determine virtual page load has completed. */
+    private PERIODIC_CHECKER_INTERVAL: number;
+    /** Hard timeout for PageManager to stop checking for virtual page load */
+    private ACTIVITY_TIMEOUT_LIMIT: number;
 
     /**
      * A flag which keeps track of whether or not cookies have been enabled.
@@ -61,48 +69,37 @@ export class PageManager {
     private recordInteraction: boolean;
 
     constructor(config: Config, record: RecordEvent) {
+        super();
         this.config = config;
         this.record = record;
         this.page = undefined;
         this.resumed = undefined;
         this.recordInteraction = false;
-        this.periodicCheckId = undefined;
-        this.timeoutCheckId = undefined;
-        this.domMutationObserver = new MutationObserver(this.mutationCallback);
-        this.requestCache = new Set();
-        this.PERIODIC_TIME = 100;
-        this.TIMEOUT_TIME = this.config.spaTimeoutLimit
-            ? this.config.spaTimeoutLimit
+
+        this.periodicActivityCheckerId = undefined;
+        this.activityTimeoutCheckerId = undefined;
+        this.domMutationObserver = new MutationObserver(
+            this.domMutationCallback
+        );
+        this.requestBuffer = new Set();
+        this.PERIODIC_CHECKER_INTERVAL = 100;
+        this.ACTIVITY_TIMEOUT_LIMIT = this.config.spaActivityTimeoutLimit
+            ? this.config.spaActivityTimeoutLimit
             : 1000;
         this.fetchCounter = 0;
+        this.load();
+    }
+
+    public load(): void {
+        this.enable();
     }
 
     public getPage(): Page | undefined {
         return this.page;
     }
 
-    public getCurrentUrl(): string {
-        return this.page.pageId;
-    }
-
-    public getTimeoutValue(): number {
-        return this.TIMEOUT_TIME;
-    }
-
-    public getFetchCounter(): number {
-        return this.fetchCounter;
-    }
-
     public getAttributes(): Attributes | undefined {
         return this.attributes;
-    }
-
-    public getIntervalId() {
-        return this.periodicCheckId;
-    }
-
-    public getTimeoutId() {
-        return this.timeoutCheckId;
     }
 
     public resumeSession(pageId: string, interaction: number) {
@@ -116,34 +113,48 @@ export class PageManager {
         };
     }
 
-    public getRequestCache(): Set<XMLHttpRequest> {
-        return this.requestCache;
-    }
-
-    public incrementFetchCounter() {
-        this.fetchCounter += 1;
-    }
-
-    public decrementFetchCounter = () => {
-        if (this.getFetchCounter() > 0) {
-            this.fetchCounter -= 1;
-        }
-    };
-
-    public recordPageView(
-        pageId: string,
-        invokeType = PAGE_INVOKE_TYPE.INITIAL_LOAD
-    ) {
+    /** Creates a new page object from either an initial load or route change. */
+    public recordPageView(pageId: string) {
         if (this.useCookies()) {
             this.recordInteraction = true;
         }
 
         if (!this.page && this.resumed) {
-            this.createPage(pageId, invokeType, PAGE_TYPE.RESUME);
+            this.createResumedPage(pageId);
         } else if (!this.page) {
-            this.createPage(pageId, invokeType, PAGE_TYPE.LANDING);
+            this.createLandingPage(pageId);
         } else if (this.page.pageId !== pageId) {
-            this.createPage(pageId, invokeType, PAGE_TYPE.NEXT);
+            this.createNextPage(pageId);
+
+            // Clean up existing timer objects and mutationObserver
+            if (this.periodicActivityCheckerId) {
+                clearInterval(this.periodicActivityCheckerId);
+            }
+            if (this.activityTimeoutCheckerId) {
+                clearTimeout(this.activityTimeoutCheckerId);
+            }
+            this.domMutationObserver.disconnect();
+
+            // Initialize timer objects and start observing
+            this.periodicActivityCheckerId = setInterval(
+                this.periodicActivityChecker,
+                this.PERIODIC_CHECKER_INTERVAL
+            );
+            this.activityTimeoutCheckerId = setTimeout(
+                this.activityTimeoutCallback,
+                this.ACTIVITY_TIMEOUT_LIMIT
+            );
+            this.domMutationObserver.observe(document, {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                characterData: true
+            });
+
+            // Indicate page has not loaded, and carry over buffered requests.
+            this.page.isLoaded = false;
+            this.requestBuffer.forEach(this.moveItemsFromBuffer);
+            this.requestBuffer.clear();
         } else {
             // The view has not changed.
             return;
@@ -156,90 +167,58 @@ export class PageManager {
         this.recordPageViewEvent();
     }
 
-    /**
-     * Create a Page Object based on the given invokeType and pageType parameter.
-     * Possible outcomes involve:
-     *  (1) resumed page
-     *  (2) landing page
-     *  (3) next page
-     * When the page is created via route change, we create all the resources required
-     * to capture the virtual page load timing.
-     * @param pageId
-     * @param invokeType
-     * @param pageType
-     */
-    private createPage(
-        pageId: string,
-        invokeType: PAGE_INVOKE_TYPE,
-        pageType: PAGE_TYPE
-    ) {
-        if (pageType === PAGE_TYPE.RESUME) {
-            this.page = {
-                pageId,
-                parentPageId: this.resumed.pageId,
-                interaction: this.resumed.interaction + 1,
-                start: Date.now(),
-                ongoingActivity: new Set<XMLHttpRequest>(),
-                latestEndTime: Date.now()
-            };
-            this.resumed = undefined;
-        } else if (pageType === PAGE_TYPE.LANDING) {
-            this.page = {
-                pageId,
-                interaction: 0,
-                start: Date.now(),
-                ongoingActivity: new Set<XMLHttpRequest>(),
-                latestEndTime: Date.now()
-            };
-        } else {
-            this.page = {
-                pageId,
-                parentPageId: this.page.pageId,
-                interaction: this.page.interaction + 1,
-                start: Date.now(),
-                ongoingActivity: new Set<XMLHttpRequest>(),
-                latestEndTime: Date.now()
-            };
-        }
-        if (invokeType === PAGE_INVOKE_TYPE.ROUTE_CHANGE) {
-            // First clear the timers and observer to prevent erroneous data capture.
-            // Then instantiate the timers and observer for current page.
-            if (this.periodicCheckId !== undefined) {
-                clearInterval(this.periodicCheckId);
+    protected patches(): MonkeyPatch[] {
+        return [
+            {
+                nodule: XMLHttpRequest.prototype,
+                name: 'send',
+                wrapper: this.sendWrapper
+            },
+            {
+                nodule: window,
+                name: 'fetch',
+                wrapper: this.fetchWrapper
             }
-            if (this.timeoutCheckId !== undefined) {
-                clearTimeout(this.timeoutCheckId);
-            }
-            this.periodicCheckId = setInterval(
-                this.checkActivities,
-                this.PERIODIC_TIME
-            );
-            this.timeoutCheckId = setTimeout(this.timedOut, this.TIMEOUT_TIME);
-
-            this.domMutationObserver.disconnect();
-            this.domMutationObserver.observe(document, {
-                subtree: true,
-                childList: true,
-                attributes: true,
-                characterData: true
-            });
-            // Indicate page has not loaded, and carry over cached requests.
-            // Carry over requests that are not completed in the current point in time.
-            this.page.isLoaded = false;
-            this.requestCache.forEach(this.moveItemsFromCache);
-            this.requestCache.clear();
-        } else {
-            this.page.isLoaded = true;
-        }
+        ];
     }
 
-    /**
-     * Carry over XMLHttpRequests that are not done in the cache into ongoingActivity set.
-     * @param item : XMLHttpRequests or string (url+init) in the TrackerPlugin's cache.
-     */
-    private moveItemsFromCache = (item: any) => {
+    private moveItemsFromBuffer = (item: any) => {
         this.page.ongoingActivity.add(item);
     };
+
+    private createResumedPage(pageId: string) {
+        this.page = {
+            pageId,
+            parentPageId: this.resumed.pageId,
+            interaction: this.resumed.interaction + 1,
+            start: Date.now(),
+            ongoingActivity: new Set<XMLHttpRequest>(),
+            latestEndTime: Date.now()
+        };
+        this.page.isLoaded = true;
+    }
+
+    private createNextPage(pageId: string) {
+        this.page = {
+            pageId,
+            parentPageId: this.page.pageId,
+            interaction: this.page.interaction + 1,
+            start: Date.now(),
+            ongoingActivity: new Set<XMLHttpRequest>(),
+            latestEndTime: Date.now()
+        };
+    }
+
+    private createLandingPage(pageId: string) {
+        this.page = {
+            pageId,
+            interaction: 0,
+            start: Date.now(),
+            ongoingActivity: new Set<XMLHttpRequest>(),
+            latestEndTime: Date.now()
+        };
+        this.page.isLoaded = true;
+    }
 
     private collectAttributes() {
         this.attributes = {
@@ -293,57 +272,139 @@ export class PageManager {
      * (2) Record data using NavigationEvent
      * (3) Indicate current page has finished loading
      */
-    private checkActivities = () => {
+    private periodicActivityChecker = () => {
         if (this.page.ongoingActivity.size === 0 && this.fetchCounter === 0) {
-            clearInterval(this.periodicCheckId);
-            clearTimeout(this.timeoutCheckId);
+            clearInterval(this.periodicActivityCheckerId);
+            clearTimeout(this.activityTimeoutCheckerId);
             this.domMutationObserver.disconnect();
-            this.createNagivationEventWithSPATiming();
-            this.periodicCheckId = undefined;
-            this.timeoutCheckId = undefined;
+            this.recordVirtualPageNavigationEvent();
+            this.periodicActivityCheckerId = undefined;
+            this.activityTimeoutCheckerId = undefined;
             this.page.isLoaded = true;
         }
     };
 
-    /**
-     * Invoked when the page load has timed out.
-     * No data will be recorded, and the current page is marked as loaded.
-     */
-    private timedOut = () => {
-        clearInterval(this.periodicCheckId);
-        this.periodicCheckId = undefined;
-        this.timeoutCheckId = undefined;
+    /** Clears timers and disconnects observer to stop page timing. */
+    private activityTimeoutCallback = () => {
+        clearInterval(this.periodicActivityCheckerId);
+        this.periodicActivityCheckerId = undefined;
+        this.activityTimeoutCheckerId = undefined;
+        this.domMutationObserver.disconnect();
         this.page.isLoaded = true;
     };
 
-    private createNagivationEventWithSPATiming() {
-        const routeChangeNavigationEvent: NavigationEvent = {
+    /** Resets periodic check timer and updates page's latestEndTime. */
+    private domMutationCallback = () => {
+        this.page.latestEndTime = Math.max(this.page.latestEndTime, Date.now());
+        clearInterval(this.periodicActivityCheckerId);
+        this.periodicActivityCheckerId = setInterval(
+            this.periodicActivityChecker,
+            this.PERIODIC_CHECKER_INTERVAL
+        );
+    };
+
+    private recordVirtualPageNavigationEvent() {
+        const virtualPageNavigationEvent: NavigationEvent = {
             version: '1.0.0',
             initiatorType: 'route_change',
             navigationType: 'navigate',
             startTime: this.page.start,
             duration: this.page.latestEndTime - this.page.start
         };
-
         if (this.record) {
             this.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
-                routeChangeNavigationEvent
+                virtualPageNavigationEvent
             );
         }
     }
 
     /**
-     * Invoked whenever mutationObserver identifies a change in DOM on a document level.
-     * (1) Updates current page's latestEndTime
-     * (2) Resets the periodicChecker interval
+     * Removes the current event from either requestBuffer or ongoingActivity set.
+     * @param event
      */
-    private mutationCallback = () => {
-        this.page.latestEndTime = Math.max(this.page.latestEndTime, Date.now());
-        clearInterval(this.periodicCheckId);
-        this.periodicCheckId = setInterval(
-            this.checkActivities,
-            this.PERIODIC_TIME
-        );
+    private endTracking = (e: Event) => {
+        const currTime = Date.now();
+        const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
+        xhr.removeEventListener('loadend', this.endTracking);
+        this.removeXhr(xhr, currTime);
     };
+
+    private sendWrapper = (): ((original: Send) => Send) => {
+        const self = this;
+
+        return (original: Send): Send => {
+            return function (this: XMLHttpRequest): void {
+                self.recordXhr(this);
+                this.addEventListener('loadend', self.endTracking);
+                return original.apply(this, arguments);
+            };
+        };
+    };
+
+    private recordXhr(item: XMLHttpRequest) {
+        const page = this.page;
+        if (page && page.isLoaded !== null && page.isLoaded === false) {
+            page.ongoingActivity.add(item);
+        } else {
+            this.requestBuffer.add(item);
+        }
+    }
+
+    private removeXhr(item: XMLHttpRequest, currTime: number) {
+        const page = this.page;
+        if (page && page.ongoingActivity.has(item)) {
+            page.ongoingActivity.delete(item);
+            page.latestEndTime = Math.max(page.latestEndTime, currTime);
+        } else if (this.requestBuffer.has(item)) {
+            this.requestBuffer.delete(item);
+        }
+    }
+
+    private fetch = (
+        original: Fetch,
+        thisArg: Fetch,
+        argsArray: IArguments,
+        input: RequestInfo,
+        init?: RequestInit
+    ): Promise<Response> => {
+        const self = this;
+        return original
+            .apply(thisArg, argsArray)
+            .then((response: Response) => {
+                self.updateFetchCounter();
+            })
+            .catch((error) => {
+                self.updateFetchCounter();
+            });
+    };
+
+    /**
+     * Increment the fetch counter in PageManager when fetch is beginning
+     */
+    private fetchWrapper = (): ((
+        original: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+    ) => (input: RequestInfo, init?: RequestInit) => Promise<Response>) => {
+        const self = this;
+        return (original: Fetch): Fetch => {
+            return function (
+                this: Fetch,
+                input: RequestInfo,
+                init?: RequestInit
+            ): Promise<Response> {
+                self.fetchCounter += 1;
+                return self.fetch(original, this, arguments, input, init);
+            };
+        };
+    };
+
+    private updateFetchCounter() {
+        const page = this.page;
+        if (!page.isLoaded) {
+            page.latestEndTime = Math.max(page.latestEndTime, Date.now());
+        }
+        if (this.fetchCounter > 0) {
+            this.fetchCounter -= 1;
+        }
+    }
 }

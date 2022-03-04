@@ -4,7 +4,6 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     allowCookies: true,
     dispatchInterval: 0,
     disableAutoPageView: false,
-    enableSpaTracking: true,
     telemetries: ['performance', 'http'],
     pageIdFormat: 'PATH_AND_HASH',
     clientBuilder: showRequestClientBuilder
