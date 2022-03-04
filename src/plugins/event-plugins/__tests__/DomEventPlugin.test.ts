@@ -255,7 +255,7 @@ describe('DomEventPlugin tests', () => {
             })
         );
     });
-  
+
     test('when a DOM event is added at runtime then the DOM event is recorded', async () => {
         // Init
         document.body.innerHTML =
@@ -283,7 +283,7 @@ describe('DomEventPlugin tests', () => {
             })
         );
     });
-  
+
     test('when listening for a click on a dynamically added element given an element id, the event is recorded', async () => {
         // Init
         const plugin: DomEventPlugin = new DomEventPlugin({

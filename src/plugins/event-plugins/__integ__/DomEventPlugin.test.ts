@@ -15,6 +15,8 @@ const button2: Selector = Selector(`#button2`);
 const button3: Selector = Selector(`#button3`);
 
 const registerDomEvents: Selector = Selector(`#registerDomEvents`);
+const dynamicallyCreateButton: Selector = Selector(`#dynamicallyCreateButton`);
+const button4: Selector = Selector(`#button4`);
 const button5: Selector = Selector(`#button5`);
 
 const dispatch: Selector = Selector(`#dispatch`);

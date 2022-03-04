@@ -22,10 +22,6 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
                 {
                     event: 'click',
                     elementId: 'button4'
-                },
-                {
-                    event: 'click',
-                    cssLocator: '[label="label2"]'
                 }
             ]
         })
