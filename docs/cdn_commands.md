@@ -17,7 +17,7 @@ Commands may be sent to the web client after the snippet has executed. In the fo
             disableAutoPageView: true
         }
     );
-    cwr('recordPageView', '[window.location.hash, initial_load]');
+    cwr('recordPageView', window.location.hash);
     const awsCreds = localStorage.getItem('customAwsCreds');
     if(awsCreds) cwr('setAwsCredentials', awsCreds)
 </script>

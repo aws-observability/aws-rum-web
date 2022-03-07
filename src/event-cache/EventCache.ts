@@ -2,7 +2,7 @@ import { Session, SessionManager } from '../sessions/SessionManager';
 import { v4 } from 'uuid';
 import { MetaData } from '../events/meta-data';
 import { Config } from '../orchestration/Orchestration';
-import { PageManager, Page } from '../sessions/PageManager';
+import { PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
     UserDetails,

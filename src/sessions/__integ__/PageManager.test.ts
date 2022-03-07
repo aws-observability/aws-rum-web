@@ -21,7 +21,7 @@ test('PageViewEventPlugin records landing page view event', async (t: TestContro
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
-        .wait(3000)
+        .wait(300)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');

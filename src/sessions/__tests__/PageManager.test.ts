@@ -1,6 +1,13 @@
 import { advanceTo } from 'jest-date-mock';
 import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import {
+    DEFAULT_CONFIG,
+    mockFetch,
+    mockFetchWith500,
+    mockFetchWithError,
+    mockFetchWithErrorObject,
+    mockFetchWithErrorObjectAndStack
+} from '../../test-utils/test-utils';
 import { Config } from '../../orchestration/Orchestration';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../plugins/utils/constant';
 import mock from 'xhr-mock';
@@ -13,48 +20,7 @@ Object.defineProperty(document, 'referrer', {
     value: 'https://console.aws.amazon.com'
 });
 Object.defineProperty(document, 'title', { value: 'Amazon AWS Console' });
-
-const mockFetch = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.resolve({
-            status: 200,
-            statusText: 'OK',
-            headers: new Headers({ 'Content-Length': '125' }),
-            body: '{}',
-            ok: true
-        } as any)
-);
 global.fetch = mockFetch;
-
-const mockFetchWith500 = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.resolve({
-            status: 500,
-            statusText: 'InternalError',
-            headers: {},
-            body: '',
-            ok: false
-        } as any)
-);
-
-const mockFetchWithError = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.reject('Timeout')
-);
-
-const mockFetchWithErrorObject = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.reject(new Error('Timeout'))
-);
-
-const mockFetchWithErrorObjectAndStack = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.reject({
-            name: 'FetchError',
-            message: 'timeout',
-            stack: 'stack trace'
-        })
-);
 
 describe('PageManager tests', () => {
     let url;
@@ -676,7 +642,6 @@ describe('PageManager tests', () => {
     test('when fetch returns error object and stack trace then fetchCounter should be increased and decreased', async () => {
         // Init
         global.fetch = mockFetchWithErrorObjectAndStack;
-        global.fetch = mockFetchWithErrorObject;
         const config: Config = {
             ...DEFAULT_CONFIG,
             allowCookies: true
