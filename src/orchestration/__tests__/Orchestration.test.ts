@@ -19,11 +19,13 @@ jest.mock('../../dispatch/Dispatch', () => ({
 
 const enableEventCache = jest.fn();
 const disableEventCache = jest.fn();
+const enableMonkeyPatch = jest.fn();
 
 jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
-        disable: disableEventCache
+        disable: disableEventCache,
+        enablePageManagerMonkeyPatch: enableMonkeyPatch
     }))
 }));
 

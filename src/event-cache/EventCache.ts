@@ -61,6 +61,11 @@ export class EventCache {
         this.enabled = false;
     }
 
+    /** Enable pageManager's monkey patch on the fetch and xhr methods */
+    public enablePageManagerMonkeyPatch(): void {
+        this.pageManager.enable();
+    }
+
     /**
      * Update the current page interaction for the session.
      */
@@ -91,13 +96,6 @@ export class EventCache {
                 this.addRecordToCache(type, eventData);
             }
         }
-    };
-
-    /**
-     * Returns the current Page object.
-     */
-    public getCurrentPage = (): Page => {
-        return this.pageManager.getPage();
     };
 
     /**

@@ -6,9 +6,6 @@ export const PAGE_EVENT_PLUGIN_ID = 'com.amazonaws.rum.page-view';
 
 export type Push = (data: any, title: string, url?: string | null) => void;
 export type Replace = (data: any, title: string, url?: string | null) => void;
-export type ClickInfo = {
-    timestamp: number;
-};
 
 /**
  * A plugin which records page view transitions.

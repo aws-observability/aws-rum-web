@@ -39,9 +39,9 @@
             function timeoutLoad() {
                 createXMLRequest();
                 window.history.pushState(
-                    { state: 'one' },
-                    'Page One',
-                    '/page_view_one?search=foo#hash1'
+                    { state: 'two' },
+                    'Page Two',
+                    '/page_view_two?search=foo#hash2'
                 );
                 for (let i = 0; i < 40; i++) {
                     setTimeout(domMutation, 99);

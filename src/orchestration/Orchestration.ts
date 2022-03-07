@@ -36,12 +36,6 @@ interface TelemetriesFunctor {
 
 type Telemetry = string | (string | object)[];
 
-export enum PAGE_TYPE {
-    RESUME = 'resume_page',
-    LANDING = 'landing_page',
-    NEXT = 'next_page'
-}
-
 export enum PAGE_ID_FORMAT {
     PATH = 'PATH',
     HASH = 'HASH',
@@ -223,6 +217,8 @@ export class Orchestration {
 
         if (this.config.enableRumClient) {
             this.enable();
+            // Enable pageManager's monkey patch after xhrPlugin and fetchPlugin are initialized
+            this.eventCache.enablePageManagerMonkeyPatch();
         } else {
             this.disable();
         }

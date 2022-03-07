@@ -458,6 +458,243 @@ describe('PageManager tests', () => {
         );
     });
 
+    test('when dom mutation occurs then periodic checker is resetted', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/home');
+
+        // Before mutation
+        const intervalId = pageManager['periodicCheckerId'];
+        const timeoutId = pageManager['activityTimeoutCheckerId'];
+
+        // Invoking private callback for testing, as mutationObserver does not work well with jest
+        pageManager['domMutationCallback']();
+
+        // After mutation, only periodic check timer id changes
+        expect(intervalId).not.toEqual(pageManager['periodicCheckerId']);
+        expect(timeoutId).toEqual(pageManager['activityTimeoutCheckerId']);
+
+        // Two page view events created
+        expect(record.mock.calls.length).toEqual(2);
+        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            pageId: '/console/home',
+            interaction: 1
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when there is no pageId difference then no pages are created', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(record.mock.calls.length).toEqual(1);
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            pageId: '/rum/home',
+            interaction: 0
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+    test('when XMLHttpRequest is detected when page is loaded then it is added to requestBuffer', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // requestBuffer should contain the xhr until request is completed
+        expect(pageManager.getPage().ongoingActivity.size).toEqual(0);
+        expect(pageManager['requestBuffer'].has(xhr)).toEqual(true);
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // requestBuffer should no longer contain xhr
+        expect(pageManager['requestBuffer'].size).toEqual(0);
+
+        // Current page's latestEndTime should not be updated
+        expect(pageManager.getPage().latestEndTime).toEqual(0);
+        expect(pageManager.getPage().ongoingActivity.size).toEqual(0);
+    });
+
+    test('when XMLHttpRequest is detected when page is not loaded then it is added to ongoingActivity', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/home');
+
+        // Mocking Date.now to return 100 to simulate time passed
+        Date.now = jest.fn(() => 100);
+        // Run
+        const xhr = new XMLHttpRequest();
+
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // requestBuffer should contain the xhr until request is completed
+        expect(pageManager.getPage().ongoingActivity.size).toEqual(1);
+        expect(pageManager['requestBuffer'].has(xhr)).toEqual(false);
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Current page's latestEndTime should be updated and ongoingActivity is empty
+        expect(pageManager['requestBuffer'].size).toEqual(0);
+        expect(pageManager.getPage().latestEndTime).toEqual(100);
+        expect(pageManager.getPage().ongoingActivity.size).toEqual(0);
+    });
+
+    test('when fetch is detected then fetchCounter should be increased and decreased', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // @ts-ignore
+        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/home');
+        // When fetch initially is sent, fetchCounter should be incremented to 1
+        await fetch('https://aws.amazon.com');
+
+        // Upon completion, fetchCounter should be decremented to 0
+        expect(pageManager['fetchCounter']).toEqual(0);
+        expect(updateCounter).toBeCalledTimes(1);
+    });
+
+    test('when fetch returns 500 then fetchCounter should be increased and decreased', async () => {
+        // Init
+        global.fetch = mockFetchWith500;
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // @ts-ignore
+        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
+
+        // When fetch initially is sent, fetchCounter should be incremented to 1
+        await fetch('https://aws.amazon.com');
+
+        // Even with 500 response, fetchCounter should be decremented to 0
+        expect(pageManager['fetchCounter']).toEqual(0);
+        expect(updateCounter).toBeCalledTimes(1);
+    });
+
+    test('when fetch returns error then fetchCounter should be increased and decreased', async () => {
+        // Init
+        global.fetch = mockFetchWithError;
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // @ts-ignore
+        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
+
+        // When fetch initially is sent, fetchCounter should be incremented to 1
+        await fetch('https://aws.amazon.com');
+
+        // Even with 500 response, fetchCounter should be decremented to 0
+        expect(pageManager['fetchCounter']).toEqual(0);
+        expect(updateCounter).toBeCalledTimes(1);
+    });
+
+    test('when fetch returns error object then fetchCounter should be increased and decreased', async () => {
+        // Init
+        global.fetch = mockFetchWithErrorObject;
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // @ts-ignore
+        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
+
+        // When fetch initially is sent, fetchCounter should be incremented to 1
+        await fetch('https://aws.amazon.com');
+
+        // Even with 500 response, fetchCounter should be decremented to 0
+        expect(pageManager['fetchCounter']).toEqual(0);
+        expect(updateCounter).toBeCalledTimes(1);
+    });
+
+    test('when fetch returns error object and stack trace then fetchCounter should be increased and decreased', async () => {
+        // Init
+        global.fetch = mockFetchWithErrorObjectAndStack;
+        global.fetch = mockFetchWithErrorObject;
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.enable();
+
+        // @ts-ignore
+        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
+
+        // When fetch initially is sent, fetchCounter should be incremented to 1
+        await fetch('https://aws.amazon.com');
+
+        // Even with 500 response, fetchCounter should be decremented to 0
+        expect(pageManager['fetchCounter']).toEqual(0);
+        expect(updateCounter).toBeCalledTimes(1);
+    });
+
     test('when next page is created then recordVirtualPageNavigationEvent is invoked', async () => {
         // Setting up fake timer to invoke periodic tasks
         jest.useFakeTimers();
@@ -602,236 +839,5 @@ describe('PageManager tests', () => {
             'popstate',
             (pageManager as any).popstateListener
         );
-    });
-
-    test('when dom mutation occurs then periodic checker is resetted', async () => {
-        // Init
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // Run
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/console/home');
-
-        // Before mutation
-        const intervalId = pageManager['periodicCheckerId'];
-        const timeoutId = pageManager['activityTimeoutCheckerId'];
-
-        // Invoking private callback for testing, as mutationObserver does not work well with jest
-        pageManager['domMutationCallback']();
-
-        // After mutation, only periodic check timer id changes
-        expect(intervalId).not.toEqual(pageManager['periodicCheckerId']);
-        expect(timeoutId).toEqual(pageManager['activityTimeoutCheckerId']);
-
-        // Two page view events created
-        expect(record.mock.calls.length).toEqual(2);
-        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[1][1]).toMatchObject({
-            pageId: '/console/home',
-            interaction: 1
-        });
-
-        window.removeEventListener(
-            'popstate',
-            (pageManager as any).popstateListener
-        );
-    });
-
-    test('when there is no pageId difference then no pages are created', async () => {
-        // Init
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // Run
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/rum/home');
-
-        // Assert
-        expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[0][1]).toMatchObject({
-            pageId: '/rum/home',
-            interaction: 0
-        });
-
-        window.removeEventListener(
-            'popstate',
-            (pageManager as any).popstateListener
-        );
-    });
-    // Commenting out due to timeout occurring. Will include the two tests and nightwatch case in next revision.
-    // test('when XMLHttpRequest is detected when page is loaded then it is added to requestBuffer', async () => {
-    //     // Init
-    //     const config: Config = {
-    //         ...DEFAULT_CONFIG,
-    //         allowCookies: true
-    //     };
-    //     const pageManager: PageManager = new PageManager(config, record);
-
-    //     // Run
-    //     pageManager.recordPageView('/rum/home');
-
-    //     // Run
-    //     const xhr = new XMLHttpRequest();
-    //     xhr.open('GET', './response.json', true);
-    //     xhr.send();
-
-    //     // requestBuffer should contain the xhr until request is completed
-    //     expect(pageManager.getPage().ongoingActivity.size).toEqual(0);
-    //     expect(pageManager['requestBuffer'].has(xhr)).toEqual(true);
-
-    //     // Yield to the event queue so the event listeners can run
-    //     await new Promise((resolve) => setTimeout(resolve, 0));
-
-    //     // requestBuffer should no longer contain xhr
-    //     expect(pageManager['requestBuffer'].size).toEqual(0);
-
-    //     // Current page's latestEndTime should not be updated
-    //     expect(pageManager.getPage().latestEndTime).toEqual(0);
-    //     expect(pageManager.getPage().ongoingActivity.size).toEqual(0);
-    // });
-
-    // test('when XMLHttpRequest is detected when page is not loaded then it is added to ongoingActivity', async () => {
-    //     // Init
-    //     const config: Config = {
-    //         ...DEFAULT_CONFIG,
-    //         allowCookies: true
-    //     };
-    //     const pageManager: PageManager = new PageManager(config, record);
-
-    //     // Run
-    //     pageManager.recordPageView('/rum/home');
-    //     pageManager.recordPageView('/console/home');
-
-    //     // Mocking Date.now to return 100 to simulate time passed
-    //     Date.now = jest.fn(() => 100);
-    //     // Run
-    //     const xhr = new XMLHttpRequest();
-
-    //     xhr.open('GET', './response.json', true);
-    //     xhr.send();
-
-    //     // requestBuffer should contain the xhr until request is completed
-    //     expect(pageManager.getPage().ongoingActivity.size).toEqual(1);
-    //     expect(pageManager['requestBuffer'].has(xhr)).toEqual(false);
-
-    //     // Yield to the event queue so the event listeners can run
-    //     await new Promise((resolve) => setTimeout(resolve, 0));
-
-    //     // Current page's latestEndTime should be updated and ongoingActivity is empty
-    //     expect(pageManager['requestBuffer'].size).toEqual(0);
-    //     expect(pageManager.getPage().latestEndTime).toEqual(100);
-    //     expect(pageManager.getPage().ongoingActivity.size).toEqual(0);
-    // });
-
-    test('when fetch is detected then fetchCounter should be increased and decreased', async () => {
-        // Init
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // @ts-ignore
-        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
-
-        // Run
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/console/home');
-        // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
-
-        // Upon completion, fetchCounter should be decremented to 0
-        expect(pageManager['fetchCounter']).toEqual(0);
-        expect(updateCounter).toBeCalledTimes(1);
-    });
-
-    test('when fetch returns 500 then fetchCounter should be increased and decreased', async () => {
-        // Init
-        global.fetch = mockFetchWith500;
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // @ts-ignore
-        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
-
-        // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
-
-        // Even with 500 response, fetchCounter should be decremented to 0
-        expect(pageManager['fetchCounter']).toEqual(0);
-        expect(updateCounter).toBeCalledTimes(1);
-    });
-
-    test('when fetch returns error then fetchCounter should be increased and decreased', async () => {
-        // Init
-        global.fetch = mockFetchWithError;
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // @ts-ignore
-        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
-
-        // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
-
-        // Even with 500 response, fetchCounter should be decremented to 0
-        expect(pageManager['fetchCounter']).toEqual(0);
-        expect(updateCounter).toBeCalledTimes(1);
-    });
-
-    test('when fetch returns error object then fetchCounter should be increased and decreased', async () => {
-        // Init
-        global.fetch = mockFetchWithErrorObject;
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // @ts-ignore
-        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
-
-        // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
-
-        // Even with 500 response, fetchCounter should be decremented to 0
-        expect(pageManager['fetchCounter']).toEqual(0);
-        expect(updateCounter).toBeCalledTimes(1);
-    });
-
-    test('when fetch returns error object and stack trace then fetchCounter should be increased and decreased', async () => {
-        // Init
-        global.fetch = mockFetchWithErrorObjectAndStack;
-        global.fetch = mockFetchWithErrorObject;
-        const config: Config = {
-            ...DEFAULT_CONFIG,
-            allowCookies: true
-        };
-        const pageManager: PageManager = new PageManager(config, record);
-
-        // @ts-ignore
-        const updateCounter = jest.spyOn(pageManager, 'updateFetchCounter');
-
-        // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
-
-        // Even with 500 response, fetchCounter should be decremented to 0
-        expect(pageManager['fetchCounter']).toEqual(0);
-        expect(updateCounter).toBeCalledTimes(1);
     });
 });

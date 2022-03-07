@@ -1,4 +1,4 @@
-import { Config, PAGE_TYPE } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/Plugin';
 import { PageViewEvent } from '../events/page-view-event';
 import { NavigationEvent } from '../events/navigation-event';
@@ -87,11 +87,6 @@ export class PageManager extends MonkeyPatched {
             ? this.config.spaActivityTimeoutLimit
             : 1000;
         this.fetchCounter = 0;
-        this.load();
-    }
-
-    public load(): void {
-        this.enable();
     }
 
     public getPage(): Page | undefined {
