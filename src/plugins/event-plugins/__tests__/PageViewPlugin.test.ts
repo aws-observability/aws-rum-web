@@ -196,7 +196,7 @@ describe('PageViewPlugin tests', () => {
         );
     });
 
-    test('when route change occurs after initial load then two page view events are recorded', async () => {
+    test('when route change occurs after initial load then recordPageView is invoked twice', async () => {
         // Init
         const plugin = new PageViewPlugin();
 
@@ -214,48 +214,9 @@ describe('PageViewPlugin tests', () => {
         expect((context.recordPageView as any).mock.calls[0][0]).toEqual(
             PAGE_VIEW_LANDING_PATH_AND_HASH_PAGE_ID
         );
-        // expect((context.recordPageView as any).mock.calls[0][1]).toEqual(
-        //     PAGE_INVOKE_TYPE.INITIAL_LOAD
-        // );
-        // expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
-        //     PAGE_VIEW_ONE_EXPECTED_PAGE_ID
-        // );
-        // expect((context.recordPageView as any).mock.calls[1][1]).toEqual(
-        //     PAGE_INVOKE_TYPE.ROUTE_CHANGE
-        // );
-
-        // Resetting
-        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
-        window.removeEventListener(
-            'popstate',
-            (plugin as any).popstateListener
+        expect((context.recordPageView as any).mock.calls[1][0]).toEqual(
+            '/page_view_one'
         );
-    });
-
-    test('when there is no url change then only initial page view event is recorded', async () => {
-        // Init
-        const plugin = new PageViewPlugin();
-        const mockCalls = (context.recordPageView as any).mock.calls.length;
-        console.log(mockCalls);
-
-        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH_AND_HASH;
-        plugin.load(context);
-
-        // Run
-        window.history.pushState(
-            { state: 'one' },
-            'Page One',
-            PAGE_VIEW_LANDING_PATH_AND_HASH_PAGE_ID
-        );
-
-        // Assert
-        expect((context.recordPageView as any).mock.calls.length).toEqual(1);
-        expect((context.recordPageView as any).mock.calls[0][0]).toEqual(
-            PAGE_VIEW_LANDING_PATH_AND_HASH_PAGE_ID
-        );
-        // expect((context.recordPageView as any).mock.calls[0][1]).toEqual(
-        //     PAGE_INVOKE_TYPE.INITIAL_LOAD
-        // );
 
         // Resetting
         context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;

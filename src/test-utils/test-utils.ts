@@ -147,3 +147,44 @@ export const getReadableStream = (mockString: string) =>
             c.close();
         }
     });
+
+export const mockFetch = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.resolve({
+            status: 200,
+            statusText: 'OK',
+            headers: new Headers({ 'Content-Length': '125' }),
+            body: '{}',
+            ok: true
+        } as any)
+);
+
+export const mockFetchWith500 = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.resolve({
+            status: 500,
+            statusText: 'InternalError',
+            headers: {},
+            body: '',
+            ok: false
+        } as any)
+);
+
+export const mockFetchWithError = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.reject('Timeout')
+);
+
+export const mockFetchWithErrorObject = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.reject(new Error('Timeout'))
+);
+
+export const mockFetchWithErrorObjectAndStack = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.reject({
+            name: 'FetchError',
+            message: 'timeout',
+            stack: 'stack trace'
+        })
+);

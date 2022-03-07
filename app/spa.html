@@ -9,43 +9,87 @@
             type="image/png"
             href="https://awsmedia.s3.amazonaws.com/favicon.ico"
         />
-        <link href="assets/css/style.css" rel="stylesheet" />
         <script>
-            function createJSError() {
-                // TypeError: null has no properties
-                null.foo;
-            }
-
-            function onSubmitCommand() {
-                const command = document.getElementById('command').value;
-                if (document.getElementById('payload').value) {
-                    const payload = JSON.parse(
-                        document.getElementById('payload').value
-                    );
-                    cwr(command, payload);
-                } else {
-                    cwr(command);
+            function successfulLoad() {
+                createXMLRequest();
+                window.history.pushState(
+                    { state: 'one' },
+                    'Page One',
+                    '/page_view_one?search=foo#hash1'
+                );
+                for (let i = 0; i < 40; i++) {
+                    setTimeout(domMutation, 80);
                 }
             }
 
-            function renderStrawberry() {
-                // Invoke AJAX requests via XMLHttpRequest and fetch prior to route change detection
-                createXMLRequest();
-                sendFetchWithParam();
-                sendFetchWithoutParam();
-                window.location.hash = 'strawberries';
+            function dispatch() {
+                cwr('dispatch');
             }
 
-            // Dummy AJAX Request
+            function clearRequestResponse() {
+                document.getElementById('request_url').innerText = '';
+                document.getElementById('request_header').innerText = '';
+                document.getElementById('request_body').innerText = '';
+
+                document.getElementById('response_status').innerText = '';
+                document.getElementById('response_header').innerText = '';
+                document.getElementById('response_body').innerText = '';
+            }
+
+            function timeoutLoad() {
+                createXMLRequest();
+                window.history.pushState(
+                    { state: 'one' },
+                    'Page One',
+                    '/page_view_one?search=foo#hash1'
+                );
+                for (let i = 0; i < 40; i++) {
+                    setTimeout(domMutation, 99);
+                }
+                for (let i = 0; i < 30; i++) {
+                    createXMLRequest();
+                }
+            }
+
+            function defaultState() {
+                createXMLRequest();
+                window.history.replaceState(
+                    { state: 'one' },
+                    'Page Ten',
+                    '/page_event.html'
+                );
+                domMutation();
+            }
+
+            function back() {
+                createXMLRequest();
+                window.history.back();
+                domMutation();
+            }
+
+            function forward() {
+                createXMLRequest();
+                window.history.forward();
+                domMutation();
+            }
+
+            function go(number) {
+                createXMLRequest();
+                window.history.go(number);
+                domMutation();
+                domMutation();
+            }
+
             function createXMLRequest() {
                 var xhr = new XMLHttpRequest((async = true));
                 var url =
                     'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/abc123/';
                 xhr.open('GET', url, true);
                 xhr.send();
+
+                setTimeout(sendFetchWithParam, 20);
             }
 
-            // Dummy Fetch Request with parameters
             function sendFetchWithParam() {
                 fetch(
                     'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/abc123/',
@@ -57,13 +101,38 @@
                         })
                     }
                 );
+
+                setTimeout(sendFetchWithoutParam, 20);
             }
 
-            // Dummy Fetch Request without parameters
             function sendFetchWithoutParam() {
                 fetch(
                     'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/abc123/'
                 );
+            }
+
+            function domMutation() {
+                createElement();
+                modifyAttribute();
+                deleteElement();
+            }
+
+            function createElement() {
+                const div = document.createElement('div');
+                div.setAttribute('id', 'mockMutation');
+                const welcome = document.getElementById('welcome');
+                document.body.insertBefore(div, welcome);
+            }
+
+            function modifyAttribute() {
+                const div = document.getElementById('mockMutation');
+                div.setAttribute('id', 'newMutation');
+                div.style.background = 'red';
+            }
+
+            function deleteElement() {
+                const div = document.getElementById('newMutation');
+                div.remove();
             }
         </script>
 
@@ -85,54 +154,17 @@
 
     <body>
         <p id="welcome">This application is used for RUM integ testing.</p>
-        <form>
-            <label for="command">Command : </label>
-            <input type="text" id="command" /><br /><br />
-            <label for="payload">Payload : </label>
-            <textarea id="payload"></textarea><br /><br />
-            <input
-                type="button"
-                id="submit"
-                value="Submit"
-                onclick="onSubmitCommand()"
-            />
-        </form>
-        <br />
-        <button id="button1">Test ClickEvent1</button>
-        <button id="button2">Test ClickEvent2</button>
-        <button id="createJSError" onclick="createJSError()">
-            Create JS Error
+        <hr />
+        <button id="successfulLoad" onclick="successfulLoad()">
+            successfulLoad
         </button>
-        <script>
-            function createJSError() {
-                // TypeError: null has no properties
-                null.foo;
-            }
-        </script>
-        <script>
-            function createHTTPError() {
-                var xhr = new XMLHttpRequest();
-                xhr.open(
-                    'POST',
-                    'https://www.google-analytics.com/collect',
-                    true
-                );
-                xhr.setRequestHeader('Content-type', 'application/json');
-                xhr.send();
-            }
-        </script>
-        <script>
-            function disallowCookies() {
-                cwr('allowCookies', false);
-            }
-        </script>
-        <button id="createHTTPError" onclick="createHTTPError()">
-            Create HTTP Error
+        <button id="timeoutLoad" onclick="timeoutLoad()">timeoutLoad</button>
+        <hr />
+        <button id="dispatch" onclick="dispatch()">Dispatch</button>
+        <button id="clearRequestResponse" onclick="clearRequestResponse()">
+            Clear
         </button>
-        <button id="randomSessionClick">Random Session click</button>
-        <button id="disallowCookies" onclick="disallowCookies()">
-            Disallow Cookies
-        </button>
+        <hr />
         <span id="request"></span>
         <span id="response"></span>
         <table>
@@ -163,25 +195,5 @@
                 <td id="response_body"></td>
             </tr>
         </table>
-        <div class="main-content">
-            <div class="base page">
-                <button id="click-me" onclick="renderStrawberry()">
-                    I want Strawberries
-                </button>
-            </div>
-
-            <div class="strawberry page">
-                <div class="overlay" id="overlay"></div>
-                <div class="strawberry-large">
-                    <h3>STRAWBERRY</h3>
-                    <img src="" />
-                    <p></p>
-                    <span id="close" class="close">×</span>
-                </div>
-            </div>
-        </div>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
-        <script src="assets/js/script.js"></script>
     </body>
 </html>

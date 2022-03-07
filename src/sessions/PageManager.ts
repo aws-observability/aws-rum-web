@@ -44,7 +44,7 @@ export class PageManager extends MonkeyPatched {
     private attributes: Attributes | undefined;
 
     /** Unique ID of periodic activity checker for virtual page loads. */
-    private periodicActivityCheckerId;
+    private periodicCheckerId;
     /** Unique ID of activity timeout Timer object */
     private activityTimeoutCheckerId;
     /** Observer to liten for DOM changes */
@@ -76,7 +76,7 @@ export class PageManager extends MonkeyPatched {
         this.resumed = undefined;
         this.recordInteraction = false;
 
-        this.periodicActivityCheckerId = undefined;
+        this.periodicCheckerId = undefined;
         this.activityTimeoutCheckerId = undefined;
         this.domMutationObserver = new MutationObserver(
             this.domMutationCallback
@@ -127,8 +127,8 @@ export class PageManager extends MonkeyPatched {
             this.createNextPage(pageId);
 
             // Clean up existing timer objects and mutationObserver
-            if (this.periodicActivityCheckerId) {
-                clearInterval(this.periodicActivityCheckerId);
+            if (this.periodicCheckerId) {
+                clearInterval(this.periodicCheckerId);
             }
             if (this.activityTimeoutCheckerId) {
                 clearTimeout(this.activityTimeoutCheckerId);
@@ -136,8 +136,8 @@ export class PageManager extends MonkeyPatched {
             this.domMutationObserver.disconnect();
 
             // Initialize timer objects and start observing
-            this.periodicActivityCheckerId = setInterval(
-                this.periodicActivityChecker,
+            this.periodicCheckerId = setInterval(
+                this.periodicCheckerCallback,
                 this.PERIODIC_CHECKER_INTERVAL
             );
             this.activityTimeoutCheckerId = setTimeout(
@@ -182,9 +182,95 @@ export class PageManager extends MonkeyPatched {
         ];
     }
 
-    private moveItemsFromBuffer = (item: any) => {
-        this.page.ongoingActivity.add(item);
+    private sendWrapper = (): ((original: Send) => Send) => {
+        const self = this;
+
+        return (original: Send): Send => {
+            return function (this: XMLHttpRequest): void {
+                self.recordXhr(this);
+                this.addEventListener('loadend', self.endTracking);
+                return original.apply(this, arguments);
+            };
+        };
     };
+
+    private recordXhr(item: XMLHttpRequest) {
+        const page = this.page;
+        if (page && page.isLoaded !== null && page.isLoaded === false) {
+            page.ongoingActivity.add(item);
+        } else {
+            this.requestBuffer.add(item);
+        }
+    }
+
+    private removeXhr(item: XMLHttpRequest, currTime: number) {
+        const page = this.page;
+        if (page && page.ongoingActivity.has(item)) {
+            page.ongoingActivity.delete(item);
+            page.latestEndTime = Math.max(page.latestEndTime, currTime);
+        } else if (this.requestBuffer.has(item)) {
+            this.requestBuffer.delete(item);
+        }
+    }
+
+    /**
+     * Removes the current event from either requestBuffer or ongoingActivity set.
+     * @param event
+     */
+    private endTracking = (e: Event) => {
+        const currTime = Date.now();
+        const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
+        xhr.removeEventListener('loadend', this.endTracking);
+        this.removeXhr(xhr, currTime);
+    };
+
+    private fetch = (
+        original: Fetch,
+        thisArg: Fetch,
+        argsArray: IArguments,
+        input: RequestInfo,
+        init?: RequestInit
+    ): Promise<Response> => {
+        const self = this;
+        return original
+            .apply(thisArg, argsArray)
+            .then((response: Response) => {
+                self.updateFetchCounter();
+            })
+            .catch((error) => {
+                self.updateFetchCounter();
+            });
+    };
+
+    /**
+     * Increment the fetch counter in PageManager when fetch is beginning
+     */
+    private fetchWrapper = (): ((
+        original: (input: RequestInfo, init?: RequestInit) => Promise<Response>
+    ) => (input: RequestInfo, init?: RequestInit) => Promise<Response>) => {
+        const self = this;
+        return (original: Fetch): Fetch => {
+            return function (
+                this: Fetch,
+                input: RequestInfo,
+                init?: RequestInit
+            ): Promise<Response> {
+                self.fetchCounter += 1;
+                return self.fetch(original, this, arguments, input, init);
+            };
+        };
+    };
+
+    private updateFetchCounter() {
+        const page = this.page;
+        // prevent NPE
+        if (page && !page.isLoaded) {
+            page.latestEndTime = Math.max(page.latestEndTime, Date.now());
+        }
+        if (this.fetchCounter > 0) {
+            this.fetchCounter -= 1;
+        }
+    }
 
     private createResumedPage(pageId: string) {
         this.page = {
@@ -258,6 +344,10 @@ export class PageManager extends MonkeyPatched {
         this.record(PAGE_VIEW_TYPE, this.createPageViewEvent());
     }
 
+    private moveItemsFromBuffer = (item: any) => {
+        this.page.ongoingActivity.add(item);
+    };
+
     /**
      * Returns true when cookies should be used to store user ID and session ID.
      */
@@ -272,13 +362,13 @@ export class PageManager extends MonkeyPatched {
      * (2) Record data using NavigationEvent
      * (3) Indicate current page has finished loading
      */
-    private periodicActivityChecker = () => {
+    private periodicCheckerCallback = () => {
         if (this.page.ongoingActivity.size === 0 && this.fetchCounter === 0) {
-            clearInterval(this.periodicActivityCheckerId);
+            clearInterval(this.periodicCheckerId);
             clearTimeout(this.activityTimeoutCheckerId);
             this.domMutationObserver.disconnect();
             this.recordVirtualPageNavigationEvent();
-            this.periodicActivityCheckerId = undefined;
+            this.periodicCheckerId = undefined;
             this.activityTimeoutCheckerId = undefined;
             this.page.isLoaded = true;
         }
@@ -286,8 +376,8 @@ export class PageManager extends MonkeyPatched {
 
     /** Clears timers and disconnects observer to stop page timing. */
     private activityTimeoutCallback = () => {
-        clearInterval(this.periodicActivityCheckerId);
-        this.periodicActivityCheckerId = undefined;
+        clearInterval(this.periodicCheckerId);
+        this.periodicCheckerId = undefined;
         this.activityTimeoutCheckerId = undefined;
         this.domMutationObserver.disconnect();
         this.page.isLoaded = true;
@@ -296,9 +386,9 @@ export class PageManager extends MonkeyPatched {
     /** Resets periodic check timer and updates page's latestEndTime. */
     private domMutationCallback = () => {
         this.page.latestEndTime = Math.max(this.page.latestEndTime, Date.now());
-        clearInterval(this.periodicActivityCheckerId);
-        this.periodicActivityCheckerId = setInterval(
-            this.periodicActivityChecker,
+        clearInterval(this.periodicCheckerId);
+        this.periodicCheckerId = setInterval(
+            this.periodicCheckerCallback,
             this.PERIODIC_CHECKER_INTERVAL
         );
     };
@@ -316,95 +406,6 @@ export class PageManager extends MonkeyPatched {
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
                 virtualPageNavigationEvent
             );
-        }
-    }
-
-    /**
-     * Removes the current event from either requestBuffer or ongoingActivity set.
-     * @param event
-     */
-    private endTracking = (e: Event) => {
-        const currTime = Date.now();
-        const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
-        xhr.removeEventListener('loadend', this.endTracking);
-        this.removeXhr(xhr, currTime);
-    };
-
-    private sendWrapper = (): ((original: Send) => Send) => {
-        const self = this;
-
-        return (original: Send): Send => {
-            return function (this: XMLHttpRequest): void {
-                self.recordXhr(this);
-                this.addEventListener('loadend', self.endTracking);
-                return original.apply(this, arguments);
-            };
-        };
-    };
-
-    private recordXhr(item: XMLHttpRequest) {
-        const page = this.page;
-        if (page && page.isLoaded !== null && page.isLoaded === false) {
-            page.ongoingActivity.add(item);
-        } else {
-            this.requestBuffer.add(item);
-        }
-    }
-
-    private removeXhr(item: XMLHttpRequest, currTime: number) {
-        const page = this.page;
-        if (page && page.ongoingActivity.has(item)) {
-            page.ongoingActivity.delete(item);
-            page.latestEndTime = Math.max(page.latestEndTime, currTime);
-        } else if (this.requestBuffer.has(item)) {
-            this.requestBuffer.delete(item);
-        }
-    }
-
-    private fetch = (
-        original: Fetch,
-        thisArg: Fetch,
-        argsArray: IArguments,
-        input: RequestInfo,
-        init?: RequestInit
-    ): Promise<Response> => {
-        const self = this;
-        return original
-            .apply(thisArg, argsArray)
-            .then((response: Response) => {
-                self.updateFetchCounter();
-            })
-            .catch((error) => {
-                self.updateFetchCounter();
-            });
-    };
-
-    /**
-     * Increment the fetch counter in PageManager when fetch is beginning
-     */
-    private fetchWrapper = (): ((
-        original: (input: RequestInfo, init?: RequestInit) => Promise<Response>
-    ) => (input: RequestInfo, init?: RequestInit) => Promise<Response>) => {
-        const self = this;
-        return (original: Fetch): Fetch => {
-            return function (
-                this: Fetch,
-                input: RequestInfo,
-                init?: RequestInit
-            ): Promise<Response> {
-                self.fetchCounter += 1;
-                return self.fetch(original, this, arguments, input, init);
-            };
-        };
-    };
-
-    private updateFetchCounter() {
-        const page = this.page;
-        if (!page.isLoaded) {
-            page.latestEndTime = Math.max(page.latestEndTime, Date.now());
-        }
-        if (this.fetchCounter > 0) {
-            this.fetchCounter -= 1;
         }
     }
 }
