@@ -46,6 +46,7 @@ const allowCookies = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
 const registerDomEvents = jest.fn();
+const setCustomAttributes = jest.fn();
 jest.mock('../orchestration/Orchestration', () => ({
     Orchestration: jest.fn().mockImplementation(() => ({
         disable,
@@ -56,7 +57,8 @@ jest.mock('../orchestration/Orchestration', () => ({
         allowCookies,
         recordPageView,
         recordError,
-        registerDomEvents
+        registerDomEvents,
+        setCustomAttributes
     }))
 }));
 
@@ -259,7 +261,7 @@ describe('CommandQueue tests', () => {
         const cq: CommandQueue = getCommandQueue();
         await cq.push({
             c: 'recordPageView',
-            p: 'page1'
+            p: '/console/home'
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(recordPageView).toHaveBeenCalled();
@@ -283,6 +285,16 @@ describe('CommandQueue tests', () => {
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(registerDomEvents).toHaveBeenCalled();
+    });
+
+    test('setCustomAttributes calls Orchestration.setCustomAttributes', async () => {
+        const cq: CommandQueue = getCommandQueue();
+        await cq.push({
+            c: 'setCustomAttributes',
+            p: false
+        });
+        expect(Orchestration).toHaveBeenCalled();
+        expect(setCustomAttributes).toHaveBeenCalled();
     });
 
     test('allowCookies fails when paylod is non-boolean', async () => {

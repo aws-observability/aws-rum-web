@@ -19,11 +19,15 @@ jest.mock('../../dispatch/Dispatch', () => ({
 
 const enableEventCache = jest.fn();
 const disableEventCache = jest.fn();
+const setCustomAttributes = jest.fn();
+const recordPageView = jest.fn();
 
 jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
-        disable: disableEventCache
+        disable: disableEventCache,
+        setCustomAttributes: setCustomAttributes,
+        recordPageView: recordPageView
     }))
 }));
 
@@ -350,6 +354,46 @@ describe('Orchestration tests', () => {
         updatePlugin.mock.calls.forEach((call) => {
             actual = call[1][0];
         });
+
+        expect(actual).toEqual(expected);
+    });
+
+    test('when the page is manually recorded with pageTag attribute then EventCache.recordPageView() is called', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+
+        const expected = {
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1']
+        };
+        orchestration.recordPageView(expected);
+
+        let actual;
+
+        // Assert
+        expect(recordPageView).toHaveBeenCalledTimes(1);
+        actual = recordPageView.mock.calls[0][0];
+
+        expect(actual).toEqual(expected);
+    });
+
+    test('when page tag attribute is set then EventCache.setCustomAttributes() is called', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+
+        const expected = {
+            pageAttributes: {
+                pageId: '/rum/home',
+                pageTags: ['pageGroup1']
+            }
+        };
+        orchestration.setCustomAttributes(expected);
+
+        let actual;
+
+        // Assert
+        expect(setCustomAttributes).toHaveBeenCalledTimes(1);
+        actual = setCustomAttributes.mock.calls[0][0];
 
         expect(actual).toEqual(expected);
     });

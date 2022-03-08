@@ -71,6 +71,22 @@
                 cwr('recordPageView', '/page_view_two');
             }
 
+            function recordPageViewWithPageAttributes() {
+                cwr('recordPageView', {
+                    pageId: '/page_view_two',
+                    pageTags: ['pageGroup1']
+                });
+            }
+
+            function setCustomAttributes() {
+                cwr('setCustomAttributes', {
+                    pageAttributes: {
+                        pageId: '/page_view_two',
+                        pageTags: ['pageGroup1']
+                    }
+                });
+            }
+
             const parseEvents = () => {
                 const requestBody = document.getElementById('request_body');
                 const events = JSON.parse(requestBody.innerText).batch.events;
@@ -144,6 +160,15 @@
         <button id="clean-data" onclick="parseEvents()">Parse events</button>
         <button id="recordPageView" onclick="recordPageView()">
             Record Page View
+        </button>
+        <button
+            id="recordPageViewWithPageAttributes"
+            onclick="recordPageViewWithPageAttributes()"
+        >
+            Record Page View with page attributes
+        </button>
+        <button id="setCustomAttributes" onclick="setCustomAttributes()">
+            Set custom page attributes
         </button>
         <button id="doNotRecordPageView" onclick="doNotRecordPageView()">
             Do Not Record Page View

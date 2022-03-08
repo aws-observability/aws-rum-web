@@ -196,4 +196,63 @@ describe('PageManager tests', () => {
             (pageManager as any).popstateListener
         );
     });
+    test('when the page is manually recorded with pageTag attribute then page attributes contains pageTag attribute data', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        // Run
+        pageManager.recordPageView({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1']
+        });
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1']
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when the pageTag attribute is added to the page then page attributes contains pageTag attribute data', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        // Run
+        pageManager.setCustomAttributes({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1', 'pageGroup2']
+        });
+
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1', 'pageGroup2']
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
 });

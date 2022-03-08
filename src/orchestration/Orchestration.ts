@@ -20,6 +20,7 @@ import { WebVitalsPlugin } from '../plugins/event-plugins/WebVitalsPlugin';
 import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
+import { PageAttributes } from '../sessions/PageManager';
 
 const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
 const DATA_PLANE_DEFAULT_ENDPOINT =
@@ -131,6 +132,10 @@ export type CookieAttributes = {
     path: string;
     sameSite: string;
     secure: boolean;
+};
+
+export type CustomAttributes = {
+    pageAttributes?: PageAttributes;
 };
 
 export type Config = {
@@ -284,10 +289,12 @@ export class Orchestration {
 
     /**
      * Update the current page the user is interacting with.
-     * @param pageId The unique ID for the page within the application.
+     * @param payload Can be string or PageAttributes object
+     *      If string, payload is pageId (The unique ID for the page within the application).
+     *      If PageAttributes, payload contains pageId as well as page attributes to include in events with pageId
      */
-    public recordPageView(pageId: string) {
-        this.eventCache.recordPageView(pageId);
+    public recordPageView(payload: string | PageAttributes) {
+        this.eventCache.recordPageView(payload);
     }
 
     /**
@@ -304,6 +311,14 @@ export class Orchestration {
      */
     public registerDomEvents(events: TargetDomEvent[]) {
         this.pluginManager.updatePlugin(DOM_EVENT_PLUGIN_ID, events);
+    }
+
+    /**
+     * Set custom attributes for page and/or session
+     * @param customAttributes page and/or session attributes to add to event metadata
+     */
+    public setCustomAttributes(customAttributes: CustomAttributes) {
+        this.eventCache.setCustomAttributes(customAttributes);
     }
 
     private initEventCache(

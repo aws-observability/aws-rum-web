@@ -16,6 +16,12 @@ export type Attributes = {
     pageId: string;
     parentPageId?: string;
     interaction?: number;
+    pageTags?: string[];
+};
+
+export type PageAttributes = {
+    pageId: string;
+    pageTags?: string[];
 };
 
 /**
@@ -34,6 +40,7 @@ export class PageManager {
     private page: Page | undefined;
     private resumed: Page | undefined;
     private attributes: Attributes | undefined;
+    private customPageAttributes: PageAttributes | undefined;
 
     /**
      * A flag which keeps track of whether or not cookies have been enabled.
@@ -68,7 +75,14 @@ export class PageManager {
         };
     }
 
-    public recordPageView(pageId: string) {
+    public recordPageView(payload: string | PageAttributes) {
+        let pageId;
+        if (typeof payload === 'string') {
+            pageId = payload;
+        } else {
+            pageId = payload.pageId;
+        }
+
         if (this.useCookies()) {
             this.recordInteraction = true;
         }
@@ -84,11 +98,21 @@ export class PageManager {
             return;
         }
 
+        this.setCustomAttributes(
+            typeof payload === 'object' ? payload : undefined
+        );
+
         // Attributes will be added to all events as meta data
         this.collectAttributes();
 
         // The SessionManager will update its cookie with the new page
         this.recordPageViewEvent();
+    }
+
+    public setCustomAttributes(customPageAttributes: PageAttributes) {
+        if (customPageAttributes) {
+            this.customPageAttributes = customPageAttributes;
+        }
     }
 
     private createResumedPage(pageId: string) {
@@ -119,9 +143,10 @@ export class PageManager {
     }
 
     private collectAttributes() {
+        const pageId = this.page.pageId;
         this.attributes = {
             title: document.title,
-            pageId: this.page.pageId
+            pageId
         };
 
         if (this.recordInteraction) {
@@ -129,6 +154,14 @@ export class PageManager {
             if (this.page.parentPageId !== undefined) {
                 this.attributes.parentPageId = this.page.parentPageId;
             }
+        }
+
+        if (this.customPageAttributes) {
+            Object.keys(this.customPageAttributes).forEach((attribute) => {
+                this.attributes[attribute] = this.customPageAttributes[
+                    attribute
+                ];
+            });
         }
     }
 
