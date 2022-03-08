@@ -63,7 +63,7 @@ export class EventCache {
 
     /** Enable pageManager's monkey patch on the fetch and xhr methods */
     public enablePageManagerMonkeyPatch(): void {
-        this.pageManager.enable();
+        this.pageManager.enableVirtualPageLoadTimerPatch();
     }
 
     /**

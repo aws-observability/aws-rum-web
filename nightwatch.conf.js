@@ -8,7 +8,7 @@ module.exports = {
     // if this is not specified, the test source must be passed as the second argument to the test runner.
     src_folders: [
         'src/plugins/event-plugins/__nightwatch__/PageViewPlugin.test.js',
-        'src/sessions/__nightwatch__/PageManager.test.js'
+        'src/sessions/__nightwatch__/VirtualPageLoadTimer.test.js'
     ],
 
     // See https://nightwatchjs.org/guide/working-with-page-objects/

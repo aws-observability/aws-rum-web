@@ -2,16 +2,7 @@ const successfulLoad = '#successfulLoad';
 const timeoutLoad = '#timeoutLoad';
 const dispatch = '#dispatch';
 
-const navigation_paths = [
-    { pageId: '/spa.html', interaction: 0, initiatorType: 'navigation' },
-    {
-        pageId: '/spa.html#strawberries',
-        interaction: 1,
-        initiatorType: 'route_change'
-    },
-    { pageId: '/spa.html', interaction: 2, initiatorType: 'route_change' }
-];
-describe('PageManager SPA feature test', function () {
+describe('PageManager virtual page load timing feature test', function () {
     test('when route change is detected then both navigation event and page view event are recorded', async function (browser) {
         browser
             .url('http://localhost:8080/spa.html')

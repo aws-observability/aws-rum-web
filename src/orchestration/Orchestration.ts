@@ -68,10 +68,11 @@ export type PartialConfig = {
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
     recordResourceUrl?: boolean;
+    routeChangeLoadCheckInterval?: number;
+    routeChangeTimeout?: number;
     sessionEventLimit?: number;
     sessionLengthSeconds?: number;
     sessionSampleRate?: number;
-    spaActivityTimeoutLimit?: number;
     /**
      * Application owners think about data collection in terms of the categories
      * of data being collected. For example, JavaScript errors, page load
@@ -114,6 +115,8 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
+        routeChangeLoadCheckInterval: 100,
+        routeChangeTimeout: 1000,
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
@@ -157,10 +160,11 @@ export type Config = {
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
     recordResourceUrl: boolean;
+    routeChangeLoadCheckInterval: number;
+    routeChangeTimeout: number;
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
-    spaActivityTimeoutLimit?: number;
     telemetries: Telemetry[];
     userIdRetentionDays: number;
 };
