@@ -288,7 +288,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // Run
@@ -321,7 +321,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // Run
@@ -356,7 +356,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
         // @ts-ignore
         const decrementCounter = jest.spyOn(helper, 'decrementFetchCounter');
@@ -380,7 +380,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
@@ -402,7 +402,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
@@ -424,7 +424,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
@@ -446,7 +446,7 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatch();
+        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore

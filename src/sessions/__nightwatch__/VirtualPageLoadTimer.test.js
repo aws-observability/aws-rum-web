@@ -2,7 +2,7 @@ const successfulLoad = '#successfulLoad';
 const timeoutLoad = '#timeoutLoad';
 const dispatch = '#dispatch';
 
-describe('PageManager virtual page load timing feature test', function () {
+describe('PageManager Virtual Page Load Timing', function () {
     test('when route change is detected then both navigation event and page view event are recorded', async function (browser) {
         browser
             .url('http://localhost:8080/spa.html')

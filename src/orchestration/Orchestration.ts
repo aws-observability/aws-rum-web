@@ -221,8 +221,8 @@ export class Orchestration {
 
         if (this.config.enableRumClient) {
             this.enable();
-            // Enable pageManager's monkey patch after xhrPlugin and fetchPlugin are initialized
-            this.eventCache.enablePageManagerMonkeyPatch();
+            // Enable monkey patch to interecept AJAX requests for virtual page load timing
+            this.eventCache.enableVirtualPageLoadTimerPatch();
         } else {
             this.disable();
         }

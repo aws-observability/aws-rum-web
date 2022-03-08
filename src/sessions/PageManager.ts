@@ -45,8 +45,6 @@ export class PageManager {
      */
     private recordInteraction: boolean;
 
-    /** Helper class to provide virtual page load timing functionality */
-
     constructor(config: Config, record: RecordEvent) {
         this.config = config;
         this.record = record;
@@ -60,7 +58,7 @@ export class PageManager {
         );
     }
 
-    public enableVirtualPageLoadTimerPatch() {
+    public enableVirtualPageLoadTimerPatches() {
         this.virtualPageLoadTimer.enable();
     }
 

@@ -25,7 +25,7 @@ jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
-        enablePageManagerMonkeyPatch: enableMonkeyPatch
+        enableVirtualPageLoadTimerPatch: enableMonkeyPatch
     }))
 }));
 

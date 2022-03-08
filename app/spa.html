@@ -51,35 +51,6 @@
                 }
             }
 
-            function defaultState() {
-                createXMLRequest();
-                window.history.replaceState(
-                    { state: 'one' },
-                    'Page Ten',
-                    '/page_event.html'
-                );
-                domMutation();
-            }
-
-            function back() {
-                createXMLRequest();
-                window.history.back();
-                domMutation();
-            }
-
-            function forward() {
-                createXMLRequest();
-                window.history.forward();
-                domMutation();
-            }
-
-            function go(number) {
-                createXMLRequest();
-                window.history.go(number);
-                domMutation();
-                domMutation();
-            }
-
             function createXMLRequest() {
                 var xhr = new XMLHttpRequest((async = true));
                 var url =
