@@ -40,7 +40,6 @@ export class PageManager {
     private page: Page | undefined;
     private resumed: Page | undefined;
     private attributes: Attributes | undefined;
-    private customPageAttributes: PageAttributes | undefined;
 
     /**
      * A flag which keeps track of whether or not cookies have been enabled.
@@ -98,21 +97,13 @@ export class PageManager {
             return;
         }
 
-        this.setCustomAttributes(
+        // Attributes will be added to all events as meta data
+        this.collectAttributes(
             typeof payload === 'object' ? payload : undefined
         );
 
-        // Attributes will be added to all events as meta data
-        this.collectAttributes();
-
         // The SessionManager will update its cookie with the new page
         this.recordPageViewEvent();
-    }
-
-    public setCustomAttributes(customPageAttributes: PageAttributes) {
-        if (customPageAttributes) {
-            this.customPageAttributes = customPageAttributes;
-        }
     }
 
     private createResumedPage(pageId: string) {
@@ -142,11 +133,10 @@ export class PageManager {
         };
     }
 
-    private collectAttributes() {
-        const pageId = this.page.pageId;
+    private collectAttributes(customPageAttributes?: PageAttributes) {
         this.attributes = {
             title: document.title,
-            pageId
+            pageId: this.page.pageId
         };
 
         if (this.recordInteraction) {
@@ -156,11 +146,9 @@ export class PageManager {
             }
         }
 
-        if (this.customPageAttributes) {
-            Object.keys(this.customPageAttributes).forEach((attribute) => {
-                this.attributes[attribute] = this.customPageAttributes[
-                    attribute
-                ];
+        if (customPageAttributes) {
+            Object.keys(customPageAttributes).forEach((attribute) => {
+                this.attributes[attribute] = customPageAttributes[attribute];
             });
         }
     }

@@ -134,10 +134,6 @@ export type CookieAttributes = {
     secure: boolean;
 };
 
-export type CustomAttributes = {
-    pageAttributes?: PageAttributes;
-};
-
 export type Config = {
     allowCookies: boolean;
     batchLimit: number;
@@ -311,14 +307,6 @@ export class Orchestration {
      */
     public registerDomEvents(events: TargetDomEvent[]) {
         this.pluginManager.updatePlugin(DOM_EVENT_PLUGIN_ID, events);
-    }
-
-    /**
-     * Set custom attributes for page and/or session
-     * @param customAttributes page and/or session attributes to add to event metadata
-     */
-    public setCustomAttributes(customAttributes: CustomAttributes) {
-        this.eventCache.setCustomAttributes(customAttributes);
     }
 
     private initEventCache(

@@ -255,38 +255,6 @@ describe('EventCache tests', () => {
         );
     });
 
-    test('when pageTag attribute is set through setCustomAttributes API, event metadata records the page tag data', async () => {
-        // Init
-        const EVENT1_SCHEMA = 'com.amazon.rum.page_view_event';
-        const eventCache: EventCache = Utils.createEventCache({
-            ...DEFAULT_CONFIG
-        });
-        const expectedEvents: RumEvent[] = [
-            {
-                id: expect.stringMatching(/[0-9a-f\-]+/),
-                timestamp: new Date(),
-                type: EVENT1_SCHEMA,
-                metadata:
-                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}',
-                details: '{"version":"1.0.0","pageId":"/rum/home"}'
-            }
-        ];
-
-        // Run
-        eventCache.setCustomAttributes({
-            pageAttributes: {
-                pageId: '/rum/home',
-                pageTags: ['pageGroup1']
-            }
-        });
-
-        eventCache.recordPageView('/rum/home');
-        // Assert
-        expect(await eventCache.getEventBatch()).toEqual(
-            expect.arrayContaining(expectedEvents)
-        );
-    });
-
     test('when page matches both allowed and denied, recordEvent does not record the event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';

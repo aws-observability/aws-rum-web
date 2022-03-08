@@ -78,15 +78,6 @@
                 });
             }
 
-            function setCustomAttributes() {
-                cwr('setCustomAttributes', {
-                    pageAttributes: {
-                        pageId: '/page_view_two',
-                        pageTags: ['pageGroup1']
-                    }
-                });
-            }
-
             const parseEvents = () => {
                 const requestBody = document.getElementById('request_body');
                 const events = JSON.parse(requestBody.innerText).batch.events;
@@ -166,9 +157,6 @@
             onclick="recordPageViewWithPageAttributes()"
         >
             Record Page View with page attributes
-        </button>
-        <button id="setCustomAttributes" onclick="setCustomAttributes()">
-            Set custom page attributes
         </button>
         <button id="doNotRecordPageView" onclick="doNotRecordPageView()">
             Do Not Record Page View
