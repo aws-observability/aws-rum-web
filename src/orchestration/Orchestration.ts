@@ -221,8 +221,6 @@ export class Orchestration {
 
         if (this.config.enableRumClient) {
             this.enable();
-            // Enable monkey patch to interecept AJAX requests for virtual page load timing
-            this.eventCache.enableVirtualPageLoadTimerPatch();
         } else {
             this.disable();
         }

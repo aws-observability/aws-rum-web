@@ -288,7 +288,6 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // Run
@@ -321,7 +320,6 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // Run
@@ -356,7 +354,6 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
         // @ts-ignore
         const decrementCounter = jest.spyOn(helper, 'decrementFetchCounter');
@@ -380,7 +377,6 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
@@ -402,14 +398,15 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
         const decrementCounter = jest.spyOn(helper, 'decrementFetchCounter');
 
         // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
+        await fetch('https://aws.amazon.com').catch((error) => {
+            // Expected
+        });
 
         // Even with 500 response, fetchCounter should be decremented to 0
         expect(helper['fetchCounter']).toEqual(0);
@@ -424,14 +421,15 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
         const decrementCounter = jest.spyOn(helper, 'decrementFetchCounter');
 
         // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
+        await fetch('https://aws.amazon.com').catch((error) => {
+            // Expected
+        });
 
         // Even with 500 response, fetchCounter should be decremented to 0
         expect(helper['fetchCounter']).toEqual(0);
@@ -446,14 +444,15 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.enableVirtualPageLoadTimerPatches();
         const helper = pageManager['virtualPageLoadTimer'];
 
         // @ts-ignore
         const decrementCounter = jest.spyOn(helper, 'decrementFetchCounter');
 
         // When fetch initially is sent, fetchCounter should be incremented to 1
-        await fetch('https://aws.amazon.com');
+        await fetch('https://aws.amazon.com').catch((error) => {
+            // Expected
+        });
 
         // Even with 500 response, fetchCounter should be decremented to 0
         expect(helper['fetchCounter']).toEqual(0);

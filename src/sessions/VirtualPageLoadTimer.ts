@@ -50,6 +50,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         this.config = config;
         this.pageManager = pageManager;
         this.record = record;
+        this.enable();
     }
 
     /** Initializes timing related resources for current page. */
@@ -72,11 +73,12 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
             this.declareTimeout,
             this.config.routeChangeTimeout
         );
+        // observing the add/delete of nodes
         this.domMutationObserver.observe(document, {
             subtree: true,
             childList: true,
-            attributes: true,
-            characterData: true
+            attributes: false,
+            characterData: false
         });
 
         // Indicate page has not loaded, and carry over buffered requests.
@@ -153,7 +155,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         return original
             .apply(thisArg, argsArray)
             .catch((error) => {
-                // Silently swallowing error
+                throw error;
             })
             .finally(self.decrementFetchCounter());
     };
@@ -223,7 +225,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         );
     };
 
-    private moveItemsFromBuffer = (item: any) => {
+    private moveItemsFromBuffer = (item: XMLHttpRequest) => {
         this.ongoingRequests.add(item);
     };
 

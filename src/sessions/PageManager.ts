@@ -58,10 +58,6 @@ export class PageManager {
         );
     }
 
-    public enableVirtualPageLoadTimerPatches() {
-        this.virtualPageLoadTimer.enable();
-    }
-
     public getPage(): Page | undefined {
         return this.page;
     }

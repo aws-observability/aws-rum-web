@@ -61,11 +61,6 @@ export class EventCache {
         this.enabled = false;
     }
 
-    /** Enable VirtualPageLoadTimer's monkey patch on the fetch and xhr methods */
-    public enableVirtualPageLoadTimerPatch(): void {
-        this.pageManager.enableVirtualPageLoadTimerPatches();
-    }
-
     /**
      * Update the current page interaction for the session.
      */
