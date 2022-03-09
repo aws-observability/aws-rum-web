@@ -111,6 +111,7 @@ export class PageManager {
             interaction: this.resumed.interaction + 1,
             start: Date.now()
         };
+        this.resumed = undefined;
     }
 
     private createNextPage(pageId: string) {
