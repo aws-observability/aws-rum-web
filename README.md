@@ -5,40 +5,42 @@ JavaScript library which performs real user monitoring (RUM) telemetry on web
 applications. Data collected by the RUM web client includes page load timing,
 JavaScript errors and HTTP requests.
 
-## Installing
+## Install as a JavaScript Module
 
-The latest stable version of the web client is hosted on a content delivery
-network (CDN) hosted by CloudWatch RUM. See the [CloudWatch RUM
-documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html)
-for instructions on how to create an AppMonitor and generate a code snippet
-which will install the web client in your application.
+See [Installing as a JavaScript Module](docs/npm_installation.md).
 
-## Documentation
+## Install as an Embedded Script
 
-1. [Installing from CDN](docs/cdn_installation.md)
-1. [Executing Commands](docs/cdn_commands.md)
-1. [Using the Web Client with Angular](docs/cdn_angular.md)
-1. [Using the Web Client with React](docs/cdn_react.md)
-1. [Troubleshooting CDN Installations](docs/cdn_troubleshooting.md)
+See [Installing as an Embedded Script](docs/cdn_installation.md).
+
+## Additional Documentation:
+
+1. [Configuring the web client](docs/configuration.md)
+1. [Executing commands](docs/cdn_commands.md)
+1. [Using the web client with Angular](docs/cdn_angular.md)
+1. [Using the web client with React](docs/cdn_react.md)
+1. [Troubleshooting](docs/cdn_troubleshooting.md)
 
 ## Getting Help
 
 Use the following community resources for getting help with the SDK. We use the GitHub issues for tracking bugs and feature requests.
 
 -   View the [CloudWatch RUM documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html).
+-   Ask a question in the [Amazon CloudWatch forum](https://forums.aws.amazon.com/forum.jspa?forumID=138)
 -   Open a support ticket with [AWS Support](https://docs.aws.amazon.com/awssupport/latest/user/getting-started.html).
 -   If you think you may have found a bug, open an [issue](https://github.com/aws-observability/aws-rum-web/issues/new).
 
 ## Opening Issues
 
-If you encounter a bug with the CloudWatch RUM web client, we want to hear
-about it. Before opening a new issue, search the existing issues to see if
-others are also experiencing the issue. Include the version of the CloudWatch
-RUM Web Client, Node.js runtime, and other dependencies if applicable. In
-addition, include the repro case when appropriate.
+If you encounter a bug with the CloudWatch RUM web client, we want to hear about
+it. Before opening a new issue, [search the existing
+issues](https://github.com/aws-observability/aws-rum-web/issues?q=is%3Aissue) to
+see if others are also experiencing the issue. Include the version of the
+CloudWatch RUM web client, Node.js runtime, and other dependencies if
+applicable. In addition, include the repro case when appropriate.
 
 The GitHub issues are intended for bug reports and feature requests. For help
-and questions about using the CloudWatch RUM Web Client, use the resources
+and questions about using the CloudWatch RUM web client, use the resources
 listed in the Getting Help section. Keeping the list of open issues lean helps
 us respond in a timely manner.
 
@@ -109,9 +111,9 @@ npm run integ:local:nightwatch
 
 ## Pre-commit Tasks
 
-The RUM Web Client uses pre-commit tasks to lint and format its source code.
-Before submitting code, check that all linter and formatter warnings have been
-resolved.
+The CloudWatch RUM web client uses pre-commit tasks to lint and format its
+source code. Before submitting code, check that all linter and formatter
+warnings have been resolved.
 
 Attempt to automatically repair linter warnings:
 
