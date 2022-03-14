@@ -41,96 +41,6 @@ describe('PageManager tests', () => {
     afterEach(() => {
         jest.resetModules();
     });
-    test('when resumed page is created then virtual page load timing resources are not initialized', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG,
-                allowCookies: true
-            },
-            record
-        );
-        pageManager.resumeSession('/console/home', 1);
-        // Run
-        pageManager.recordPageView('/rum/home');
-
-        const helper = pageManager['virtualPageLoadTimer'];
-
-        // Assert
-        expect(helper['isPageLoaded']).toEqual(true);
-        // page view event is recorded
-        expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[0][1]).toMatchObject({
-            pageId: '/rum/home',
-            interaction: 2
-        });
-
-        window.removeEventListener(
-            'popstate',
-            (pageManager as any).popstateListener
-        );
-        expect(helper['timeoutCheckerId']).toEqual(undefined);
-        expect(helper['periodicCheckerId']).toEqual(undefined);
-    });
-
-    test('when landing page is created then virtual page load timing resources are not initialized', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG,
-                allowCookies: true
-            },
-            record
-        );
-        // Run
-        pageManager.recordPageView('/rum/home');
-        const helper = pageManager['virtualPageLoadTimer'];
-
-        // Assert
-        expect(helper['isPageLoaded']).toEqual(true);
-        // page view event is recorded
-        expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[0][1]).toMatchObject({
-            pageId: '/rum/home',
-            interaction: 0
-        });
-        expect(helper['timeoutCheckerId']).toEqual(undefined);
-        expect(helper['periodicCheckerId']).toEqual(undefined);
-
-        window.removeEventListener(
-            'popstate',
-            (pageManager as any).popstateListener
-        );
-    });
-
-    test('when next page is created then virtual page load timing resources are initialized', async () => {
-        // Init
-        const pageManager: PageManager = new PageManager(
-            {
-                ...DEFAULT_CONFIG,
-                allowCookies: true
-            },
-            record
-        );
-        // Run
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/console/home');
-        const helper = pageManager['virtualPageLoadTimer'];
-
-        // Assert
-        expect(helper['isPageLoaded']).toEqual(false);
-        // page view event is recorded
-        expect(record.mock.calls.length).toEqual(2);
-        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[1][1]).toMatchObject({
-            pageId: '/console/home',
-            interaction: 1
-        });
-        expect(helper['timeoutCheckerId']).not.toEqual(undefined);
-        expect(helper['periodicCheckerId']).not.toEqual(undefined);
-    });
 
     test('when next page is created then items in requestBuffer should be added to ongoingRequests', async () => {
         // Init
@@ -139,8 +49,10 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.recordPageView('/rum/home');
         const helper = pageManager['virtualPageLoadTimer'];
+
+        // Create landing page
+        pageManager.recordPageView('/rum/home');
 
         // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
@@ -148,7 +60,7 @@ describe('PageManager tests', () => {
             helper['requestBuffer'].add(xhr);
         }
 
-        // Run
+        // Create next page
         pageManager.recordPageView('/console/home');
 
         // Assert
@@ -169,17 +81,21 @@ describe('PageManager tests', () => {
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.resumeSession('/console/home', 1);
         const helper = pageManager['virtualPageLoadTimer'];
 
+        // Initialize session
+        pageManager.resumeSession('/console/home', 1);
+
+        // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
             let xhr = new XMLHttpRequest();
             helper['requestBuffer'].add(xhr);
         }
 
-        // Run
+        // Create resumed page
         pageManager.recordPageView('/rum/home');
 
+        // Assert
         expect(helper['ongoingRequests'].size).toEqual(0);
         expect(helper['isPageLoaded']).toEqual(true);
         expect(helper['requestBuffer'].size).toEqual(3);
@@ -199,14 +115,16 @@ describe('PageManager tests', () => {
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
 
+        // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
             let xhr = new XMLHttpRequest();
             helper['requestBuffer'].add(xhr);
         }
 
-        // Run
+        // Create landing page
         pageManager.recordPageView('/rum/home');
 
+        // Assert
         expect(helper['ongoingRequests'].size).toEqual(0);
         expect(helper['isPageLoaded']).toEqual(true);
         expect(helper['requestBuffer'].size).toEqual(3);
@@ -255,33 +173,29 @@ describe('PageManager tests', () => {
         );
     });
 
-    test('when there is no pageId difference then no pages are created', async () => {
+    test('when updateLatestInteractionTime is invoked then latestInteractionTime is updated with Date.now', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
+        Date.now = jest.fn(() => 505);
         const pageManager: PageManager = new PageManager(config, record);
+        const helper = pageManager['virtualPageLoadTimer'];
 
-        // Run
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/rum/home');
-        pageManager.recordPageView('/rum/home');
+        // Directly using callback instead of simulating document events
+        helper['updateLatestInteractionTime'](new Event('mousedown'));
 
         // Assert
-        expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
-        expect(record.mock.calls[0][1]).toMatchObject({
-            pageId: '/rum/home',
-            interaction: 0
-        });
+        expect(helper['latestInteractionTime']).toEqual(505);
 
         window.removeEventListener(
             'popstate',
             (pageManager as any).popstateListener
         );
     });
-    test('when XMLHttpRequest is detected when page is loaded then it is added to requestBuffer', async () => {
+
+    test('when XMLHttpRequest is detected after page is loaded then it is added to requestBuffer', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
@@ -293,7 +207,7 @@ describe('PageManager tests', () => {
         // Run
         pageManager.recordPageView('/rum/home');
 
-        // Run
+        // Send XMLHttpRequest
         const xhr = new XMLHttpRequest();
         xhr.open('GET', './response.json', true);
         xhr.send();
@@ -305,7 +219,7 @@ describe('PageManager tests', () => {
         // Yield to the event queue so the event listeners can run
         await new Promise((resolve) => setTimeout(resolve, 0));
 
-        // requestBuffer should no longer contain xhr
+        // requestBuffer should no longer contain xhr as it is completed
         expect(helper['requestBuffer'].size).toEqual(0);
 
         // Current page's latestEndTime should not be updated
@@ -313,7 +227,7 @@ describe('PageManager tests', () => {
         expect(helper['ongoingRequests'].size).toEqual(0);
     });
 
-    test('when XMLHttpRequest is detected when page is not loaded then it is added to ongoingRequests', async () => {
+    test('when XMLHttpRequest is detected before page is loaded then it is added to ongoingRequests', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
@@ -328,9 +242,9 @@ describe('PageManager tests', () => {
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
-        // Run
-        const xhr = new XMLHttpRequest();
 
+        // Send request
+        const xhr = new XMLHttpRequest();
         xhr.open('GET', './response.json', true);
         xhr.send();
 
@@ -361,6 +275,7 @@ describe('PageManager tests', () => {
         // Run
         pageManager.recordPageView('/rum/home');
         pageManager.recordPageView('/console/home');
+
         // When fetch initially is sent, fetchCounter should be incremented to 1
         await fetch('https://aws.amazon.com');
 
@@ -408,7 +323,7 @@ describe('PageManager tests', () => {
             // Expected
         });
 
-        // Even with 500 response, fetchCounter should be decremented to 0
+        // Even with error, fetchCounter should be decremented to 0
         expect(helper['fetchCounter']).toEqual(0);
         expect(decrementCounter).toBeCalledTimes(1);
     });
@@ -431,7 +346,7 @@ describe('PageManager tests', () => {
             // Expected
         });
 
-        // Even with 500 response, fetchCounter should be decremented to 0
+        // Even with error object, fetchCounter should be decremented to 0
         expect(helper['fetchCounter']).toEqual(0);
         expect(decrementCounter).toBeCalledTimes(1);
     });
@@ -454,7 +369,7 @@ describe('PageManager tests', () => {
             // Expected
         });
 
-        // Even with 500 response, fetchCounter should be decremented to 0
+        // Even with error and stack trace, fetchCounter should be decremented to 0
         expect(helper['fetchCounter']).toEqual(0);
         expect(decrementCounter).toBeCalledTimes(1);
     });
@@ -467,16 +382,20 @@ describe('PageManager tests', () => {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
+        // Mocking Date.now
+        Date.now = jest.fn(() => 100);
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
+        helper['latestInteractionTime'] = 50;
+        const startTiming = jest.spyOn(helper, 'startTiming');
+
         // Run
         pageManager.recordPageView('/rum/home');
-
         pageManager.recordPageView('/console/new_page');
-
         jest.advanceTimersByTime(100);
 
-        // Two page view events + one navigation event
+        // Two page view events + one navigation event and startTiming is invoked
+        expect(startTiming).toBeCalledTimes(1);
         expect(record.mock.calls.length).toEqual(3);
         expect(record.mock.calls[2][0]).toEqual(
             PERFORMANCE_NAVIGATION_EVENT_TYPE
@@ -484,6 +403,38 @@ describe('PageManager tests', () => {
         expect(record.mock.calls[2][1].initiatorType).toEqual('route_change');
 
         // periodic checker and timeout should be undefined and isPageLoaded should be true
+        expect(helper['timeoutCheckerId']).toEqual(undefined);
+        expect(helper['periodicCheckerId']).toEqual(undefined);
+        expect(helper['isPageLoaded']).toEqual(true);
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when next page is created but latestInteractionTime is beyond timeout then recordRouteChangeNavigationEvent is not invoked', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        // Mocking Date.now
+        Date.now = jest.fn(() => 10000);
+        const pageManager: PageManager = new PageManager(config, record);
+        const helper = pageManager['virtualPageLoadTimer'];
+        helper['latestInteractionTime'] = 50;
+        const startTiming = jest.spyOn(helper, 'startTiming');
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/new_page');
+
+        // Two page view events, startTiming should not be invoked
+        expect(record.mock.calls.length).toEqual(2);
+        expect(startTiming).toBeCalledTimes(0);
+
+        // periodic checker and timeout should not be initialized
         expect(helper['timeoutCheckerId']).toEqual(undefined);
         expect(helper['periodicCheckerId']).toEqual(undefined);
         expect(helper['isPageLoaded']).toEqual(true);
@@ -504,14 +455,15 @@ describe('PageManager tests', () => {
         };
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
-        pageManager.resumeSession('/console/home', 1);
+        const startTiming = jest.spyOn(helper, 'startTiming');
 
         // Run
+        pageManager.resumeSession('/console/home', 1);
         pageManager.recordPageView('/rum/home');
-
         jest.advanceTimersByTime(100);
 
-        // resumed page view event is created
+        // resumed page view event is created and startTiming should not be invoked
+        expect(startTiming).toBeCalledTimes(0);
         expect(record.mock.calls.length).toEqual(1);
         expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
@@ -540,13 +492,14 @@ describe('PageManager tests', () => {
         };
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
+        const startTiming = jest.spyOn(helper, 'startTiming');
 
         // Run
         pageManager.recordPageView('/rum/home');
-
         jest.advanceTimersByTime(100);
 
-        // resumed page view event is created
+        // resumed page view event is created and startTiming should not be invoked
+        expect(startTiming).toBeCalledTimes(0);
         expect(record.mock.calls.length).toEqual(1);
         expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
@@ -574,14 +527,18 @@ describe('PageManager tests', () => {
             routeChangeTimeout: 10,
             allowCookies: true
         };
+        Date.now = jest.fn(() => 505);
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
+        const startTiming = jest.spyOn(helper, 'startTiming');
+        helper['latestInteractionTime'] = 500;
+
         // Run
         pageManager.recordPageView('/rum/home');
-
         pageManager.recordPageView('/console/home');
 
         // Before timeout timing resources are initialized
+        expect(startTiming).toBeCalledTimes(1);
         expect(helper['timeoutCheckerId']).not.toEqual(undefined);
         expect(helper['periodicCheckerId']).not.toEqual(undefined);
         expect(helper['isPageLoaded']).toEqual(false);

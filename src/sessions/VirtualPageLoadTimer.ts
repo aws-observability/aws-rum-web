@@ -15,6 +15,8 @@ type Send = () => void;
  * (3) Records virtual page load
  */
 export class VirtualPageLoadTimer extends MonkeyPatched {
+    /** Latest interaction time by user on the document */
+    public latestInteractionTime: number;
     /** Unique ID of virtual page load periodic checker. */
     private periodicCheckerId;
     /** Unique ID of virtual page load timeout checker. */
@@ -46,15 +48,31 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         this.fetchCounter = 0;
         this.isPageLoaded = true;
         this.latestEndTime = 0;
+        this.latestInteractionTime = 0;
 
         this.config = config;
         this.pageManager = pageManager;
         this.record = record;
         this.enable();
+
+        // Start tracking the timestamps
+        document.body.addEventListener(
+            'mousedown',
+            this.updateLatestInteractionTime
+        );
+        document.body.addEventListener(
+            'keydown',
+            this.updateLatestInteractionTime
+        );
+        document.body.addEventListener(
+            'mouseleave',
+            this.updateLatestInteractionTime
+        );
     }
 
     /** Initializes timing related resources for current page. */
     public startTiming() {
+        this.latestEndTime = Date.now();
         // Clean up existing timer objects and mutationObserver
         if (this.periodicCheckerId) {
             clearInterval(this.periodicCheckerId);
@@ -214,7 +232,6 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         this.isPageLoaded = true;
     };
 
-    /** Resets periodic check timer and updates page's latestEndTime. */
     private resetInterval = () => {
         const page = this.pageManager.getPage();
         this.latestEndTime = Date.now();
@@ -244,4 +261,8 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
             );
         }
     }
+
+    private updateLatestInteractionTime = (e: Event) => {
+        this.latestInteractionTime = Date.now();
+    };
 }

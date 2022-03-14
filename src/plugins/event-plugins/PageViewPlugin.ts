@@ -84,11 +84,10 @@ export class PageViewPlugin extends MonkeyPatched implements Plugin {
         // popstate will fire under the following conditions:
         // (1) The history back, forward or go APIs are used
         // (2) The URI's fragment (hash) changes
-        window.addEventListener('popstate', this.urlChangeListener);
-        window.addEventListener('hashchange', this.urlChangeListener);
+        window.addEventListener('popstate', this.popstateListener);
     }
 
-    private urlChangeListener: EventListener = (event: Event) => {
+    private popstateListener: EventListener = (event: Event) => {
         this.recordPageView();
     };
 

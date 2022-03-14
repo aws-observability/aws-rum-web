@@ -87,7 +87,6 @@ export class PageManager {
             this.createLandingPage(pageId);
         } else if (this.page.pageId !== pageId) {
             this.createNextPage(pageId);
-            this.virtualPageLoadTimer.startTiming();
         } else {
             // The view has not changed.
             return;
@@ -111,11 +110,18 @@ export class PageManager {
     }
 
     private createNextPage(pageId: string) {
+        let candidateTime = Date.now();
+        const interactionTime = this.virtualPageLoadTimer.latestInteractionTime;
+        // Only time when the latestInteractionTime is within timeout limit, time the page
+        if (candidateTime - interactionTime <= this.config.routeChangeTimeout) {
+            candidateTime = interactionTime;
+            this.virtualPageLoadTimer.startTiming();
+        }
         this.page = {
             pageId,
             parentPageId: this.page.pageId,
             interaction: this.page.interaction + 1,
-            start: Date.now()
+            start: candidateTime
         };
     }
 
