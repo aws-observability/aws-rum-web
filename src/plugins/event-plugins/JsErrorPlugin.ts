@@ -73,7 +73,10 @@ export class JsErrorPlugin implements Plugin {
         const errorEvent: JSErrorEvent = {
             version: '1.0.0',
             type: event.type,
-            message: event.reason
+            message:
+                typeof event.reason === 'string'
+                    ? event.reason
+                    : JSON.stringify(event.reason)
         };
         this.recordEvent(JS_ERROR_EVENT_TYPE, errorEvent);
     };

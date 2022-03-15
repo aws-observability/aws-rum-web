@@ -30,6 +30,10 @@
         "error": {
             "type": "object",
             "properties": {
+                "version": {
+                    "type": "string",
+                    "description": "JSErrorEvent schema version."
+                },
                 "type": {
                     "type": "string",
                     "description": "Error type (eg., TypeError, ParseError, etc)."

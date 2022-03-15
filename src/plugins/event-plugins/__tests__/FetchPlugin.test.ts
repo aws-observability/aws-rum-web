@@ -513,6 +513,7 @@ describe('FetchPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'FetchError',
                 message: 'timeout',
                 stack: 'stack trace'
