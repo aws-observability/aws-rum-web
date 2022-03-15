@@ -282,8 +282,3 @@ describe('PageManager Virtual Page Load Timing', function () {
         browser.assert.equal(initiatorType[1], routeChange);
     });
 });
-
-// then check unit test
-// then check code
-// pr
-// then do e2e test with retail store
