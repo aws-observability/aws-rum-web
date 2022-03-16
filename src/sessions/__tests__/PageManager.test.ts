@@ -1,7 +1,8 @@
 import { advanceTo } from 'jest-date-mock';
-import { PageManager, PAGE_VIEW_TYPE } from '../PageManager';
+import { PageManager } from '../PageManager';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { Config } from '../../orchestration/Orchestration';
+import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 
 import mock from 'xhr-mock';
 
@@ -49,7 +50,7 @@ describe('PageManager tests', () => {
         pageManager.recordPageView('/console/home');
 
         // Assert
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             pageId: '/console/home',
             interaction: 0
@@ -222,7 +223,7 @@ describe('PageManager tests', () => {
 
         // Assert
         expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             pageId: '/rum/home',
             interaction: 0
@@ -252,7 +253,7 @@ describe('PageManager tests', () => {
 
         // page view event is recorded
         expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             pageId: '/rum/home',
             interaction: 2
@@ -287,7 +288,7 @@ describe('PageManager tests', () => {
 
         // page view event is recorded
         expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             pageId: '/rum/home',
             interaction: 0
@@ -323,7 +324,7 @@ describe('PageManager tests', () => {
 
         // page view event is recorded
         expect(record.mock.calls.length).toEqual(2);
-        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_TYPE);
+        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
         expect(record.mock.calls[1][1]).toMatchObject({
             pageId: '/console/home',
             interaction: 1

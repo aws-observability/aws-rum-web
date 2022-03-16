@@ -1,5 +1,6 @@
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../test-utils/integ-test-utils';
+import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 
 const recordPageView: Selector = Selector(`#recordPageView`);
 const dispatch: Selector = Selector(`#dispatch`);
@@ -35,7 +36,7 @@ test('PageViewEventPlugin records landing page view event', async (t: TestContro
 
     await t
         .expect(eventType)
-        .eql('com.amazon.rum.page_view_event')
+        .eql(PAGE_VIEW_EVENT_TYPE)
         .expect(eventDetails)
         .contains({
             pageId: '/page_event.html',
@@ -73,7 +74,7 @@ test('PageViewEventPlugin records page view event', async (t: TestController) =>
 
     await t
         .expect(eventType)
-        .eql('com.amazon.rum.page_view_event')
+        .eql(PAGE_VIEW_EVENT_TYPE)
         .expect(eventDetails)
         .contains({
             pageId: '/page_view_two',

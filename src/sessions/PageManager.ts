@@ -2,8 +2,7 @@ import { Config } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/Plugin';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
-
-export const PAGE_VIEW_TYPE = 'com.amazon.rum.page_view_event';
+import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
 
 export type Page = {
     pageId: string;
@@ -53,8 +52,8 @@ export class PageManager {
         this.recordInteraction = false;
         this.virtualPageLoadTimer = new VirtualPageLoadTimer(
             this,
-            this.config,
-            this.record
+            config,
+            record
         );
     }
 
@@ -110,18 +109,37 @@ export class PageManager {
     }
 
     private createNextPage(pageId: string) {
-        let candidateTime = Date.now();
+        let startTime = Date.now();
         const interactionTime = this.virtualPageLoadTimer.latestInteractionTime;
-        // Only time when the latestInteractionTime is within timeout limit, time the page
-        if (candidateTime - interactionTime <= this.config.routeChangeTimeout) {
-            candidateTime = interactionTime;
+
+        // The latest interaction time (latest) is not guaranteed to be the
+        // interaction that triggered the route change (actual). There are two
+        // cases to consider:
+        //
+        // 1. Latest is older than actual. This can happen if the user navigates
+        // with the browser back/forward button, or if the interaction is not a
+        // click/keyup event.
+        //
+        // 2. Latest is newer than actual. This can happen if the user clicks or
+        // types in the time between actual and when recordPageView is called.
+        //
+        // We believe that case (1) has a high risk of skewing route change
+        // timing metrics because (a) browser navigation is common and (b) there
+        // is no limit on when the lastest interaction may have occurred. To
+        // help mitigate this, if the route change is already longer than the
+        // timeout, then we do not bother timing the route change.
+        //
+        // We do not believe that case (2) has a high risk of skewing route
+        // change timing, and therefore ignore case (2).
+        if (startTime - interactionTime <= this.config.routeChangeTimeout) {
+            startTime = interactionTime;
             this.virtualPageLoadTimer.startTiming();
         }
         this.page = {
             pageId,
             parentPageId: this.page.pageId,
             interaction: this.page.interaction + 1,
-            start: candidateTime
+            start: startTime
         };
     }
 
@@ -168,7 +186,7 @@ export class PageManager {
     }
 
     private recordPageViewEvent() {
-        this.record(PAGE_VIEW_TYPE, this.createPageViewEvent());
+        this.record(PAGE_VIEW_EVENT_TYPE, this.createPageViewEvent());
     }
 
     /**

@@ -80,7 +80,7 @@ The snippet below shows several configuration options with the body of the snipp
 | recordResourceUrl | Boolean | `true` | When this field is `false`, the web client will not record the URLs of resources downloaded by your application.<br/><br/> Some types of resources (e.g., profile images) may be referenced by URLs which contain PII. If this applies to your application, you must set this field to `false` to comply with CloudWatch RUM's shared responsibility model. |
 | sessionEventLimit | Number | `200` | The maximum number of events to record during a single session. |
 | sessionSampleRate | Number | `1` | The proportion of sessions that will be recorded by the web client, specified as a unit interval (a number greater than or equal to 0 and less than or equal to 1). When this field is `0`, no sessions will be recorded. When this field is `1`, all sessions will be recorded. |
-| routeChangeLoadCheckInterval | Number | `100` | The interval at which the Web Client will use to check the current virtual page's load status.
+| routeChangePollInterval | Number | `100` | The interval at which the Web Client will use to check the current virtual page's load status.
 | routeChangeTimeout | Number | `1000` | The maximum timeout value (ms) for a virtual page load. If your application's virtual page does not load within the timeout value, the web client will not record the page load data. If your application takes longer time to load (i.e more than 10 seconds) and you wish to see the page load data, it is recommended to increase the timeout threshold.|
 | telemetries | [Telemetry Config Array](#telemetry-config-array) | `[]` | See [Telemetry Config Array](#telemetry-config-array) |
 
