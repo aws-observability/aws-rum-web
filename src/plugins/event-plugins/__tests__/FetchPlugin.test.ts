@@ -163,6 +163,7 @@ describe('FetchPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'Timeout'
             }
         });
@@ -194,6 +195,7 @@ describe('FetchPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'Error',
                 message: 'Timeout',
                 stack: expect.stringContaining('FetchPlugin.test.ts')
@@ -513,6 +515,7 @@ describe('FetchPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'FetchError',
                 message: 'timeout',
                 stack: 'stack trace'
@@ -547,6 +550,7 @@ describe('FetchPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'FetchError',
                 message: 'timeout'
             }
