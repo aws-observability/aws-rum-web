@@ -9,13 +9,9 @@
             "type": "string",
             "description": "Schema version."
         },
-        "targetUrl": {
-            "description": "Page URL",
-            "type": "string"
-        },
         "initiatorType": {
             "type": "string",
-            "enum": ["navigation"]
+            "enum": ["navigation", "route_change"]
         },
         "navigationType": {
             "description": "An unsigned short which indicates how the navigation to this page was done. Possible values are:TYPE_NAVIGATE (0), TYPE_RELOAD (1), TYPE_BACK_FORWARD (2), TYPE_RESERVED (255)",
@@ -120,33 +116,5 @@
         }
     },
     "additionalProperties": false,
-    "required": [
-        "version",
-        "initiatorType",
-        "startTime",
-        "unloadEventStart",
-        "promptForUnload",
-        "redirectStart",
-        "redirectTime",
-        "fetchStart",
-        "domainLookupStart",
-        "dns",
-        "connectStart",
-        "connect",
-        "secureConnectionStart",
-        "tlsTime",
-        "requestStart",
-        "timeToFirstByte",
-        "responseStart",
-        "responseTime",
-        "domInteractive",
-        "domContentLoadedEventStart",
-        "domContentLoaded",
-        "domComplete",
-        "domProcessingTime",
-        "loadEventStart",
-        "loadEventTime",
-        "duration",
-        "navigationTimingLevel"
-    ]
+    "required": ["version", "initiatorType", "startTime", "duration"]
 }

@@ -9,7 +9,12 @@ import {
     record,
     recordPageView,
     xRayOffContext,
-    xRayOnContext
+    xRayOnContext,
+    mockFetch,
+    mockFetchWith500,
+    mockFetchWithError,
+    mockFetchWithErrorObject,
+    mockFetchWithErrorObjectAndStack
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../Plugin';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
@@ -53,49 +58,7 @@ const Request = function (input: RequestInfo, init?: RequestInit) {
         }
     }
 };
-
-const mockFetch = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.resolve({
-            status: 200,
-            statusText: 'OK',
-            headers: new Headers({ 'Content-Length': '125' }),
-            body: '{}',
-            ok: true
-        } as any)
-);
-
 global.fetch = mockFetch;
-
-const mockFetchWith500 = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.resolve({
-            status: 500,
-            statusText: 'InternalError',
-            headers: {},
-            body: '',
-            ok: false
-        } as any)
-);
-
-const mockFetchWithError = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.reject('Timeout')
-);
-
-const mockFetchWithErrorObject = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.reject(new Error('Timeout'))
-);
-
-const mockFetchWithErrorObjectAndStack = jest.fn(
-    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
-        Promise.reject({
-            name: 'FetchError',
-            message: 'timeout',
-            stack: 'stack trace'
-        })
-);
 
 describe('FetchPlugin tests', () => {
     beforeEach(() => {
@@ -198,7 +161,7 @@ describe('FetchPlugin tests', () => {
                 version: '1.0.0',
                 type: 'Error',
                 message: 'Timeout',
-                stack: expect.stringContaining('FetchPlugin.test.ts')
+                stack: expect.stringContaining('test-utils.ts')
             }
         });
     });
