@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RUM Integ Test for SPA</title>
+        <script src="./loader_spa.js"></script>
+
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+        <script>
+            function pushStateOneToHistory() {
+                createXMLRequest();
+                window.history.pushState(
+                    { state: 'one' },
+                    'Page One',
+                    '/page_view_one?search=foo#hash1'
+                );
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function pushStateTwoToHistory() {
+                createXMLRequest();
+                window.history.pushState(
+                    { state: 'two' },
+                    'Page Two',
+                    '/page_view_two?search=bar#hash2'
+                );
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function replaceState() {
+                createXMLRequest();
+                window.history.replaceState(
+                    { state: 'one' },
+                    'Page Ten',
+                    '/page_view_Ten?search=bar#asdf'
+                );
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function defaultState() {
+                createXMLRequest();
+                window.history.replaceState(
+                    { state: 'one' },
+                    'Page Ten',
+                    '/page_event.html'
+                );
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function createHashChange() {
+                createXMLRequest();
+                location.hash = 'hash_change';
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function createHashChangeWithPushState() {
+                createXMLRequest();
+                window.history.pushState(
+                    { state: 'two' },
+                    'Page Two',
+                    '#hash_changed_pushState'
+                );
+                createXMLRequest();
+                beginMutation(50);
+            }
+            function back() {
+                createXMLRequest();
+                window.history.back();
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function back() {
+                createXMLRequest();
+                window.history.back();
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function forward() {
+                createXMLRequest();
+                window.history.forward();
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function go(number) {
+                createXMLRequest();
+                window.history.go(number);
+                createXMLRequest();
+                beginMutation(50);
+            }
+
+            function beginMutation(epoch) {
+                let i = 0;
+                function helper() {
+                    domMutation();
+                    if (i++ < epoch) {
+                        console.log('MUTATING');
+                        setTimeout(helper, 10);
+                    }
+                }
+                helper();
+            }
+
+            function dispatch() {
+                cwr('dispatch');
+            }
+
+            function clearRequestResponse() {
+                document.getElementById('request_url').innerText = '';
+                document.getElementById('request_header').innerText = '';
+                document.getElementById('request_body').innerText = '';
+
+                document.getElementById('response_status').innerText = '';
+                document.getElementById('response_header').innerText = '';
+                document.getElementById('response_body').innerText = '';
+            }
+
+            function timeoutLoad() {
+                createXMLRequest();
+                window.history.pushState(
+                    { state: 'two' },
+                    'Page Two',
+                    '/page_view_two?search=foo#hash2'
+                );
+                beginMutation(200);
+            }
+
+            function createXMLRequest() {
+                var xhr = new XMLHttpRequest((async = true));
+                var url = 'https://aws.amazon.com';
+                xhr.open('GET', url, true);
+                xhr.send();
+
+                setTimeout(sendFetchWithParam, 20);
+            }
+
+            function sendFetchWithParam() {
+                fetch('https://aws.amazon.com', {
+                    method: 'POST',
+                    body: JSON.stringify('data'),
+                    headers: new Headers({
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    })
+                });
+
+                setTimeout(sendFetchWithoutParam, 20);
+            }
+
+            function sendFetchWithoutParam() {
+                fetch('https://aws.amazon.com');
+            }
+
+            function domMutation() {
+                createElement();
+                deleteElement();
+            }
+
+            function createElement() {
+                const div = document.createElement('div');
+                div.setAttribute('id', 'mockMutation');
+                const welcome = document.getElementById('welcome');
+                document.body.insertBefore(div, welcome);
+            }
+
+            function deleteElement() {
+                const div = document.getElementById('mockMutation');
+                div.remove();
+            }
+        </script>
+
+        <style>
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <p id="welcome">This application is used for RUM integ testing.</p>
+        <hr />
+        <button id="pushStateOneToHistory" onclick="pushStateOneToHistory()">
+            Push State One to History
+        </button>
+        <button id="pushStateTwoToHistory" onclick="pushStateTwoToHistory()">
+            Push State Two to History
+        </button>
+        <button id="replaceState" onclick="replaceState()">
+            Replace current state in History
+        </button>
+        <button id="replaceDefault" onclick="defaultState()">
+            Return to default
+        </button>
+        <button id="createHashChange" onclick="createHashChange()">
+            Create HashChange
+        </button>
+        <button id="timeOutLoad" onclick="timeoutLoad()">
+            Create TimeoutLoad
+        </button>
+        <button id="back" onclick="back()">Back</button>
+        <button id="forward" onclick="forward()">Forward</button>
+        <button id="go-back" onclick="go(-2)">Go (back two pages)</button>
+        <button id="go-forward" onclick="go(2)">Go (forward two pages)</button>
+        <hr />
+        <button id="dispatch" onclick="dispatch()">Dispatch</button>
+        <button id="clearRequestResponse" onclick="clearRequestResponse()">
+            Clear
+        </button>
+        <hr />
+        <span id="request"></span>
+        <span id="response"></span>
+        <table>
+            <tr>
+                <td>Request URL</td>
+                <td id="request_url"></td>
+            </tr>
+            <tr>
+                <td>Request Header</td>
+                <td id="request_header"></td>
+            </tr>
+            <tr>
+                <td>Request Body</td>
+                <td id="request_body"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td>Response Status Code</td>
+                <td id="response_status"></td>
+            </tr>
+            <tr>
+                <td>Response Header</td>
+                <td id="response_header"></td>
+            </tr>
+            <tr>
+                <td>Response Body</td>
+                <td id="response_body"></td>
+            </tr>
+        </table>
+    </body>
+</html>

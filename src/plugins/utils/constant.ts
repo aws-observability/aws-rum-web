@@ -24,3 +24,6 @@ export const DOM_EVENT_TYPE = 'com.amazon.rum.dom_event';
 
 // JS error event schemas
 export const JS_ERROR_EVENT_TYPE = 'com.amazon.rum.js_error_event';
+
+// Page view event
+export const PAGE_VIEW_EVENT_TYPE = 'com.amazon.rum.page_view_event';
