@@ -20,7 +20,7 @@ const isObject = (error: any): boolean => {
     return (type === 'object' || type === 'function') && !!error;
 };
 
-export const buildBaseJsErrorEvent = (errorEvent: ErrorEvent): JSErrorEvent => {
+const buildBaseJsErrorEvent = (errorEvent: ErrorEvent): JSErrorEvent => {
     const rumEvent: JSErrorEvent = {
         version: '1.0.0',
         type: 'undefined',
