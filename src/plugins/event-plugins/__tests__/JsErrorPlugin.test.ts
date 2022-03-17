@@ -423,7 +423,7 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
-    test('when unhandledrejection error event outputs empty object as reason then it is recorded as string', async () => {
+    test('when unhandledrejection error event outputs empty object as reason then message is recorded as undefined', async () => {
         // Init
         const plugin: JsErrorPlugin = new JsErrorPlugin();
 
@@ -454,7 +454,7 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
-    test('when unhandledrejection error event outputs null object as reason then it is recorded as string', async () => {
+    test('when unhandledrejection error event outputs null object as reason then message is recorded as undefined', async () => {
         // Init
         const plugin: JsErrorPlugin = new JsErrorPlugin();
 
