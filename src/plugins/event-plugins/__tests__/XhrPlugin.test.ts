@@ -258,6 +258,7 @@ describe('XhrPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'XMLHttpRequest error',
                 message: '0'
             }
@@ -342,6 +343,7 @@ describe('XhrPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'XMLHttpRequest timeout'
             }
         });
@@ -428,6 +430,7 @@ describe('XhrPlugin tests', () => {
                 method: 'GET'
             },
             error: {
+                version: '1.0.0',
                 type: 'XMLHttpRequest abort'
             }
         });
