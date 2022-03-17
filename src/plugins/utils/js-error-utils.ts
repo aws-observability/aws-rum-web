@@ -20,7 +20,7 @@ const isObject = (error: any): boolean => {
     return (type === 'object' || type === 'function') && !!error;
 };
 
-const buildBaseJsErrorEvent = (errorEvent: ErrorEvent): JSErrorEvent => {
+export const buildBaseJsErrorEvent = (errorEvent: ErrorEvent): JSErrorEvent => {
     const rumEvent: JSErrorEvent = {
         version: '1.0.0',
         type: 'undefined',
@@ -48,7 +48,10 @@ const appendErrorPrimitiveDetails = (
     rumEvent: JSErrorEvent,
     error: any
 ): void => {
-    rumEvent.type = error.toString();
+    // Keep unhandledrejection as type as it will write to rumEvent.message
+    if (rumEvent.type !== 'unhandledrejection') {
+        rumEvent.type = error.toString();
+    }
     rumEvent.message = error.toString();
 };
 
@@ -60,7 +63,9 @@ const appendErrorObjectDetails = (
     // error may extend Error here, but it is not guaranteed (i.e., it could
     // be any object)
     if (error.name) {
-        rumEvent.type = error.name;
+        rumEvent.type === 'unhandledrejection'
+            ? (rumEvent.type += ': ' + error.name)
+            : (rumEvent.type = error.name);
     }
     if (error.message) {
         rumEvent.message = error.message;

@@ -1,7 +1,10 @@
 import { JSErrorEvent } from '../../events/js-error-event';
 import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
-import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
+import {
+    errorEventToJsErrorEvent,
+    buildBaseJsErrorEvent
+} from '../utils/js-error-utils';
 
 export const JS_ERROR_EVENT_PLUGIN_ID = 'com.amazonaws.rum.js-error';
 
@@ -70,12 +73,10 @@ export class JsErrorPlugin implements Plugin {
     };
 
     private promiseRejectEventHandler = (event: PromiseRejectionEvent) => {
-        const errorEvent: JSErrorEvent = {
-            version: '1.0.0',
+        this.eventHandler({
             type: event.type,
-            message: event.reason
-        };
-        this.recordEvent(JS_ERROR_EVENT_TYPE, errorEvent);
+            error: event.reason
+        } as ErrorEvent);
     };
 
     private addEventHandler(): void {

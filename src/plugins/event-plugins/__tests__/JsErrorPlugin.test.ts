@@ -422,4 +422,102 @@ describe('JsErrorPlugin tests', () => {
             })
         );
     });
+
+    test('when unhandledrejection error event outputs empty object as reason then it is recorded as string', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        // JSDOM has not implemented PromiseRejectionEvent, so we 'extend'
+        // Event to have the same functionality
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => {}),
+                reason: {}
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'unhandledrejection',
+                message: 'undefined'
+            })
+        );
+    });
+
+    test('when unhandledrejection error event outputs null object as reason then it is recorded as string', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        // JSDOM has not implemented PromiseRejectionEvent, so we 'extend'
+        // Event to have the same functionality
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => {}),
+                reason: null
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'unhandledrejection',
+                message: 'undefined'
+            })
+        );
+    });
+
+    test('when unhandledrejection error event outputs error object as reason then error object is used', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        // JSDOM has not implemented PromiseRejectionEvent, so we 'extend'
+        // Event to have the same functionality
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => {}),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'unhandledrejection: TypeError',
+                message: 'NetworkError when attempting to fetch resource.',
+                stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+            })
+        );
+    });
 });
