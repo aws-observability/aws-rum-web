@@ -68,7 +68,7 @@ export type PartialConfig = {
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
     recordResourceUrl?: boolean;
-    routeChangePollInterval?: number;
+    routeChangeComplete?: number;
     routeChangeTimeout?: number;
     sessionEventLimit?: number;
     sessionLengthSeconds?: number;
@@ -115,7 +115,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
-        routeChangePollInterval: 100,
+        routeChangeComplete: 100,
         routeChangeTimeout: 1000,
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
@@ -160,7 +160,7 @@ export type Config = {
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
     recordResourceUrl: boolean;
-    routeChangePollInterval: number;
+    routeChangeComplete: number;
     routeChangeTimeout: number;
     sessionEventLimit: number;
     sessionLengthSeconds: number;

@@ -85,7 +85,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         // Initialize timer objects and start observing
         this.periodicCheckerId = setInterval(
             this.checkLoadStatus,
-            this.config.routeChangePollInterval
+            this.config.routeChangeComplete
         );
         this.timeoutCheckerId = setTimeout(
             this.declareTimeout,
@@ -238,7 +238,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         clearInterval(this.periodicCheckerId);
         this.periodicCheckerId = setInterval(
             this.checkLoadStatus,
-            this.config.routeChangePollInterval
+            this.config.routeChangeComplete
         );
     };
 
