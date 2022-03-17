@@ -1,10 +1,6 @@
-import { JSErrorEvent } from '../../events/js-error-event';
 import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
-import {
-    errorEventToJsErrorEvent,
-    buildBaseJsErrorEvent
-} from '../utils/js-error-utils';
+import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 
 export const JS_ERROR_EVENT_PLUGIN_ID = 'com.amazonaws.rum.js-error';
 
