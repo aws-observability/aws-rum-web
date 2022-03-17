@@ -105,15 +105,15 @@ test('when page is denied then page view is not recorded', async (t: TestControl
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
-    );
-    const eventDetails = JSON.parse(json.RumEvents[0].details);
-    await t
-        .expect(eventDetails.pageId)
-        .eql('/page_view_two')
-        .expect(eventDetails.interaction)
-        .eql(1)
-        .expect(eventDetails.pageInteractionId)
-        .eql('/page_view_two-1');
+    const request_body = JSON.parse(await REQUEST_BODY.textContent);
+
+    const pages = request_body.RumEvents.filter(
+        (e) => e.type === PAGE_VIEW_EVENT_TYPE
+    ).map((e) => JSON.parse(e.details));
+
+    await t.expect(pages.length).eql(1).expect(pages[0]).contains({
+        pageId: '/page_view_two',
+        interaction: 1,
+        pageInteractionId: '/page_view_two-1'
+    });
 });
