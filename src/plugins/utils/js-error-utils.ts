@@ -48,7 +48,10 @@ const appendErrorPrimitiveDetails = (
     rumEvent: JSErrorEvent,
     error: any
 ): void => {
-    rumEvent.type = error.toString();
+    // Keep unhandledrejection as type as it will write to rumEvent.message
+    if (rumEvent.type !== 'unhandledrejection') {
+        rumEvent.type = error.toString();
+    }
     rumEvent.message = error.toString();
 };
 
