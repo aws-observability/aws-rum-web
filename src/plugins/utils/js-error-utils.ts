@@ -63,9 +63,7 @@ const appendErrorObjectDetails = (
     // error may extend Error here, but it is not guaranteed (i.e., it could
     // be any object)
     if (error.name) {
-        rumEvent.type === 'unhandledrejection'
-            ? (rumEvent.type += ': ' + error.name)
-            : (rumEvent.type = error.name);
+        rumEvent.type = error.name;
     }
     if (error.message) {
         rumEvent.message = error.message;

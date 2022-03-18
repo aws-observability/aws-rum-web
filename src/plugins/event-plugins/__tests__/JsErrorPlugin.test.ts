@@ -514,7 +514,7 @@ describe('JsErrorPlugin tests', () => {
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
                 version: '1.0.0',
-                type: 'unhandledrejection: TypeError',
+                type: 'TypeError',
                 message: 'NetworkError when attempting to fetch resource.',
                 stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
             })
