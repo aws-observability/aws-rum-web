@@ -69,7 +69,6 @@ export class JsErrorPlugin implements Plugin {
     };
 
     private promiseRejectEventHandler = (event: PromiseRejectionEvent) => {
-        // TODO: Improve current behavior to correctly indicate error comes from PromiseRejectionEvent
         this.eventHandler({
             type: event.type,
             error: event.reason
