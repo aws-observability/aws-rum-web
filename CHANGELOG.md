@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.5.0-alpha.0 (2022-03-18)
+
+
+### Features
+* Capture SPA route change timing ([#124](https://github.com/aws-observability/aws-rum-web/issues/124)) ([263978a](https://github.com/aws-observability/aws-rum-web/commit/263978a9bf9074d3952842de3a822f8ad33224ea))
+
+
 ## [1.3.0](https://github.com/aws-observability/aws-rum-web/compare/v1.2.1...v1.3.0) (2022-03-08)
 
 
