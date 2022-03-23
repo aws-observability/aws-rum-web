@@ -165,11 +165,12 @@ client will then add the `X-Amzn-Trace-Id` header in each HTTP request. The
 example below shows what this configuration looks like, with all other
 configurations removed for readability.
 
-> :warning: Enabling `addXRayTraceIdHeader` will cause a new header to be added
-to all HTTP requests. Adding headers can modify CORS behavior, including causing
-the request to fail. Adding headers may also alter  the request signature,
-causing the request to fail. Test your application with this header enabled
-before enabling this option in a production environment.
+> **:warning: Enabling `addXRayTraceIdHeader` may cause HTTP requests to fail.**
+>
+> Enabling `addXRayTraceIdHeader` adds a header to HTTP requests. Adding headers
+can modify CORS behavior, including causing the request to fail. Adding headers
+may also alter  the request signature, causing the request to fail. Test your
+application before enabling this option in a production environment.
 
 ```html
 <script>
