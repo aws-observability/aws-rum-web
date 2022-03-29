@@ -49,4 +49,10 @@ export interface Plugin {
      * @param config Data that the plugin will use to update its config.
      */
     update?(config: object): void;
+
+    /**
+     * Toggle allowDynamicDomEventListeners on/off.
+     * @param allow Enables/disables MutationObserver of DOM plugin .
+     */
+    allowDynamicDomEventListeners?(allow: boolean): void;
 }

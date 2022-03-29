@@ -22,6 +22,10 @@ const button5: Selector = Selector(`#button5`);
 const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 
+const toggleOnDynamicListeners: Selector = Selector(
+    `#toggleOnDynamicListeners`
+);
+
 fixture('DomEventPlugin').page('http://localhost:8080/dom_event.html');
 
 test('when document click events configured then button click is recorded', async (t: TestController) => {
@@ -300,7 +304,7 @@ test('when new DOM events are registered and then a button is clicked, the event
     }
 });
 
-test('when listening for a click on a dynamically added element given an element id, the event is recorded', async (t: TestController) => {
+test('when allowDynamicDomEventListeners is off by default and listening for a click on a dynamically added element given an element id, the event is not recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
@@ -329,12 +333,88 @@ test('when listening for a click on a dynamically added element given an element
             event: 'click',
             elementId: 'button4'
         });
+
+    // plugin initialized to listen to click events on document so one event will be recorded
+    await t.expect(events.length).eql(1);
 });
 
-test('when listening for a click on a dynamically added element given a CSS locator, the event is recorded', async (t: TestController) => {
+test('when allowDynamicDomEventListeners is toggled on and listening for a click on a dynamically added element given an element id, the event is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
+        .wait(300)
+        .click(toggleOnDynamicListeners)
+        .wait(300)
+        .click(dynamicallyCreateButton)
+        .wait(300)
+        .click(button4)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).elementId === 'button4'
+    );
+
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
+
+    await t
+        .expect(eventType)
+        .eql(DOM_EVENT_TYPE)
+        .expect(eventDetails)
+        .contains({
+            event: 'click',
+            elementId: 'button4'
+        });
+
+    // plugin initialized to listen to click events on document so one at least one event will be recorded
+    await t.expect(events.length).gt(1);
+});
+
+test('when allowDynamicDomEventListeners is off by default and listening for a click on a dynamically added element given a CSS locator, the event is not recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(dynamicallyCreateButton)
+        .wait(300)
+        .click(button4)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).cssLocator === '[label="label1"]'
+    );
+
+    for (let i = 0; i < events.length; i++) {
+        let eventType = events[i].type;
+        let eventDetails = JSON.parse(events[i].details);
+
+        await t
+            .expect(events.length)
+            .eql(1)
+            .expect(eventType)
+            .eql(DOM_EVENT_TYPE)
+            .expect(eventDetails)
+            .notContains({
+                event: 'click',
+                cssLocator: '[label="label1"]'
+            });
+    }
+});
+
+test('when allowDynamicDomEventListeners is toggled on and listening for a click on a dynamically added element given a CSS locator, the event is recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(toggleOnDynamicListeners)
         .wait(300)
         .click(dynamicallyCreateButton)
         .wait(300)
@@ -366,10 +446,48 @@ test('when listening for a click on a dynamically added element given a CSS loca
     }
 });
 
-test('when listening for a click given an element id on an existing element and a dynamically added element, both events are recorded', async (t: TestController) => {
+test('when allowDynamicDomEventListeners is off by default and listening for a click given a CSS selector on an existing element and a dynamically added element, only one event is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
+        .wait(300)
+        .click(dynamicallyCreateButton)
+        .wait(300)
+        .click(button4)
+        .click(button2)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) =>
+            e.type === DOM_EVENT_TYPE &&
+            JSON.parse(e.details).cssLocator === '[label="label1"]'
+    );
+
+    for (let i = 0; i < events.length; i++) {
+        let eventType = events[i].type;
+        let eventDetails = JSON.parse(events[i].details);
+
+        await t
+            .expect(events.length)
+            .eql(1)
+            .expect(eventType)
+            .eql(DOM_EVENT_TYPE)
+            .expect(eventDetails)
+            .contains({
+                event: 'click',
+                cssLocator: '[label="label1"]'
+            });
+    }
+});
+
+test('when allowDynamicDomEventListeners is toggled on and listening for a click given a CSS selector on an existing element and a dynamically added element, both events are recorded', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(toggleOnDynamicListeners)
         .wait(300)
         .click(dynamicallyCreateButton)
         .wait(300)

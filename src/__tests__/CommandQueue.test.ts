@@ -43,6 +43,7 @@ const dispatch = jest.fn();
 const dispatchBeacon = jest.fn();
 const setAwsCredentials = jest.fn();
 const allowCookies = jest.fn();
+const allowDynamicDomEventListeners = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
 const registerDomEvents = jest.fn();
@@ -54,6 +55,7 @@ jest.mock('../orchestration/Orchestration', () => ({
         dispatchBeacon,
         setAwsCredentials,
         allowCookies,
+        allowDynamicDomEventListeners,
         recordPageView,
         recordError,
         registerDomEvents
@@ -255,6 +257,16 @@ describe('CommandQueue tests', () => {
         expect(allowCookies).toHaveBeenCalled();
     });
 
+    test('allowDynamicDomEventListeners calls Orchestration.allowDynamicDomEventListeners', async () => {
+        const cq: CommandQueue = getCommandQueue();
+        await cq.push({
+            c: 'allowDynamicDomEventListeners',
+            p: false
+        });
+        expect(Orchestration).toHaveBeenCalled();
+        expect(allowDynamicDomEventListeners).toHaveBeenCalled();
+    });
+
     test('recordPageView calls Orchestration.recordPageView', async () => {
         const cq: CommandQueue = getCommandQueue();
         await cq.push({
@@ -290,6 +302,19 @@ describe('CommandQueue tests', () => {
         await cq
             .push({
                 c: 'allowCookies',
+                p: ''
+            })
+            .then((v) => fail('command should fail'))
+            .catch((e) =>
+                expect(e.message).toEqual('IncorrectParametersException')
+            );
+    });
+
+    test('allowDynamicDomEventListeners fails when paylod is non-boolean', async () => {
+        const cq: CommandQueue = getCommandQueue();
+        await cq
+            .push({
+                c: 'allowDynamicDomEventListeners',
                 p: ''
             })
             .then((v) => fail('command should fail'))

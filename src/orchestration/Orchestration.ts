@@ -57,6 +57,7 @@ export type PartialCookieAttributes = {
 
 export type PartialConfig = {
     allowCookies?: boolean;
+    allowDynamicDomEventListeners?: boolean;
     batchLimit?: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes?: PartialCookieAttributes;
@@ -105,6 +106,7 @@ export const defaultCookieAttributes = (): CookieAttributes => {
 export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
     return {
         allowCookies: false,
+        allowDynamicDomEventListeners: false,
         batchLimit: 100,
         cookieAttributes,
         disableAutoPageView: false,
@@ -136,6 +138,7 @@ export type CookieAttributes = {
 
 export type Config = {
     allowCookies: boolean;
+    allowDynamicDomEventListeners: boolean;
     batchLimit: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes: CookieAttributes;
@@ -281,6 +284,13 @@ export class Orchestration {
      */
     public allowCookies(allow: boolean) {
         this.config.allowCookies = allow;
+    }
+
+    /**
+     * @param allow when {@code false}, the RUM web client will not listen to dynamically added DOM targets.
+     */
+    public allowDynamicDomEventListeners(allow: boolean) {
+        this.pluginManager.allowDynamicDomEventListeners(allow);
     }
 
     /**

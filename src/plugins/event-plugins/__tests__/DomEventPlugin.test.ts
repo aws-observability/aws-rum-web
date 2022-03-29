@@ -353,7 +353,7 @@ describe('DomEventPlugin tests', () => {
         );
     });
 
-    test('when listening for a click given an element id on an existing element and a dynamically added element, both events are recorded', async () => {
+    test('when allowDynamicDomEventListeners is false by default and an element is dynamically added to the DOM then only the event on an existing element is recorded', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"></button>';
         const plugin: DomEventPlugin = new DomEventPlugin({
@@ -361,6 +361,48 @@ describe('DomEventPlugin tests', () => {
         });
 
         // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.id = 'button1';
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '#button1'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        for (let i = 0; i < record.length; i++) {
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining({
+                    version: '1.0.0',
+                    event: 'click',
+                    elementId: 'button1'
+                })
+            );
+        }
+    });
+
+    test('when allowDynamicDomEventListeners is true by default and an element is dynamically added to the DOM then both events identified by the target event are recorded', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '#button1' }]
+        });
+
+        // Run
+        context.config.allowDynamicDomEventListeners = true;
         plugin.load(context);
 
         // Dynamically add an element
@@ -392,6 +434,9 @@ describe('DomEventPlugin tests', () => {
                 })
             );
         }
+
+        //Clean up, set back to default value
+        context.config.allowDynamicDomEventListeners = false;
     });
 
     test('when DomEventPlugin is disabled then event for dynamically added element is not recorded', async () => {
@@ -454,5 +499,93 @@ describe('DomEventPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('when allowDynamicDomEventListeners is toggled on and an element is dynamically added to the DOM then both events identified by the target event are recorded', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '#button1' }]
+        });
+
+        // Run
+        plugin.load(context);
+        plugin.allowDynamicDomEventListeners(true);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.id = 'button1';
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '#button1'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        for (let i = 0; i < record.length; i++) {
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining({
+                    version: '1.0.0',
+                    event: 'click',
+                    elementId: 'button1'
+                })
+            );
+        }
+    });
+
+    test('when allowDynamicDomEventListeners is toggled off and an element is dynamically added to the DOM then only the event on an existing element is recorded', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '#button1' }]
+        });
+
+        // Run
+        context.config.allowDynamicDomEventListeners = true;
+        plugin.load(context);
+        plugin.allowDynamicDomEventListeners(false);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.id = 'button1';
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '#button1'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        for (let i = 0; i < record.length; i++) {
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining({
+                    version: '1.0.0',
+                    event: 'click',
+                    elementId: 'button1'
+                })
+            );
+        }
+
+        //Clean up, set back to default value
+        context.config.allowDynamicDomEventListeners = false;
     });
 });

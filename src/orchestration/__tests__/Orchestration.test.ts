@@ -35,12 +35,15 @@ const updatePlugin = jest.fn();
 const enablePlugins = jest.fn();
 const disablePlugins = jest.fn();
 
+const allowDynamicDomEventListeners = jest.fn();
+
 jest.mock('../../plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
         addPlugin: addPlugin,
         enable: enablePlugins,
         disable: disablePlugins,
-        updatePlugin: updatePlugin
+        updatePlugin: updatePlugin,
+        allowDynamicDomEventListeners: allowDynamicDomEventListeners
     }))
 }));
 
@@ -135,6 +138,7 @@ describe('Orchestration tests', () => {
         expect(EventCache).toHaveBeenCalledTimes(1);
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             allowCookies: false,
+            allowDynamicDomEventListeners: false,
             batchLimit: 100,
             cookieAttributes: {
                 unique: false,
@@ -333,10 +337,14 @@ describe('Orchestration tests', () => {
         expect(actual.sort()).toEqual(expected.sort());
     });
 
-    test('when an additional DOM event is provided then it is added to the DOM event plugin config', async () => {
+    test('when the DOM event plugin is updated then provided target event is set to be the target DOM event', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {
-            eventPluginsToLoad: [new DomEventPlugin()]
+            eventPluginsToLoad: [
+                new DomEventPlugin({
+                    events: [{ event: 'click', elementId: 'button1' }]
+                })
+            ]
         });
 
         orchestration.registerDomEvents([

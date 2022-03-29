@@ -65,6 +65,13 @@ export class CommandQueue {
             } else {
                 throw new Error('IncorrectParametersException');
             }
+        },
+        allowDynamicDomEventListeners: (allow: boolean): void => {
+            if (typeof allow === 'boolean') {
+                this.orchestration.allowDynamicDomEventListeners(allow);
+            } else {
+                throw new Error('IncorrectParametersException');
+            }
         }
     };
 

@@ -31,10 +31,12 @@ export type PartialDomEventPluginConfig = {
 };
 
 export type DomEventPluginConfig = {
+    allowDynamicDomEventListeners?: boolean;
     events: TargetDomEvent[];
 };
 
 const defaultConfig: DomEventPluginConfig = {
+    allowDynamicDomEventListeners: false,
     events: []
 };
 
@@ -62,16 +64,26 @@ export class DomEventPlugin implements Plugin {
     }
 
     load(context: PluginContext): void {
+        this.config.allowDynamicDomEventListeners =
+            context.config.allowDynamicDomEventListeners;
+
         this.recordEvent = context.record;
         this.enable();
     }
 
     enable(): void {
+        if (document.readyState !== 'complete') {
+            window.addEventListener('load', () => this.enable());
+            return;
+        }
+
         if (this.enabled) {
             return;
         }
         this.addListeners();
-        this.observeDOMMutation();
+        this.allowDynamicDomEventListeners(
+            this.config.allowDynamicDomEventListeners
+        );
         this.enabled = true;
     }
 
@@ -80,7 +92,9 @@ export class DomEventPlugin implements Plugin {
             return;
         }
         this.removeListeners();
-        this.observer.disconnect();
+        if (this.observer) {
+            this.observer.disconnect();
+        }
         this.enabled = false;
     }
 
@@ -93,6 +107,15 @@ export class DomEventPlugin implements Plugin {
             this.addEventHandler(domEvent);
             this.config.events.push(domEvent);
         });
+    }
+
+    allowDynamicDomEventListeners(allow: boolean): void {
+        if (allow && !this.observer) {
+            this.observeDOMMutation();
+        } else if (!allow && this.observer) {
+            this.observer.disconnect();
+        }
+        this.config.allowDynamicDomEventListeners = allow;
     }
 
     private removeListeners() {
