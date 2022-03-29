@@ -2,7 +2,7 @@ import { Session, SessionManager } from '../sessions/SessionManager';
 import { v4 } from 'uuid';
 import { MetaData } from '../events/meta-data';
 import { Config } from '../orchestration/Orchestration';
-import { PageManager } from '../sessions/PageManager';
+import { PageAttributes, PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
     UserDetails,
@@ -65,9 +65,9 @@ export class EventCache {
     /**
      * Update the current page interaction for the session.
      */
-    public recordPageView = (pageId: string) => {
+    public recordPageView = (payload: string | PageAttributes) => {
         if (this.isCurrentUrlAllowed()) {
-            this.pageManager.recordPageView(pageId);
+            this.pageManager.recordPageView(payload);
         }
     };
 

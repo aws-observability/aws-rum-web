@@ -16,6 +16,12 @@ export type Attributes = {
     pageId: string;
     parentPageId?: string;
     interaction?: number;
+    pageTags?: string[];
+};
+
+export type PageAttributes = {
+    pageId: string;
+    pageTags?: string[];
 };
 
 /**
@@ -68,7 +74,14 @@ export class PageManager {
         };
     }
 
-    public recordPageView(pageId: string) {
+    public recordPageView(payload: string | PageAttributes) {
+        let pageId;
+        if (typeof payload === 'string') {
+            pageId = payload;
+        } else {
+            pageId = payload.pageId;
+        }
+
         if (this.useCookies()) {
             this.recordInteraction = true;
         }
@@ -85,7 +98,9 @@ export class PageManager {
         }
 
         // Attributes will be added to all events as meta data
-        this.collectAttributes();
+        this.collectAttributes(
+            typeof payload === 'object' ? payload : undefined
+        );
 
         // The SessionManager will update its cookie with the new page
         this.recordPageViewEvent();
@@ -118,7 +133,7 @@ export class PageManager {
         };
     }
 
-    private collectAttributes() {
+    private collectAttributes(customPageAttributes?: PageAttributes) {
         this.attributes = {
             title: document.title,
             pageId: this.page.pageId
@@ -129,6 +144,12 @@ export class PageManager {
             if (this.page.parentPageId !== undefined) {
                 this.attributes.parentPageId = this.page.parentPageId;
             }
+        }
+
+        if (customPageAttributes) {
+            Object.keys(customPageAttributes).forEach((attribute) => {
+                this.attributes[attribute] = customPageAttributes[attribute];
+            });
         }
     }
 

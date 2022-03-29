@@ -259,7 +259,7 @@ describe('CommandQueue tests', () => {
         const cq: CommandQueue = getCommandQueue();
         await cq.push({
             c: 'recordPageView',
-            p: 'page1'
+            p: '/console/home'
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(recordPageView).toHaveBeenCalled();
