@@ -27,14 +27,17 @@ export type TargetDomEvent = {
 };
 
 export type PartialDomEventPluginConfig = {
+    enableMutationObserver?: boolean;
     events?: TargetDomEvent[];
 };
 
 export type DomEventPluginConfig = {
+    enableMutationObserver?: boolean;
     events: TargetDomEvent[];
 };
 
 const defaultConfig: DomEventPluginConfig = {
+    enableMutationObserver: false,
     events: []
 };
 
@@ -67,11 +70,19 @@ export class DomEventPlugin implements Plugin {
     }
 
     enable(): void {
+        if (document.readyState !== 'complete') {
+            window.addEventListener('load', () => this.enable());
+            return;
+        }
+
         if (this.enabled) {
             return;
         }
         this.addListeners();
-        this.observeDOMMutation();
+
+        if (this.config.enableMutationObserver) {
+            this.observeDOMMutation();
+        }
         this.enabled = true;
     }
 
@@ -80,7 +91,9 @@ export class DomEventPlugin implements Plugin {
             return;
         }
         this.removeListeners();
-        this.observer.disconnect();
+        if (this.observer) {
+            this.observer.disconnect();
+        }
         this.enabled = false;
     }
 

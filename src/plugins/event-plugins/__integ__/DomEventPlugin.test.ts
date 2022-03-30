@@ -300,7 +300,7 @@ test('when new DOM events are registered and then a button is clicked, the event
     }
 });
 
-test('when listening for a click on a dynamically added element given an element id, the event is recorded', async (t: TestController) => {
+test('when enableMutationObserver is false by default and listening for a click on a dynamically added element given an element id, the event is not recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
@@ -329,9 +329,12 @@ test('when listening for a click on a dynamically added element given an element
             event: 'click',
             elementId: 'button4'
         });
+
+    // plugin initialized to listen to click events on document so one event will be recorded
+    await t.expect(events.length).eql(1);
 });
 
-test('when listening for a click on a dynamically added element given a CSS locator, the event is recorded', async (t: TestController) => {
+test('when enableMutationObserver is false by default and listening for a click on a dynamically added element given a CSS locator, the event is not recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
@@ -359,14 +362,14 @@ test('when listening for a click on a dynamically added element given a CSS loca
             .expect(eventType)
             .eql(DOM_EVENT_TYPE)
             .expect(eventDetails)
-            .contains({
+            .notContains({
                 event: 'click',
                 cssLocator: '[label="label1"]'
             });
     }
 });
 
-test('when listening for a click given an element id on an existing element and a dynamically added element, both events are recorded', async (t: TestController) => {
+test('when enableMutationObserver is false by default and listening for a click given a CSS selector on an existing element and a dynamically added element, only one event is recorded', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t
@@ -391,7 +394,7 @@ test('when listening for a click given an element id on an existing element and 
 
         await t
             .expect(events.length)
-            .eql(2)
+            .eql(1)
             .expect(eventType)
             .eql(DOM_EVENT_TYPE)
             .expect(eventDetails)

@@ -333,10 +333,14 @@ describe('Orchestration tests', () => {
         expect(actual.sort()).toEqual(expected.sort());
     });
 
-    test('when an additional DOM event is provided then it is added to the DOM event plugin config', async () => {
+    test('when the DOM event plugin is updated then provided target event is set to be the target DOM event', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {
-            eventPluginsToLoad: [new DomEventPlugin()]
+            eventPluginsToLoad: [
+                new DomEventPlugin({
+                    events: [{ event: 'click', elementId: 'button1' }]
+                })
+            ]
         });
 
         orchestration.registerDomEvents([

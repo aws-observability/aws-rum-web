@@ -353,10 +353,52 @@ describe('DomEventPlugin tests', () => {
         );
     });
 
-    test('when listening for a click given an element id on an existing element and a dynamically added element, both events are recorded', async () => {
+    test('when enableMutationObserver is false by default and an element is dynamically added to the DOM then only the event on an existing element is recorded', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"></button>';
         const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', cssLocator: '#button1' }]
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Dynamically add an element
+        const newButton = document.createElement('button');
+        newButton.id = 'button1';
+        document.body.append(newButton);
+
+        // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
+        await new Promise((r) => setTimeout(r, 100));
+
+        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+            '#button1'
+        ) as NodeListOf<HTMLElement>;
+        for (let i = 0; i < elementList.length; i++) {
+            elementList[i].click();
+        }
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        for (let i = 0; i < record.length; i++) {
+            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
+            expect(record.mock.calls[i][1]).toMatchObject(
+                expect.objectContaining({
+                    version: '1.0.0',
+                    event: 'click',
+                    elementId: 'button1'
+                })
+            );
+        }
+    });
+
+    test('when enableMutationObserver is true by default and an element is dynamically added to the DOM then both events identified by the target event are recorded', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"></button>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            enableMutationObserver: true,
             events: [{ event: 'click', cssLocator: '#button1' }]
         });
 
