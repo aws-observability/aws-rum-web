@@ -7,8 +7,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Add registerDomEvents command ([#111](https://github.com/aws-observability/aws-rum-web/issues/111)) ([2a67daa](https://github.com/aws-observability/aws-rum-web/commit/2a67daafd889a6eda6186c38d3d930eba816d13c))
-* Dynamically update DOM event listeners ([#112](https://github.com/aws-observability/aws-rum-web/issues/112)) ([d4bfbb5](https://github.com/aws-observability/aws-rum-web/commit/d4bfbb5733e749bad5e6a2590f3d3fb2f43032c5))
 * Page tagging ([#114](https://github.com/aws-observability/aws-rum-web/issues/114)) ([cb9cb13](https://github.com/aws-observability/aws-rum-web/commit/cb9cb1396a22b440ee7b62a0a02c30db54ff453f))
 
 
