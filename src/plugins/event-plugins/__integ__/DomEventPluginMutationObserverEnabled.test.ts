@@ -9,7 +9,7 @@ const button4: Selector = Selector(`#button4`);
 
 const dispatch: Selector = Selector(`#dispatch`);
 
-fixture('DomEventPluginDynamicHandlersEnabled').page(
+fixture('DomEventPluginMutationObserverEnabled').page(
     'http://localhost:8080/dom_event_mutation_observer_enabled.html'
 );
 

@@ -203,7 +203,6 @@ export class DomEventPlugin implements Plugin {
     }
 
     private observeDOMMutation() {
-        console.log('enabled');
         this.observer = new MutationObserver(() => {
             this.removeListeners();
             this.addListeners();
