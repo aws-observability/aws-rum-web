@@ -3,11 +3,11 @@ import { showRequestClientBuilder } from '../test-utils/mock-http-handler';
 import { DomEventPlugin } from '../plugins/event-plugins/DomEventPlugin';
 loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     allowCookies: true,
-    allowDynamicDomEventListeners: true,
     dispatchInterval: 0,
     metaDataPluginsToLoad: [],
     eventPluginsToLoad: [
         new DomEventPlugin({
+            enableMutationObserver: true,
             events: [
                 {
                     event: 'click',

@@ -35,15 +35,12 @@ const updatePlugin = jest.fn();
 const enablePlugins = jest.fn();
 const disablePlugins = jest.fn();
 
-const allowDynamicDomEventListeners = jest.fn();
-
 jest.mock('../../plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
         addPlugin: addPlugin,
         enable: enablePlugins,
         disable: disablePlugins,
-        updatePlugin: updatePlugin,
-        allowDynamicDomEventListeners: allowDynamicDomEventListeners
+        updatePlugin: updatePlugin
     }))
 }));
 
@@ -138,7 +135,6 @@ describe('Orchestration tests', () => {
         expect(EventCache).toHaveBeenCalledTimes(1);
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             allowCookies: false,
-            allowDynamicDomEventListeners: false,
             batchLimit: 100,
             cookieAttributes: {
                 unique: false,

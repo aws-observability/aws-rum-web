@@ -27,16 +27,17 @@ export type TargetDomEvent = {
 };
 
 export type PartialDomEventPluginConfig = {
+    enableMutationObserver?: boolean;
     events?: TargetDomEvent[];
 };
 
 export type DomEventPluginConfig = {
-    allowDynamicDomEventListeners?: boolean;
+    enableMutationObserver?: boolean;
     events: TargetDomEvent[];
 };
 
 const defaultConfig: DomEventPluginConfig = {
-    allowDynamicDomEventListeners: false,
+    enableMutationObserver: false,
     events: []
 };
 
@@ -64,9 +65,6 @@ export class DomEventPlugin implements Plugin {
     }
 
     load(context: PluginContext): void {
-        this.config.allowDynamicDomEventListeners =
-            context.config.allowDynamicDomEventListeners;
-
         this.recordEvent = context.record;
         this.enable();
     }
@@ -81,9 +79,10 @@ export class DomEventPlugin implements Plugin {
             return;
         }
         this.addListeners();
-        this.allowDynamicDomEventListeners(
-            this.config.allowDynamicDomEventListeners
-        );
+
+        if (this.config.enableMutationObserver) {
+            this.observeDOMMutation();
+        }
         this.enabled = true;
     }
 
@@ -107,15 +106,6 @@ export class DomEventPlugin implements Plugin {
             this.addEventHandler(domEvent);
             this.config.events.push(domEvent);
         });
-    }
-
-    allowDynamicDomEventListeners(allow: boolean): void {
-        if (allow && !this.observer) {
-            this.observeDOMMutation();
-        } else if (!allow && this.observer) {
-            this.observer.disconnect();
-        }
-        this.config.allowDynamicDomEventListeners = allow;
     }
 
     private removeListeners() {
@@ -213,6 +203,7 @@ export class DomEventPlugin implements Plugin {
     }
 
     private observeDOMMutation() {
+        console.log('enabled');
         this.observer = new MutationObserver(() => {
             this.removeListeners();
             this.addListeners();

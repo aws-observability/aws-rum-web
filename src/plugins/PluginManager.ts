@@ -43,11 +43,6 @@ export class PluginManager {
         }
     }
 
-    public allowDynamicDomEventListeners(allow: boolean) {
-        const domPlugin = this.plugins.get(DOM_EVENT_PLUGIN_ID);
-        domPlugin.allowDynamicDomEventListeners(allow);
-    }
-
     /**
      * Enable all event plugins.
      */

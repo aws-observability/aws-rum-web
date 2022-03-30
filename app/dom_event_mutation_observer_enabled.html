@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>RUM Integ Test</title>
-        <script src="./loader_dom_event_dynamic_handlers_enabled.js"></script>
+        <script src="./loader_dom_event_mutation_observer_enabled.js"></script>
         <link
             rel="icon"
             type="image/png"
@@ -32,10 +32,6 @@
 
             function enable() {
                 cwr('enable');
-            }
-
-            function allowDynamicDomEventListeners(allow) {
-                cwr('allowDynamicDomEventListeners', allow);
             }
 
             function dynamicallyCreateButton() {
@@ -97,19 +93,6 @@
         <button id="dispatch" onclick="dispatch()">Dispatch</button>
         <button id="clearRequestResponse" onclick="clearRequestResponse()">
             Clear
-        </button>
-        <hr />
-        <button
-            id="toggleOnDynamicListeners"
-            onclick="allowDynamicDomEventListeners(true)"
-        >
-            Toggle On Dynamic Event Listeners
-        </button>
-        <button
-            id="toggleOffDynamicListeners"
-            onclick="allowDynamicDomEventListeners(false)"
-        >
-            Toggle Off Dynamic Event Listeners
         </button>
         <hr />
         <span id="request"></span>
