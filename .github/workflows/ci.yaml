@@ -31,7 +31,7 @@ jobs:
             - run: npm ci
 
             - name: Check Code Format
-              run: npm run prettier
+              run: npx prettier --check .
 
             - name: Run Linter
               run: npm run lint
@@ -43,6 +43,8 @@ jobs:
         name: Run Integ Tests on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
         permissions: read-all
+        env:
+            NODE_OPTIONS: --max-http-header-size=80000
         strategy:
             fail-fast: false
             matrix:
@@ -70,13 +72,9 @@ jobs:
             - name: Run Integ Tests on ubuntu-latest
               if: matrix.os == 'ubuntu-latest'
               run: |
-                  npm run integ:local:chrome:headless
-                  npm run integ:local:firefox:headless
+                  npm run integ:local:headless
 
             - name: Run Integ tests on windows-latest
               if: matrix.os == 'windows-latest'
               run: |
-                  npm run integ:local:ie
-                  npm run integ:local:edge
-                  npm run integ:local:firefox
-                  npm run integ:local:chrome
+                  npm run integ:local:browser
