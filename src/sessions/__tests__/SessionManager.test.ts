@@ -20,9 +20,11 @@ import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
 import {
     APPLICATION_ID,
     APP_MONITOR_DETAILS,
-    DEFAULT_CONFIG
+    DEFAULT_CONFIG,
+    mockFetch
 } from '../../test-utils/test-utils';
 
+global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
 const SESSION_COOKIE_EXPIRES = 30 * 60;
 
