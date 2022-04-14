@@ -155,7 +155,7 @@ describe('Orchestration tests', () => {
             pagesToInclude: [],
             recordResourceUrl: true,
             routeChangeComplete: 100,
-            routeChangeTimeout: 1000,
+            routeChangeTimeout: 10000,
             sessionEventLimit: 200,
             sessionLengthSeconds: 1800,
             sessionSampleRate: 1,

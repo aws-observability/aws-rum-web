@@ -41,6 +41,7 @@ export class PageManager {
     private resumed: Page | undefined;
     private attributes: Attributes | undefined;
     private virtualPageLoadTimer: VirtualPageLoadTimer;
+    private TIMEOUT = 1000;
 
     /**
      * A flag which keeps track of whether or not cookies have been enabled.
@@ -140,12 +141,12 @@ export class PageManager {
         // We believe that case (1) has a high risk of skewing route change
         // timing metrics because (a) browser navigation is common and (b) there
         // is no limit on when the lastest interaction may have occurred. To
-        // help mitigate this, if the route change is already longer than the
-        // timeout, then we do not bother timing the route change.
+        // help mitigate this, if the route change is already longer than 1000ms,
+        // then we do not bother timing the route change.
         //
         // We do not believe that case (2) has a high risk of skewing route
         // change timing, and therefore ignore case (2).
-        if (startTime - interactionTime <= this.config.routeChangeTimeout) {
+        if (startTime - interactionTime <= this.TIMEOUT) {
             startTime = interactionTime;
             this.virtualPageLoadTimer.startTiming();
         }

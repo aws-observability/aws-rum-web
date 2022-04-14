@@ -121,7 +121,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pagesToInclude: [],
         recordResourceUrl: true,
         routeChangeComplete: 100,
-        routeChangeTimeout: 1000,
+        routeChangeTimeout: 10000,
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
