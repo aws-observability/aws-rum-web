@@ -7,7 +7,8 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     pagesToExclude: [/\/page_view_do_not_record/],
     telemetries: ['performance'],
     pageIdFormat: 'PATH_AND_HASH',
-    clientBuilder: showRequestClientBuilder
+    clientBuilder: showRequestClientBuilder,
+    routeChangeTimeout: 1000
 });
 window.cwr('setAwsCredentials', {
     accessKeyId: 'a',
