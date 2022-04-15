@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/aws-observability/aws-rum-web/compare/v1.2.1...v1.5.0) (2022-04-15)
+
+
+### Features
+
+* Add registerDomEvents command ([#111](https://github.com/aws-observability/aws-rum-web/issues/111)) ([2a67daa](https://github.com/aws-observability/aws-rum-web/commit/2a67daafd889a6eda6186c38d3d930eba816d13c))
+* Capture SPA route change timing ([#134](https://github.com/aws-observability/aws-rum-web/issues/134)) ([91e1303](https://github.com/aws-observability/aws-rum-web/commit/91e13034ab1682ec621970bd9b76e693ea928da3))
+* Dynamically update DOM event listeners ([#112](https://github.com/aws-observability/aws-rum-web/issues/112)) ([d4bfbb5](https://github.com/aws-observability/aws-rum-web/commit/d4bfbb5733e749bad5e6a2590f3d3fb2f43032c5))
+* Page tagging ([#114](https://github.com/aws-observability/aws-rum-web/issues/114)) ([cb9cb13](https://github.com/aws-observability/aws-rum-web/commit/cb9cb1396a22b440ee7b62a0a02c30db54ff453f))
+
+
+### Bug Fixes
+
+* Add version property to http-event-schema ([#122](https://github.com/aws-observability/aws-rum-web/issues/122)) ([cf59ecb](https://github.com/aws-observability/aws-rum-web/commit/cf59ecb3e18e74e86eb5eccbcedcae8d20c1d83f))
+* Make dynamic DOM event handlers configurable ([#129](https://github.com/aws-observability/aws-rum-web/issues/129)) ([49eecfc](https://github.com/aws-observability/aws-rum-web/commit/49eecfc40879913260c6d91781c392fbe5921dcc))
+* Parse unhandledrejection error objects ([#123](https://github.com/aws-observability/aws-rum-web/issues/123)) ([f69c859](https://github.com/aws-observability/aws-rum-web/commit/f69c85919b8cc7f0f33418dc20455df4e4f42f9b))
+
 ## [1.4.0](https://github.com/aws-observability/aws-rum-web/compare/v1.2.1...v1.4.0) (2022-03-30)
 
 
