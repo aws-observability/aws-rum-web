@@ -9,7 +9,7 @@ import {
 // Environment variables set through CLI command
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
-const TEST_URL = process.env.URL || 'http://localhost:8080/smoke.html';
+const TEST_URL = process.env.URL || 'http://localhost:9000/smoke.html';
 
 const TARGET_URL = ENDPOINT + MONITOR_ID + '/';
 
@@ -28,9 +28,6 @@ function isDataPlaneRequest(response): boolean {
         response.url() === TARGET_URL
     );
 }
-
-// Run the tests in parallel
-test.describe.configure({ mode: 'parallel' });
 
 test('when web client calls PutRumEvents then the response code is 200', async ({
     page

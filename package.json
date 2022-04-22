@@ -48,9 +48,10 @@
         "preinteg:local:nightwatch:firefox": "http-server ./build/dev -s &",
         "integ:local:nightwatch:firefox": "nightwatch -e firefox",
         "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
-        "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT npx playwright test --config=playwright.local.config.ts --headed",
-        "smoke": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT npx playwright test --headed",
-        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT npx playwright test"
+        "smoke:local:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --config=playwright.local.config.ts",
+        "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --config=playwright.local.config.ts --headed",
+        "smoke": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --headed",
+        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test"
     },
     "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.16.0",
@@ -98,6 +99,7 @@
     },
     "dependencies": {
         "@aws-crypto/sha256-js": "^1.1.0",
+        "@aws-sdk/client-rum": "^3.76.0",
         "@aws-sdk/fetch-http-handler": "^3.36.0",
         "@aws-sdk/protocol-http": "^3.36.0",
         "@aws-sdk/signature-v4": "^3.36.0",
