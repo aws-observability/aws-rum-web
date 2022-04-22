@@ -47,11 +47,13 @@
         "postinteg:local:nightwatch:chrome": "kill $(lsof -t -i:8080)",
         "preinteg:local:nightwatch:firefox": "http-server ./build/dev -s &",
         "integ:local:nightwatch:firefox": "nightwatch -e firefox",
-        "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)"
+        "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
+        "smoke": "npx playwright test"
     },
     "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.6.3",
+        "@playwright/test": "^1.21.1",
         "@types/jest": "^27.0.2",
         "@types/ua-parser-js": "^0.7.35",
         "@types/uuid": "^8.3.0",

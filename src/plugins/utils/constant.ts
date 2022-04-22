@@ -27,3 +27,6 @@ export const JS_ERROR_EVENT_TYPE = 'com.amazon.rum.js_error_event';
 
 // Page view event
 export const PAGE_VIEW_EVENT_TYPE = 'com.amazon.rum.page_view_event';
+
+// Session start event
+export const SESSION_START_EVENT_TYPE = 'com.amazon.rum.session_start_event';
