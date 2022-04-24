@@ -48,7 +48,9 @@
         "preinteg:local:nightwatch:firefox": "http-server ./build/dev -s &",
         "integ:local:nightwatch:firefox": "nightwatch -e firefox",
         "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
-        "smoke": "npx playwright test"
+        "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT npx playwright test --config=playwright.local.config.ts --headed",
+        "smoke": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT npx playwright test --headed",
+        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT npx playwright test"
     },
     "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.16.0",
