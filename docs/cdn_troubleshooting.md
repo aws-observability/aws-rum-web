@@ -17,12 +17,22 @@ anonymous Cognito identity using `identityPoolId` and `guestRoleArn`, or (2)
 provide the web client with AWS credentials using the `cwr('setAwsCredentials',
 credentials);` command.
 
-### Understanding `sessionEventLimit`
-`sessionEventLimit` defines the number of events the RUM web client will record under one session, and the current default value is set to 200.
+### Event limit is reached for the session
 
-For example, if your `sessionEventLimit` is set to 200 and a user performs a series of interactions to generate more than 200 events, the web client will record and send only up to 200.
+If the the web client initially sends data, but stops sending data after a
+period of time, the likely cause is that the session event limit has been
+reached. By default, the web client limits the number of recorded events to 200
+per session.
 
-Increasing the `sessionEventLimit` has cost implications as the web client will send more events, but if you wish to record and send all events, try setting `sessionEventLimit: 0` in the web client configuration.
+The configuration field [`sessionEventLimit`](configuration.md) controls this
+limit. If you wish to remove this limit completely, set `sessionEventLimit: 0`.
+
+```typescript
+const config: AwsRumConfig = {
+  // Record an unlimited number of events per session
+  sessionEventLimit: 0
+}
+```
 
 ---
 ## CloudWatch RUM returns 403
@@ -197,7 +207,7 @@ application before enabling this option in a production environment.
 </script>
 ```
 ---
-## Cloudwatch RUM does not capture page load timing data for my single page application (SPA)
+## Route change timing is not recorded for my single page application
 
 ### Configuring `routeChangeTimeout`
 The current mechanism to calculate a route change (virtual page load) is the difference between the latest completion time of a DOM mutation or an outgoing AJAX request and the user interaction that triggered the route change.
