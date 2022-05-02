@@ -14,6 +14,7 @@
         "**/__tests__",
         "**/__integ__",
         "**/__mocks__",
+        "**/__smoke-test__",
         "src/index.ts",
         "src/loader",
         "src/test-utils"
