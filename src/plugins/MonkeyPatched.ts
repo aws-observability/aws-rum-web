@@ -1,26 +1,38 @@
 import * as shimmer from 'shimmer';
 
-type Wrapper<S> = () => (s: S) => S
-export interface MonkeyPatch<W> {
-    nodule: object;
-    name: string;
-    wrapper: Wrapper<W>
+type Wrapper<W> = () => W;
+export interface MonkeyPatch<
+    Nodule extends object,
+    FieldName extends keyof Nodule
+> {
+    nodule: Nodule;
+    name: FieldName;
+    wrapper: Wrapper<(original: Nodule[FieldName]) => Nodule[FieldName]>;
 }
 
-export abstract class MonkeyPatched<W> {
+export abstract class MonkeyPatched<
+    Nodule extends object,
+    FieldName extends keyof Nodule
+> {
     public enable = this.patch.bind(this, true);
     public disable = this.patch.bind(this, false);
 
-    protected abstract patches: MonkeyPatch<W>[];
+    protected abstract patches: MonkeyPatch<Nodule, FieldName>[];
 
-    private enabled: boolean = false
+    private enabled: boolean = false;
 
     private patch(shouldPatch: boolean = true) {
         if (this.enabled !== shouldPatch) {
             this.enabled = shouldPatch;
-            const patchMethod = shouldPatch ? shimmer.wrap.bind(shimmer) : shimmer.unwrap.bind(shimmer);
+            const patchMethod = shouldPatch
+                ? shimmer.wrap.bind(shimmer)
+                : shimmer.unwrap.bind(shimmer);
             for (const patch of this.patches) {
-                patchMethod(patch.nodule, patch.name, shouldPatch ? patch.wrapper() : undefined);
+                patchMethod(
+                    patch.nodule,
+                    patch.name,
+                    shouldPatch ? patch.wrapper() : undefined
+                );
             }
         }
     }

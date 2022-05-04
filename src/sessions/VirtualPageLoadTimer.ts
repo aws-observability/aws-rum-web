@@ -1,20 +1,23 @@
 import { NavigationEvent } from '../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
-import { MonkeyPatch, MonkeyPatched } from '../plugins/MonkeyPatched';
+import { MonkeyPatched } from '../plugins/MonkeyPatched';
 import { Config } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/Plugin';
 import { PageManager, Page } from '../sessions/PageManager';
 
 type Fetch = typeof fetch;
 type Send = () => void;
-
+type Patching = Pick<XMLHttpRequest & Window, 'fetch' | 'send'>;
 /**
  * Maintains the core logic for virtual page load timing functionality.
  * (1) Holds all virtual page load timing related resources
  * (2) Intercepts outgoing XMLHttpRequests and Fetch requests and listens for DOM changes
  * (3) Records virtual page load
  */
-export class VirtualPageLoadTimer extends MonkeyPatched<Send | Fetch> {
+export class VirtualPageLoadTimer extends MonkeyPatched<
+    Patching,
+    'fetch' | 'send'
+> {
     /** Latest interaction time by user on the document */
     public latestInteractionTime: number;
     /** Unique ID of virtual page load periodic checker. */
@@ -101,13 +104,13 @@ export class VirtualPageLoadTimer extends MonkeyPatched<Send | Fetch> {
     protected get patches() {
         return [
             {
-                nodule: XMLHttpRequest.prototype,
-                name: 'send',
+                nodule: (XMLHttpRequest.prototype as unknown) as Patching,
+                name: 'send' as const,
                 wrapper: this.sendWrapper
             },
             {
-                nodule: window,
-                name: 'fetch',
+                nodule: (window as unknown) as Patching,
+                name: 'fetch' as const,
                 wrapper: this.fetchWrapper
             }
         ];

@@ -1,5 +1,5 @@
 import { PageIdFormatEnum } from '../../orchestration/Orchestration';
-import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
+import { MonkeyPatched } from '../MonkeyPatched';
 import { Plugin, PluginContext } from '../Plugin';
 
 export const PAGE_EVENT_PLUGIN_ID = 'com.amazonaws.rum.page-view';
@@ -13,7 +13,9 @@ export type Replace = (data: any, title: string, url?: string | null) => void;
  * When a session is initialized, the PageManager records the landing page. When
  * subsequent pages are viewed, this plugin updates the page.
  */
-export class PageViewPlugin extends MonkeyPatched<Push | Replace> implements Plugin {
+export class PageViewPlugin
+    extends MonkeyPatched<History, 'pushState' | 'replaceState'>
+    implements Plugin {
     private readonly pluginId: string;
     private context: PluginContext;
 
@@ -37,12 +39,12 @@ export class PageViewPlugin extends MonkeyPatched<Push | Replace> implements Plu
         return [
             {
                 nodule: History.prototype,
-                name: 'pushState',
+                name: 'pushState' as const,
                 wrapper: this.pushState
             },
             {
                 nodule: History.prototype,
-                name: 'replaceState',
+                name: 'replaceState' as const,
                 wrapper: this.replaceState
             }
         ];
@@ -64,7 +66,7 @@ export class PageViewPlugin extends MonkeyPatched<Push | Replace> implements Plu
         };
     };
 
-    private replaceState = (): ((original: Replace) => Replace) => {
+    private replaceState = () => {
         const self = this;
         return (original: Replace): Replace => {
             return function (

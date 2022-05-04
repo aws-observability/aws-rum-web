@@ -4,7 +4,7 @@ import {
     Subsegment,
     XRayTraceEvent
 } from '../../events/xray-trace-event';
-import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
+import { MonkeyPatched } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
     defaultConfig,
@@ -47,7 +47,9 @@ export const FETCH_PLUGIN_ID = 'com.amazonaws.rum.fetch';
  * The fetch API is monkey patched using shimmer so all calls to fetch are intercepted. Only calls to URLs which are
  * on the allowlist and are not on the denylist are traced and recorded.
  */
-export class FetchPlugin extends MonkeyPatched<Fetch> implements Plugin {
+export class FetchPlugin
+    extends MonkeyPatched<Window, 'fetch'>
+    implements Plugin {
     private readonly pluginId: string;
     private readonly config: HttpPluginConfig;
     private context: PluginContext;
@@ -71,8 +73,8 @@ export class FetchPlugin extends MonkeyPatched<Fetch> implements Plugin {
     protected get patches() {
         return [
             {
-                nodule: window,
-                name: 'fetch',
+                nodule: window as Window,
+                name: 'fetch' as const,
                 wrapper: this.fetchWrapper
             }
         ];
