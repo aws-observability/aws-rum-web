@@ -14,7 +14,7 @@ type Send = () => void;
  * (2) Intercepts outgoing XMLHttpRequests and Fetch requests and listens for DOM changes
  * (3) Records virtual page load
  */
-export class VirtualPageLoadTimer extends MonkeyPatched {
+export class VirtualPageLoadTimer extends MonkeyPatched<Send | Fetch> {
     /** Latest interaction time by user on the document */
     public latestInteractionTime: number;
     /** Unique ID of virtual page load periodic checker. */
@@ -98,7 +98,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         this.requestBuffer.clear();
     }
 
-    protected patches(): MonkeyPatch[] {
+    protected get patches() {
         return [
             {
                 nodule: XMLHttpRequest.prototype,
@@ -173,9 +173,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
     /**
      * Increment the fetch counter in PageManager when fetch is beginning
      */
-    private fetchWrapper = (): ((
-        original: (input: RequestInfo, init?: RequestInit) => Promise<Response>
-    ) => (input: RequestInfo, init?: RequestInit) => Promise<Response>) => {
+    private fetchWrapper = (): ((original: Fetch) => Fetch) => {
         const self = this;
         return (original: Fetch): Fetch => {
             return function (

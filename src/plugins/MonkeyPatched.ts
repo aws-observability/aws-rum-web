@@ -1,36 +1,27 @@
 import * as shimmer from 'shimmer';
 
-export type MonkeyPatch = {
+type Wrapper<S> = () => (s: S) => S
+export interface MonkeyPatch<W> {
     nodule: object;
     name: string;
-    // tslint:disable-next-line: ban-types
-    wrapper: Function;
-};
+    wrapper: Wrapper<W>
+}
 
-export abstract class MonkeyPatched {
-    private enabled: boolean;
+export abstract class MonkeyPatched<W> {
+    public enable = this.patch.bind(this, true);
+    public disable = this.patch.bind(this, false);
 
-    constructor() {
-        this.enabled = false;
-    }
+    protected abstract patches: MonkeyPatch<W>[];
 
-    public enable() {
-        if (!this.enabled) {
-            this.enabled = true;
-            for (const patch of this.patches()) {
-                shimmer.wrap(patch.nodule, patch.name, patch.wrapper());
+    private enabled: boolean = false
+
+    private patch(shouldPatch: boolean = true) {
+        if (this.enabled !== shouldPatch) {
+            this.enabled = shouldPatch;
+            const patchMethod = shouldPatch ? shimmer.wrap.bind(shimmer) : shimmer.unwrap.bind(shimmer);
+            for (const patch of this.patches) {
+                patchMethod(patch.nodule, patch.name, shouldPatch ? patch.wrapper() : undefined);
             }
         }
     }
-
-    public disable() {
-        if (this.enabled) {
-            this.enabled = false;
-            for (const patch of this.patches()) {
-                shimmer.unwrap(patch.nodule, patch.name);
-            }
-        }
-    }
-
-    protected abstract patches(): MonkeyPatch[];
 }

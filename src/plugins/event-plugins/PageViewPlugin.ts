@@ -13,8 +13,8 @@ export type Replace = (data: any, title: string, url?: string | null) => void;
  * When a session is initialized, the PageManager records the landing page. When
  * subsequent pages are viewed, this plugin updates the page.
  */
-export class PageViewPlugin extends MonkeyPatched implements Plugin {
-    private pluginId: string;
+export class PageViewPlugin extends MonkeyPatched<Push | Replace> implements Plugin {
+    private readonly pluginId: string;
     private context: PluginContext;
 
     constructor() {
@@ -33,7 +33,7 @@ export class PageViewPlugin extends MonkeyPatched implements Plugin {
         return this.pluginId;
     }
 
-    protected patches(): MonkeyPatch[] {
+    protected get patches() {
         return [
             {
                 nodule: History.prototype,
