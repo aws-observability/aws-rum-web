@@ -1,22 +1,7 @@
 {
     "compilerOptions": {
-        "baseUrl": "src",
-        "lib": ["dom", "es2018"],
         "module": "es2020",
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "strict": false,
-        "target": "es5",
         "outDir": "./dist/webpack"
     },
-    "include": ["src/"],
-    "exclude": [
-        "**/__tests__",
-        "**/__integ__",
-        "**/__mocks__",
-        "**/__smoke-test__",
-        "src/index.ts",
-        "src/loader",
-        "src/test-utils"
-    ]
+    "extends": "./tsconfig"
 }
