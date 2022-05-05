@@ -168,7 +168,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
             .catch((error) => {
                 throw error;
             })
-            .finally(self.decrementFetchCounter());
+            .finally(self.decrementFetchCounter.bind(self));
     };
 
     /**
