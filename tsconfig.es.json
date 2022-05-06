@@ -2,5 +2,5 @@
     "compilerOptions": {
         "outDir": "./dist/es"
     },
-    "extends": "./tsconfig",
+    "extends": "./tsconfig"
 }
