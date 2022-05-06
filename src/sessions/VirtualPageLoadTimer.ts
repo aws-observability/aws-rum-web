@@ -162,13 +162,12 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         input: RequestInfo,
         init?: RequestInit
     ): Promise<Response> => {
-        const self = this;
         return original
             .apply(thisArg, argsArray)
             .catch((error) => {
                 throw error;
             })
-            .finally(self.decrementFetchCounter());
+            .finally(this.decrementFetchCounter);
     };
 
     /**
@@ -190,12 +189,12 @@ export class VirtualPageLoadTimer extends MonkeyPatched {
         };
     };
 
-    private decrementFetchCounter() {
+    private decrementFetchCounter = () => {
         if (!this.isPageLoaded) {
             this.latestEndTime = Date.now();
         }
         this.fetchCounter -= 1;
-    }
+    };
 
     /**
      * Checks whether the virtual page is still being loaded.

@@ -207,6 +207,28 @@ describe('VirtualPageLoadTimer tests', () => {
         expect(virtualPageLoadTimer['ongoingRequests'].size).toEqual(0);
     });
 
+    test('when fetch is fetch counter should be updated to 1 until finished', async () => {
+        // Init
+        const virtualPageLoadTimer = new VirtualPageLoadTimer(
+            pageManager,
+            config,
+            record
+        );
+
+        // Mocking Date.now to return 100 to simulate time passed
+        Date.now = jest.fn(() => 100);
+        virtualPageLoadTimer.startTiming();
+
+        // When fetch initially is sent, fetchCounter should be incremented to 1
+        const fetching = fetch('https://aws.amazon.com');
+        expect(virtualPageLoadTimer['fetchCounter']).toEqual(1);
+
+        await fetching;
+
+        // Upon completion, fetchCounter should be decremented to 0
+        expect(virtualPageLoadTimer['fetchCounter']).toEqual(0);
+    });
+
     test('when fetch is detected during route change then latestEndTime is updated', async () => {
         // Init
         const virtualPageLoadTimer = new VirtualPageLoadTimer(
