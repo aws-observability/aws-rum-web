@@ -67,6 +67,8 @@ jobs:
 
             - run: npm ci
 
+            - run: npm run build
+
             - name: Run Integ Tests on ubuntu-latest
               if: matrix.os == 'ubuntu-latest'
               run: |
