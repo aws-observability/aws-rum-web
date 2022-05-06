@@ -36,7 +36,7 @@
         "prepublishOnly": "npm run release",
         "test:coverage": "npm run test -- --coverage",
         "preinteg:local:run": "npm run build:webpack:dev",
-        "integ:local:run": "cross-env-shell 'npx testcafe ${BROWSER} --app \\\"http-server ./build/dev -s\\\"'",
+        "integ:local:run": "cross-env-shell 'npx testcafe \\\"${BROWSER}\\\" --app \\\"http-server ./build/dev -s\\\"'",
         "integ:local:chrome:browser": "cross-env BROWSER=chrome npm run integ:local:run",
         "integ:local:chrome:headless": "cross-env BROWSER=chrome:headless npm run integ:local:run",
         "integ:local:firefox:browser": "cross-env BROWSER=firefox npm run integ:local:run",
