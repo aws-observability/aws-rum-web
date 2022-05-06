@@ -1,21 +1,7 @@
 {
     "compilerOptions": {
-        "baseUrl": "src",
-        "declaration": true,
-        "lib": ["dom", "es2018"],
-        "module": "esnext",
-        "moduleResolution": "node",
-        "strict": false,
-        "target": "es5",
         "outDir": "./dist/es"
     },
-    "include": ["src/"],
-    "exclude": [
-        "**/__tests__",
-        "**/__integ__",
-        "**/__mocks__",
-        "src/index-browser.ts",
-        "src/loader",
-        "src/test-utils"
-    ]
+    "include": ["src/index.ts"],
+    "extends": "./tsconfig"
 }
