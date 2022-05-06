@@ -3,5 +3,6 @@
         "module": "es2020",
         "outDir": "./dist/webpack"
     },
+    "include": ["src/index-browser.ts"],
     "extends": "./tsconfig"
 }

@@ -8,14 +8,5 @@
         "strict": false,
         "target": "es5"
     },
-    "include": ["src/"],
-    "exclude": [
-        "**/__tests__",
-        "**/__integ__",
-        "**/__mocks__",
-        "**/__smoke-test__",
-        "src/index-browser.ts",
-        "src/loader",
-        "src/test-utils"
-    ]
+    "include": ["src/**/*"]
 }
