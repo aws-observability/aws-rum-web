@@ -67,16 +67,18 @@ jobs:
 
             - run: npm ci
 
-            - run: npm run build
-
             - name: Run Integ Tests on ubuntu-latest
               if: matrix.os == 'ubuntu-latest'
+              env:
+                  NODE_OPTIONS: --max-http-header-size=80000
               run: |
                   npm run integ:local:chrome:headless
                   npm run integ:local:firefox:headless
 
             - name: Run Integ tests on windows-latest
               if: matrix.os == 'windows-latest'
+              env:
+                  NODE_OPTIONS: --max-http-header-size=80000
               run: |
                   npm run integ:local:ie
                   npm run integ:local:edge

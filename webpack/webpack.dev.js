@@ -37,7 +37,7 @@ module.exports = merge(common, {
     },
     devServer: {
         static: path.join(__dirname, '../build/dev'),
-        port: 9000,
+        port: process.env.PORT || 9000,
         https: false,
         hot: true
     },
