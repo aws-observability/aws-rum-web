@@ -15,6 +15,6 @@ chromedriver.log
 geckodriver.log
 safaridriver.log
 tests_output
-app/smoke.html
 logs
 .idea
+app/smoke_local.html

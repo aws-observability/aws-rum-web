@@ -18,7 +18,7 @@ import {
 // Environment variables set through CLI command
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
-const TEST_URL = process.env.URL || 'http://localhost:9000/smoke.html';
+const TEST_URL = process.env.URL || 'http://localhost:9000/smoke_local.html';
 const MONITOR_NAME = process.env.NAME;
 
 const REGION = ENDPOINT.split('.')[2];
