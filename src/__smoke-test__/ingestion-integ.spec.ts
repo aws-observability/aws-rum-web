@@ -18,7 +18,7 @@ import {
 // Environment variables set through CLI command
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
-const TEST_URL = process.env.URL || 'http://localhost:9000/smoke.html';
+const TEST_URL = process.env.URL || 'http://localhost:9000/smoke_local.html';
 const MONITOR_NAME = process.env.NAME;
 
 const REGION = ENDPOINT.split('.')[2];
@@ -157,7 +157,7 @@ test('when LCP event is sent then event is ingested', async ({ page }) => {
 
     // Open page
     await page.goto(TEST_URL);
-    const clearButton = page.locator('[id=clearRequestResponse]');
+    const clearButton = page.locator('[id=dummyButton]');
     await clearButton.click();
 
     // Test will timeout if no successful dataplane request is found
@@ -185,7 +185,7 @@ test('when FID event is sent then event is ingested', async ({ page }) => {
 
     // Open page
     await page.goto(TEST_URL);
-    const clearButton = page.locator('[id=clearRequestResponse]');
+    const clearButton = page.locator('[id=dummyButton]');
     await clearButton.click();
 
     // Test will timeout if no successful dataplane request is found

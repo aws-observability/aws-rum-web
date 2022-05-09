@@ -53,9 +53,14 @@
         "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
         "smoke:local:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --config=playwright.local.config.ts",
         "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --config=playwright.local.config.ts --headed",
+<<<<<<< HEAD
         "smoke": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --headed",
         "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test",
         "prepare": "husky install"
+=======
+        "smoke": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --config=playwright.config.ts --headed",
+        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME npx playwright test --config=playwright.config.ts"
+>>>>>>> a4de281 (test: Integrate automated smoke test into release workflow)
     },
     "devDependencies": {
         "@babel/plugin-transform-runtime": "^7.16.0",
