@@ -62,13 +62,13 @@ jobs:
 
                   curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
 
-            - name: Update Smoke Test GAMMA
-              id: update-smoke-test-gamma
+            - name: Update Smoke Test Application
+              id: update-smoke-test
               run: |
                   chmod u+x .github/scripts/update_smoke_test.sh
                   .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN }} >> processed_smoke.html
 
-            - name: Upload Smoke Test
+            - name: Upload Smoke Test to CloudFront
               id: upload-smoke-test
               run: |
                   chmod u+x .github/scripts/upload_smoke_test.sh
