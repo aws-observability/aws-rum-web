@@ -1,4 +1,4 @@
-import { PAGE_ID_FORMAT } from '../../orchestration/Orchestration';
+import { pageIdFormat } from '../../orchestration/Orchestration';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import { Plugin, PluginContext } from '../Plugin';
 
@@ -99,7 +99,7 @@ export class PageViewPlugin extends MonkeyPatched implements Plugin {
         const path = window.location.pathname;
         const hash = window.location.hash;
         switch (this.context.config.pageIdFormat) {
-            case PAGE_ID_FORMAT.PATH_AND_HASH:
+            case 'PATH_AND_HASH':
                 if (path && hash) {
                     return path + hash;
                 } else if (path) {
@@ -108,9 +108,9 @@ export class PageViewPlugin extends MonkeyPatched implements Plugin {
                     return hash;
                 }
                 return '';
-            case PAGE_ID_FORMAT.HASH:
+            case 'HASH':
                 return hash ? hash : '';
-            case PAGE_ID_FORMAT.PATH:
+            case 'PATH':
             default:
                 return path ? path : '';
         }

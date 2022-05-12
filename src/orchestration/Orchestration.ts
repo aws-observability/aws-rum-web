@@ -41,11 +41,7 @@ interface TelemetriesFunctor {
 
 type Telemetry = string | (string | object)[];
 
-export enum PAGE_ID_FORMAT {
-    PATH = 'PATH',
-    HASH = 'HASH',
-    PATH_AND_HASH = 'PATH_AND_HASH'
-}
+export type pageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
 export type PartialCookieAttributes = {
     unique?: boolean;
@@ -69,7 +65,7 @@ export type PartialConfig = {
     eventPluginsToLoad?: Plugin[];
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat?: PAGE_ID_FORMAT;
+    pageIdFormat?: pageIdFormat;
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
     recordResourceUrl?: boolean;
@@ -116,7 +112,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
         eventPluginsToLoad: [],
-        pageIdFormat: PAGE_ID_FORMAT.PATH,
+        pageIdFormat: 'PATH',
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
@@ -161,7 +157,7 @@ export type Config = {
     ) => Promise<Response>;
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat: PAGE_ID_FORMAT;
+    pageIdFormat: pageIdFormat;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
     recordResourceUrl: boolean;
