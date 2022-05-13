@@ -1,5 +1,5 @@
-import { pageIdFormat } from '../../../orchestration/Orchestration';
 import { context } from '../../../test-utils/test-utils';
+import { PAGE_ID_FORMAT } from '../../../orchestration/constants';
 import { PageViewPlugin } from '../PageViewPlugin';
 
 const PAGE_VIEW_ONE_PATH = '/page_view_one?region=us-west-1#lang';
@@ -104,7 +104,7 @@ describe('PageViewPlugin tests', () => {
     test('when PATH_AND_HASH is used then a the path and hash is recorded.', async () => {
         // Init
         const plugin = new PageViewPlugin();
-        context.config.pageIdFormat = 'PATH_AND_HASH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH_AND_HASH;
         plugin.load(context);
 
         // Run
@@ -119,7 +119,7 @@ describe('PageViewPlugin tests', () => {
             '/page_view_one#lang'
         );
 
-        context.config.pageIdFormat = 'PATH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
         window.removeEventListener(
             'popstate',
             (plugin as any).popstateListener
@@ -130,7 +130,7 @@ describe('PageViewPlugin tests', () => {
     test('when HASH is used then a the hash is recorded.', async () => {
         // Init
         const plugin = new PageViewPlugin();
-        context.config.pageIdFormat = 'HASH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.HASH;
         plugin.load(context);
 
         // Run
@@ -145,7 +145,7 @@ describe('PageViewPlugin tests', () => {
             '#lang'
         );
 
-        context.config.pageIdFormat = 'PATH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
         window.removeEventListener(
             'popstate',
             (plugin as any).popstateListener
@@ -155,7 +155,7 @@ describe('PageViewPlugin tests', () => {
     test('when there is no hash in the URL then only the path is recorded.', async () => {
         // Init
         const plugin = new PageViewPlugin();
-        context.config.pageIdFormat = 'PATH_AND_HASH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH_AND_HASH;
         plugin.load(context);
 
         // Run
@@ -171,7 +171,7 @@ describe('PageViewPlugin tests', () => {
             PAGE_VIEW_ONE_EXPECTED_PAGE_ID
         );
 
-        context.config.pageIdFormat = 'PATH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
         window.removeEventListener(
             'popstate',
             (plugin as any).popstateListener
@@ -200,7 +200,7 @@ describe('PageViewPlugin tests', () => {
         // Init
         const plugin = new PageViewPlugin();
 
-        context.config.pageIdFormat = 'PATH_AND_HASH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH_AND_HASH;
         plugin.load(context);
 
         // Run
@@ -219,7 +219,7 @@ describe('PageViewPlugin tests', () => {
         );
 
         // Resetting
-        context.config.pageIdFormat = 'PATH';
+        context.config.pageIdFormat = PAGE_ID_FORMAT.PATH;
         window.removeEventListener(
             'popstate',
             (plugin as any).popstateListener

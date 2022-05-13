@@ -21,17 +21,11 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
+import { PAGE_ID_FORMAT, TELEMETRY_TYPES } from './constants';
 
 const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
 const DATA_PLANE_DEFAULT_ENDPOINT =
     'https://dataplane.rum.${REGION}.amazonaws.com';
-
-export enum TELEMETRY_TYPES {
-    ERRORS = 'errors',
-    PERFORMANCE = 'performance',
-    INTERACTION = 'interaction',
-    HTTP = 'http'
-}
 
 type PluginInitializer = (config: object) => Plugin[];
 
@@ -39,9 +33,9 @@ interface TelemetriesFunctor {
     [key: string]: PluginInitializer;
 }
 
-type Telemetry = string | (string | object)[];
+export type Telemetry = string | (string | object)[];
 
-export type pageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
+export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
 export type PartialCookieAttributes = {
     unique?: boolean;
@@ -65,7 +59,7 @@ export type PartialConfig = {
     eventPluginsToLoad?: Plugin[];
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat?: pageIdFormat;
+    pageIdFormat?: PageIdFormat;
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
     recordResourceUrl?: boolean;
@@ -112,7 +106,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
         eventPluginsToLoad: [],
-        pageIdFormat: 'PATH',
+        pageIdFormat: PAGE_ID_FORMAT.PATH,
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
@@ -157,7 +151,7 @@ export type Config = {
     ) => Promise<Response>;
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat: pageIdFormat;
+    pageIdFormat: PageIdFormat;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
     recordResourceUrl: boolean;

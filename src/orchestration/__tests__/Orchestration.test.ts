@@ -4,6 +4,7 @@ import { EventCache } from '../../event-cache/EventCache';
 import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
 import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
 import { PluginManager } from '../../plugins/PluginManager';
+import { PAGE_ID_FORMAT } from '../../orchestration/constants';
 
 global.fetch = jest.fn();
 
@@ -150,7 +151,7 @@ describe('Orchestration tests', () => {
             endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
             eventCacheSize: 200,
             eventPluginsToLoad: [],
-            pageIdFormat: 'PATH',
+            pageIdFormat: PAGE_ID_FORMAT.PATH,
             pagesToExclude: [],
             pagesToInclude: [],
             recordResourceUrl: true,
