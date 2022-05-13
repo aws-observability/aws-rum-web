@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](https://github.com/aws-observability/aws-rum-web/compare/v1.5.0...v1.5.1) (2022-05-13)
+
+
+### Bug Fixes
+
+* Fix route change timing fetch counter decrement ([#145](https://github.com/aws-observability/aws-rum-web/issues/145)) ([c4414d9](https://github.com/aws-observability/aws-rum-web/commit/c4414d9f9e97661b59414433864cf2fbfc602874))
+
 ## [1.5.0](https://github.com/aws-observability/aws-rum-web/compare/v1.2.1...v1.5.0) (2022-04-15)
 
 
