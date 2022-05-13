@@ -18,8 +18,9 @@ import {
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
 
-export const AWS_RUM_ENDPOINT =
-    'https://rumservicelambda.us-west-2.amazonaws.com';
+export const AWS_RUM_ENDPOINT = new URL(
+    'https://rumservicelambda.us-west-2.amazonaws.com'
+);
 export const AWS_RUM_REGION = 'us-west-2';
 export const APPLICATION_ID = 'application123';
 export const APPLICATION_VERSION = '1.2';

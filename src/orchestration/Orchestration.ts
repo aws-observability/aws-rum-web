@@ -22,9 +22,8 @@ import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
 
-const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
-const DATA_PLANE_DEFAULT_ENDPOINT =
-    'https://dataplane.rum.${REGION}.amazonaws.com';
+const DEFAULT_REGION = 'us-west-2';
+const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
 
 export enum TELEMETRY_TYPES {
     ERRORS = 'errors',
@@ -46,6 +45,8 @@ export enum PAGE_ID_FORMAT {
     HASH = 'HASH',
     PATH_AND_HASH = 'PATH_AND_HASH'
 }
+
+export type pageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
 export type PartialCookieAttributes = {
     unique?: boolean;
@@ -69,7 +70,7 @@ export type PartialConfig = {
     eventPluginsToLoad?: Plugin[];
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat?: PAGE_ID_FORMAT;
+    pageIdFormat?: pageIdFormat;
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
     recordResourceUrl?: boolean;
@@ -113,7 +114,8 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
         enableXRay: false,
-        endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+        endpoint: DEFAULT_ENDPOINT,
+        endpointUrl: new URL(DEFAULT_ENDPOINT),
         eventCacheSize: 200,
         eventPluginsToLoad: [],
         pageIdFormat: PAGE_ID_FORMAT.PATH,
@@ -148,6 +150,7 @@ export type Config = {
     enableRumClient: boolean;
     enableXRay: boolean;
     endpoint: string;
+    endpointUrl: URL;
     eventCacheSize: number;
     eventPluginsToLoad: Plugin[];
     /*
@@ -161,7 +164,7 @@ export type Config = {
     ) => Promise<Response>;
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat: PAGE_ID_FORMAT;
+    pageIdFormat: pageIdFormat;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
     recordResourceUrl: boolean;
@@ -187,6 +190,23 @@ export class Orchestration {
     private dispatchManager: Dispatch;
     private config: Config;
 
+    /**
+     * Instantiate the CloudWatch RUM web client and begin monitoring the
+     * application.
+     *
+     * This constructor may throw a TypeError if not correctly configured. In
+     * production code, wrap calls to this constructor in a try/catch block so
+     * that this does not impact the application.
+     *
+     * @param applicationId A globally unique identifier for the CloudWatch RUM
+     * app monitor which monitors your application.
+     * @param applicationVersion Your application's semantic version. If you do
+     * not wish to use this field then add any placeholder, such as '0.0.0'.
+     * @param region The AWS region of the app monitor. For example, 'us-east-1'
+     * or 'eu-west-2'.
+     * @param partialConfig An application-specific configuration for the web
+     * client.
+     */
     constructor(
         applicationId: string,
         applicationVersion: string,
@@ -212,6 +232,13 @@ export class Orchestration {
         } as Config;
 
         this.config.endpoint = this.getDataPlaneEndpoint(region, partialConfig);
+
+        // If the URL is not formatted correctly, a TypeError will be thrown.
+        // This breaks our convention to fail-safe here for the sake of
+        // debugging. It is expected that the application has wrapped the call
+        // to the constructor in a try/catch block, as is done in the example
+        // code.
+        this.config.endpointUrl = new URL(this.config.endpoint);
 
         this.eventCache = this.initEventCache(
             applicationId,
@@ -331,7 +358,7 @@ export class Orchestration {
     private initDispatch(region: string) {
         const dispatch: Dispatch = new Dispatch(
             region,
-            this.config.endpoint,
+            this.config.endpointUrl,
             this.eventCache,
             this.config
         );
@@ -415,10 +442,7 @@ export class Orchestration {
     ): string {
         return partialConfig.endpoint
             ? partialConfig.endpoint
-            : DATA_PLANE_DEFAULT_ENDPOINT.replace(
-                  DATA_PLANE_REGION_PLACEHOLDER,
-                  region
-              );
+            : DEFAULT_ENDPOINT.replace(DEFAULT_REGION, region);
     }
 
     /**

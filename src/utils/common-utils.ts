@@ -67,24 +67,6 @@ export const getResourceFileType = (url: string): ResourceType => {
     return ext;
 };
 
-export const getHost = (url: string): string => {
-    const urlPattern = /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
-    const match = url.match(urlPattern);
-    if (!match || !match[4]) {
-        return '';
-    }
-    return match[4];
-};
-
-export const getScheme = (url: string): string => {
-    const urlPattern = /^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
-    const match = url.match(urlPattern);
-    if (!match || !match[2]) {
-        return '';
-    }
-    return match[2];
-};
-
 /* Helpers */
 export const httpStatusText = {
     '0': 'Abort Request',

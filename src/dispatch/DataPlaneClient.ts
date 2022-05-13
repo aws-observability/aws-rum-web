@@ -8,7 +8,6 @@ import {
 } from '@aws-sdk/types';
 import { Sha256 } from '@aws-crypto/sha256-js';
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
-import { getHost, getScheme } from '../utils/common-utils';
 import {
     AppMonitorDetails,
     PutRumEventsRequest,
@@ -41,7 +40,7 @@ declare type SerializedPutRumEventsRequest = {
 export declare type DataPlaneClientConfig = {
     fetchRequestHandler: HttpHandler;
     beaconRequestHandler: HttpHandler;
-    endpoint: string;
+    endpoint: URL;
     region: string;
     credentials: CredentialProvider | Credentials;
 };
@@ -65,20 +64,20 @@ export class DataPlaneClient {
     public sendFetch = async (
         putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
-        const host = getHost(this.config.endpoint);
         const serializedRequest: string = JSON.stringify(
             serializeRequest(putRumEventsRequest)
         );
+        const path = this.config.endpoint.pathname.replace(/\/$/, '');
         const request = new HttpRequest({
             method: METHOD,
             headers: {
                 'content-type': CONTENT_TYPE_JSON,
                 'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest),
-                host
+                host: this.config.endpoint.host
             },
-            protocol: getScheme(this.config.endpoint),
-            hostname: host,
-            path: `/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}/`,
+            protocol: this.config.endpoint.protocol,
+            hostname: this.config.endpoint.hostname,
+            path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}/`,
             body: serializedRequest
         });
 
@@ -94,20 +93,20 @@ export class DataPlaneClient {
     public sendBeacon = async (
         putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
-        const host = getHost(this.config.endpoint);
         const serializedRequest: string = JSON.stringify(
             serializeRequest(putRumEventsRequest)
         );
+        const path = this.config.endpoint.pathname.replace(/\/$/, '');
         const request = new HttpRequest({
             method: METHOD,
             headers: {
                 'content-type': CONTENT_TYPE_TEXT,
                 'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest),
-                host
+                host: this.config.endpoint.host
             },
-            protocol: getScheme(this.config.endpoint),
-            hostname: host,
-            path: `/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
+            protocol: this.config.endpoint.protocol,
+            hostname: this.config.endpoint.hostname,
+            path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
             body: serializedRequest
         });
 
