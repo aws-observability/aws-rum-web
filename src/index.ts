@@ -3,9 +3,9 @@ export {
     Orchestration as AwsRum,
     PartialCookieAttributes,
     PageIdFormat,
-    PAGE_ID_FORMAT,
+    PageIdFormatTypes,
     Telemetry,
-    TELEMETRY_TYPES
+    TelemetryTypes
 } from './orchestration/Orchestration';
 export { ClientBuilder } from './dispatch/Dispatch';
 export * from './plugins/event-plugins/DomEventPlugin';

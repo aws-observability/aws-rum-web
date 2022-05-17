@@ -26,17 +26,17 @@ const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
 const DATA_PLANE_DEFAULT_ENDPOINT =
     'https://dataplane.rum.${REGION}.amazonaws.com';
 
-export enum PAGE_ID_FORMAT {
-    PATH = 'PATH',
-    HASH = 'HASH',
-    PATH_AND_HASH = 'PATH_AND_HASH'
-}
-
-export enum TELEMETRY_TYPES {
+export enum TelemetryTypes {
     ERRORS = 'errors',
     PERFORMANCE = 'performance',
     INTERACTION = 'interaction',
     HTTP = 'http'
+}
+
+export enum PageIdFormatTypes {
+    PATH = 'PATH',
+    HASH = 'HASH',
+    PATH_AND_HASH = 'PATH_AND_HASH'
 }
 
 type PluginInitializer = (config: object) => Plugin[];
@@ -118,7 +118,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
         eventCacheSize: 200,
         eventPluginsToLoad: [],
-        pageIdFormat: PAGE_ID_FORMAT.PATH,
+        pageIdFormat: PageIdFormatTypes.PATH,
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
@@ -429,20 +429,20 @@ export class Orchestration {
      */
     private telemetryFunctor(): TelemetriesFunctor {
         return {
-            [TELEMETRY_TYPES.ERRORS]: (config: object): Plugin[] => {
+            [TelemetryTypes.ERRORS]: (config: object): Plugin[] => {
                 return [new JsErrorPlugin(config)];
             },
-            [TELEMETRY_TYPES.PERFORMANCE]: (config: object): Plugin[] => {
+            [TelemetryTypes.PERFORMANCE]: (config: object): Plugin[] => {
                 return [
                     new NavigationPlugin(),
                     new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];
             },
-            [TELEMETRY_TYPES.INTERACTION]: (config: object): Plugin[] => {
+            [TelemetryTypes.INTERACTION]: (config: object): Plugin[] => {
                 return [new DomEventPlugin(config)];
             },
-            [TELEMETRY_TYPES.HTTP]: (config: object): Plugin[] => {
+            [TelemetryTypes.HTTP]: (config: object): Plugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
             }
         };
