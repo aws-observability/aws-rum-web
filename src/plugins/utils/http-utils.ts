@@ -133,7 +133,7 @@ export const requestInfoToHostname = (request: Request | URL | string) => {
     } catch (e) {
         // The URL could not be parsed. This library's convention is to fail
         // silently to limit the risk of impacting the application being
-        // monitored.  We will use the hosname of the current page instead.
+        // monitored.  We will use the hostname of the current page instead.
         return window.location.hostname;
     }
 };

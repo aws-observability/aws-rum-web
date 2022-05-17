@@ -46,7 +46,7 @@ export enum PAGE_ID_FORMAT {
     PATH_AND_HASH = 'PATH_AND_HASH'
 }
 
-export type pageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
+export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
 export type PartialCookieAttributes = {
     unique?: boolean;
@@ -70,7 +70,7 @@ export type PartialConfig = {
     eventPluginsToLoad?: Plugin[];
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat?: pageIdFormat;
+    pageIdFormat?: PageIdFormat;
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
     recordResourceUrl?: boolean;
@@ -164,7 +164,7 @@ export type Config = {
     ) => Promise<Response>;
     guestRoleArn?: string;
     identityPoolId?: string;
-    pageIdFormat: pageIdFormat;
+    pageIdFormat: PageIdFormat;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
     recordResourceUrl: boolean;
