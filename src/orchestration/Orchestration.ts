@@ -21,11 +21,23 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
-import { PAGE_ID_FORMAT, TELEMETRY_TYPES } from './constants';
 
 const DATA_PLANE_REGION_PLACEHOLDER = '${REGION}';
 const DATA_PLANE_DEFAULT_ENDPOINT =
     'https://dataplane.rum.${REGION}.amazonaws.com';
+
+export enum PAGE_ID_FORMAT {
+    PATH = 'PATH',
+    HASH = 'HASH',
+    PATH_AND_HASH = 'PATH_AND_HASH'
+}
+
+export enum TELEMETRY_TYPES {
+    ERRORS = 'errors',
+    PERFORMANCE = 'performance',
+    INTERACTION = 'interaction',
+    HTTP = 'http'
+}
 
 type PluginInitializer = (config: object) => Plugin[];
 

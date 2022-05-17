@@ -1,6 +1,6 @@
 import { context } from '../../../test-utils/test-utils';
-import { PAGE_ID_FORMAT } from '../../../orchestration/constants';
 import { PageViewPlugin } from '../PageViewPlugin';
+import { PAGE_ID_FORMAT } from '../../../orchestration/Orchestration';
 
 const PAGE_VIEW_ONE_PATH = '/page_view_one?region=us-west-1#lang';
 const PAGE_VIEW_TWO_PATH = '/page_view_two?region=us-west-1#lang';

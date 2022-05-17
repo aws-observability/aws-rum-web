@@ -1,4 +1,4 @@
-import { PAGE_ID_FORMAT } from '../../orchestration/constants';
+import { PAGE_ID_FORMAT } from '../../orchestration/Orchestration';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import { Plugin, PluginContext } from '../Plugin';
 
