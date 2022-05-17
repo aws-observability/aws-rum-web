@@ -17,6 +17,7 @@ export abstract class MonkeyPatched<
 > extends Plugin {
     public enable = this.patch.bind(this, true);
     public disable = this.patch.bind(this, false);
+
     protected enabled: boolean = false;
 
     protected abstract patches: MonkeyPatch<Nodule, FieldName>[];

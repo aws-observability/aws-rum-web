@@ -18,10 +18,14 @@ export type PluginContext = {
 
 export abstract class Plugin {
     protected enabled: boolean = true;
-    private readonly pluginId: string;
 
-    constructor(public readonly pluginName: string) {
-        this.pluginId = `${RUM_AWS_PREFIX}.${pluginName}`;
+    constructor(
+        public readonly pluginName: string,
+        private readonly pluginId = `${RUM_AWS_PREFIX}.${pluginName}`
+    ) {}
+
+    public getPluginId() {
+        return this.pluginId;
     }
 
     /**
