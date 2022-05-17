@@ -99,7 +99,17 @@ npm run test
 To run (TestCafe) browser integration tests:
 
 ```
-npm run integ:local:chrome:headless
+npm run integ:headless
+npm run integ:browser
+```
+
+To run (TestCafe) integration tests for a specific browser:
+
+```
+npm run integ -- (browserName)
+# for example
+npm run integ -- chrome:headless
+npm run integ -- chrome
 ```
 
 Some features perform monkey patching which is incompatible with TestCafe. In
