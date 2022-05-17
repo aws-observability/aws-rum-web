@@ -16,7 +16,7 @@ describe('Plugins tests', () => {
         pluginManager.addPlugin(demoPlugin);
 
         // Assert
-        expect(pluginManager.hasPlugin(demoPlugin.getPluginId())).toBeTruthy();
+        expect(pluginManager.hasPlugin(demoPlugin.pluginName)).toBeTruthy();
     });
 
     test('when data is recorded to an invalid plugin then the plugin manager throws an error', async () => {

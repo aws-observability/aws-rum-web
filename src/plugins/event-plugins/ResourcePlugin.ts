@@ -7,7 +7,7 @@ import {
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 
-export const RESOURCE_EVENT_PLUGIN_ID = 'com.amazonaws.rum.resource';
+export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
 const RESOURCE = 'resource';
 const LOAD = 'load';
@@ -38,16 +38,13 @@ export const defaultConfig = {
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
-export class ResourcePlugin implements Plugin {
-    private pluginId: string;
-    private enabled: boolean;
+export class ResourcePlugin extends Plugin {
     private config: ResourcePluginConfig;
     private context: PluginContext;
     private recordEvent: RecordEvent | undefined;
 
     constructor(config?: PartialResourcePluginConfig) {
-        this.pluginId = RESOURCE_EVENT_PLUGIN_ID;
-        this.enabled = true;
+        super(RESOURCE_EVENT_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
     }
 
@@ -73,10 +70,6 @@ export class ResourcePlugin implements Plugin {
         if (this.resourceEventListener) {
             window.removeEventListener(LOAD, this.resourceEventListener);
         }
-    }
-
-    getPluginId(): string {
-        return this.pluginId;
     }
 
     resourceEventListener = (event: Event): void => {

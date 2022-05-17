@@ -1,8 +1,8 @@
 import { PageIdFormatEnum } from '../../orchestration/Orchestration';
 import { MonkeyPatched } from '../MonkeyPatched';
-import { Plugin, PluginContext } from '../Plugin';
+import { PluginContext } from '../Plugin';
 
-export const PAGE_EVENT_PLUGIN_ID = 'com.amazonaws.rum.page-view';
+export const PAGE_EVENT_PLUGIN_ID = 'page-view';
 
 export type Push = (data: any, title: string, url?: string | null) => void;
 export type Replace = (data: any, title: string, url?: string | null) => void;
@@ -13,15 +13,14 @@ export type Replace = (data: any, title: string, url?: string | null) => void;
  * When a session is initialized, the PageManager records the landing page. When
  * subsequent pages are viewed, this plugin updates the page.
  */
-export class PageViewPlugin
-    extends MonkeyPatched<History, 'pushState' | 'replaceState'>
-    implements Plugin {
-    private readonly pluginId: string;
+export class PageViewPlugin extends MonkeyPatched<
+    History,
+    'pushState' | 'replaceState'
+> {
     private context: PluginContext;
 
     constructor() {
-        super();
-        this.pluginId = PAGE_EVENT_PLUGIN_ID;
+        super(PAGE_EVENT_PLUGIN_ID);
         this.enable();
     }
 
@@ -29,10 +28,6 @@ export class PageViewPlugin
         this.context = context;
         this.addListener();
         this.recordPageView();
-    }
-
-    public getPluginId(): string {
-        return this.pluginId;
     }
 
     protected get patches() {

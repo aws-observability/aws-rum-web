@@ -2,7 +2,7 @@ import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
 
-export const NAVIGATION_EVENT_PLUGIN_ID = 'com.amazonaws.rum.navigation';
+export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 
 const NAVIGATION = 'navigation';
 const LOAD = 'load';
@@ -12,14 +12,11 @@ const LOAD = 'load';
  * Paint, resource and performance event types make sense only if all or none are included.
  * For RUM, these event types are inter-dependent. So they are recorded under one plugin.
  */
-export class NavigationPlugin implements Plugin {
-    private pluginId: string;
-    private enabled: boolean;
+export class NavigationPlugin extends Plugin {
     private recordEvent: RecordEvent | undefined;
 
     constructor() {
-        this.pluginId = NAVIGATION_EVENT_PLUGIN_ID;
-        this.enabled = true;
+        super(NAVIGATION_EVENT_PLUGIN_ID);
     }
 
     /**
@@ -76,10 +73,6 @@ export class NavigationPlugin implements Plugin {
             return Boolean(navData.loadEventEnd);
         }
         return false;
-    }
-
-    getPluginId(): string {
-        return this.pluginId;
     }
 
     /**

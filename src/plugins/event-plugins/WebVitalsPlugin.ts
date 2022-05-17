@@ -9,14 +9,13 @@ import {
     CLS_EVENT_TYPE
 } from '../utils/constant';
 
-export const WEB_VITAL_EVENT_PLUGIN_ID = 'com.amazonaws.rum.web-vitals';
+export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
-export class WebVitalsPlugin implements Plugin {
+export class WebVitalsPlugin extends Plugin {
     private recordEvent: RecordEvent | undefined;
-    private pluginId: string;
 
     constructor() {
-        this.pluginId = WEB_VITAL_EVENT_PLUGIN_ID;
+        super(WEB_VITAL_EVENT_PLUGIN_ID);
     }
 
     load(context: PluginContext): void {
@@ -31,10 +30,6 @@ export class WebVitalsPlugin implements Plugin {
 
     // tslint:disable-next-line:no-empty
     disable(): void {}
-
-    getPluginId(): string {
-        return this.pluginId;
-    }
 
     // tslint:disable-next-line:no-empty
     configure(config: any): void {}

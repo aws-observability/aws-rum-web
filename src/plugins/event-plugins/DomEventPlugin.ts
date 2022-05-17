@@ -2,7 +2,7 @@ import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import { DomEvent } from '../../events/dom-event';
 import { DOM_EVENT_TYPE } from '../utils/constant';
 
-export const DOM_EVENT_PLUGIN_ID = 'com.amazonaws.rum.dom-event';
+export const DOM_EVENT_PLUGIN_ID = 'dom-event';
 
 export type TargetDomEvent = {
     /**
@@ -46,22 +46,20 @@ export type ElementEventListener = {
     eventListener: EventListener;
 };
 
-export class DomEventPlugin implements Plugin {
+export class DomEventPlugin extends Plugin {
+    enabled = false;
     private recordEvent: RecordEvent | undefined;
-    private pluginId: string;
     private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
-    private enabled: boolean;
     private config: DomEventPluginConfig;
     private observer: MutationObserver;
 
     constructor(config?: PartialDomEventPluginConfig) {
-        this.pluginId = DOM_EVENT_PLUGIN_ID;
+        super(DOM_EVENT_PLUGIN_ID);
         this.eventListenerMap = new Map<
             TargetDomEvent,
             ElementEventListener[]
         >();
         this.config = { ...defaultConfig, ...config };
-        this.enabled = false;
     }
 
     load(context: PluginContext): void {
@@ -95,10 +93,6 @@ export class DomEventPlugin implements Plugin {
             this.observer.disconnect();
         }
         this.enabled = false;
-    }
-
-    getPluginId(): string {
-        return this.pluginId;
     }
 
     update(events: TargetDomEvent[]): void {

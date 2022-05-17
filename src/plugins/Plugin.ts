@@ -1,5 +1,6 @@
 import { Config } from '../orchestration/Orchestration';
 import { Session } from '../sessions/SessionManager';
+import { RUM_AWS_PREFIX } from './utils/constant';
 
 export type RecordEvent = (type: string, eventData: object) => void;
 export type RecordPageView = (pageId: string) => void;
@@ -15,28 +16,30 @@ export type PluginContext = {
     getSession: GetSession;
 };
 
-export interface Plugin {
+export abstract class Plugin {
+    protected enabled: boolean = true;
+    private readonly pluginId: string;
+
+    constructor(public readonly pluginName: string) {
+        this.pluginId = `${RUM_AWS_PREFIX}.${pluginName}`;
+    }
+
     /**
      * Load the plugin. The plugin should initialize itself and start recording events
      * for which it is configured.
-     * @param recordEvent A callback to record event data.
+     * @param context
      */
-    load(context: PluginContext): void;
+    abstract load(context: PluginContext): void;
 
     /**
      * Enable the plugin. The plugin may record events.
      */
-    enable(): void;
+    abstract enable(): void;
 
     /**
      * Disable the plugin. The plugin should remove event listeners and cease recording events.
      */
-    disable(): void;
-
-    /**
-     * Returns a unique identifier for the plugin.
-     */
-    getPluginId(): string;
+    abstract disable(): void;
 
     /**
      * Manually record an event.

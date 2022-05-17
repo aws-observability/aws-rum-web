@@ -2,8 +2,8 @@ import { NavigationEvent } from '../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
 import { MonkeyPatched } from '../plugins/MonkeyPatched';
 import { Config } from '../orchestration/Orchestration';
-import { RecordEvent } from '../plugins/Plugin';
-import { PageManager, Page } from '../sessions/PageManager';
+import { PluginContext, RecordEvent } from '../plugins/Plugin';
+import { PageManager, Page } from './PageManager';
 
 type Fetch = typeof fetch;
 type Send = () => void;
@@ -39,10 +39,11 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
 
     private config: Config;
     private pageManager: PageManager;
-    private record: RecordEvent;
+    // @ts-ignore
+    private readonly record: RecordEvent;
 
     constructor(pageManager: PageManager, config: Config, record: RecordEvent) {
-        super();
+        super('virtual-page-load-timer');
         this.periodicCheckerId = undefined;
         this.timeoutCheckerId = undefined;
         this.domMutationObserver = new MutationObserver(this.resetInterval);
@@ -64,6 +65,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             this.updateLatestInteractionTime
         );
         document.addEventListener('keydown', this.updateLatestInteractionTime);
+    }
+
+    load?(context: PluginContext): void {
+        throw new Error('Method not implemented.');
     }
 
     /** Initializes timing related resources for current page. */

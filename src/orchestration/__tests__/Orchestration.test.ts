@@ -117,7 +117,7 @@ describe('Orchestration tests', () => {
         expect(PluginManager).toHaveBeenCalledTimes(1);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -194,7 +194,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -216,7 +216,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -231,7 +231,7 @@ describe('Orchestration tests', () => {
         // Assert
         addPlugin.mock.calls.forEach((call) => {
             const plugin: any = call[0];
-            if (plugin.getPluginId() === 'com.amazonaws.rum.fetch') {
+            if (plugin.pluginId === 'com.amazonaws.rum.fetch') {
                 expect(plugin.config.trace).toEqual(true);
             }
         });
@@ -254,7 +254,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -275,7 +275,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -296,7 +296,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -314,7 +314,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());
@@ -333,7 +333,7 @@ describe('Orchestration tests', () => {
         expect(addPlugin).toHaveBeenCalledTimes(expected.length);
 
         addPlugin.mock.calls.forEach((call) => {
-            actual.push(call[0].getPluginId());
+            actual.push(call[0].pluginId);
         });
 
         expect(actual.sort()).toEqual(expected.sort());

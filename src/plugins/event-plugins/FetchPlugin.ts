@@ -1,4 +1,4 @@
-import { Plugin, PluginContext } from '../Plugin';
+import { PluginContext } from '../Plugin';
 import {
     Http,
     Subsegment,
@@ -39,7 +39,7 @@ type Error = {
     stack?: string; // non-standard Mozilla
 };
 
-export const FETCH_PLUGIN_ID = 'com.amazonaws.rum.fetch';
+export const FETCH_PLUGIN_ID = 'fetch';
 
 /**
  * A plugin which initiates and records AWS X-Ray traces for fetch HTTP requests.
@@ -47,26 +47,18 @@ export const FETCH_PLUGIN_ID = 'com.amazonaws.rum.fetch';
  * The fetch API is monkey patched using shimmer so all calls to fetch are intercepted. Only calls to URLs which are
  * on the allowlist and are not on the denylist are traced and recorded.
  */
-export class FetchPlugin
-    extends MonkeyPatched<Window, 'fetch'>
-    implements Plugin {
-    private readonly pluginId: string;
+export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private readonly config: HttpPluginConfig;
     private context: PluginContext;
 
     constructor(config?: PartialHttpPluginConfig) {
-        super();
-        this.pluginId = FETCH_PLUGIN_ID;
+        super(FETCH_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
     }
 
     public load(context: PluginContext): void {
         this.context = context;
         this.enable();
-    }
-
-    public getPluginId(): string {
-        return this.pluginId;
     }
 
     protected get patches() {

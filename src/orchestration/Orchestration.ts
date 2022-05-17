@@ -336,7 +336,7 @@ export class Orchestration {
 
     /**
      * Update DOM plugin to record the (additional) provided DOM events.
-     * @param pluginConfig Target DOM events.
+     * @param events
      */
     public registerDomEvents(events: TargetDomEvent[]) {
         this.pluginManager.updatePlugin(DOM_EVENT_PLUGIN_ID, events);
