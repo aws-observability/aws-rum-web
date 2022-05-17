@@ -133,16 +133,12 @@ export class ResourcePlugin implements Plugin {
     };
 
     recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
-        try {
-            // Ignore monitoring beacons.
-            if (
-                new URL(entryData.name).host ===
-                this.context.config.endpointUrl.host
-            ) {
-                return;
-            }
-        } catch (e) {
-            // Fail-safe ignore
+        // Ignore monitoring beacons.
+        if (
+            new URL(entryData.name).host ===
+            this.context.config.endpointUrl.host
+        ) {
+            return;
         }
 
         if (this.recordEvent) {
