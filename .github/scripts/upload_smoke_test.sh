@@ -1,2 +1,3 @@
 bucket=$1
-aws s3api put-object --bucket $bucket --key "smoke.html" --body processed_smoke.html --content-type "text/html"
+key=smoke-$(npm pkg get version | sed 's/"//g').html
+aws s3api put-object --bucket $bucket --key "$key" --body processed_smoke.html --content-type "text/html"
