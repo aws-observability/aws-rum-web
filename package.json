@@ -27,9 +27,9 @@
         "build:cjs": "npm run build:schemas && tsc --project ./tsconfig.cjs.json",
         "version": "standard-version",
         "lint": "npx tslint --config ./tslint.json --project ./tsconfig.webpack.json --format verbose",
-        "lint:fix": "npx tslint -c ./tslint.json -p ./tsconfig.webpack.json --format verbose --fix",
+        "lint:fix": "npm run lint -- --fix",
         "prettier": "npx prettier --check .",
-        "prettier:fix": "npx prettier --write .",
+        "prettier:fix": "npm run prettier -- --write",
         "prepublishOnly": "npm run release",
         "test:coverage": "npm run build:webpack:dev && jest -c jest.unit.config.js --coverage",
         "preinteg:browser": "npm run build:webpack:dev",
@@ -111,8 +111,8 @@
         "web-vitals": "^1.1.1"
     },
     "lint-staged": {
-        "*.{js,ts}": "npm run lint:fix",
-        "*.{js,ts,json,html,yml,md}": "npx prettier --write"
+        "*.{js,ts}": "npm run lint",
+        "*.{js,ts,json,html,yml,md}": "npx prettier --check"
     },
     "jest": {
         "setupFiles": [
