@@ -135,9 +135,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when the endpoint contains a path then the fetch request url contains the path prefix', async () => {
         // Init
-        const endpoint = new URL(
-            `${Utils.AWS_RUM_ENDPOINT.toString()}${'prod'}`
-        );
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
         const client: DataPlaneClient = new DataPlaneClient({
             fetchRequestHandler: new FetchHttpHandler(),
             beaconRequestHandler: new BeaconHttpHandler(),
@@ -160,9 +158,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when the endpoint path contains a trailing slash then the fetch request url drops the trailing slash', async () => {
         // Init
-        const endpoint = new URL(
-            `${Utils.AWS_RUM_ENDPOINT.toString()}${'prod/'}`
-        );
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod/'}`);
         const client: DataPlaneClient = new DataPlaneClient({
             fetchRequestHandler: new FetchHttpHandler(),
             beaconRequestHandler: new BeaconHttpHandler(),
@@ -188,9 +184,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when the endpoint contains a path then the beacon request url contains the path prefix', async () => {
         // Init
-        const endpoint = new URL(
-            `${Utils.AWS_RUM_ENDPOINT.toString()}${'prod'}`
-        );
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
         const client: DataPlaneClient = new DataPlaneClient({
             fetchRequestHandler: new FetchHttpHandler(),
             beaconRequestHandler: new BeaconHttpHandler(),
@@ -213,9 +207,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when the endpoint path contains a trailing slash then the beacon request url drops the trailing slash', async () => {
         // Init
-        const endpoint = new URL(
-            `${Utils.AWS_RUM_ENDPOINT.toString()}${'prod/'}`
-        );
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod/'}`);
         const client: DataPlaneClient = new DataPlaneClient({
             fetchRequestHandler: new FetchHttpHandler(),
             beaconRequestHandler: new BeaconHttpHandler(),
