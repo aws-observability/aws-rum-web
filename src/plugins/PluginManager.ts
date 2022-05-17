@@ -16,6 +16,12 @@ export class PluginManager {
     public addPlugin(plugin: Plugin): void {
         const { pluginName } = plugin;
 
+        if (this.hasPlugin(pluginName)) {
+            throw new Error(
+                `Plugin "${pluginName}" already defined in the PluginManager`
+            );
+        }
+
         this.plugins.set(pluginName, plugin);
 
         // initialize plugin
