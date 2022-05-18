@@ -70,8 +70,8 @@ describe('DataPlaneClient tests', () => {
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        // @ts-ignore
-        const signedRequest: HttpRequest = fetchHandler.mock.calls[0][0];
+        const signedRequest: HttpRequest = (fetchHandler.mock
+            .calls[0] as any)[0];
         expect(signedRequest.headers['x-amz-date']).toEqual('19700101T000000Z');
         expect(signedRequest.headers['X-Amz-Content-Sha256']).toEqual(
             '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
@@ -130,6 +130,101 @@ describe('DataPlaneClient tests', () => {
         );
         expect(signedRequest.query['X-Amz-Signature']).toEqual(
             'd37eb756444ebf6f785233714d6d942f2b20f69292fb09533f6b69556eb0ff2b'
+        );
+    });
+
+    test('when the endpoint contains a path then the fetch request url contains the path prefix', async () => {
+        // Init
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            beaconRequestHandler: new BeaconHttpHandler(),
+            endpoint,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (fetchHandler.mock
+            .calls[0] as any)[0];
+        expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
+        expect(signedRequest.path).toEqual(
+            `${endpoint.pathname}/appmonitors/application123/`
+        );
+    });
+
+    test('when the endpoint path contains a trailing slash then the fetch request url drops the trailing slash', async () => {
+        // Init
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod/'}`);
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            beaconRequestHandler: new BeaconHttpHandler(),
+            endpoint,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (fetchHandler.mock
+            .calls[0] as any)[0];
+        expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
+        expect(signedRequest.path).toEqual(
+            `${endpoint.pathname.replace(
+                /\/$/,
+                ''
+            )}/appmonitors/application123/`
+        );
+    });
+
+    test('when the endpoint contains a path then the beacon request url contains the path prefix', async () => {
+        // Init
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            beaconRequestHandler: new BeaconHttpHandler(),
+            endpoint,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (beaconHandler.mock
+            .calls[0] as any)[0];
+        expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
+        expect(signedRequest.path).toEqual(
+            `${endpoint.pathname}/appmonitors/application123`
+        );
+    });
+
+    test('when the endpoint path contains a trailing slash then the beacon request url drops the trailing slash', async () => {
+        // Init
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod/'}`);
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            beaconRequestHandler: new BeaconHttpHandler(),
+            endpoint,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (beaconHandler.mock
+            .calls[0] as any)[0];
+        expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
+        expect(signedRequest.path).toEqual(
+            `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
         );
     });
 });

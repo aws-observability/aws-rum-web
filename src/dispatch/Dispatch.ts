@@ -23,14 +23,14 @@ interface DataPlaneClientInterface {
 const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
 
 export type ClientBuilder = (
-    endpoint: string,
+    endpoint: URL,
     region: string,
     credentials: CredentialProvider | Credentials
 ) => DataPlaneClient;
 
 export class Dispatch {
     private region: string;
-    private endpoint: string;
+    private endpoint: URL;
     private eventCache: EventCache;
     private rum: DataPlaneClientInterface;
     private enabled: boolean;
@@ -40,7 +40,7 @@ export class Dispatch {
 
     constructor(
         region: string,
-        endpoint: string,
+        endpoint: URL,
         eventCache: EventCache,
         config: Config
     ) {

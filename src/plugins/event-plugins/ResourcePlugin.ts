@@ -1,7 +1,6 @@
 import { RecordEvent, Plugin, PluginContext } from '../Plugin';
 import {
     getResourceFileType,
-    getHost,
     ResourceType,
     shuffle
 } from '../../utils/common-utils';
@@ -134,10 +133,15 @@ export class ResourcePlugin implements Plugin {
     };
 
     recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
+        // Ignore monitoring beacons.
         if (
-            this.recordEvent &&
-            getHost(entryData.name) !== getHost(this.context.config.endpoint)
+            new URL(entryData.name).host ===
+            this.context.config.endpointUrl.host
         ) {
+            return;
+        }
+
+        if (this.recordEvent) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,

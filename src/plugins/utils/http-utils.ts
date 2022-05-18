@@ -1,4 +1,3 @@
-import { getHost } from '../../utils/common-utils';
 import {
     Http,
     Subsegment,
@@ -123,15 +122,20 @@ export const createXRaySubsegment = (
 };
 
 export const requestInfoToHostname = (request: Request | URL | string) => {
-    let hostname = '';
-    if ((request as URL).hostname) {
-        hostname = (request as URL).hostname;
-    } else if ((request as Request).url) {
-        hostname = getHost((request as Request).url);
-    } else {
-        hostname = getHost(request.toString());
+    try {
+        if ((request as URL).hostname) {
+            return (request as URL).hostname;
+        } else if ((request as Request).url) {
+            return new URL((request as Request).url).hostname;
+        } else {
+            return new URL(request.toString()).hostname;
+        }
+    } catch (e) {
+        // The URL could not be parsed. This library's convention is to fail
+        // silently to limit the risk of impacting the application being
+        // monitored.  We will use the hostname of the current page instead.
+        return window.location.hostname;
     }
-    return hostname ? hostname : window.location.hostname;
 };
 
 export const addAmznTraceIdHeaderToInit = (
