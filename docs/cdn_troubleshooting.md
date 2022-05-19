@@ -17,6 +17,23 @@ anonymous Cognito identity using `identityPoolId` and `guestRoleArn`, or (2)
 provide the web client with AWS credentials using the `cwr('setAwsCredentials',
 credentials);` command.
 
+### Event limit is reached for the session
+
+If the the web client initially sends data, but stops sending data after a
+period of time, the likely cause is that the session event limit has been
+reached. By default, the web client limits the number of recorded events to 200
+per session.
+
+The configuration field [`sessionEventLimit`](configuration.md) controls this
+limit. If you wish to remove this limit completely, set `sessionEventLimit: 0`.
+
+```typescript
+const config: AwsRumConfig = {
+  // Record an unlimited number of events per session
+  sessionEventLimit: 0
+}
+```
+
 ---
 ## CloudWatch RUM returns 403
 
