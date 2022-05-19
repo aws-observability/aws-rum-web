@@ -48,8 +48,6 @@ export type Telemetry = string | (string | object)[];
 
 export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
-export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
-
 export type PartialCookieAttributes = {
     unique?: boolean;
     domain?: string;
