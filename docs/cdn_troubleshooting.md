@@ -206,21 +206,3 @@ application before enabling this option in a production environment.
     );
 </script>
 ```
----
-## Route change timing is not recorded for my single page application
-
-### Configuring `routeChangeTimeout`
-The current mechanism to calculate a route change (virtual page load) is the difference between the latest completion time of a DOM mutation or an outgoing AJAX request and the user interaction that triggered the route change.
-
-In cases where a route change gets stuck or takes an extremely long time to load, it can cause severe skews to the page load timing data. To mitigate this issue, we have defined a configurable value called `routeChangeTimeout`, which has a default value of 10000 (10s). As a result, any route changes that take longer than the `routeChangeTimeout` will not be recorded.
-
-If your application is heavy and takes longer than 10 seconds to load on average, increasing the `routeChangeTimeout` value will allow the web client to capture the page load timing data.
-
-### Latest Interaction Time
-Currently, CW RUM captures the latest user interaction by listening to user clicks and key presses. The latest interaction time is not guaranteed to be the real user interaction that triggered a route change. As a result, CW RUM needs to determine whether the latest user interaction is responsible for the route change.
-
-We consider two cases:
-1. Latest user interaction is older than actual user interaction: this can happen if the user navigates with the browser back/forward button, or if the interaction is not a click/keyup event.
-2. Latest user interaction is newer than actual user interaction: This can happen if the user clicks or types in the time between actual and when route change is ongoing.
-
-Case (1) has a risk of skewing the route change timing data as (1) browser navigation is common and (2) there is no limit on when the latest interaction may have occurred. To help mitigate this, we have defined a window of 1s to determine whether the latest user interaction is responsible for the route change. If the difference between the route change detection time and the latest user interaction is greater than 1s, we do not time the route change to prevent data skew.
