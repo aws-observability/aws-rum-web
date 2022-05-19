@@ -57,7 +57,6 @@ export class FetchPlugin
     constructor(config?: PartialHttpPluginConfig) {
         super();
         this.pluginId = FETCH_PLUGIN_ID;
-        // TODO: fix config merge so that it is not shallow
         this.config = { ...defaultConfig, ...config };
     }
 

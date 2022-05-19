@@ -102,7 +102,6 @@ export class XhrPlugin
     constructor(config?: PartialHttpPluginConfig) {
         super();
         this.pluginId = XHR_PLUGIN_ID;
-        // TODO: fix config merge so that it is not shallow
         this.config = { ...defaultConfig, ...config };
         this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();
     }
