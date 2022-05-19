@@ -25,11 +25,17 @@ import { PageAttributes } from '../sessions/PageManager';
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
 
-export enum TELEMETRY_TYPES {
-    ERRORS = 'errors',
-    PERFORMANCE = 'performance',
-    INTERACTION = 'interaction',
-    HTTP = 'http'
+export enum TelemetryEnum {
+    Errors = 'errors',
+    Performance = 'performance',
+    Interaction = 'interaction',
+    Http = 'http'
+}
+
+export enum PageIdFormatEnum {
+    Path = 'PATH',
+    Hash = 'HASH',
+    PathAndHash = 'PATH_AND_HASH'
 }
 
 type PluginInitializer = (config: object) => Plugin[];
@@ -38,13 +44,9 @@ interface TelemetriesFunctor {
     [key: string]: PluginInitializer;
 }
 
-type Telemetry = string | (string | object)[];
+export type Telemetry = string | (string | object)[];
 
-export enum PAGE_ID_FORMAT {
-    PATH = 'PATH',
-    HASH = 'HASH',
-    PATH_AND_HASH = 'PATH_AND_HASH'
-}
+export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
 export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
@@ -118,7 +120,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         endpointUrl: new URL(DEFAULT_ENDPOINT),
         eventCacheSize: 200,
         eventPluginsToLoad: [],
-        pageIdFormat: PAGE_ID_FORMAT.PATH,
+        pageIdFormat: PageIdFormatEnum.Path,
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
@@ -451,20 +453,20 @@ export class Orchestration {
      */
     private telemetryFunctor(): TelemetriesFunctor {
         return {
-            [TELEMETRY_TYPES.ERRORS]: (config: object): Plugin[] => {
+            [TelemetryEnum.Errors]: (config: object): Plugin[] => {
                 return [new JsErrorPlugin(config)];
             },
-            [TELEMETRY_TYPES.PERFORMANCE]: (config: object): Plugin[] => {
+            [TelemetryEnum.Performance]: (config: object): Plugin[] => {
                 return [
                     new NavigationPlugin(),
                     new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];
             },
-            [TELEMETRY_TYPES.INTERACTION]: (config: object): Plugin[] => {
+            [TelemetryEnum.Interaction]: (config: object): Plugin[] => {
                 return [new DomEventPlugin(config)];
             },
-            [TELEMETRY_TYPES.HTTP]: (config: object): Plugin[] => {
+            [TelemetryEnum.Http]: (config: object): Plugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
             }
         };

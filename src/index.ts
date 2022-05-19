@@ -1,7 +1,13 @@
 export {
     PartialConfig as AwsRumConfig,
-    Orchestration as AwsRum
+    Orchestration as AwsRum,
+    PartialCookieAttributes,
+    PageIdFormat,
+    PageIdFormatEnum,
+    Telemetry,
+    TelemetryEnum
 } from './orchestration/Orchestration';
+export { ClientBuilder } from './dispatch/Dispatch';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';
 export * from './plugins/event-plugins/NavigationPlugin';

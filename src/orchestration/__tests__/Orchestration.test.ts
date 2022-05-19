@@ -4,6 +4,7 @@ import { EventCache } from '../../event-cache/EventCache';
 import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
 import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
 import { PluginManager } from '../../plugins/PluginManager';
+import { PageIdFormatEnum } from '../Orchestration';
 
 global.fetch = jest.fn();
 
@@ -153,7 +154,7 @@ describe('Orchestration tests', () => {
             ),
             eventCacheSize: 200,
             eventPluginsToLoad: [],
-            pageIdFormat: 'PATH',
+            pageIdFormat: PageIdFormatEnum.Path,
             pagesToExclude: [],
             pagesToInclude: [],
             recordResourceUrl: true,
