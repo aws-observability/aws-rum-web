@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 import {
+    getEventsByType,
+    getUrl,
+    isDataPlaneRequest
+} from 'test-utils/smoke-test-utils';
+import {
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE,
     PAGE_VIEW_EVENT_TYPE,
@@ -9,25 +14,8 @@ import {
 // Environment variables set through CLI command
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
-const TEST_URL = process.env.URL || 'http://localhost:9000/smoke.html';
-
+const TEST_URL = getUrl(process.env.URL, process.env.VERSION);
 const TARGET_URL = ENDPOINT + MONITOR_ID + '/';
-
-function getEventsByType(requestBody, eventType) {
-    return requestBody.RumEvents.filter((e) => e.type === eventType);
-}
-
-/**
- * Returns true if the request is a successful PutRumEvents request
- */
-function isDataPlaneRequest(response): boolean {
-    const request = response.request();
-    return (
-        request.method() === 'POST' &&
-        response.status() === 200 &&
-        response.url() === TARGET_URL
-    );
-}
 
 test('when web client calls PutRumEvents then the response code is 200', async ({
     page
@@ -37,7 +25,7 @@ test('when web client calls PutRumEvents then the response code is 200', async (
 
     // Test will timeout if no successful dataplane request is found
     await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response)
+        isDataPlaneRequest(response, TARGET_URL)
     );
 });
 
@@ -55,7 +43,7 @@ test('when web client calls PutRumEvents then the payload contains all events', 
 
     // Test will timeout if no successful dataplane request is found
     const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response)
+        isDataPlaneRequest(response, TARGET_URL)
     );
 
     // Parse payload to verify event count
