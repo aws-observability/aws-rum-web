@@ -10,7 +10,7 @@ import {
     PluginContext,
     RecordEvent,
     RecordPageView
-} from '../plugins/Plugin';
+} from '../plugins/types';
 import {
     AppMonitorDetails,
     PutRumEventsRequest,

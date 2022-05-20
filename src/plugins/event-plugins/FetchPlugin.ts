@@ -1,4 +1,3 @@
-import { PluginContext } from '../Plugin';
 import {
     Http,
     Subsegment,
@@ -24,6 +23,7 @@ import {
     isErrorPrimitive
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
+import { InternalPlugin } from '../InternalPlugin';
 
 type Fetch = typeof fetch;
 
@@ -49,16 +49,10 @@ export const FETCH_PLUGIN_ID = 'fetch';
  */
 export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private readonly config: HttpPluginConfig;
-    private context: PluginContext;
 
     constructor(config?: PartialHttpPluginConfig) {
         super(FETCH_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
-    }
-
-    public load(context: PluginContext): void {
-        this.context = context;
-        this.enable();
     }
 
     protected get patches() {
@@ -69,6 +63,10 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                 wrapper: this.fetchWrapper
             }
         ];
+    }
+
+    protected onload(): void {
+        this.enable();
     }
 
     private isTracingEnabled = () => {

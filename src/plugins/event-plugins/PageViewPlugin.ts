@@ -1,6 +1,5 @@
 import { PageIdFormatEnum } from '../../orchestration/Orchestration';
 import { MonkeyPatched } from '../MonkeyPatched';
-import { PluginContext } from '../Plugin';
 
 export const PAGE_EVENT_PLUGIN_ID = 'page-view';
 
@@ -17,15 +16,12 @@ export class PageViewPlugin extends MonkeyPatched<
     History,
     'pushState' | 'replaceState'
 > {
-    private context: PluginContext;
-
     constructor() {
         super(PAGE_EVENT_PLUGIN_ID);
         this.enable();
     }
 
-    public load(context: PluginContext): void {
-        this.context = context;
+    protected onload(): void {
         this.addListener();
         this.recordPageView();
     }

@@ -1,4 +1,4 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 
@@ -16,18 +16,12 @@ const defaultConfig: JsErrorPluginConfig = {
     stackTraceLength: 200
 };
 
-export class JsErrorPlugin extends Plugin {
+export class JsErrorPlugin extends InternalPlugin {
     private config: JsErrorPluginConfig;
-    private recordEvent: RecordEvent;
 
     constructor(config?: PartialJsErrorPluginConfig) {
         super(JS_ERROR_EVENT_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
-    }
-
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        this.addEventHandler();
     }
 
     enable(): void {
@@ -54,8 +48,12 @@ export class JsErrorPlugin extends Plugin {
         }
     }
 
+    protected onload(): void {
+        this.addEventHandler();
+    }
+
     private eventHandler = (errorEvent: ErrorEvent) => {
-        this.recordEvent(
+        this.context?.record(
             JS_ERROR_EVENT_TYPE,
             errorEventToJsErrorEvent(errorEvent, this.config.stackTraceLength)
         );

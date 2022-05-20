@@ -1,4 +1,6 @@
-import { Plugin, PluginContext } from '../plugins/Plugin';
+import { PluginInterface } from '../plugins/PluginInterface';
+import { PluginContext } from '../plugins/types';
+import { InternalPlugin } from '../plugins/InternalPlugin';
 import { Authentication } from '../dispatch/Authentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 import { PluginManager } from '../plugins/PluginManager';
@@ -38,7 +40,7 @@ export enum PageIdFormatEnum {
     PathAndHash = 'PATH_AND_HASH'
 }
 
-type PluginInitializer = (config: object) => Plugin[];
+type PluginInitializer = (config: object) => InternalPlugin[];
 
 interface TelemetriesFunctor {
     [key: string]: PluginInitializer;
@@ -67,7 +69,7 @@ export type PartialConfig = {
     enableXRay?: boolean;
     endpoint?: string;
     eventCacheSize?: number;
-    eventPluginsToLoad?: Plugin[];
+    eventPluginsToLoad?: PluginInterface[];
     guestRoleArn?: string;
     identityPoolId?: string;
     pageIdFormat?: PageIdFormat;
@@ -152,7 +154,7 @@ export type Config = {
     endpoint: string;
     endpointUrl: URL;
     eventCacheSize: number;
-    eventPluginsToLoad: Plugin[];
+    eventPluginsToLoad: PluginInterface[];
     /*
      * We must remember the fetch function before the HttpFetch plugin
      * overwrites it via monkey patch. We will use the original fetch function
@@ -273,7 +275,7 @@ export class Orchestration {
      * Add a telemetry plugin.
      * @param plugin A plugin which adheres to the RUM web client's plugin interface.
      */
-    public addPlugin(plugin: Plugin): void {
+    public addPlugin(plugin: PluginInterface): void {
         this.pluginManager.addPlugin(plugin);
     }
 
@@ -339,7 +341,10 @@ export class Orchestration {
      * @param events
      */
     public registerDomEvents(events: TargetDomEvent[]) {
-        this.pluginManager.updatePlugin(DOM_EVENT_PLUGIN_ID, events);
+        this.pluginManager.updatePlugin<TargetDomEvent>(
+            DOM_EVENT_PLUGIN_ID,
+            events
+        );
     }
 
     private initEventCache(
@@ -382,8 +387,8 @@ export class Orchestration {
         applicationId: string,
         applicationVersion: string
     ) {
-        const BUILTIN_PLUGINS: Plugin[] = this.constructBuiltinPlugins();
-        const PLUGINS: Plugin[] = [
+        const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins();
+        const PLUGINS: PluginInterface[] = [
             ...BUILTIN_PLUGINS,
             ...this.config.eventPluginsToLoad
         ];
@@ -413,8 +418,8 @@ export class Orchestration {
         return pluginManager;
     }
 
-    private constructBuiltinPlugins(): Plugin[] {
-        let plugins: Plugin[] = [];
+    private constructBuiltinPlugins(): InternalPlugin[] {
+        let plugins: InternalPlugin[] = [];
         const functor: TelemetriesFunctor = this.telemetryFunctor();
 
         this.config.telemetries.forEach((type) => {
@@ -451,20 +456,20 @@ export class Orchestration {
      */
     private telemetryFunctor(): TelemetriesFunctor {
         return {
-            [TelemetryEnum.Errors]: (config: object): Plugin[] => {
+            [TelemetryEnum.Errors]: (config: object): InternalPlugin[] => {
                 return [new JsErrorPlugin(config)];
             },
-            [TelemetryEnum.Performance]: (config: object): Plugin[] => {
+            [TelemetryEnum.Performance]: (config: object): InternalPlugin[] => {
                 return [
                     new NavigationPlugin(),
                     new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];
             },
-            [TelemetryEnum.Interaction]: (config: object): Plugin[] => {
+            [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {
                 return [new DomEventPlugin(config)];
             },
-            [TelemetryEnum.Http]: (config: object): Plugin[] => {
+            [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
             }
         };

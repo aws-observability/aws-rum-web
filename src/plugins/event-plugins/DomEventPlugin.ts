@@ -1,4 +1,4 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { DomEvent } from '../../events/dom-event';
 import { DOM_EVENT_TYPE } from '../utils/constant';
 
@@ -46,9 +46,8 @@ export type ElementEventListener = {
     eventListener: EventListener;
 };
 
-export class DomEventPlugin extends Plugin {
+export class DomEventPlugin extends InternalPlugin {
     enabled = false;
-    private recordEvent: RecordEvent | undefined;
     private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
     private config: DomEventPluginConfig;
     private observer: MutationObserver;
@@ -60,11 +59,6 @@ export class DomEventPlugin extends Plugin {
             ElementEventListener[]
         >();
         this.config = { ...defaultConfig, ...config };
-    }
-
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        this.enable();
     }
 
     enable(): void {
@@ -95,11 +89,15 @@ export class DomEventPlugin extends Plugin {
         this.enabled = false;
     }
 
-    update(events: TargetDomEvent[]): void {
+    update(events): void {
         events.forEach((domEvent) => {
             this.addEventHandler(domEvent);
             this.config.events.push(domEvent);
         });
+    }
+
+    protected onload(): void {
+        this.enable();
     }
 
     private removeListeners() {
@@ -124,8 +122,8 @@ export class DomEventPlugin extends Plugin {
             if (cssLocator !== undefined) {
                 eventData.cssLocator = cssLocator;
             }
-            if (this.recordEvent) {
-                this.recordEvent(DOM_EVENT_TYPE, eventData);
+            if (this.context?.record) {
+                this.context?.record(DOM_EVENT_TYPE, eventData);
             }
         };
     }

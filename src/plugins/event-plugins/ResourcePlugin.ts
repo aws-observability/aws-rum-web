@@ -1,4 +1,4 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import {
     getResourceFileType,
     ResourceType,
@@ -38,20 +38,12 @@ export const defaultConfig = {
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
-export class ResourcePlugin extends Plugin {
+export class ResourcePlugin extends InternalPlugin {
     private config: ResourcePluginConfig;
-    private context: PluginContext;
-    private recordEvent: RecordEvent | undefined;
 
     constructor(config?: PartialResourcePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
-    }
-
-    load(context: PluginContext): void {
-        this.context = context;
-        this.recordEvent = context.record;
-        window.addEventListener(LOAD, this.resourceEventListener);
     }
 
     enable(): void {
@@ -134,7 +126,7 @@ export class ResourcePlugin extends Plugin {
             return;
         }
 
-        if (this.recordEvent) {
+        if (this.context?.record) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,
@@ -145,7 +137,11 @@ export class ResourcePlugin extends Plugin {
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-            this.recordEvent(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
+            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }
     };
+
+    protected onload(): void {
+        window.addEventListener(LOAD, this.resourceEventListener);
+    }
 }

@@ -1,4 +1,4 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { LargestContentfulPaintEvent } from '../../events/largest-contentful-paint-event';
 import { FirstInputDelayEvent } from '../../events/first-input-delay-event';
 import { CumulativeLayoutShiftEvent } from '../../events/cumulative-layout-shift-event';
@@ -11,18 +11,9 @@ import {
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
-export class WebVitalsPlugin extends Plugin {
-    private recordEvent: RecordEvent | undefined;
-
+export class WebVitalsPlugin extends InternalPlugin {
     constructor() {
         super(WEB_VITAL_EVENT_PLUGIN_ID);
-    }
-
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        getLCP((data) => this.getWebVitalData(data, LCP_EVENT_TYPE));
-        getFID((data) => this.getWebVitalData(data, FID_EVENT_TYPE));
-        getCLS((data) => this.getWebVitalData(data, CLS_EVENT_TYPE));
     }
 
     // tslint:disable-next-line:no-empty
@@ -42,6 +33,12 @@ export class WebVitalsPlugin extends Plugin {
             version: '1.0.0',
             value: webVitalData.value
         };
-        this.recordEvent(eventType, webVitalEvent);
+        this.context?.record(eventType, webVitalEvent);
+    }
+
+    protected onload(): void {
+        getLCP((data) => this.getWebVitalData(data, LCP_EVENT_TYPE));
+        getFID((data) => this.getWebVitalData(data, FID_EVENT_TYPE));
+        getCLS((data) => this.getWebVitalData(data, CLS_EVENT_TYPE));
     }
 }

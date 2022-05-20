@@ -16,7 +16,7 @@ import {
     mockFetchWithErrorObject,
     mockFetchWithErrorObjectAndStack
 } from '../../../test-utils/test-utils';
-import { GetSession, PluginContext } from '../../Plugin';
+import { GetSession, PluginContext } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { HttpEvent } from '../../../events/http-event';
 

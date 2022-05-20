@@ -8,7 +8,7 @@ import {
     recordPageView
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
-import { GetSession, PluginContext } from '../../Plugin';
+import { GetSession, PluginContext } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 import { MockHeaders } from 'xhr-mock/lib/types';

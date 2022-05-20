@@ -1,4 +1,3 @@
-import { PluginContext } from '../Plugin';
 import { XRayTraceEvent } from '../../events/xray-trace-event';
 import { HttpEvent } from '../../events/http-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
@@ -94,7 +93,6 @@ export const XHR_PLUGIN_ID = 'xhr';
 export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private config: HttpPluginConfig;
     private xhrMap: Map<XMLHttpRequest, XhrDetails>;
-    private context: PluginContext;
 
     constructor(config?: PartialHttpPluginConfig) {
         super(XHR_PLUGIN_ID);
@@ -102,8 +100,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();
     }
 
-    public load(context: PluginContext): void {
-        this.context = context;
+    protected onload(): void {
         this.enable();
     }
 

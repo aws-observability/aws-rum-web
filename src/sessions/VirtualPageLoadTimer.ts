@@ -2,7 +2,7 @@ import { NavigationEvent } from '../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
 import { MonkeyPatched } from '../plugins/MonkeyPatched';
 import { Config } from '../orchestration/Orchestration';
-import { PluginContext, RecordEvent } from '../plugins/Plugin';
+import { RecordEvent } from '../plugins/types';
 import { PageManager, Page } from './PageManager';
 
 type Fetch = typeof fetch;
@@ -18,6 +18,20 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     Patching,
     'fetch' | 'send'
 > {
+    protected get patches() {
+        return [
+            {
+                nodule: (XMLHttpRequest.prototype as unknown) as Patching,
+                name: 'send' as const,
+                wrapper: this.sendWrapper
+            },
+            {
+                nodule: (window as unknown) as Patching,
+                name: 'fetch' as const,
+                wrapper: this.fetchWrapper
+            }
+        ];
+    }
     /** Latest interaction time by user on the document */
     public latestInteractionTime: number;
     /** Unique ID of virtual page load periodic checker. */
@@ -67,10 +81,6 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         document.addEventListener('keydown', this.updateLatestInteractionTime);
     }
 
-    load?(context: PluginContext): void {
-        throw new Error('Method not implemented.');
-    }
-
     /** Initializes timing related resources for current page. */
     public startTiming() {
         this.latestEndTime = Date.now();
@@ -104,21 +114,6 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         this.isPageLoaded = false;
         this.requestBuffer.forEach(this.moveItemsFromBuffer);
         this.requestBuffer.clear();
-    }
-
-    protected get patches() {
-        return [
-            {
-                nodule: (XMLHttpRequest.prototype as unknown) as Patching,
-                name: 'send' as const,
-                wrapper: this.sendWrapper
-            },
-            {
-                nodule: (window as unknown) as Patching,
-                name: 'fetch' as const,
-                wrapper: this.fetchWrapper
-            }
-        ];
     }
 
     private sendWrapper = (): ((original: Send) => Send) => {
