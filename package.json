@@ -62,6 +62,7 @@
         "@babel/preset-env": "~7.6.3",
         "@playwright/test": "^1.21.1",
         "@types/jest": "^27.0.2",
+        "@types/shimmer": "^1.0.2",
         "@types/ua-parser-js": "^0.7.35",
         "@types/uuid": "^8.3.0",
         "@webpack-cli/serve": "^1.6.0",
