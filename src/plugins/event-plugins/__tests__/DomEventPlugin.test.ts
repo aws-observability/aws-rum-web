@@ -8,6 +8,27 @@ describe('DomEventPlugin tests', () => {
         record.mockClear();
     });
 
+    test('schema version is 1.1.0', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"/>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', element: document as any }]
+        });
+
+        // Run
+        plugin.load(context);
+        document.getElementById('button1').click();
+        plugin.disable();
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.1.0'
+            })
+        );
+    });
+
     test('DomEventPlugin records events by default', async () => {
         // Init
         document.body.innerHTML = '<button id="button1"/>';
@@ -74,14 +95,13 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 elementId: 'button1'
             })
         );
     });
 
-    test('when listening to document click and event target has no ID, element tag is used as ID', async () => {
+    test('when listening to document click and event target has no ID, element tag is recorded', async () => {
         // Init
         document.body.innerHTML = '<button/>';
         const plugin: DomEventPlugin = new DomEventPlugin({
@@ -97,9 +117,8 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
-                elementId: 'BUTTON'
+                element: 'BUTTON'
             })
         );
     });
@@ -123,7 +142,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 cssLocator: '[label="label1"]'
             })
@@ -156,7 +174,6 @@ describe('DomEventPlugin tests', () => {
             expect(call[0]).toEqual(DOM_EVENT_TYPE);
             expect(call[1]).toMatchObject(
                 expect.objectContaining({
-                    version: '1.0.0',
                     event: 'click',
                     cssLocator: '[label="label1"]'
                 })
@@ -181,7 +198,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click'
             })
         );
@@ -218,7 +234,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 cssLocator: '[label="label1"]'
             })
@@ -252,7 +267,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 elementId: 'button1'
             })
@@ -280,7 +294,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 cssLocator: '[label="label1"]'
             })
@@ -313,7 +326,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 elementId: 'button1'
             })
@@ -349,7 +361,6 @@ describe('DomEventPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
             expect.objectContaining({
-                version: '1.0.0',
                 event: 'click',
                 cssLocator: '[label="label1"]'
             })
@@ -390,7 +401,6 @@ describe('DomEventPlugin tests', () => {
             expect(call[0]).toEqual(DOM_EVENT_TYPE);
             expect(call[1]).toMatchObject(
                 expect.objectContaining({
-                    version: '1.0.0',
                     event: 'click',
                     elementId: 'button1'
                 })
@@ -433,7 +443,6 @@ describe('DomEventPlugin tests', () => {
             expect(call[0]).toEqual(DOM_EVENT_TYPE);
             expect(call[1]).toMatchObject(
                 expect.objectContaining({
-                    version: '1.0.0',
                     event: 'click',
                     elementId: 'button1'
                 })
@@ -503,5 +512,55 @@ describe('DomEventPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('when an element has an ID then the element ID is recorded', async () => {
+        // Init
+        document.body.innerHTML = '<button id="button1"/>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            events: [{ event: 'click', element: document as any }]
+        });
+
+        // Run
+        plugin.load(context);
+        document.getElementById('button1').click();
+        plugin.disable();
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                event: 'click',
+                element: 'BUTTON',
+                elementId: 'button1'
+            })
+        );
+    });
+
+    test('when an element has an interaction ID then the interaction ID is recorded', async () => {
+        // Init
+        document.body.innerHTML =
+            '<button id="button1" data-rum-id="rum-button-1"/>';
+        const plugin: DomEventPlugin = new DomEventPlugin({
+            interactionId: (element) =>
+                (element.target as Element).getAttribute('data-rum-id'),
+            events: [{ event: 'click', element: document as any }]
+        });
+
+        // Run
+        plugin.load(context);
+        document.getElementById('button1').click();
+        plugin.disable();
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(DOM_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                event: 'click',
+                element: 'BUTTON',
+                elementId: 'button1',
+                interactionId: 'rum-button-1'
+            })
+        );
     });
 });

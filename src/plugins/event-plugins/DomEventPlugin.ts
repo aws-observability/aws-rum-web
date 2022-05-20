@@ -27,16 +27,19 @@ export type TargetDomEvent = {
 };
 
 export type PartialDomEventPluginConfig = {
+    interactionId?: (event: Event) => string;
     enableMutationObserver?: boolean;
     events?: TargetDomEvent[];
 };
 
 export type DomEventPluginConfig = {
+    interactionId: (event: Event) => string;
     enableMutationObserver?: boolean;
     events: TargetDomEvent[];
 };
 
 const defaultConfig: DomEventPluginConfig = {
+    interactionId: () => undefined,
     enableMutationObserver: false,
     events: []
 };
@@ -44,6 +47,11 @@ const defaultConfig: DomEventPluginConfig = {
 export type ElementEventListener = {
     element: HTMLElement;
     eventListener: EventListener;
+};
+
+type ElementInfo = {
+    id?: string;
+    name: string;
 };
 
 export class DomEventPlugin<
@@ -63,20 +71,17 @@ export class DomEventPlugin<
         this.config = { ...defaultConfig, ...config };
     }
 
-    private static getElementId(event: Event) {
-        if (!event.target) {
-            return '';
-        }
-
-        if (event.target instanceof Element && event.target.id) {
-            return event.target.id;
-        }
+    private static getElementInfo(event: Event): ElementInfo {
+        const elementInfo: ElementInfo = { name: 'UNKNOWN' };
 
         if (event.target instanceof Node) {
-            return event.target.nodeName;
+            elementInfo.name = event.target.nodeName;
+        }
+        if (event.target instanceof Element && event.target.id) {
+            elementInfo.id = event.target.id;
         }
 
-        return '';
+        return elementInfo;
     }
 
     enable(): void {
@@ -132,14 +137,18 @@ export class DomEventPlugin<
 
     private getEventListener(cssLocator?: string): EventListener {
         return (event: Event): void => {
+            const elementInfo = DomEventPlugin.getElementInfo(event);
+            const interactionId = this.config.interactionId(event);
+
             const eventData: DomEvent = {
-                version: '1.0.0',
+                version: '1.1.0',
                 event: event.type,
-                elementId: DomEventPlugin.getElementId(event)
+                element: elementInfo.name,
+                ...(elementInfo.id ? { elementId: elementInfo.id } : {}),
+                ...(interactionId ? { interactionId } : {}),
+                ...(cssLocator ? { cssLocator } : {})
             };
-            if (cssLocator !== undefined) {
-                eventData.cssLocator = cssLocator;
-            }
+
             if (this.context?.record) {
                 this.context.record(DOM_EVENT_TYPE, eventData);
             }
