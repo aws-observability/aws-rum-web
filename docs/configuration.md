@@ -60,7 +60,16 @@ telemetries: [ 'errors', 'performance', 'http' ]
 ```
 ```javascript
 telemetries: [ 
-    [ 'errors', { stackTraceLength: 500 } ], 
+    [ 'errors', { 
+        stackTraceLength: 500, 
+        filter: (errorEvent) => {
+            const patternsToIgnore = [/ResizeObserver loop/, /undefined/];
+            return (
+                patternsToIgnore.filter((pattern) =>
+                    patternsToIgnore.test(errorEvent.message)
+                ).length !== 0
+            );
+        }} ], 
     'performance',
     [ 'http', { stackTraceLength: 500, addXRayTraceIdHeader: true } ]
 ]
@@ -78,6 +87,8 @@ telemetries: [
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | stackTraceLength | Number | `200` | The number of characters to record from a JavaScript error's stack trace (if available). |
+| filter | Function | `() => false` | By default, the web client will record all errors. If you wish to filter out certain errors, pass in a function that will return true if the error should be ignored, similar to the example above. |
+
 
 ## HTTP
 

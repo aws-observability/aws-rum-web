@@ -6,14 +6,17 @@ export const JS_ERROR_EVENT_PLUGIN_ID = 'js-error';
 
 export type PartialJsErrorPluginConfig = {
     stackTraceLength?: number;
+    filter?: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
 };
 
 export type JsErrorPluginConfig = {
     stackTraceLength: number;
+    filter: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
 };
 
 const defaultConfig: JsErrorPluginConfig = {
-    stackTraceLength: 200
+    stackTraceLength: 200,
+    filter: () => false
 };
 
 export class JsErrorPlugin extends InternalPlugin {
@@ -42,9 +45,9 @@ export class JsErrorPlugin extends InternalPlugin {
 
     record(error: any): void {
         if (error instanceof ErrorEvent) {
-            this.eventHandler(error);
+            this.recordJsErrorEvent(error);
         } else {
-            this.eventHandler({ type: 'error', error } as ErrorEvent);
+            this.recordJsErrorEvent({ type: 'error', error } as ErrorEvent);
         }
     }
 
@@ -53,18 +56,27 @@ export class JsErrorPlugin extends InternalPlugin {
     }
 
     private eventHandler = (errorEvent: ErrorEvent) => {
-        this.context?.record(
-            JS_ERROR_EVENT_TYPE,
-            errorEventToJsErrorEvent(errorEvent, this.config.stackTraceLength)
-        );
+        if (!this.config.filter(errorEvent)) {
+            this.recordJsErrorEvent(errorEvent);
+        }
     };
 
     private promiseRejectEventHandler = (event: PromiseRejectionEvent) => {
-        this.eventHandler({
-            type: event.type,
-            error: event.reason
-        } as ErrorEvent);
+        if (!this.config.filter(event)) {
+            this.recordJsErrorEvent({
+                type: event.type,
+                error: event.reason
+            } as ErrorEvent);
+        }
     };
+
+    private recordJsErrorEvent(error: any) {
+        const jsErrorEvent = errorEventToJsErrorEvent(
+            error,
+            this.config.stackTraceLength
+        );
+        this.context?.record(JS_ERROR_EVENT_TYPE, jsErrorEvent);
+    }
 
     private addEventHandler(): void {
         window.addEventListener('error', this.eventHandler);

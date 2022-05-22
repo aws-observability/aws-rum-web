@@ -29,6 +29,27 @@ expect.extend({
     }
 });
 
+const filter = (errorEvent: ErrorEvent | PromiseRejectionEvent) => {
+    const patterns = [/ResizeObserver loop/, /undefined/];
+    if (errorEvent instanceof ErrorEvent) {
+        return (
+            patterns.filter((pattern) => pattern.test(errorEvent.message))
+                .length !== 0
+        );
+    } else {
+        return (
+            patterns.filter((pattern) =>
+                pattern.test(
+                    ({
+                        type: errorEvent.type,
+                        error: errorEvent.reason
+                    } as ErrorEvent).error.message
+                )
+            ).length !== 0
+        );
+    }
+};
+
 describe('JsErrorPlugin tests', () => {
     beforeEach(() => {
         record.mockClear();
@@ -520,5 +541,99 @@ describe('JsErrorPlugin tests', () => {
                 stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
             })
         );
+    });
+
+    test('when record is used then errors are not filtered', async () => {
+        // Init
+        const resizeCount = 2;
+        const undefinedCount = 2;
+
+        // Mocking filter function to verify method will not be called
+        const mockFilter = jest.fn();
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            filter: mockFilter
+        });
+
+        // Run
+        plugin.load(context);
+        for (let i = 0; i < resizeCount; i++) {
+            plugin.record({
+                name: 'Error',
+                message: 'ResizeObserver loop limit exceeded',
+                fileName: 'main.js',
+                lineNumber: 1,
+                columnNumber: 2
+            });
+        }
+        for (let i = 0; i < undefinedCount; i++) {
+            // This creates an error event with 'undefined' as message
+            plugin.record({});
+        }
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(resizeCount + undefinedCount);
+        expect(mockFilter).toHaveBeenCalledTimes(0);
+    });
+
+    test('when filter method is passed via PartialJsErrorPluginConfig then JsErrorPlugin filters errors using the passed method', async () => {
+        // Init
+        let expectedErrorCount = 0;
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            filter
+        });
+
+        // Run
+        plugin.load(context);
+
+        // This PromiseRejectionEvent should be ignored - message is undefined
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {}
+            })
+        );
+
+        // This PromiseRejectionEvent shouldn't be ignored
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        expectedErrorCount += 1;
+
+        // This ErrorEvent should be ignored - message is ResizeObserver loop exceeded
+        const ignoredError = new ErrorEvent('error', {
+            colno: 1,
+            error: new Error('Something went wrong!'),
+            filename: 'main.js',
+            lineno: 2,
+            message: 'ResizeObserver loop exceeded.'
+        });
+        window.dispatchEvent(ignoredError);
+
+        // This ErrorEvent shouldn't be ignored
+        const error = new ErrorEvent('error', {
+            colno: 1,
+            error: new Error('Something went wrong!'),
+            filename: 'main.js',
+            lineno: 2,
+            message: 'This error should not be ignored.'
+        });
+        window.dispatchEvent(error);
+        expectedErrorCount += 1;
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(expectedErrorCount);
     });
 });
