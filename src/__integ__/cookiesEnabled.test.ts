@@ -18,7 +18,7 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
 
     const jsonA = JSON.parse(await REQUEST_BODY.textContent);
     const sessionStartEventsA = jsonA.RumEvents.filter(
-        (e) => e.type == SESSION_START_EVENT_TYPE
+        (e) => e.type === SESSION_START_EVENT_TYPE
     );
 
     await t
@@ -35,7 +35,7 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
 
     const jsonB = JSON.parse(await REQUEST_BODY.textContent);
     const sessionStartEventsB = jsonB.RumEvents.filter(
-        (e) => e.type == SESSION_START_EVENT_TYPE
+        (e) => e.type === SESSION_START_EVENT_TYPE
     );
 
     await t.expect(sessionStartEventsB.length).eql(0);
@@ -52,7 +52,7 @@ test('when page is loaded with cookies enabled, session start includes meta data
 
     const json = JSON.parse(await REQUEST_BODY.textContent);
     const sessionStartEvents = json.RumEvents.filter(
-        (e) => e.type == SESSION_START_EVENT_TYPE
+        (e) => e.type === SESSION_START_EVENT_TYPE
     );
 
     const metaData = JSON.parse(sessionStartEvents[0].metadata);

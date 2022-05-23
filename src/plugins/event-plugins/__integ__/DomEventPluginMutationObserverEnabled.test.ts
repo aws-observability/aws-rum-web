@@ -62,9 +62,9 @@ test('when enableMutationObserver is true by default and listening for a click o
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (let i = 0; i < events.length; i++) {
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
+    for (const event of events) {
+        const eventType = event.type;
+        const eventDetails = JSON.parse(event.details);
 
         await t
             .expect(events.length)
@@ -98,9 +98,9 @@ test('when enableMutationObserver is true by default and listening for a click g
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (let i = 0; i < events.length; i++) {
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
+    for (const event of events) {
+        const eventType = event.type;
+        const eventDetails = JSON.parse(event.details);
 
         await t
             .expect(events.length)

@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { DomEventPlugin } from '../DomEventPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { DOM_EVENT_TYPE } from '../../utils/constant';
@@ -111,7 +112,7 @@ describe('DomEventPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        let element: HTMLElement = document.querySelector(
+        const element: HTMLElement = document.querySelector(
             '[label="label1"]'
         ) as HTMLElement;
         element.click();
@@ -139,19 +140,21 @@ describe('DomEventPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
             '[label="label1"]'
         ) as NodeListOf<HTMLElement>;
-        for (let i = 0; i < elementList.length; i++) {
-            elementList[i].click();
-        }
+
+        elementList.forEach((value: HTMLElement) => {
+            value.click();
+        });
+
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        for (let i = 0; i < record.mock.calls.length; i++) {
-            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
-            expect(record.mock.calls[i][1]).toMatchObject(
+        for (const call of record.mock.calls) {
+            expect(call[0]).toEqual(DOM_EVENT_TYPE);
+            expect(call[1]).toMatchObject(
                 expect.objectContaining({
                     version: '1.0.0',
                     event: 'click',
@@ -202,7 +205,7 @@ describe('DomEventPlugin tests', () => {
         // Run
         plugin.load(context);
         document.getElementById('button1').click();
-        let element: HTMLElement = document.querySelector(
+        const element: HTMLElement = document.querySelector(
             '[label="label1"]'
         ) as HTMLElement;
         element.click();
@@ -334,7 +337,7 @@ describe('DomEventPlugin tests', () => {
         // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
         await new Promise((r) => setTimeout(r, 100));
 
-        let element: HTMLElement = document.querySelector(
+        const element: HTMLElement = document.querySelector(
             '[label="label1"]'
         ) as HTMLElement;
         element.click();
@@ -371,20 +374,21 @@ describe('DomEventPlugin tests', () => {
         // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
         await new Promise((r) => setTimeout(r, 100));
 
-        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
             '#button1'
         ) as NodeListOf<HTMLElement>;
-        for (let i = 0; i < elementList.length; i++) {
-            elementList[i].click();
-        }
+
+        elementList.forEach((value: HTMLElement) => {
+            value.click();
+        });
 
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        for (let i = 0; i < record.length; i++) {
-            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
-            expect(record.mock.calls[i][1]).toMatchObject(
+        for (const call of record.mock.calls) {
+            expect(call[0]).toEqual(DOM_EVENT_TYPE);
+            expect(call[1]).toMatchObject(
                 expect.objectContaining({
                     version: '1.0.0',
                     event: 'click',
@@ -413,20 +417,21 @@ describe('DomEventPlugin tests', () => {
         // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
         await new Promise((r) => setTimeout(r, 100));
 
-        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
             '#button1'
         ) as NodeListOf<HTMLElement>;
-        for (let i = 0; i < elementList.length; i++) {
-            elementList[i].click();
-        }
+
+        elementList.forEach((value: HTMLElement) => {
+            value.click();
+        });
 
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        for (let i = 0; i < record.length; i++) {
-            expect(record.mock.calls[i][0]).toEqual(DOM_EVENT_TYPE);
-            expect(record.mock.calls[i][1]).toMatchObject(
+        for (const call of record.mock.calls) {
+            expect(call[0]).toEqual(DOM_EVENT_TYPE);
+            expect(call[1]).toMatchObject(
                 expect.objectContaining({
                     version: '1.0.0',
                     event: 'click',
@@ -455,12 +460,13 @@ describe('DomEventPlugin tests', () => {
 
         plugin.disable();
 
-        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
             '[label="label1"]'
         ) as NodeListOf<HTMLElement>;
-        for (let i = 0; i < elementList.length; i++) {
-            elementList[i].click();
-        }
+
+        elementList.forEach((value: HTMLElement) => {
+            value.click();
+        });
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
@@ -487,12 +493,13 @@ describe('DomEventPlugin tests', () => {
 
         plugin.disable();
 
-        let elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
+        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
             '[label="label1"]'
         ) as NodeListOf<HTMLElement>;
-        for (let i = 0; i < elementList.length; i++) {
-            elementList[i].click();
-        }
+
+        elementList.forEach((value: HTMLElement) => {
+            value.click();
+        });
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);

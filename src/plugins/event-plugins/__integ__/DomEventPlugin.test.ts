@@ -1,10 +1,8 @@
+// tslint:disable:max-line-length
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../../test-utils/integ-test-utils';
 import { DOM_EVENT_TYPE } from '../../utils/constant';
 
-const recordDocumentClicks: Selector = Selector(`#recordDocumentClicks`);
-const recordButton1Clicks: Selector = Selector(`#recordButton1Clicks`);
-const doNotRecordClicks: Selector = Selector(`#doNotRecordClicks`);
 const disable: Selector = Selector(`#disable`);
 const enable: Selector = Selector(`#enable`);
 
@@ -20,7 +18,6 @@ const button4: Selector = Selector(`#button4`);
 const button5: Selector = Selector(`#button5`);
 
 const dispatch: Selector = Selector(`#dispatch`);
-const clear: Selector = Selector(`#clearRequestResponse`);
 
 fixture('DomEventPlugin').page('http://localhost:8080/dom_event.html');
 
@@ -193,9 +190,9 @@ test('when two elements identified by a CSS selector are clicked then CSS select
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (let i = 0; i < events.length; i++) {
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
+    for (const event of events) {
+        const eventType = event.type;
+        const eventDetails = JSON.parse(event.details);
 
         await t
             .expect(events.length)
@@ -283,9 +280,9 @@ test('when new DOM events are registered and then a button is clicked, the event
             JSON.parse(e.details).cssLocator === '[label="label2"]'
     );
 
-    for (let i = 0; i < events.length; i++) {
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
+    for (const event of events) {
+        const eventType = event.type;
+        const eventDetails = JSON.parse(event.details);
 
         await t
             .expect(events.length)
@@ -352,9 +349,9 @@ test('when enableMutationObserver is false by default and listening for a click 
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (let i = 0; i < events.length; i++) {
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
+    for (const event of events) {
+        const eventType = event.type;
+        const eventDetails = JSON.parse(event.details);
 
         await t
             .expect(events.length)
@@ -388,9 +385,9 @@ test('when enableMutationObserver is false by default and listening for a click 
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (let i = 0; i < events.length; i++) {
-        let eventType = events[i].type;
-        let eventDetails = JSON.parse(events[i].details);
+    for (const event of events) {
+        const eventType = event.type;
+        const eventDetails = JSON.parse(event.details);
 
         await t
             .expect(events.length)

@@ -21,7 +21,7 @@ describe('PageViewPlugin tests', () => {
     beforeEach(() => {
         (context.recordPageView as any).mockClear();
         jsdom.reconfigure({
-            url: url
+            url
         });
     });
 

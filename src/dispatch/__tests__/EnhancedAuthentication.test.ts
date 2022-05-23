@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { CRED_KEY } from '../../utils/constants';
 import { Credentials } from '@aws-sdk/types';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
@@ -46,7 +47,6 @@ describe('EnhancedAuthentication tests', () => {
         localStorage.removeItem(CRED_KEY);
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credential is in localStorage then authentication chain retrieves credential from localStorage', async () => {
         // Init
         const expiration = new Date(Date.now() + 3600 * 1000);
@@ -82,7 +82,6 @@ describe('EnhancedAuthentication tests', () => {
         );
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credential is corrupt then authentication chain retrieves credential from basic authflow', async () => {
         // Init
         const config = {
@@ -110,7 +109,6 @@ describe('EnhancedAuthentication tests', () => {
         );
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credential is not in the store authentication chain retrieves credential from basic authflow', async () => {
         // Init
         const auth = new EnhancedAuthentication({
@@ -133,7 +131,6 @@ describe('EnhancedAuthentication tests', () => {
         );
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credential expires then authentication chain retrieves credentials from basic authflow', async () => {
         // Init
         const expiration = new Date(0);
@@ -170,7 +167,6 @@ describe('EnhancedAuthentication tests', () => {
         );
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credential is retrieved from basic auth then next credential is retrieved from localStorage', async () => {
         // Init
         const expiration = new Date(Date.now() + 3600 * 1000);
@@ -236,7 +232,9 @@ describe('EnhancedAuthentication tests', () => {
         });
 
         // Assert
-        expect(auth.ChainAnonymousCredentialsProvider()).toThrowError;
+        expect((auth: EnhancedAuthentication) => {
+            auth.ChainAnonymousCredentialsProvider();
+        }).toThrowError();
     });
 
     test('when getId fails then throw an error', async () => {
@@ -254,10 +252,11 @@ describe('EnhancedAuthentication tests', () => {
         });
 
         // Assert
-        expect(auth.ChainAnonymousCredentialsProvider()).toThrowError;
+        expect((auth: EnhancedAuthentication) => {
+            auth.ChainAnonymousCredentialsProvider();
+        }).toThrowError();
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credential is in member then authentication chain retrieves credential from member', async () => {
         // Init
         const expiration = new Date(Date.now() + 3600 * 1000);
@@ -295,7 +294,6 @@ describe('EnhancedAuthentication tests', () => {
         );
     });
 
-    // tslint:disable-next-line:max-line-length
     test('when credentials expire in member variable then authentication chain retrieves credential from basic auth flow', async () => {
         // Init
         getCredentials

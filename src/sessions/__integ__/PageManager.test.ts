@@ -108,9 +108,9 @@ test('when page is denied then page view is not recorded', async (t: TestControl
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const request_body = JSON.parse(await REQUEST_BODY.textContent);
+    const requestBody = JSON.parse(await REQUEST_BODY.textContent);
 
-    const pages = request_body.RumEvents.filter(
+    const pages = requestBody.RumEvents.filter(
         (e) => e.type === PAGE_VIEW_EVENT_TYPE
     ).map((e) => JSON.parse(e.details));
 

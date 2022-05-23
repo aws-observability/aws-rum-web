@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { FetchPlugin } from '../FetchPlugin';
 import {
     PartialHttpPluginConfig,
@@ -28,10 +29,10 @@ const TRACE_ID =
 
 const Headers = function (init?: Record<string, string>) {
     const headers = init ? init : {};
-    this.get = function (name: string) {
+    this.get = (name: string) => {
         return headers[name];
     };
-    this.set = function (name: string, value: string) {
+    this.set = (name: string, value: string) => {
         headers[name] = value;
     };
 };

@@ -39,7 +39,7 @@ describe('OTA helper function tests', () => {
             u: dummyOtaConfigURL
         };
 
-        let config: PartialConfig = await getRemoteConfig(getCodeConfig);
+        const config: PartialConfig = await getRemoteConfig(getCodeConfig);
         expect(config).toEqual(mockOtaConfigObject);
     });
 
@@ -70,7 +70,7 @@ describe('OTA helper function tests', () => {
             u: dummyOtaConfigURL
         };
 
-        let config: PartialConfig = await getRemoteConfig(getCodeConfig);
+        const config: PartialConfig = await getRemoteConfig(getCodeConfig);
         expect(config).toEqual(
             expect.objectContaining({
                 sessionSampleRate: 0.8
@@ -106,7 +106,7 @@ describe('OTA helper function tests', () => {
             u: dummyOtaConfigURL
         };
 
-        let config: PartialConfig = await getRemoteConfig(getCodeConfig);
+        const config: PartialConfig = await getRemoteConfig(getCodeConfig);
         expect(config).toEqual(
             expect.objectContaining({
                 dispatchInterval: 10 * 1000,
@@ -137,7 +137,7 @@ describe('OTA helper function tests', () => {
             u: dummyOtaConfigURL
         };
 
-        let config: PartialConfig = await getRemoteConfig(configObject);
+        const config: PartialConfig = await getRemoteConfig(configObject);
         expect(config).toEqual(
             expect.objectContaining({
                 sessionSampleRate: 1,

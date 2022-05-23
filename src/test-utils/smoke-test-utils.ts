@@ -14,11 +14,11 @@ export const getEventIds = (events) => {
 };
 
 /** Returns the smoke test URL with the right version */
-export const getUrl = (test_url, version) => {
-    if (!test_url) {
+export const getUrl = (testUrl, version) => {
+    if (!testUrl) {
         return 'http://localhost:9000/smoke_local.html';
     }
-    const url = new URL(test_url);
+    const url = new URL(testUrl);
     if (url.pathname === '/') {
         return url + `smoke-${version}.html`;
     } else {
@@ -48,6 +48,7 @@ export const verifyIngestionWithRetry = async (
 ) => {
     while (true) {
         if (retryCount === 0) {
+            // tslint:disable-next-line:no-console
             console.log('Retry attempt exhausted.');
             return false;
         }
@@ -61,6 +62,7 @@ export const verifyIngestionWithRetry = async (
             return true;
         } catch (error) {
             retryCount -= 1;
+            // tslint:disable-next-line:no-console
             console.log(`${error.message} Waiting for next retry.`);
             await new Promise((r) => setTimeout(r, 60000));
         }
@@ -74,7 +76,7 @@ export const isEachEventIngested = async (
     timestamp,
     monitorName
 ) => {
-    let ingestedEvents = new Set();
+    const ingestedEvents = new Set();
     const input: GetAppMonitorDataCommandInput = {
         Name: monitorName,
         TimeRange: {
@@ -85,8 +87,8 @@ export const isEachEventIngested = async (
     // Running tests in parallel require pagination logic, as several test cases have the same timestamp
     while (true) {
         const data = await rumClient.send(command);
-        for (let i = 0; i < data.Events.length; i++) {
-            ingestedEvents.add(JSON.parse(data.Events[i]).event_id);
+        for (const event of data.Events) {
+            ingestedEvents.add(JSON.parse(event).event_id);
         }
         if (data.NextToken) {
             input.NextToken = data.NextToken;
@@ -97,9 +99,9 @@ export const isEachEventIngested = async (
         }
     }
 
-    for (let i = 0; i < eventIds.length; i++) {
-        if (!ingestedEvents.has(eventIds[i])) {
-            throw new Error(`Event ${eventIds[i]} not ingested.`);
+    for (const eventId of eventIds) {
+        if (!ingestedEvents.has(eventId)) {
+            throw new Error(`Event ${eventId} not ingested.`);
         }
     }
 };

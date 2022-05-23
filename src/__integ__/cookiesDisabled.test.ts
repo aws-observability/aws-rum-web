@@ -19,7 +19,7 @@ test('when cookies are disabled, no session start event is dispatched', async (t
 
     const json = JSON.parse(await REQUEST_BODY.textContent);
     const sessionStartEvents = json.RumEvents.filter(
-        (e) => e.eventType == SESSION_START_EVENT_TYPE
+        (e) => e.eventType === SESSION_START_EVENT_TYPE
     );
 
     await t.expect(sessionStartEvents.length).eql(0);

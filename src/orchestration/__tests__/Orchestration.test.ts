@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { Orchestration } from '../Orchestration';
 import { Dispatch } from '../../dispatch/Dispatch';
 import { EventCache } from '../../event-cache/EventCache';
@@ -26,7 +27,7 @@ jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
-        recordPageView: recordPageView
+        recordPageView
     }))
 }));
 
@@ -38,10 +39,10 @@ const disablePlugins = jest.fn();
 
 jest.mock('../../plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
-        addPlugin: addPlugin,
+        addPlugin,
         enable: enablePlugins,
         disable: disablePlugins,
-        updatePlugin: updatePlugin
+        updatePlugin
     }))
 }));
 
@@ -186,7 +187,7 @@ describe('Orchestration tests', () => {
 
     test('data collection defaults to only page views', async () => {
         // Init
-        new Orchestration('a', 'c', 'us-east-1', {});
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
         const expected = ['com.amazonaws.rum.page-view'];
         const actual = [];
 
@@ -224,7 +225,7 @@ describe('Orchestration tests', () => {
 
     test('when a config is passed to the http data collection then the config is added as a constructor arg', async () => {
         // Init
-        new Orchestration('a', 'c', 'us-east-1', {
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: [['http', { trace: true }]]
         });
 

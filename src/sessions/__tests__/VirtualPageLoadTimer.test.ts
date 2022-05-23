@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { advanceTo } from 'jest-date-mock';
 import { Page, PageManager } from '../PageManager';
 import {
@@ -45,6 +46,7 @@ const timeoutConfig: Config = {
 };
 const pageManager = new PageManager(config, record);
 
+/* tslint:disable:no-string-literal */
 describe('VirtualPageLoadTimer tests', () => {
     let url;
 
@@ -57,7 +59,7 @@ describe('VirtualPageLoadTimer tests', () => {
         mock.setup();
         record.mockClear();
         jsdom.reconfigure({
-            url: url
+            url
         });
     });
 
@@ -75,7 +77,7 @@ describe('VirtualPageLoadTimer tests', () => {
 
         // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
-            let xhr = new XMLHttpRequest();
+            const xhr = new XMLHttpRequest();
             virtualPageLoadTimer['requestBuffer'].add(xhr);
         }
 
@@ -97,7 +99,7 @@ describe('VirtualPageLoadTimer tests', () => {
 
         // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
-            let xhr = new XMLHttpRequest();
+            const xhr = new XMLHttpRequest();
             virtualPageLoadTimer['requestBuffer'].add(xhr);
         }
 
