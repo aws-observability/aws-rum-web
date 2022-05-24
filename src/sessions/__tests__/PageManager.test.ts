@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { advanceTo } from 'jest-date-mock';
 import { PageManager } from '../PageManager';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
@@ -16,6 +17,7 @@ Object.defineProperty(document, 'referrer', {
 Object.defineProperty(document, 'title', { value: 'Amazon AWS Console' });
 global.fetch = mockFetch;
 
+/* tslint:disable:no-string-literal */
 describe('PageManager tests', () => {
     let url;
 
@@ -28,7 +30,7 @@ describe('PageManager tests', () => {
         mock.setup();
         record.mockClear();
         jsdom.reconfigure({
-            url: url
+            url
         });
     });
 

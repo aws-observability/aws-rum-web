@@ -174,7 +174,7 @@ describe('CommandQueue tests', () => {
             expect.objectContaining({
                 dispatchInterval: 10 * 1000,
                 sessionSampleRate: 0.8,
-                enableRumClient: false //prefer snippet config
+                enableRumClient: false // prefer snippet config
             })
         );
     });

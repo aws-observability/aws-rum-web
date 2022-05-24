@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import { XhrPlugin } from '../XhrPlugin';
@@ -272,7 +273,7 @@ describe('XhrPlugin tests', () => {
             urlsToInclude: [/response\.json/]
         };
 
-        mock.get(/.*/, () => new Promise(() => {}));
+        mock.get(/.*/, () => new Promise(() => ({})));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
         plugin.load(xRayOnContext);
@@ -319,7 +320,7 @@ describe('XhrPlugin tests', () => {
             urlsToInclude: [/response\.json/]
         };
 
-        mock.get(/.*/, () => new Promise(() => {}));
+        mock.get(/.*/, () => new Promise(() => ({})));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
         plugin.load(xRayOffContext);
@@ -568,9 +569,7 @@ describe('XhrPlugin tests', () => {
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
         // Init
-        const getSession: jest.MockedFunction<GetSession> = jest.fn(
-            () => undefined
-        );
+        const getSession: jest.MockedFunction<GetSession> = jest.fn();
         const context: PluginContext = {
             applicationId: 'b',
             applicationVersion: '1.0',
@@ -760,17 +759,17 @@ describe('XhrPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        const xhr_cognito = new XMLHttpRequest();
-        xhr_cognito.open(
+        const xhrCognito = new XMLHttpRequest();
+        xhrCognito.open(
             'GET',
             'https://cognito-identity.us-west-2.amazonaws.com',
             true
         );
-        xhr_cognito.send();
+        xhrCognito.send();
 
-        const xhr_sts = new XMLHttpRequest();
-        xhr_sts.open('GET', 'https://sts.us-west-2.amazonaws.com', true);
-        xhr_sts.send();
+        const xhrSts = new XMLHttpRequest();
+        xhrSts.open('GET', 'https://sts.us-west-2.amazonaws.com', true);
+        xhrSts.send();
 
         // Yield to the event queue so the event listeners can run
         await new Promise((resolve) => setTimeout(resolve, 0));

@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import { JsErrorPlugin } from '../JsErrorPlugin';
 import { context, getSession, record } from '../../../test-utils/test-utils';
 import { JS_ERROR_EVENT_TYPE } from '../../utils/constant';
@@ -99,7 +100,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => {}),
+                promise: new Promise(() => ({})),
                 reason: 'Something went wrong!'
             })
         );
@@ -248,7 +249,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // So that the error doesn't cause the test to fail.
-        window.addEventListener('error', () => {});
+        window.addEventListener('error', () => ({}));
 
         document.getElementById('createJSError').click();
         plugin.disable();
@@ -268,11 +269,11 @@ describe('JsErrorPlugin tests', () => {
         plugin.load(context);
 
         // So that the error doesn't cause the test to fail.
-        window.addEventListener('error', () => {});
+        window.addEventListener('error', () => ({}));
         plugin.disable();
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => {}),
+                promise: new Promise(() => ({})),
                 reason: 'Something went wrong!'
             })
         );
@@ -436,7 +437,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => {}),
+                promise: new Promise(() => ({})),
                 reason: {}
             })
         );
@@ -467,7 +468,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => {}),
+                promise: new Promise(() => ({})),
                 reason: null
             })
         );
@@ -498,7 +499,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => {}),
+                promise: new Promise(() => ({})),
                 reason: {
                     name: 'TypeError',
                     message: 'NetworkError when attempting to fetch resource.',

@@ -32,7 +32,7 @@
         "build:dev": "npm-run-all -s build build:webpack:dev",
         "release": "npm run build",
         "version": "standard-version",
-        "lint": "npx tslint --config ./tslint.json --project ./tsconfig.webpack.json --format verbose",
+        "lint": "npx tslint --config ./tslint.json --project ./tsconfig.json --format verbose",
         "lint:fix": "npm run lint -- --fix",
         "prettier": "npx prettier --check .",
         "prettier:fix": "npm run prettier -- --write",

@@ -1,3 +1,4 @@
+// tslint:disable:max-line-length
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
@@ -76,7 +77,7 @@ describe('DataPlaneClient tests', () => {
         expect(signedRequest.headers['X-Amz-Content-Sha256']).toEqual(
             '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
         );
-        expect(signedRequest.headers['authorization']).toEqual(
+        expect(signedRequest.headers.authorization).toEqual(
             'AWS4-HMAC-SHA256 Credential=abc123/19700101/us-west-2/rum/aws4_request, SignedHeaders=content-type;host;x-amz-content-sha256;x-amz-date, Signature=bf3acf587b119ab12f0f8a86bf12acf7c460eb037584feb0ab5574f297def947'
         );
     });
