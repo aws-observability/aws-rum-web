@@ -62,7 +62,7 @@ test('when enableMutationObserver is true by default and listening for a click o
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (const event of events) {
+    events.forEach(async (event) => {
         const eventType = event.type;
         const eventDetails = JSON.parse(event.details);
 
@@ -76,7 +76,7 @@ test('when enableMutationObserver is true by default and listening for a click o
                 event: 'click',
                 cssLocator: '[label="label1"]'
             });
-    }
+    });
 });
 
 test('when enableMutationObserver is true by default and listening for a click given a CSS selector on an existing element and a dynamically added element, both events are recorded', async (t: TestController) => {
@@ -98,7 +98,7 @@ test('when enableMutationObserver is true by default and listening for a click g
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (const event of events) {
+    events.forEach(async (event) => {
         const eventType = event.type;
         const eventDetails = JSON.parse(event.details);
 
@@ -112,5 +112,5 @@ test('when enableMutationObserver is true by default and listening for a click g
                 event: 'click',
                 cssLocator: '[label="label1"]'
             });
-    }
+    });
 });

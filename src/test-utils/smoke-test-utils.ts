@@ -87,9 +87,9 @@ export const isEachEventIngested = async (
     // Running tests in parallel require pagination logic, as several test cases have the same timestamp
     while (true) {
         const data = await rumClient.send(command);
-        for (const event of data.Events) {
+        data.Events.forEach((event) => {
             ingestedEvents.add(JSON.parse(event).event_id);
-        }
+        });
         if (data.NextToken) {
             input.NextToken = data.NextToken;
             command = new GetAppMonitorDataCommand(input);
@@ -99,9 +99,9 @@ export const isEachEventIngested = async (
         }
     }
 
-    for (const eventId of eventIds) {
+    eventIds.forEach((eventId) => {
         if (!ingestedEvents.has(eventId)) {
             throw new Error(`Event ${eventId} not ingested.`);
         }
-    }
+    });
 };

@@ -152,7 +152,7 @@ describe('DomEventPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        for (const call of record.mock.calls) {
+        record.mock.calls.forEach((call) => {
             expect(call[0]).toEqual(DOM_EVENT_TYPE);
             expect(call[1]).toMatchObject(
                 expect.objectContaining({
@@ -161,7 +161,7 @@ describe('DomEventPlugin tests', () => {
                     cssLocator: '[label="label1"]'
                 })
             );
-        }
+        });
     });
 
     test('when listening to document click and CSS selector is not specified, CSS selector field not recorded as part of event data', async () => {
@@ -386,7 +386,7 @@ describe('DomEventPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        for (const call of record.mock.calls) {
+        record.mock.calls.forEach((call) => {
             expect(call[0]).toEqual(DOM_EVENT_TYPE);
             expect(call[1]).toMatchObject(
                 expect.objectContaining({
@@ -395,7 +395,7 @@ describe('DomEventPlugin tests', () => {
                     elementId: 'button1'
                 })
             );
-        }
+        });
     });
 
     test('when enableMutationObserver is true by default and an element is dynamically added to the DOM then both events identified by the target event are recorded', async () => {
@@ -429,7 +429,7 @@ describe('DomEventPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(2);
-        for (const call of record.mock.calls) {
+        record.mock.calls.forEach((call) => {
             expect(call[0]).toEqual(DOM_EVENT_TYPE);
             expect(call[1]).toMatchObject(
                 expect.objectContaining({
@@ -438,7 +438,7 @@ describe('DomEventPlugin tests', () => {
                     elementId: 'button1'
                 })
             );
-        }
+        });
     });
 
     test('when DomEventPlugin is disabled then event for dynamically added element is not recorded', async () => {

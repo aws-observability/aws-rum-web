@@ -190,7 +190,7 @@ test('when two elements identified by a CSS selector are clicked then CSS select
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (const event of events) {
+    events.forEach(async (event) => {
         const eventType = event.type;
         const eventDetails = JSON.parse(event.details);
 
@@ -204,7 +204,7 @@ test('when two elements identified by a CSS selector are clicked then CSS select
                 event: 'click',
                 cssLocator: '[label="label1"]'
             });
-    }
+    });
 });
 
 test('when element not identified by a CSS selector is clicked then CSS selector field is not recorded', async (t: TestController) => {
@@ -280,7 +280,7 @@ test('when new DOM events are registered and then a button is clicked, the event
             JSON.parse(e.details).cssLocator === '[label="label2"]'
     );
 
-    for (const event of events) {
+    events.forEach(async (event) => {
         const eventType = event.type;
         const eventDetails = JSON.parse(event.details);
 
@@ -294,7 +294,7 @@ test('when new DOM events are registered and then a button is clicked, the event
                 event: 'click',
                 cssLocator: '[label="label2"]'
             });
-    }
+    });
 });
 
 test('when enableMutationObserver is false by default and listening for a click on a dynamically added element given an element id, the event is not recorded', async (t: TestController) => {
@@ -349,7 +349,7 @@ test('when enableMutationObserver is false by default and listening for a click 
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (const event of events) {
+    events.forEach(async (event) => {
         const eventType = event.type;
         const eventDetails = JSON.parse(event.details);
 
@@ -363,7 +363,7 @@ test('when enableMutationObserver is false by default and listening for a click 
                 event: 'click',
                 cssLocator: '[label="label1"]'
             });
-    }
+    });
 });
 
 test('when enableMutationObserver is false by default and listening for a click given a CSS selector on an existing element and a dynamically added element, only one event is recorded', async (t: TestController) => {
@@ -385,7 +385,7 @@ test('when enableMutationObserver is false by default and listening for a click 
             JSON.parse(e.details).cssLocator === '[label="label1"]'
     );
 
-    for (const event of events) {
+    events.forEach(async (event) => {
         const eventType = event.type;
         const eventDetails = JSON.parse(event.details);
 
@@ -399,7 +399,7 @@ test('when enableMutationObserver is false by default and listening for a click 
                 event: 'click',
                 cssLocator: '[label="label1"]'
             });
-    }
+    });
 });
 
 test('when client is disabled then click on dynamically added element is not recorded', async (t: TestController) => {
