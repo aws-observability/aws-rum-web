@@ -35,10 +35,10 @@ export class PluginManager {
      * @param pluginId
      * @param updateWith The config to update the plugin with.
      */
-    public updatePlugin<O extends unknown>(pluginId: string, updateWith: O[]) {
+    public updatePlugin<O extends unknown>(pluginId: string, updateWith: O) {
         const plugin = this.getPlugin(pluginId);
 
-        plugin?.update?.<O>(updateWith);
+        plugin?.update?.(updateWith);
     }
 
     /**

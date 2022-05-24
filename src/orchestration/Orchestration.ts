@@ -206,6 +206,7 @@ export class Orchestration {
      * not wish to use this field then add any placeholder, such as '0.0.0'.
      * @param region The AWS region of the app monitor. For example, 'us-east-1'
      * or 'eu-west-2'.
+     * @param configCookieAttributes
      * @param partialConfig An application-specific configuration for the web
      * client.
      */
@@ -213,7 +214,10 @@ export class Orchestration {
         applicationId: string,
         applicationVersion: string,
         region: string,
-        partialConfig: PartialConfig = {}
+        {
+            cookieAttributes: configCookieAttributes,
+            ...partialConfig
+        }: PartialConfig = {}
     ) {
         if (typeof region === 'undefined') {
             // Provide temporary backwards compatability if the region was not provided by the loader. This will be
@@ -223,9 +227,8 @@ export class Orchestration {
 
         const cookieAttributes: CookieAttributes = {
             ...defaultCookieAttributes(),
-            ...partialConfig.cookieAttributes
+            ...configCookieAttributes
         };
-        delete partialConfig.cookieAttributes;
 
         this.config = {
             ...{ fetchFunction: fetch },
@@ -341,7 +344,7 @@ export class Orchestration {
      * @param events
      */
     public registerDomEvents(events: TargetDomEvent[]) {
-        this.pluginManager.updatePlugin<TargetDomEvent>(
+        this.pluginManager.updatePlugin<TargetDomEvent[]>(
             DOM_EVENT_PLUGIN_ID,
             events
         );

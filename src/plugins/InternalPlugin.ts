@@ -2,7 +2,8 @@ import { RUM_AWS_PREFIX } from './utils/constant';
 import { Plugin } from './Plugin';
 import { PluginContext } from './types';
 
-export abstract class InternalPlugin implements Plugin {
+export abstract class InternalPlugin<UpdateType extends unknown = unknown>
+    implements Plugin<UpdateType> {
     static idPrefix = RUM_AWS_PREFIX;
 
     protected enabled: boolean = true;
@@ -22,7 +23,7 @@ export abstract class InternalPlugin implements Plugin {
         this.onload?.();
     }
     record?<D extends unknown>(data: D): void;
-    update?<O extends unknown>(updateWith: O[]): void;
+    update?(updateWith: UpdateType): void;
 
     abstract enable(): void;
     abstract disable(): void;

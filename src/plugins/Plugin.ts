@@ -1,6 +1,6 @@
 import { PluginContext } from './types';
 
-export interface Plugin {
+export interface Plugin<UpdateType extends unknown = unknown> {
     /**
      * Load the plugin. The plugin should initialize itself and start recording events
      * for which it is configured.
@@ -33,5 +33,5 @@ export interface Plugin {
      * Update the plugin.
      * @param updateWith Data that the plugin will use to update its config.
      */
-    update?<O extends unknown>(updateWith: O[]): void;
+    update?(updateWith: UpdateType): void;
 }

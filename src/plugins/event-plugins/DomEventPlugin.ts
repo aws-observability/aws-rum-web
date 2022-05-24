@@ -46,7 +46,9 @@ export type ElementEventListener = {
     eventListener: EventListener;
 };
 
-export class DomEventPlugin extends InternalPlugin {
+export class DomEventPlugin<
+    UpdateType extends TargetDomEvent = TargetDomEvent
+> extends InternalPlugin<UpdateType[]> {
     enabled = false;
     private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
     private config: DomEventPluginConfig;
@@ -59,6 +61,22 @@ export class DomEventPlugin extends InternalPlugin {
             ElementEventListener[]
         >();
         this.config = { ...defaultConfig, ...config };
+    }
+
+    private static getElementId(event: Event) {
+        if (!event.target) {
+            return '';
+        }
+
+        if (event.target instanceof Element && event.target.id) {
+            return event.target.id;
+        }
+
+        if (event.target instanceof Node) {
+            return event.target.nodeName;
+        }
+
+        return '';
     }
 
     enable(): void {
@@ -89,7 +107,7 @@ export class DomEventPlugin extends InternalPlugin {
         this.enabled = false;
     }
 
-    update(events): void {
+    update(events: UpdateType[]): void {
         events.forEach((domEvent) => {
             this.addEventHandler(domEvent);
             this.config.events.push(domEvent);
@@ -117,31 +135,15 @@ export class DomEventPlugin extends InternalPlugin {
             const eventData: DomEvent = {
                 version: '1.0.0',
                 event: event.type,
-                elementId: this.getElementId(event)
+                elementId: DomEventPlugin.getElementId(event)
             };
             if (cssLocator !== undefined) {
                 eventData.cssLocator = cssLocator;
             }
             if (this.context?.record) {
-                this.context?.record(DOM_EVENT_TYPE, eventData);
+                this.context.record(DOM_EVENT_TYPE, eventData);
             }
         };
-    }
-
-    private getElementId(event: Event) {
-        if (!event.target) {
-            return '';
-        }
-
-        if (event.target instanceof Element && event.target.id) {
-            return event.target.id;
-        }
-
-        if (event.target instanceof Node) {
-            return event.target.nodeName;
-        }
-
-        return '';
     }
 
     private addEventHandler(domEvent: TargetDomEvent): void {
