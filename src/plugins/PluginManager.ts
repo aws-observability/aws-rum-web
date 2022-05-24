@@ -1,4 +1,4 @@
-import { PluginInterface } from './PluginInterface';
+import { Plugin } from './Plugin';
 import { PluginContext } from './types';
 import { InternalPlugin } from './InternalPlugin';
 
@@ -7,7 +7,7 @@ import { InternalPlugin } from './InternalPlugin';
  * and notifies plugins of configuration or lifecycle changes.
  */
 export class PluginManager {
-    private plugins: Map<string, PluginInterface> = new Map();
+    private plugins: Map<string, Plugin> = new Map();
 
     constructor(private readonly context: PluginContext) {}
 
@@ -15,7 +15,7 @@ export class PluginManager {
      * Add an event plugin to PluginManager and initialize the plugin.
      * @param plugin The plugin which adheres to the RUM web client's plugin interface.
      */
-    public addPlugin(plugin: PluginInterface): void {
+    public addPlugin(plugin: Plugin): void {
         const pluginId = plugin.getPluginId();
 
         if (this.hasPlugin(pluginId)) {
@@ -77,7 +77,7 @@ export class PluginManager {
         }
     }
 
-    private getPlugin(id: string): PluginInterface | undefined {
+    private getPlugin(id: string): Plugin | undefined {
         return (
             this.plugins.get(id) ??
             this.plugins.get(InternalPlugin.generatePluginId(id))

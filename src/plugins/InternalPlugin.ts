@@ -1,8 +1,8 @@
 import { RUM_AWS_PREFIX } from './utils/constant';
-import { PluginInterface } from './PluginInterface';
+import { Plugin } from './Plugin';
 import { PluginContext } from './types';
 
-export abstract class InternalPlugin implements PluginInterface {
+export abstract class InternalPlugin implements Plugin {
     static idPrefix = RUM_AWS_PREFIX;
 
     protected enabled: boolean = true;

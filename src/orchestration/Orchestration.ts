@@ -1,4 +1,4 @@
-import { PluginInterface } from '../plugins/PluginInterface';
+import { Plugin } from '../plugins/Plugin';
 import { PluginContext } from '../plugins/types';
 import { InternalPlugin } from '../plugins/InternalPlugin';
 import { Authentication } from '../dispatch/Authentication';
@@ -69,7 +69,7 @@ export type PartialConfig = {
     enableXRay?: boolean;
     endpoint?: string;
     eventCacheSize?: number;
-    eventPluginsToLoad?: PluginInterface[];
+    eventPluginsToLoad?: Plugin[];
     guestRoleArn?: string;
     identityPoolId?: string;
     pageIdFormat?: PageIdFormat;
@@ -154,7 +154,7 @@ export type Config = {
     endpoint: string;
     endpointUrl: URL;
     eventCacheSize: number;
-    eventPluginsToLoad: PluginInterface[];
+    eventPluginsToLoad: Plugin[];
     /*
      * We must remember the fetch function before the HttpFetch plugin
      * overwrites it via monkey patch. We will use the original fetch function
@@ -275,7 +275,7 @@ export class Orchestration {
      * Add a telemetry plugin.
      * @param plugin A plugin which adheres to the RUM web client's plugin interface.
      */
-    public addPlugin(plugin: PluginInterface): void {
+    public addPlugin(plugin: Plugin): void {
         this.pluginManager.addPlugin(plugin);
     }
 
@@ -388,7 +388,7 @@ export class Orchestration {
         applicationVersion: string
     ) {
         const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins();
-        const PLUGINS: PluginInterface[] = [
+        const PLUGINS: Plugin[] = [
             ...BUILTIN_PLUGINS,
             ...this.config.eventPluginsToLoad
         ];

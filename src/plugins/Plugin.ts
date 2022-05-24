@@ -1,6 +1,6 @@
 import { PluginContext } from './types';
 
-export interface PluginInterface {
+export interface Plugin {
     /**
      * Load the plugin. The plugin should initialize itself and start recording events
      * for which it is configured.
