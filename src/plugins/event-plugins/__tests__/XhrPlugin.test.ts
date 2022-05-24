@@ -273,7 +273,7 @@ describe('XhrPlugin tests', () => {
             urlsToInclude: [/response\.json/]
         };
 
-        mock.get(/.*/, () => new Promise(() => undefined));
+        mock.get(/.*/, () => new Promise(() => ({})));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
         plugin.load(xRayOnContext);
@@ -320,7 +320,7 @@ describe('XhrPlugin tests', () => {
             urlsToInclude: [/response\.json/]
         };
 
-        mock.get(/.*/, () => new Promise(() => undefined));
+        mock.get(/.*/, () => new Promise(() => ({})));
 
         const plugin: XhrPlugin = new XhrPlugin(config);
         plugin.load(xRayOffContext);
@@ -569,9 +569,7 @@ describe('XhrPlugin tests', () => {
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
         // Init
-        const getSession: jest.MockedFunction<GetSession> = jest.fn(
-            () => undefined
-        );
+        const getSession: jest.MockedFunction<GetSession> = jest.fn();
         const context: PluginContext = {
             applicationId: 'b',
             applicationVersion: '1.0',

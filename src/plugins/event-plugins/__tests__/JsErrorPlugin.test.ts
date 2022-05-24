@@ -100,7 +100,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => undefined),
+                promise: new Promise(() => ({})),
                 reason: 'Something went wrong!'
             })
         );
@@ -249,7 +249,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // So that the error doesn't cause the test to fail.
-        window.addEventListener('error', () => undefined);
+        window.addEventListener('error', () => ({}));
 
         document.getElementById('createJSError').click();
         plugin.disable();
@@ -269,11 +269,11 @@ describe('JsErrorPlugin tests', () => {
         plugin.load(context);
 
         // So that the error doesn't cause the test to fail.
-        window.addEventListener('error', () => undefined);
+        window.addEventListener('error', () => ({}));
         plugin.disable();
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => undefined),
+                promise: new Promise(() => ({})),
                 reason: 'Something went wrong!'
             })
         );
@@ -437,7 +437,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => undefined),
+                promise: new Promise(() => ({})),
                 reason: {}
             })
         );
@@ -468,7 +468,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => undefined),
+                promise: new Promise(() => ({})),
                 reason: null
             })
         );
@@ -499,7 +499,7 @@ describe('JsErrorPlugin tests', () => {
         // Event to have the same functionality
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => undefined),
+                promise: new Promise(() => ({})),
                 reason: {
                     name: 'TypeError',
                     message: 'NetworkError when attempting to fetch resource.',
