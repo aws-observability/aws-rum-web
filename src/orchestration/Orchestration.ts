@@ -7,22 +7,29 @@ import { PluginManager } from '../plugins/PluginManager';
 import {
     DomEventPlugin,
     DOM_EVENT_PLUGIN_ID,
-    TargetDomEvent
+    TargetDomEvent,
+    DomEventPluginConfig
 } from '../plugins/event-plugins/DomEventPlugin';
 import {
     JsErrorPlugin,
-    JS_ERROR_EVENT_PLUGIN_ID
+    JS_ERROR_EVENT_PLUGIN_ID,
+    JsErrorPluginConfig
 } from '../plugins/event-plugins/JsErrorPlugin';
 import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { NavigationPlugin } from '../plugins/event-plugins/NavigationPlugin';
-import { ResourcePlugin } from '../plugins/event-plugins/ResourcePlugin';
+import {
+    ResourcePlugin,
+    ResourcePluginConfig
+} from '../plugins/event-plugins/ResourcePlugin';
 import { WebVitalsPlugin } from '../plugins/event-plugins/WebVitalsPlugin';
 import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
+import { Configurable } from '../abstract/Configurable';
+import { HttpPluginConfig } from '../plugins/utils/http-utils';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -50,89 +57,15 @@ export type Telemetry = string | (string | object)[];
 
 export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
-export type PartialCookieAttributes = {
-    unique?: boolean;
-    domain?: string;
-    path?: string;
-    sameSite?: string;
-    secure?: boolean;
-};
+export type PartialCookieAttributes = Partial<CookieAttributes>;
+export type PartialConfig = Partial<Config>;
 
-export type PartialConfig = {
-    allowCookies?: boolean;
-    batchLimit?: number;
-    clientBuilder?: ClientBuilder;
-    cookieAttributes?: PartialCookieAttributes;
-    disableAutoPageView?: boolean;
-    dispatchInterval?: number;
-    enableRumClient?: boolean;
-    enableXRay?: boolean;
-    endpoint?: string;
-    eventCacheSize?: number;
-    eventPluginsToLoad?: Plugin[];
-    guestRoleArn?: string;
-    identityPoolId?: string;
-    pageIdFormat?: PageIdFormat;
-    pagesToExclude?: RegExp[];
-    pagesToInclude?: RegExp[];
-    recordResourceUrl?: boolean;
-    routeChangeComplete?: number;
-    routeChangeTimeout?: number;
-    sessionEventLimit?: number;
-    sessionLengthSeconds?: number;
-    sessionSampleRate?: number;
-    /**
-     * Application owners think about data collection in terms of the categories
-     * of data being collected. For example, JavaScript errors, page load
-     * performance, user journeys and user interactions are data collection
-     * categories. However, there is not a 1-1 mapping between data collection
-     * categories and plugins.
-     *
-     * This configuration option allows application owners to define the data
-     * categories they want to collect without needing to understand and
-     * instantiate each plugin themselves. The toolkit will instantiate the
-     * plugins which map to the selected categories.
-     */
-    telemetries?: Telemetry[];
-    userIdRetentionDays?: number;
-};
-
-export const defaultCookieAttributes = (): CookieAttributes => {
-    return {
-        unique: false,
-        domain: window.location.hostname,
-        path: '/',
-        sameSite: 'Strict',
-        secure: true
-    };
-};
-
-export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
-    return {
-        allowCookies: false,
-        batchLimit: 100,
-        cookieAttributes,
-        disableAutoPageView: false,
-        dispatchInterval: 5 * 1000,
-        enableRumClient: true,
-        enableXRay: false,
-        endpoint: DEFAULT_ENDPOINT,
-        endpointUrl: new URL(DEFAULT_ENDPOINT),
-        eventCacheSize: 200,
-        eventPluginsToLoad: [],
-        pageIdFormat: PageIdFormatEnum.Path,
-        pagesToExclude: [],
-        pagesToInclude: [],
-        recordResourceUrl: true,
-        retries: 2,
-        routeChangeComplete: 100,
-        routeChangeTimeout: 10000,
-        sessionEventLimit: 200,
-        sessionLengthSeconds: 60 * 30,
-        sessionSampleRate: 1,
-        telemetries: [],
-        userIdRetentionDays: 30
-    };
+export const defaultCookieAttributes: CookieAttributes = {
+    unique: false,
+    domain: window.location.hostname,
+    path: '/',
+    sameSite: 'Strict',
+    secure: true
 };
 
 export type CookieAttributes = {
@@ -143,11 +76,11 @@ export type CookieAttributes = {
     secure: boolean;
 };
 
-export type Config = {
+export interface Config {
     allowCookies: boolean;
     batchLimit: number;
     clientBuilder?: ClientBuilder;
-    cookieAttributes: CookieAttributes;
+    cookieAttributes?: CookieAttributes;
     disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
@@ -179,7 +112,7 @@ export type Config = {
     sessionSampleRate: number;
     telemetries: Telemetry[];
     userIdRetentionDays: number;
-};
+}
 
 /**
  * An orchestrator which (1) initializes cwr components and (2) provides the API for the application to interact
@@ -188,11 +121,10 @@ export type Config = {
  * - If the client was loaded by an HTML script tag, Orchestration is called indirectly through the CommandQueue.
  * - If the client was loaded as an NPM module, Orchestration is called directly by the application.
  */
-export class Orchestration {
+export class Orchestration extends Configurable<Config> {
     private pluginManager: PluginManager;
-    private eventCache: EventCache;
     private dispatchManager: Dispatch;
-    private config: Config;
+    private readonly eventCache: EventCache;
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
@@ -215,37 +147,35 @@ export class Orchestration {
     constructor(
         applicationId: string,
         applicationVersion: string,
-        region: string,
+        /**
+         * Provide temporary backwards compatability if the region was not provided by the loader. This will be
+         * removed when internal users have migrated to the new signature.
+         */
+        region: string = 'us-west-2',
         {
             cookieAttributes: configCookieAttributes,
             ...partialConfig
-        }: PartialConfig = {}
+        }: PartialConfig | { cookieAttributes?: PartialCookieAttributes } = {}
     ) {
-        if (typeof region === 'undefined') {
-            // Provide temporary backwards compatability if the region was not provided by the loader. This will be
-            // removed when internal users have migrated to the new signature.
-            region = 'us-west-2';
-        }
-
-        const cookieAttributes: CookieAttributes = {
-            ...defaultCookieAttributes(),
-            ...configCookieAttributes
-        };
-
-        this.config = {
-            ...{ fetchFunction: fetch },
-            ...defaultConfig(cookieAttributes),
-            ...partialConfig
-        } as Config;
-
-        this.config.endpoint = this.getDataPlaneEndpoint(region, partialConfig);
+        super({
+            fetchFunction: fetch,
+            cookieAttributes: {
+                ...defaultCookieAttributes,
+                ...configCookieAttributes
+            },
+            ...partialConfig,
+            endpoint: Orchestration.getDataPlaneEndpoint(region, partialConfig)
+        });
 
         // If the URL is not formatted correctly, a TypeError will be thrown.
         // This breaks our convention to fail-safe here for the sake of
         // debugging. It is expected that the application has wrapped the call
         // to the constructor in a try/catch block, as is done in the example
         // code.
-        this.config.endpointUrl = new URL(this.config.endpoint);
+        this.setConfigValue(
+            'endpointUrl',
+            new URL(this.getConfigValue('endpoint'))
+        );
 
         this.eventCache = this.initEventCache(
             applicationId,
@@ -258,11 +188,47 @@ export class Orchestration {
             applicationVersion
         );
 
-        if (this.config.enableRumClient) {
+        if (this.getConfigValue('enableRumClient')) {
             this.enable();
         } else {
             this.disable();
         }
+    }
+
+    static getDataPlaneEndpoint(
+        region: string,
+        partialConfig: PartialConfig
+    ): string {
+        return partialConfig.endpoint
+            ? partialConfig.endpoint
+            : DEFAULT_ENDPOINT.replace(DEFAULT_REGION, region);
+    }
+
+    static getDefaultConfig(): Config {
+        return {
+            allowCookies: false,
+            batchLimit: 100,
+            disableAutoPageView: false,
+            dispatchInterval: 5 * 1000,
+            enableRumClient: true,
+            enableXRay: false,
+            endpoint: DEFAULT_ENDPOINT,
+            endpointUrl: new URL(DEFAULT_ENDPOINT),
+            eventCacheSize: 200,
+            eventPluginsToLoad: [],
+            pageIdFormat: PageIdFormatEnum.Path,
+            pagesToExclude: [],
+            pagesToInclude: [],
+            recordResourceUrl: true,
+            retries: 2,
+            routeChangeComplete: 100,
+            routeChangeTimeout: 10000,
+            sessionEventLimit: 200,
+            sessionLengthSeconds: 60 * 30,
+            sessionSampleRate: 1,
+            telemetries: [],
+            userIdRetentionDays: 30
+        };
     }
 
     /**
@@ -320,7 +286,7 @@ export class Orchestration {
      * @param allow when {@code false}, the RUM web client will not store cookies or use localstorage.
      */
     public allowCookies(allow: boolean) {
-        this.config.allowCookies = allow;
+        this.setConfigValue('allowCookies', allow);
     }
 
     /**
@@ -352,6 +318,10 @@ export class Orchestration {
         );
     }
 
+    protected getDefaultConfig(): Config {
+        return Orchestration.getDefaultConfig();
+    }
+
     private initEventCache(
         applicationId: string,
         applicationVersion: string
@@ -361,26 +331,29 @@ export class Orchestration {
                 id: applicationId,
                 version: applicationVersion
             },
-            this.config
+            this.getFullConfig()
         );
     }
 
     private initDispatch(region: string) {
         const dispatch: Dispatch = new Dispatch(
             region,
-            this.config.endpointUrl,
+            this.getConfigValue('endpointUrl'),
             this.eventCache,
-            this.config
+            this.getFullConfig()
         );
 
-        if (this.config.identityPoolId && this.config.guestRoleArn) {
+        if (
+            this.getConfigValue('identityPoolId') &&
+            this.getConfigValue('guestRoleArn')
+        ) {
             dispatch.setAwsCredentials(
-                new Authentication(this.config)
+                new Authentication(this.getFullConfig())
                     .ChainAnonymousCredentialsProvider
             );
-        } else if (this.config.identityPoolId) {
+        } else if (this.getConfigValue('identityPoolId')) {
             dispatch.setAwsCredentials(
-                new EnhancedAuthentication(this.config)
+                new EnhancedAuthentication(this.getFullConfig())
                     .ChainAnonymousCredentialsProvider
             );
         }
@@ -395,13 +368,13 @@ export class Orchestration {
         const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins();
         const PLUGINS: Plugin[] = [
             ...BUILTIN_PLUGINS,
-            ...this.config.eventPluginsToLoad
+            ...this.getConfigValue('eventPluginsToLoad')
         ];
 
         const pluginContext: PluginContext = {
             applicationId,
             applicationVersion,
-            config: this.config,
+            config: this.getFullConfig(),
             record: this.eventCache.recordEvent,
             recordPageView: this.eventCache.recordPageView,
             getSession: this.eventCache.getSession
@@ -411,7 +384,7 @@ export class Orchestration {
         const pluginManager: PluginManager = new PluginManager(pluginContext);
 
         // Load page view plugin
-        if (!this.config.disableAutoPageView) {
+        if (!this.getConfigValue('disableAutoPageView')) {
             pluginManager.addPlugin(new PageViewPlugin());
         }
 
@@ -427,7 +400,7 @@ export class Orchestration {
         let plugins: InternalPlugin[] = [];
         const functor: TelemetriesFunctor = this.telemetryFunctor();
 
-        this.config.telemetries.forEach((type) => {
+        this.getConfigValue('telemetries').forEach((type) => {
             if (typeof type === 'string' && functor[type.toLowerCase()]) {
                 plugins = [...plugins, ...functor[type.toLowerCase()]({})];
             } else if (
@@ -446,35 +419,34 @@ export class Orchestration {
         return plugins;
     }
 
-    private getDataPlaneEndpoint(
-        region: string,
-        partialConfig: PartialConfig
-    ): string {
-        return partialConfig.endpoint
-            ? partialConfig.endpoint
-            : DEFAULT_ENDPOINT.replace(DEFAULT_REGION, region);
-    }
-
     /**
      * Returns a functor which maps data collection categories to
      * instantiated plugins.
      */
     private telemetryFunctor(): TelemetriesFunctor {
         return {
-            [TelemetryEnum.Errors]: (config: object): InternalPlugin[] => {
+            [TelemetryEnum.Errors]: (
+                config: JsErrorPluginConfig
+            ): InternalPlugin[] => {
                 return [new JsErrorPlugin(config)];
             },
-            [TelemetryEnum.Performance]: (config: object): InternalPlugin[] => {
+            [TelemetryEnum.Performance]: (
+                config: ResourcePluginConfig
+            ): InternalPlugin[] => {
                 return [
                     new NavigationPlugin(),
                     new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];
             },
-            [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {
+            [TelemetryEnum.Interaction]: (
+                config: DomEventPluginConfig
+            ): InternalPlugin[] => {
                 return [new DomEventPlugin(config)];
             },
-            [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
+            [TelemetryEnum.Http]: (
+                config: HttpPluginConfig
+            ): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
             }
         };

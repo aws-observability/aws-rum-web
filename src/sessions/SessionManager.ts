@@ -7,6 +7,7 @@ import { Page, PageManager } from './PageManager';
 import { UAParser } from 'ua-parser-js';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
+import { Configurable } from '../abstract/Configurable';
 
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -56,16 +57,14 @@ export type Attributes = {
  * handler will assign a new one and store it in cookie. Session handler detects user interactions and updates session
  * id expiration time.
  */
-export class SessionManager {
+export class SessionManager extends Configurable<Config> {
     private pageManager: PageManager;
-
     private appMonitorDetails: AppMonitorDetails;
     private userExpiry: Date;
     private sessionExpiry: Date;
     private userId!: string;
     private session: Session;
-    private config: Config;
-    private record: RecordSessionInitEvent;
+    private readonly record: RecordSessionInitEvent;
     private attributes: Attributes;
 
     constructor(
@@ -74,8 +73,8 @@ export class SessionManager {
         record: RecordSessionInitEvent,
         pageManager: PageManager
     ) {
+        super(config);
         this.appMonitorDetails = appMonitorDetails;
-        this.config = config;
         this.record = record;
         this.pageManager = pageManager;
 
@@ -141,10 +140,11 @@ export class SessionManager {
         let userId: string = '';
         this.userExpiry = new Date();
         this.userExpiry.setDate(
-            this.userExpiry.getDate() + this.config.userIdRetentionDays
+            this.userExpiry.getDate() +
+                this.getConfigValue('userIdRetentionDays')
         );
 
-        if (this.config.userIdRetentionDays <= 0) {
+        if (this.getConfigValue('userIdRetentionDays') <= 0) {
             // Use the 'nil' UUID when the user ID will not be retained
             this.userId = '00000000-0000-0000-0000-000000000000';
         } else if (this.useCookies()) {
@@ -161,7 +161,7 @@ export class SessionManager {
             storeCookie(
                 this.sessionCookieName(),
                 btoa(JSON.stringify(session)),
-                this.config.cookieAttributes,
+                this.getConfigValue('cookieAttributes'),
                 undefined,
                 expires
             );
@@ -172,7 +172,7 @@ export class SessionManager {
         storeCookie(
             USER_COOKIE_NAME,
             userId,
-            this.config.cookieAttributes,
+            this.getConfigValue('cookieAttributes'),
             undefined,
             expires
         );
@@ -201,7 +201,10 @@ export class SessionManager {
     }
 
     private storeSessionAsCookie() {
-        if (this.useCookies() && this.config.userIdRetentionDays > 0) {
+        if (
+            this.useCookies() &&
+            this.getConfigValue('userIdRetentionDays') > 0
+        ) {
             this.createOrRenewUserCookie(this.userId, this.userExpiry);
         }
 
@@ -219,7 +222,8 @@ export class SessionManager {
         };
         this.session.page = this.pageManager.getPage();
         this.sessionExpiry = new Date(
-            new Date().getTime() + this.config.sessionLengthSeconds * 1000
+            new Date().getTime() +
+                this.getConfigValue('sessionLengthSeconds') * 1000
         );
         this.storeSessionAsCookie();
         this.record(this.session, SESSION_START_EVENT_TYPE, {
@@ -229,7 +233,8 @@ export class SessionManager {
 
     private renewSession() {
         this.sessionExpiry = new Date(
-            new Date().getTime() + this.config.sessionLengthSeconds * 1000
+            new Date().getTime() +
+                this.getConfigValue('sessionLengthSeconds') * 1000
         );
         this.session.page = this.pageManager.getPage();
         this.storeSessionAsCookie();
@@ -257,18 +262,18 @@ export class SessionManager {
      * Returns true when cookies should be used to store user ID and session ID.
      */
     private useCookies() {
-        return navigator.cookieEnabled && this.config.allowCookies;
+        return navigator.cookieEnabled && this.getConfigValue('allowCookies');
     }
 
     /**
      * Returns {@code true} when the session has been selected to be recorded.
      */
     private sample(): boolean {
-        return Math.random() < this.config.sessionSampleRate;
+        return Math.random() < this.getConfigValue('sessionSampleRate');
     }
 
     private sessionCookieName(): string {
-        if (this.config.cookieAttributes.unique) {
+        if (this.getConfigValue('cookieAttributes').unique) {
             return `${SESSION_COOKIE_NAME}_${this.appMonitorDetails.id}`;
         }
         return SESSION_COOKIE_NAME;

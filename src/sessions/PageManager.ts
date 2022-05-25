@@ -3,6 +3,7 @@ import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
+import { Configurable } from '../abstract/Configurable';
 
 export type Page = {
     pageId: string;
@@ -34,9 +35,8 @@ export type PageAttributes = {
  *
  * The interaction level is the order of a page in the sequence of pages sorted by the time they were viewed.
  */
-export class PageManager {
-    private config: Config;
-    private record: RecordEvent;
+export class PageManager extends Configurable<Config> {
+    private readonly record: RecordEvent;
     private page: Page | undefined;
     private resumed: Page | undefined;
     private attributes: Attributes | undefined;
@@ -44,7 +44,7 @@ export class PageManager {
     private TIMEOUT = 1000;
 
     /**
-     * A flag which keeps track of whether or not cookies have been enabled.
+     * A flag which keeps track of whether cookies have been enabled.
      *
      * We will only record the interaction (i.e., depth and parent) after
      * cookies have been enabled once.
@@ -52,7 +52,7 @@ export class PageManager {
     private recordInteraction: boolean;
 
     constructor(config: Config, record: RecordEvent) {
-        this.config = config;
+        super(config);
         this.record = record;
         this.page = undefined;
         this.resumed = undefined;
@@ -214,6 +214,6 @@ export class PageManager {
      * Returns true when cookies should be used to store user ID and session ID.
      */
     private useCookies() {
-        return navigator.cookieEnabled && this.config.allowCookies;
+        return navigator.cookieEnabled && this.getConfigValue('allowCookies');
     }
 }

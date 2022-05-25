@@ -5,12 +5,11 @@ import {
 } from '../../events/xray-trace-event';
 import { MonkeyPatched } from '../MonkeyPatched';
 import {
-    PartialHttpPluginConfig,
-    defaultConfig,
+    HttpPluginConfig,
+    defaultHttpConfig,
     epochTime,
     createXRayTraceEvent,
     addAmznTraceIdHeaderToInit,
-    HttpPluginConfig,
     createXRayTraceEventHttp,
     isUrlAllowed,
     createXRaySubsegment,
@@ -23,7 +22,6 @@ import {
     isErrorPrimitive
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
-import { InternalPlugin } from '../InternalPlugin';
 
 type Fetch = typeof fetch;
 
@@ -47,12 +45,13 @@ export const FETCH_PLUGIN_ID = 'fetch';
  * The fetch API is monkey patched using shimmer so all calls to fetch are intercepted. Only calls to URLs which are
  * on the allowlist and are not on the denylist are traced and recorded.
  */
-export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
-    private readonly config: HttpPluginConfig;
-
-    constructor(config?: PartialHttpPluginConfig) {
-        super(FETCH_PLUGIN_ID);
-        this.config = { ...defaultConfig, ...config };
+export class FetchPlugin extends MonkeyPatched<
+    Window,
+    'fetch',
+    HttpPluginConfig
+> {
+    protected getDefaultConfig() {
+        return { name: FETCH_PLUGIN_ID, ...defaultHttpConfig };
     }
 
     protected get patches() {
@@ -85,7 +84,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         const startTime = epochTime();
         const http: Http = createXRayTraceEventHttp(init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
-            this.config.logicalServiceName,
+            this.getConfigValue('logicalServiceName'),
             startTime
         );
         const subsegment: Subsegment = createXRaySubsegment(
@@ -95,7 +94,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         );
         xRayTraceEvent.subsegments.push(subsegment);
 
-        if (this.config.addXRayTraceIdHeader) {
+        if (this.getConfigValue('addXRayTraceIdHeader')) {
             this.addXRayTraceIdHeader(input, init, argsArray, xRayTraceEvent);
         }
 
@@ -207,7 +206,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         httpEvent: HttpEvent,
         response: Response
     ) => {
-        if (this.config.recordAllRequests || !response.ok) {
+        if (this.getConfigValue('recordAllRequests') || !response.ok) {
             httpEvent.response = {
                 status: response.status,
                 statusText: response.statusText
@@ -225,7 +224,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                 type: 'error',
                 error
             } as ErrorEvent,
-            this.config.stackTraceLength
+            this.getConfigValue('stackTraceLength')
         );
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     };
@@ -247,7 +246,13 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
             url = input.url;
         }
 
-        if (!isUrlAllowed(url, this.config)) {
+        if (
+            !isUrlAllowed(
+                url,
+                this.getConfigValue('urlsToInclude'),
+                this.getConfigValue('urlsToExclude')
+            )
+        ) {
             return original.apply(thisArg, argsArray);
         }
 

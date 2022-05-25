@@ -144,7 +144,7 @@ describe('PageManager tests', () => {
 
         // Run
         pageManager.recordPageView('/console/home');
-        config.allowCookies = true;
+        pageManager.setConfigValue('allowCookies', true);
         pageManager.recordPageView('/rum/home');
 
         // Assert

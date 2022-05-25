@@ -14,6 +14,7 @@ import {
     UserDetails,
     RumEvent
 } from './dataplane';
+import { Configurable } from '../abstract/Configurable';
 
 const SERVICE: string = 'rum';
 const METHOD: string = 'POST';
@@ -45,12 +46,11 @@ export declare type DataPlaneClientConfig = {
     credentials: CredentialProvider | Credentials;
 };
 
-export class DataPlaneClient {
-    private config: DataPlaneClientConfig;
+export class DataPlaneClient extends Configurable<DataPlaneClientConfig> {
     private awsSigV4: SignatureV4;
 
     constructor(config: DataPlaneClientConfig) {
-        this.config = config;
+        super(config);
         this.awsSigV4 = new SignatureV4({
             applyChecksum: true,
             credentials: config.credentials,
@@ -67,16 +67,19 @@ export class DataPlaneClient {
         const serializedRequest: string = JSON.stringify(
             serializeRequest(putRumEventsRequest)
         );
-        const path = this.config.endpoint.pathname.replace(/\/$/, '');
+        const path = this.getConfigValue('endpoint').pathname.replace(
+            /\/$/,
+            ''
+        );
         const request = new HttpRequest({
             method: METHOD,
             headers: {
                 'content-type': CONTENT_TYPE_JSON,
                 'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest),
-                host: this.config.endpoint.host
+                host: this.getConfigValue('endpoint').host
             },
-            protocol: this.config.endpoint.protocol,
-            hostname: this.config.endpoint.hostname,
+            protocol: this.getConfigValue('endpoint').protocol,
+            hostname: this.getConfigValue('endpoint').hostname,
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}/`,
             body: serializedRequest
         });
@@ -86,7 +89,7 @@ export class DataPlaneClient {
         )) as any;
         const httpResponse: Promise<{
             response: HttpResponse;
-        }> = this.config.fetchRequestHandler.handle(signedRequest);
+        }> = this.getConfigValue('fetchRequestHandler').handle(signedRequest);
         return httpResponse;
     };
 
@@ -96,16 +99,19 @@ export class DataPlaneClient {
         const serializedRequest: string = JSON.stringify(
             serializeRequest(putRumEventsRequest)
         );
-        const path = this.config.endpoint.pathname.replace(/\/$/, '');
+        const path = this.getConfigValue('endpoint').pathname.replace(
+            /\/$/,
+            ''
+        );
         const request = new HttpRequest({
             method: METHOD,
             headers: {
                 'content-type': CONTENT_TYPE_TEXT,
                 'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest),
-                host: this.config.endpoint.host
+                host: this.getConfigValue('endpoint').host
             },
-            protocol: this.config.endpoint.protocol,
-            hostname: this.config.endpoint.hostname,
+            protocol: this.getConfigValue('endpoint').protocol,
+            hostname: this.getConfigValue('endpoint').hostname,
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
             body: serializedRequest
         });
@@ -116,7 +122,9 @@ export class DataPlaneClient {
         )) as any;
         const httpResponse: Promise<{
             response: HttpResponse;
-        }> = this.config.beaconRequestHandler.handle(preSignedRequest);
+        }> = this.getConfigValue('beaconRequestHandler').handle(
+            preSignedRequest
+        );
         return httpResponse;
     };
 }

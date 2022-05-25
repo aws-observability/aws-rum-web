@@ -2,8 +2,8 @@ import { EventCache } from '../event-cache/EventCache';
 import { Credentials } from '@aws-sdk/types';
 import {
     Config,
-    defaultConfig,
-    defaultCookieAttributes
+    defaultCookieAttributes,
+    Orchestration
 } from '../orchestration/Orchestration';
 import {
     GetSession,
@@ -58,7 +58,10 @@ export const PUT_RUM_EVENTS_REQUEST: PutRumEventsRequest = {
     ]
 };
 
-export const DEFAULT_CONFIG: Config = defaultConfig(defaultCookieAttributes());
+export const DEFAULT_CONFIG: Config = {
+    ...Orchestration.getDefaultConfig(),
+    cookieAttributes: defaultCookieAttributes
+} as Config;
 
 export const createDefaultEventCache = (): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);

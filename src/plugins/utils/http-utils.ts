@@ -4,6 +4,7 @@ import {
     XRayTraceEvent
 } from '../../events/xray-trace-event';
 import { getRandomValues } from '../../utils/random';
+import { InternalPluginConfig } from '../InternalPlugin';
 
 // All one-byte hex strings from 0x00 to 0xff.
 export const byteToHex = [];
@@ -13,16 +14,7 @@ for (let i = 0; i < 256; i++) {
 
 export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
 
-export type PartialHttpPluginConfig = {
-    logicalServiceName?: string;
-    urlsToInclude?: RegExp[];
-    urlsToExclude?: RegExp[];
-    stackTraceLength?: number;
-    recordAllRequests?: boolean;
-    addXRayTraceIdHeader?: boolean;
-};
-
-export type HttpPluginConfig = {
+export interface HttpPluginConfig extends InternalPluginConfig {
     logicalServiceName: string;
     urlsToInclude: RegExp[];
     urlsToExclude: RegExp[];
@@ -37,9 +29,9 @@ export type HttpPluginConfig = {
     // the X-Amzn-Trace-Id header should test their applications before enabling
     // it in a production environment.
     addXRayTraceIdHeader: boolean;
-};
+}
 
-export const defaultConfig: HttpPluginConfig = {
+export const defaultHttpConfig: HttpPluginConfig = {
     logicalServiceName: 'rum.aws.amazon.com',
     urlsToInclude: [/.*/],
     urlsToExclude: [
@@ -53,13 +45,13 @@ export const defaultConfig: HttpPluginConfig = {
     addXRayTraceIdHeader: false
 };
 
-export const isUrlAllowed = (url: string, config: HttpPluginConfig) => {
-    const include = config.urlsToInclude.some((urlPattern) =>
-        urlPattern.test(url)
-    );
-    const exclude = config.urlsToExclude.some((urlPattern) =>
-        urlPattern.test(url)
-    );
+export const isUrlAllowed = (
+    url: string,
+    urlsToInclude: RegExp[],
+    urlsToExclude: RegExp[]
+) => {
+    const include = urlsToInclude.some((urlPattern) => urlPattern.test(url));
+    const exclude = urlsToExclude.some((urlPattern) => urlPattern.test(url));
     return include && !exclude;
 };
 

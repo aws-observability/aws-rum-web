@@ -2,14 +2,13 @@ import { XRayTraceEvent } from '../../events/xray-trace-event';
 import { HttpEvent } from '../../events/http-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
-    PartialHttpPluginConfig,
-    defaultConfig,
+    HttpPluginConfig,
+    defaultHttpConfig,
     epochTime,
     createXRayTraceEvent,
     getAmznTraceIdHeaderValue,
     X_AMZN_TRACE_ID,
     isUrlAllowed,
-    HttpPluginConfig,
     createXRaySubsegment,
     requestInfoToHostname
 } from '../utils/http-utils';
@@ -90,20 +89,11 @@ export const XHR_PLUGIN_ID = 'xhr';
  * - https://xhr.spec.whatwg.org/#event-handlers.
  * - https://xhr.spec.whatwg.org/#events
  */
-export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
-    private config: HttpPluginConfig;
-    private xhrMap: Map<XMLHttpRequest, XhrDetails>;
-
-    constructor(config?: PartialHttpPluginConfig) {
-        super(XHR_PLUGIN_ID);
-        this.config = { ...defaultConfig, ...config };
-        this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();
-    }
-
-    protected onload(): void {
-        this.enable();
-    }
-
+export class XhrPlugin extends MonkeyPatched<
+    XMLHttpRequest,
+    'send' | 'open',
+    HttpPluginConfig
+> {
     protected get patches() {
         return [
             {
@@ -118,9 +108,20 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             } as MonkeyPatch<XMLHttpRequest, 'open'>
         ];
     }
+    private xhrMap: Map<XMLHttpRequest, XhrDetails> = new Map<
+        XMLHttpRequest,
+        XhrDetails
+    >();
+    protected getDefaultConfig() {
+        return { name: XHR_PLUGIN_ID, enabled: false, ...defaultHttpConfig };
+    }
+
+    protected onload(): void {
+        this.enable();
+    }
 
     private addXRayTraceIdHeader = () => {
-        return this.config.addXRayTraceIdHeader;
+        return this.getConfigValue('addXRayTraceIdHeader');
     };
 
     private isTracingEnabled = () => {
@@ -221,7 +222,10 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         xhrDetails: XhrDetails,
         xhr: XMLHttpRequest
     ) {
-        if (this.config.recordAllRequests || !this.statusOk(xhr.status)) {
+        if (
+            this.getConfigValue('recordAllRequests') ||
+            !this.statusOk(xhr.status)
+        ) {
             this.context.record(HTTP_EVENT_TYPE, {
                 version: '1.0.0',
                 request: { method: xhrDetails.method },
@@ -243,7 +247,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 type: 'error',
                 error
             } as ErrorEvent,
-            this.config.stackTraceLength
+            this.getConfigValue('stackTraceLength')
         );
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     }
@@ -257,7 +261,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private initializeTrace = (xhrDetails: XhrDetails) => {
         const startTime = epochTime();
         xhrDetails.trace = createXRayTraceEvent(
-            this.config.logicalServiceName,
+            this.getConfigValue('logicalServiceName'),
             startTime
         );
         xhrDetails.trace.subsegments.push(
@@ -318,7 +322,13 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 url: string,
                 async: boolean
             ): void {
-                if (isUrlAllowed(url, self.config)) {
+                if (
+                    isUrlAllowed(
+                        url,
+                        self.getConfigValue('urlsToInclude'),
+                        self.getConfigValue('urlsToExclude')
+                    )
+                ) {
                     self.xhrMap.set(this, { url, method, async });
                 }
                 return original.apply(this, arguments);

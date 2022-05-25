@@ -16,12 +16,12 @@ export class PageViewPlugin extends MonkeyPatched<
     History,
     'pushState' | 'replaceState'
 > {
-    constructor() {
-        super(PAGE_EVENT_PLUGIN_ID);
-        this.enable();
+    protected getDefaultConfig() {
+        return { name: PAGE_EVENT_PLUGIN_ID };
     }
 
     protected onload(): void {
+        this.enable();
         this.addListener();
         this.recordPageView();
     }
@@ -91,7 +91,7 @@ export class PageViewPlugin extends MonkeyPatched<
     private createIdForCurrentPage(): string {
         const path = window.location.pathname;
         const hash = window.location.hash;
-        switch (this.context.config.pageIdFormat) {
+        switch (this.context?.config?.pageIdFormat) {
             case PageIdFormatEnum.PathAndHash:
                 if (path && hash) {
                     return path + hash;

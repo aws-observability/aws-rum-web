@@ -1,4 +1,4 @@
-import { InternalPlugin } from '../InternalPlugin';
+import { InternalPlugin, InternalPluginConfig } from '../InternalPlugin';
 import { DomEvent } from '../../events/dom-event';
 import { DOM_EVENT_TYPE } from '../utils/constant';
 
@@ -26,20 +26,10 @@ export type TargetDomEvent = {
     element?: HTMLElement;
 };
 
-export type PartialDomEventPluginConfig = {
-    enableMutationObserver?: boolean;
-    events?: TargetDomEvent[];
-};
-
-export type DomEventPluginConfig = {
+export interface DomEventPluginConfig extends InternalPluginConfig {
     enableMutationObserver?: boolean;
     events: TargetDomEvent[];
-};
-
-const defaultConfig: DomEventPluginConfig = {
-    enableMutationObserver: false,
-    events: []
-};
+}
 
 export type ElementEventListener = {
     element: HTMLElement;
@@ -48,20 +38,12 @@ export type ElementEventListener = {
 
 export class DomEventPlugin<
     UpdateType extends TargetDomEvent = TargetDomEvent
-> extends InternalPlugin<UpdateType[]> {
-    enabled = false;
-    private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
-    private config: DomEventPluginConfig;
+> extends InternalPlugin<DomEventPluginConfig, UpdateType[]> {
+    private eventListenerMap: Map<
+        TargetDomEvent,
+        ElementEventListener[]
+    > = new Map();
     private observer: MutationObserver;
-
-    constructor(config?: PartialDomEventPluginConfig) {
-        super(DOM_EVENT_PLUGIN_ID);
-        this.eventListenerMap = new Map<
-            TargetDomEvent,
-            ElementEventListener[]
-        >();
-        this.config = { ...defaultConfig, ...config };
-    }
 
     private static getElementId(event: Event) {
         if (!event.target) {
@@ -90,9 +72,10 @@ export class DomEventPlugin<
         }
         this.addListeners();
 
-        if (this.config.enableMutationObserver) {
+        if (this.getConfigValue('enableMutationObserver')) {
             this.observeDOMMutation();
         }
+
         this.enabled = true;
     }
 
@@ -110,8 +93,17 @@ export class DomEventPlugin<
     update(events: UpdateType[]): void {
         events.forEach((domEvent) => {
             this.addEventHandler(domEvent);
-            this.config.events.push(domEvent);
+            this.getConfigValue('events').push(domEvent);
         });
+    }
+
+    protected getDefaultConfig() {
+        return {
+            name: DOM_EVENT_PLUGIN_ID,
+            enabled: false,
+            enableMutationObserver: false,
+            events: []
+        };
     }
 
     protected onload(): void {
@@ -119,13 +111,13 @@ export class DomEventPlugin<
     }
 
     private removeListeners() {
-        this.config.events.forEach((domEvent) =>
+        this.getConfigValue('events').forEach((domEvent) =>
             this.removeEventHandler(domEvent)
         );
     }
 
     private addListeners() {
-        this.config.events.forEach((domEvent) =>
+        this.getConfigValue('events').forEach((domEvent) =>
             this.addEventHandler(domEvent)
         );
     }
@@ -201,6 +193,7 @@ export class DomEventPlugin<
             this.removeListeners();
             this.addListeners();
         });
+
         //  we track only changes to nodes/DOM elements, not attributes or characterData
         this.observer.observe(document, { childList: true, subtree: true });
     }

@@ -1,32 +1,15 @@
-import { InternalPlugin } from '../InternalPlugin';
+import { InternalPlugin, InternalPluginConfig } from '../InternalPlugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 
 export const JS_ERROR_EVENT_PLUGIN_ID = 'js-error';
 
-export type PartialJsErrorPluginConfig = {
-    stackTraceLength?: number;
-    ignore?: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
-};
-
-export type JsErrorPluginConfig = {
+export interface JsErrorPluginConfig extends InternalPluginConfig {
     stackTraceLength: number;
     ignore: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
-};
+}
 
-const defaultConfig: JsErrorPluginConfig = {
-    stackTraceLength: 200,
-    ignore: () => false
-};
-
-export class JsErrorPlugin extends InternalPlugin {
-    private config: JsErrorPluginConfig;
-
-    constructor(config?: PartialJsErrorPluginConfig) {
-        super(JS_ERROR_EVENT_PLUGIN_ID);
-        this.config = { ...defaultConfig, ...config };
-    }
-
+export class JsErrorPlugin extends InternalPlugin<JsErrorPluginConfig> {
     enable(): void {
         if (this.enabled) {
             return;
@@ -51,18 +34,26 @@ export class JsErrorPlugin extends InternalPlugin {
         }
     }
 
+    protected getDefaultConfig() {
+        return {
+            name: JS_ERROR_EVENT_PLUGIN_ID,
+            stackTraceLength: 200,
+            ignore: (error: ErrorEvent | PromiseRejectionEvent) => false
+        };
+    }
+
     protected onload(): void {
         this.addEventHandler();
     }
 
     private eventHandler = (errorEvent: ErrorEvent) => {
-        if (!this.config.ignore(errorEvent)) {
+        if (!this.getConfigValue('ignore')(errorEvent)) {
             this.recordJsErrorEvent(errorEvent);
         }
     };
 
     private promiseRejectEventHandler = (event: PromiseRejectionEvent) => {
-        if (!this.config.ignore(event)) {
+        if (!this.getConfigValue('ignore')(event)) {
             this.recordJsErrorEvent({
                 type: event.type,
                 error: event.reason
@@ -73,7 +64,10 @@ export class JsErrorPlugin extends InternalPlugin {
     private recordJsErrorEvent(error: any) {
         this.context?.record(
             JS_ERROR_EVENT_TYPE,
-            errorEventToJsErrorEvent(error, this.config.stackTraceLength)
+            errorEventToJsErrorEvent(
+                error,
+                this.getConfigValue('stackTraceLength')
+            )
         );
     }
 

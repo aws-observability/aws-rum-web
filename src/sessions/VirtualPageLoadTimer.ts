@@ -16,7 +16,8 @@ type Patching = Pick<XMLHttpRequest & Window, 'fetch' | 'send'>;
  */
 export class VirtualPageLoadTimer extends MonkeyPatched<
     Patching,
-    'fetch' | 'send'
+    'fetch' | 'send',
+    Config
 > {
     protected get patches() {
         return [
@@ -34,6 +35,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     }
     /** Latest interaction time by user on the document */
     public latestInteractionTime: number;
+
     /** Unique ID of virtual page load periodic checker. */
     private periodicCheckerId;
     /** Unique ID of virtual page load timeout checker. */
@@ -50,14 +52,12 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     private isPageLoaded: boolean;
     /** Indicate the current page's load end time value. */
     private latestEndTime: number;
-
-    private config: Config;
     private pageManager: PageManager;
     // @ts-ignore
     private readonly record: RecordEvent;
 
     constructor(pageManager: PageManager, config: Config, record: RecordEvent) {
-        super('virtual-page-load-timer');
+        super(config);
         this.periodicCheckerId = undefined;
         this.timeoutCheckerId = undefined;
         this.domMutationObserver = new MutationObserver(this.resetInterval);
@@ -68,7 +68,6 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         this.latestEndTime = 0;
         this.latestInteractionTime = 0;
 
-        this.config = config;
         this.pageManager = pageManager;
         this.record = record;
         this.enable();
@@ -96,11 +95,11 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         // Initialize timer objects and start observing
         this.periodicCheckerId = setInterval(
             this.checkLoadStatus,
-            this.config.routeChangeComplete
+            this.getConfigValue('routeChangeComplete')
         );
         this.timeoutCheckerId = setTimeout(
             this.declareTimeout,
-            this.config.routeChangeTimeout
+            this.getConfigValue('routeChangeTimeout')
         );
         // observing the add/delete of nodes
         this.domMutationObserver.observe(document, {
@@ -230,7 +229,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         clearInterval(this.periodicCheckerId);
         this.periodicCheckerId = setInterval(
             this.checkLoadStatus,
-            this.config.routeChangeComplete
+            this.getConfigValue('routeChangeComplete')
         );
     };
 

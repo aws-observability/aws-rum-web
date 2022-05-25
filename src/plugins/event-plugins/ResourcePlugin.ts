@@ -1,4 +1,4 @@
-import { InternalPlugin } from '../InternalPlugin';
+import { InternalPlugin, InternalPluginConfig } from '../InternalPlugin';
 import {
     getResourceFileType,
     ResourceType,
@@ -12,40 +12,16 @@ export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 const RESOURCE = 'resource';
 const LOAD = 'load';
 
-export type PartialResourcePluginConfig = {
-    eventLimit?: number;
-    recordAllTypes?: ResourceType[];
-    sampleTypes?: ResourceType[];
-};
-
-export type ResourcePluginConfig = {
+export interface ResourcePluginConfig extends InternalPluginConfig {
     eventLimit: number;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
-};
-
-export const defaultConfig = {
-    eventLimit: 10,
-    recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
-    sampleTypes: [
-        ResourceType.STYLESHEET,
-        ResourceType.IMAGE,
-        ResourceType.FONT,
-        ResourceType.OTHER
-    ]
-};
+}
 
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
-export class ResourcePlugin extends InternalPlugin {
-    private config: ResourcePluginConfig;
-
-    constructor(config?: PartialResourcePluginConfig) {
-        super(RESOURCE_EVENT_PLUGIN_ID);
-        this.config = { ...defaultConfig, ...config };
-    }
-
+export class ResourcePlugin extends InternalPlugin<ResourcePluginConfig> {
     enable(): void {
         if (this.enabled) {
             return;
@@ -75,9 +51,11 @@ export class ResourcePlugin extends InternalPlugin {
                 .forEach((event) => {
                     // Out of n resource events, x events are recorded using Observer API
                     const type: ResourceType = getResourceFileType(event.name);
-                    if (this.config.recordAllTypes.includes(type)) {
+                    if (this.getConfigValue('recordAllTypes').includes(type)) {
                         recordAll.push(event);
-                    } else if (this.config.sampleTypes.includes(type)) {
+                    } else if (
+                        this.getConfigValue('sampleTypes').includes(type)
+                    ) {
                         sample.push(event);
                     }
                 });
@@ -92,9 +70,9 @@ export class ResourcePlugin extends InternalPlugin {
         if (events !== undefined && events.length > 0) {
             events.forEach((event) => {
                 const type: ResourceType = getResourceFileType(event.name);
-                if (this.config.recordAllTypes.includes(type)) {
+                if (this.getConfigValue('recordAllTypes').includes(type)) {
                     recordAll.push(event);
-                } else if (this.config.sampleTypes.includes(type)) {
+                } else if (this.getConfigValue('sampleTypes').includes(type)) {
                     sample.push(event);
                 }
             });
@@ -102,7 +80,10 @@ export class ResourcePlugin extends InternalPlugin {
 
         // Record events for resources in recordAllTypes
         shuffle(recordAll);
-        while (recordAll.length > 0 && eventCount < this.config.eventLimit) {
+        while (
+            recordAll.length > 0 &&
+            eventCount < this.getConfigValue('eventLimit')
+        ) {
             this.recordResourceEvent(
                 recordAll.pop() as PerformanceResourceTiming
             );
@@ -111,7 +92,10 @@ export class ResourcePlugin extends InternalPlugin {
 
         // Record events sampled from resources in sample
         shuffle(sample);
-        while (sample.length > 0 && eventCount < this.config.eventLimit) {
+        while (
+            sample.length > 0 &&
+            eventCount < this.getConfigValue('eventLimit')
+        ) {
             this.recordResourceEvent(sample.pop() as PerformanceResourceTiming);
             eventCount++;
         }
@@ -140,6 +124,19 @@ export class ResourcePlugin extends InternalPlugin {
             this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }
     };
+    protected getDefaultConfig() {
+        return {
+            name: RESOURCE_EVENT_PLUGIN_ID,
+            eventLimit: 10,
+            recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
+            sampleTypes: [
+                ResourceType.STYLESHEET,
+                ResourceType.IMAGE,
+                ResourceType.FONT,
+                ResourceType.OTHER
+            ]
+        };
+    }
 
     protected onload(): void {
         window.addEventListener(LOAD, this.resourceEventListener);

@@ -37,7 +37,7 @@ export declare type CognitoIdentityClientConfig = {
 
 export class CognitoIdentityClient {
     private fetchRequestHandler: HttpHandler;
-    private hostname: string;
+    private readonly hostname: string;
 
     constructor(config: CognitoIdentityClientConfig) {
         this.hostname = `cognito-identity.${config.region}.amazonaws.com`;

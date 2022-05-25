@@ -6,15 +6,17 @@ import { Config } from '../orchestration/Orchestration';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
+import { Configurable } from '../abstract/Configurable';
 
-export class EnhancedAuthentication {
-    private cognitoIdentityClient: CognitoIdentityClient;
-    private config: Config;
+export class EnhancedAuthentication extends Configurable<Config> {
+    private readonly cognitoIdentityClient: CognitoIdentityClient;
     private credentials: Credentials | undefined;
 
     constructor(config: Config) {
-        const region: string = config.identityPoolId.split(':')[0];
-        this.config = config;
+        super(config);
+        const region: string = this.getConfigValue('identityPoolId').split(
+            ':'
+        )[0];
         this.cognitoIdentityClient = new CognitoIdentityClient({
             fetchRequestHandler: new FetchHttpHandler(),
             region
@@ -110,7 +112,7 @@ export class EnhancedAuthentication {
     private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
         const credentialProvider: CredentialProvider = fromCognitoIdentityPool({
             client: this.cognitoIdentityClient,
-            identityPoolId: this.config.identityPoolId as string
+            identityPoolId: this.getConfigValue('identityPoolId') as string
         });
 
         return credentialProvider().then((credentials) => {

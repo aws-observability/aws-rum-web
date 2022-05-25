@@ -4,16 +4,16 @@ import { Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
+import { Configurable } from '../abstract/Configurable';
 
-export class Authentication {
+export class Authentication extends Configurable<Config> {
     private cognitoIdentityClient: CognitoIdentityClient;
     private stsClient: StsClient;
-    private config: Config;
     private credentials: Credentials | undefined;
 
     constructor(config: Config) {
+        super(config);
         const region: string = config.identityPoolId.split(':')[0];
-        this.config = config;
         this.stsClient = new StsClient({
             fetchRequestHandler: new FetchHttpHandler(),
             region
@@ -113,14 +113,14 @@ export class Authentication {
     private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
         return this.cognitoIdentityClient
             .getId({
-                IdentityPoolId: this.config.identityPoolId as string
+                IdentityPoolId: this.getConfigValue('identityPoolId') as string
             })
             .then((getIdResponse) =>
                 this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
             )
             .then((getOpenIdTokenResponse) =>
                 this.stsClient.assumeRoleWithWebIdentity({
-                    RoleArn: this.config.guestRoleArn as string,
+                    RoleArn: this.getConfigValue('guestRoleArn') as string,
                     RoleSessionName: 'cwr',
                     WebIdentityToken: getOpenIdTokenResponse.Token
                 })

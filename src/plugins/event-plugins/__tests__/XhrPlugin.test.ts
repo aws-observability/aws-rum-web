@@ -1,12 +1,13 @@
 // tslint:disable:max-line-length
-import { PartialHttpPluginConfig } from '../../utils/http-utils';
+import { HttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import { XhrPlugin } from '../XhrPlugin';
 import {
     xRayOffContext,
     xRayOnContext,
     record,
-    recordPageView
+    recordPageView,
+    sleep
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
 import { GetSession, PluginContext } from '../../types';
@@ -26,7 +27,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR is called then the plugin records the http request/response', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: true
         };
@@ -44,7 +45,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -64,7 +65,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR is called then the plugin records a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -83,7 +84,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -117,7 +118,7 @@ describe('XhrPlugin tests', () => {
 
     test('when plugin is disabled then the plugin does not record any events', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: true
         };
@@ -136,7 +137,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         // Assert
         expect(record).not.toHaveBeenCalled();
@@ -144,7 +145,7 @@ describe('XhrPlugin tests', () => {
 
     test('when plugin is re-enabled then the plugin records a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/]
         };
 
@@ -163,7 +164,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -173,7 +174,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR returns an error code then the plugin adds the error to the trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             ...DEFAULT_CONFIG,
             ...{
                 logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -192,7 +193,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -231,7 +232,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR returns an error code then the plugin adds the error to the http event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -247,7 +248,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -268,7 +269,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR times out then the plugin adds the error to the trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -285,7 +286,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -315,7 +316,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR times out then the plugin adds the error to the http event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -332,7 +333,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -352,7 +353,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR aborts then the plugin adds the error to the trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -371,7 +372,7 @@ describe('XhrPlugin tests', () => {
         xhr.abort();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -401,7 +402,7 @@ describe('XhrPlugin tests', () => {
 
     test('when XHR aborts then the plugin adds the error to the http event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/]
         };
 
@@ -419,7 +420,7 @@ describe('XhrPlugin tests', () => {
         xhr.abort();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -440,7 +441,7 @@ describe('XhrPlugin tests', () => {
     test('when default config is used then X-Amzn-Trace-Id header is not to the HTTP request', async () => {
         // Init
         let header: string;
-        const config: PartialHttpPluginConfig = {};
+        const config: Partial<HttpPluginConfig> = {};
 
         mock.get(/.*/, (req, res) => {
             header = req.header('X-Amzn-Trace-Id');
@@ -459,7 +460,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -470,7 +471,9 @@ describe('XhrPlugin tests', () => {
     test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         let header: string;
-        const config: PartialHttpPluginConfig = { addXRayTraceIdHeader: true };
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: true
+        };
 
         mock.get(/.*/, (req, res) => {
             header = req.header('X-Amzn-Trace-Id');
@@ -489,7 +492,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -501,7 +504,7 @@ describe('XhrPlugin tests', () => {
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/]
         };
 
@@ -518,7 +521,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -541,7 +544,7 @@ describe('XhrPlugin tests', () => {
             recordPageView,
             getSession
         };
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
         };
@@ -559,7 +562,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -578,7 +581,7 @@ describe('XhrPlugin tests', () => {
             recordPageView,
             getSession
         };
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],
             recordAllRequests: true
@@ -597,7 +600,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -607,7 +610,7 @@ describe('XhrPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: true
         };
@@ -625,7 +628,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -635,7 +638,7 @@ describe('XhrPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: false
         };
@@ -653,7 +656,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -663,7 +666,7 @@ describe('XhrPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin records a request with status 500', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
             recordAllRequests: false
         };
@@ -682,7 +685,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -692,7 +695,7 @@ describe('XhrPlugin tests', () => {
 
     test('when a url is excluded then the plugin does not record a request to that url', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
             urlsToExclude: [/response\.json/]
         };
@@ -710,7 +713,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -720,7 +723,7 @@ describe('XhrPlugin tests', () => {
 
     test('all urls are included by default', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true
         };
 
@@ -737,7 +740,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -747,7 +750,7 @@ describe('XhrPlugin tests', () => {
 
     test('when a request is made to cognito or sts using default exclude list then the requests are not recorded', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true
         };
 
@@ -772,7 +775,7 @@ describe('XhrPlugin tests', () => {
         xhrSts.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 
@@ -782,11 +785,9 @@ describe('XhrPlugin tests', () => {
 
     test('when a url is relative then the subsegment name is location.hostname', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {};
-
         mock.get(/.*/, () => Promise.reject(new Error()));
 
-        const plugin: XhrPlugin = new XhrPlugin(config);
+        const plugin: XhrPlugin = new XhrPlugin();
         plugin.load(xRayOnContext);
 
         // Run
@@ -795,7 +796,7 @@ describe('XhrPlugin tests', () => {
         xhr.send();
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         plugin.disable();
 

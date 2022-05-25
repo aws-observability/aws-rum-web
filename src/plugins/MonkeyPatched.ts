@@ -1,5 +1,5 @@
 import * as shimmer from 'shimmer';
-import { InternalPlugin } from './InternalPlugin';
+import { InternalPlugin, InternalPluginConfig } from './InternalPlugin';
 
 type Wrapper<W> = () => W;
 export interface MonkeyPatch<
@@ -13,14 +13,17 @@ export interface MonkeyPatch<
 
 export abstract class MonkeyPatched<
     Nodule extends object,
-    FieldName extends keyof Nodule
-> extends InternalPlugin {
+    FieldName extends keyof Nodule,
+    ConfigType extends object = InternalPluginConfig
+> extends InternalPlugin<ConfigType> {
     public enable = this.patch.bind(this, true);
     public disable = this.patch.bind(this, false);
 
-    protected enabled: boolean = false;
-
     protected abstract patches: MonkeyPatch<Nodule, FieldName>[];
+
+    constructor(config?: Partial<ConfigType>) {
+        super({ enabled: false, ...config });
+    }
 
     private patch(shouldPatch: boolean = true) {
         if (this.enabled !== shouldPatch) {

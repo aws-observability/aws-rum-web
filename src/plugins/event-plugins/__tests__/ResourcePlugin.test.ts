@@ -8,7 +8,7 @@ import {
     mockPerformanceObjectWithResources,
     resourceEvent
 } from '../../../test-utils/mock-data';
-import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
+import { ResourcePlugin, ResourcePluginConfig } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import {
     context,
@@ -21,7 +21,7 @@ import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext } from '../../types';
 
-const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
+const buildResourcePlugin = (config?: Partial<ResourcePluginConfig>) => {
     return new ResourcePlugin(config);
 };
 

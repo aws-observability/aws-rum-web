@@ -21,7 +21,8 @@ import {
     APPLICATION_ID,
     APP_MONITOR_DETAILS,
     DEFAULT_CONFIG,
-    mockFetch
+    mockFetch,
+    sleep
 } from '../../test-utils/test-utils';
 
 global.fetch = mockFetch;
@@ -86,10 +87,10 @@ describe('SessionManager tests', () => {
         mockRecord.mockClear();
     });
 
-    const setNavigatorCookieEnabled = (isEnabled: boolean) => {
+    const setNavigatorCookieEnabled = (enabled: boolean) => {
         Object.defineProperty(window.navigator, 'cookieEnabled', {
             writable: true,
-            value: isEnabled
+            value: enabled
         });
     };
 
@@ -149,7 +150,7 @@ describe('SessionManager tests', () => {
         const sessionManager = defaultSessionManager(config);
 
         const sessionA: Session = sessionManager.getSession();
-        config.allowCookies = true;
+        sessionManager.setConfigValue('allowCookies', true);
         const sessionB: Session = sessionManager.getSession();
 
         // Assert
@@ -166,8 +167,8 @@ describe('SessionManager tests', () => {
         const sessionManager = defaultSessionManager(config);
 
         const sessionA = sessionManager.getSession();
-        config.allowCookies = false;
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        sessionManager.setConfigValue('allowCookies', false);
+        await sleep(0);
         const sessionB = sessionManager.getSession();
 
         // Assert
@@ -241,7 +242,7 @@ describe('SessionManager tests', () => {
 
         // Run
         const sessionA = sessionManager.getSession();
-        config.allowCookies = false;
+        sessionManager.setConfigValue('allowCookies', false);
         const sessionB = sessionManager.getSession();
 
         // Assert
@@ -324,7 +325,7 @@ describe('SessionManager tests', () => {
 
         // Run
         const userIdFromCookie = sessionManager.getUserId();
-        config.allowCookies = false;
+        sessionManager.setConfigValue('allowCookies', false);
         const userIdFromTracker = sessionManager.getUserId();
 
         // Assert
@@ -340,7 +341,7 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await sleep(0);
         const sessionTwo = sessionManager.getSession();
 
         // Assert
@@ -368,7 +369,7 @@ describe('SessionManager tests', () => {
     });
 
     test('when a new session starts then the session start event is emitted', async () => {
-        // init
+        // initPlugin
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
@@ -382,7 +383,7 @@ describe('SessionManager tests', () => {
     });
 
     test('when a session is resumed then the session start event is not emitted', async () => {
-        // init
+        // initPlugin
         const config = {
             ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
@@ -632,7 +633,7 @@ describe('SessionManager tests', () => {
 
         sessionManager.getSession();
         const userIdFromCookie1 = getCookie(USER_COOKIE_NAME);
-        config.allowCookies = true;
+        sessionManager.setConfigValue('allowCookies', true);
         sessionManager.incrementSessionEventCount();
         const userIdFromCookie2 = getCookie(USER_COOKIE_NAME);
 

@@ -15,7 +15,7 @@ export interface STSSendRequest {
 
 export class StsClient {
     private fetchRequestHandler: HttpHandler;
-    private hostname: string;
+    private readonly hostname: string;
 
     constructor(config: CognitoIdentityClientConfig) {
         this.hostname = `sts.${config.region}.amazonaws.com`;

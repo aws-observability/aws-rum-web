@@ -1,21 +1,41 @@
 import { RUM_AWS_PREFIX } from './utils/constant';
 import { Plugin } from './Plugin';
 import { PluginContext } from './types';
+import { Configurable } from '../abstract/Configurable';
 
-export abstract class InternalPlugin<UpdateType extends unknown = unknown>
+export interface InternalPluginConfig {
+    name?: string;
+    enabled?: boolean;
+}
+
+export abstract class InternalPlugin<
+        ConfigType extends InternalPluginConfig = InternalPluginConfig,
+        UpdateType extends unknown = unknown
+    >
+    extends Configurable<ConfigType>
     implements Plugin<UpdateType> {
-    static idPrefix = RUM_AWS_PREFIX;
+    private static idPrefix = RUM_AWS_PREFIX;
 
-    protected enabled: boolean = true;
+    protected enabled: boolean;
     protected context?: PluginContext;
     private readonly pluginId: string;
 
-    constructor(name: string) {
-        this.pluginId = InternalPlugin.generatePluginId(name);
+    constructor(config?: Partial<ConfigType>) {
+        super(config);
+        this.enabled = this.getConfigValue('enabled') ?? true;
+        this.pluginId = InternalPlugin.generatePluginId(this.getName());
     }
 
     static generatePluginId(name: string): string {
         return `${InternalPlugin.idPrefix}.${name}`;
+    }
+
+    getName(): string {
+        if (!this.getConfigValue('name')) {
+            return this.constructor.name;
+        }
+
+        return this.getConfigValue('name');
     }
 
     load(context: PluginContext): void {

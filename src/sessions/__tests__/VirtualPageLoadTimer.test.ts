@@ -7,7 +7,8 @@ import {
     mockFetchWith500,
     mockFetchWithError,
     mockFetchWithErrorObject,
-    mockFetchWithErrorObjectAndStack
+    mockFetchWithErrorObjectAndStack,
+    sleep
 } from '../../test-utils/test-utils';
 import { Config } from '../../orchestration/Orchestration';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../plugins/utils/constant';
@@ -169,7 +170,7 @@ describe('VirtualPageLoadTimer tests', () => {
         expect(virtualPageLoadTimer['requestBuffer'].has(xhr)).toEqual(true);
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         // requestBuffer should no longer contain xhr as it is completed
         expect(virtualPageLoadTimer['requestBuffer'].size).toEqual(0);
@@ -201,7 +202,7 @@ describe('VirtualPageLoadTimer tests', () => {
         expect(virtualPageLoadTimer['requestBuffer'].has(xhr)).toEqual(false);
 
         // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await sleep(0);
 
         // Current page's latestEndTime should be updated and ongoingRequests is empty
         expect(virtualPageLoadTimer['requestBuffer'].size).toEqual(0);

@@ -7,6 +7,7 @@ import { PutRumEventsRequest } from './dataplane';
 import { Config } from '../orchestration/Orchestration';
 import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
+import { Configurable } from '../abstract/Configurable';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -29,15 +30,14 @@ export type ClientBuilder = (
     credentials: CredentialProvider | Credentials
 ) => DataPlaneClient;
 
-export class Dispatch {
-    private region: string;
-    private endpoint: URL;
+export class Dispatch extends Configurable<Config> {
+    private readonly region: string;
+    private readonly endpoint: URL;
     private eventCache: EventCache;
     private rum: DataPlaneClientInterface;
     private enabled: boolean;
     private dispatchTimerId: number | undefined;
-    private buildClient: ClientBuilder;
-    private config: Config;
+    private readonly buildClient: ClientBuilder;
 
     constructor(
         region: string,
@@ -45,12 +45,15 @@ export class Dispatch {
         eventCache: EventCache,
         config: Config
     ) {
+        super(config);
         this.region = region;
         this.endpoint = endpoint;
         this.eventCache = eventCache;
         this.enabled = true;
-        this.buildClient = config.clientBuilder || this.defaultClientBuilder;
-        this.config = config;
+        this.buildClient = this.getConfigValue(
+            'clientBuilder',
+            this.defaultClientBuilder
+        );
         this.startDispatchTimer();
         this.rum = {
             sendFetch: (): Promise<{ response: HttpResponse }> => {
@@ -81,7 +84,7 @@ export class Dispatch {
     /**
      * Set the authentication token that will be used to authenticate with the
      * data plane service (AWS auth).
-     * @param credentials A set of AWS credentials from the application's authflow.
+     * @param credentialProvider
      */
     public setAwsCredentials(
         credentialProvider: Credentials | CredentialProvider
@@ -145,12 +148,15 @@ export class Dispatch {
             this.dispatchBeaconFailSilent
         );
         document.addEventListener('pagehide', this.dispatchBeaconFailSilent);
-        if (this.config.dispatchInterval <= 0 || this.dispatchTimerId) {
+        if (
+            this.getConfigValue('dispatchInterval') <= 0 ||
+            this.dispatchTimerId
+        ) {
             return;
         }
         this.dispatchTimerId = window.setInterval(
             this.dispatchFetchFailSilent,
-            this.config.dispatchInterval
+            this.getConfigValue('dispatchInterval')
         );
     }
 
@@ -212,9 +218,9 @@ export class Dispatch {
         return new DataPlaneClient({
             fetchRequestHandler: new RetryHttpHandler(
                 new FetchHttpHandler({
-                    fetchFunction: this.config.fetchFunction
+                    fetchFunction: this.getConfigValue('fetchFunction')
                 }),
-                this.config.retries
+                this.getConfigValue('retries')
             ),
             beaconRequestHandler: new BeaconHttpHandler(),
             endpoint,

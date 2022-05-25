@@ -12,18 +12,11 @@ import {
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
 export class WebVitalsPlugin extends InternalPlugin {
-    constructor() {
-        super(WEB_VITAL_EVENT_PLUGIN_ID);
-    }
-
     // tslint:disable-next-line:no-empty
     enable(): void {}
 
     // tslint:disable-next-line:no-empty
     disable(): void {}
-
-    // tslint:disable-next-line:no-empty
-    configure(config: any): void {}
 
     getWebVitalData(webVitalData: Metric, eventType: string): void {
         const webVitalEvent:
@@ -34,6 +27,11 @@ export class WebVitalsPlugin extends InternalPlugin {
             value: webVitalData.value
         };
         this.context?.record(eventType, webVitalEvent);
+    }
+    protected getDefaultConfig() {
+        return {
+            name: WEB_VITAL_EVENT_PLUGIN_ID
+        };
     }
 
     protected onload(): void {

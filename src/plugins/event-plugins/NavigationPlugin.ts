@@ -1,4 +1,4 @@
-import { InternalPlugin } from '../InternalPlugin';
+import { InternalPlugin, InternalPluginConfig } from '../InternalPlugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
 
@@ -13,10 +13,6 @@ const LOAD = 'load';
  * For RUM, these event types are inter-dependent. So they are recorded under one plugin.
  */
 export class NavigationPlugin extends InternalPlugin {
-    constructor() {
-        super(NAVIGATION_EVENT_PLUGIN_ID);
-    }
-
     enable(): void {
         if (this.enabled) {
             return;
@@ -251,6 +247,11 @@ export class NavigationPlugin extends InternalPlugin {
             );
         }
     };
+    protected getDefaultConfig() {
+        return {
+            name: NAVIGATION_EVENT_PLUGIN_ID
+        };
+    }
 
     /**
      * loadEventEnd is populated as 0 if the web page has not loaded completely, even though LOAD has been fired.

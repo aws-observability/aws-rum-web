@@ -1,6 +1,6 @@
 import { Orchestration } from '../../../orchestration/Orchestration';
-import { createAwsCredentials } from '../../../test-utils/test-utils';
-import { PartialHttpPluginConfig } from '../../utils/http-utils';
+import { createAwsCredentials, sleep } from '../../../test-utils/test-utils';
+import { HttpPluginConfig } from '../../utils/http-utils';
 import { FetchPlugin } from '../FetchPlugin';
 
 const mockFetch = jest.fn(
@@ -27,7 +27,7 @@ describe('FetchPlugin integ tests', () => {
 
     test('dispatch requests are not recorded by the http plugin', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true
         };
 
@@ -41,9 +41,9 @@ describe('FetchPlugin integ tests', () => {
         orchestration.setAwsCredentials(createAwsCredentials());
         orchestration.recordPageView('/home');
         orchestration.dispatch();
-        await new Promise((resolve) => setTimeout(() => resolve(null), 0));
+        await sleep(0);
         orchestration.dispatch();
-        await new Promise((resolve) => setTimeout(() => resolve(null), 0));
+        await sleep(0);
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
