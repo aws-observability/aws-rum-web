@@ -1,4 +1,6 @@
-import { Plugin, PluginContext } from '../plugins/Plugin';
+import { Plugin } from '../plugins/Plugin';
+import { PluginContext } from '../plugins/types';
+import { InternalPlugin } from '../plugins/InternalPlugin';
 import { Authentication } from '../dispatch/Authentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 import { PluginManager } from '../plugins/PluginManager';
@@ -38,7 +40,7 @@ export enum PageIdFormatEnum {
     PathAndHash = 'PATH_AND_HASH'
 }
 
-type PluginInitializer = (config: object) => Plugin[];
+type PluginInitializer = (config: object) => InternalPlugin[];
 
 interface TelemetriesFunctor {
     [key: string]: PluginInitializer;
@@ -204,6 +206,7 @@ export class Orchestration {
      * not wish to use this field then add any placeholder, such as '0.0.0'.
      * @param region The AWS region of the app monitor. For example, 'us-east-1'
      * or 'eu-west-2'.
+     * @param configCookieAttributes
      * @param partialConfig An application-specific configuration for the web
      * client.
      */
@@ -211,7 +214,10 @@ export class Orchestration {
         applicationId: string,
         applicationVersion: string,
         region: string,
-        partialConfig: PartialConfig = {}
+        {
+            cookieAttributes: configCookieAttributes,
+            ...partialConfig
+        }: PartialConfig = {}
     ) {
         if (typeof region === 'undefined') {
             // Provide temporary backwards compatability if the region was not provided by the loader. This will be
@@ -221,9 +227,8 @@ export class Orchestration {
 
         const cookieAttributes: CookieAttributes = {
             ...defaultCookieAttributes(),
-            ...partialConfig.cookieAttributes
+            ...configCookieAttributes
         };
-        delete partialConfig.cookieAttributes;
 
         this.config = {
             ...{ fetchFunction: fetch },
@@ -336,10 +341,13 @@ export class Orchestration {
 
     /**
      * Update DOM plugin to record the (additional) provided DOM events.
-     * @param pluginConfig Target DOM events.
+     * @param events
      */
     public registerDomEvents(events: TargetDomEvent[]) {
-        this.pluginManager.updatePlugin(DOM_EVENT_PLUGIN_ID, events);
+        this.pluginManager.updatePlugin<TargetDomEvent[]>(
+            DOM_EVENT_PLUGIN_ID,
+            events
+        );
     }
 
     private initEventCache(
@@ -382,7 +390,7 @@ export class Orchestration {
         applicationId: string,
         applicationVersion: string
     ) {
-        const BUILTIN_PLUGINS: Plugin[] = this.constructBuiltinPlugins();
+        const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins();
         const PLUGINS: Plugin[] = [
             ...BUILTIN_PLUGINS,
             ...this.config.eventPluginsToLoad
@@ -413,8 +421,8 @@ export class Orchestration {
         return pluginManager;
     }
 
-    private constructBuiltinPlugins(): Plugin[] {
-        let plugins: Plugin[] = [];
+    private constructBuiltinPlugins(): InternalPlugin[] {
+        let plugins: InternalPlugin[] = [];
         const functor: TelemetriesFunctor = this.telemetryFunctor();
 
         this.config.telemetries.forEach((type) => {
@@ -451,20 +459,20 @@ export class Orchestration {
      */
     private telemetryFunctor(): TelemetriesFunctor {
         return {
-            [TelemetryEnum.Errors]: (config: object): Plugin[] => {
+            [TelemetryEnum.Errors]: (config: object): InternalPlugin[] => {
                 return [new JsErrorPlugin(config)];
             },
-            [TelemetryEnum.Performance]: (config: object): Plugin[] => {
+            [TelemetryEnum.Performance]: (config: object): InternalPlugin[] => {
                 return [
                     new NavigationPlugin(),
                     new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];
             },
-            [TelemetryEnum.Interaction]: (config: object): Plugin[] => {
+            [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {
                 return [new DomEventPlugin(config)];
             },
-            [TelemetryEnum.Http]: (config: object): Plugin[] => {
+            [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
             }
         };

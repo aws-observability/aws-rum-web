@@ -1,25 +1,10 @@
-import { Config } from '../orchestration/Orchestration';
-import { Session } from '../sessions/SessionManager';
+import { PluginContext } from './types';
 
-export type RecordEvent = (type: string, eventData: object) => void;
-export type RecordPageView = (pageId: string) => void;
-
-export type GetSession = () => Session;
-
-export type PluginContext = {
-    applicationId: string;
-    applicationVersion: string;
-    config: Config;
-    record: RecordEvent;
-    recordPageView: RecordPageView;
-    getSession: GetSession;
-};
-
-export interface Plugin {
+export interface Plugin<UpdateType extends unknown = unknown> {
     /**
      * Load the plugin. The plugin should initialize itself and start recording events
      * for which it is configured.
-     * @param recordEvent A callback to record event data.
+     * @param context
      */
     load(context: PluginContext): void;
 
@@ -42,11 +27,11 @@ export interface Plugin {
      * Manually record an event.
      * @param data Data that the plugin will use to create an event.
      */
-    record?(data: any): void;
+    record?<D extends unknown>(data: D): void;
 
     /**
      * Update the plugin.
-     * @param config Data that the plugin will use to update its config.
+     * @param updateWith Data that the plugin will use to update its config.
      */
-    update?(config: object): void;
+    update?(updateWith: UpdateType): void;
 }

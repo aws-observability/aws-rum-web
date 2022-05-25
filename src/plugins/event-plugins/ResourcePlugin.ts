@@ -1,4 +1,4 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import {
     getResourceFileType,
     ResourceType,
@@ -7,7 +7,7 @@ import {
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 
-export const RESOURCE_EVENT_PLUGIN_ID = 'com.amazonaws.rum.resource';
+export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
 const RESOURCE = 'resource';
 const LOAD = 'load';
@@ -38,23 +38,12 @@ export const defaultConfig = {
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
-export class ResourcePlugin implements Plugin {
-    private pluginId: string;
-    private enabled: boolean;
+export class ResourcePlugin extends InternalPlugin {
     private config: ResourcePluginConfig;
-    private context: PluginContext;
-    private recordEvent: RecordEvent | undefined;
 
     constructor(config?: PartialResourcePluginConfig) {
-        this.pluginId = RESOURCE_EVENT_PLUGIN_ID;
-        this.enabled = true;
+        super(RESOURCE_EVENT_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
-    }
-
-    load(context: PluginContext): void {
-        this.context = context;
-        this.recordEvent = context.record;
-        window.addEventListener(LOAD, this.resourceEventListener);
     }
 
     enable(): void {
@@ -73,10 +62,6 @@ export class ResourcePlugin implements Plugin {
         if (this.resourceEventListener) {
             window.removeEventListener(LOAD, this.resourceEventListener);
         }
-    }
-
-    getPluginId(): string {
-        return this.pluginId;
     }
 
     resourceEventListener = (event: Event): void => {
@@ -141,7 +126,7 @@ export class ResourcePlugin implements Plugin {
             return;
         }
 
-        if (this.recordEvent) {
+        if (this.context?.record) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,
@@ -152,7 +137,11 @@ export class ResourcePlugin implements Plugin {
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-            this.recordEvent(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
+            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }
     };
+
+    protected onload(): void {
+        window.addEventListener(LOAD, this.resourceEventListener);
+    }
 }

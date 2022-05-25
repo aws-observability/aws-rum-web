@@ -1,4 +1,5 @@
 import * as shimmer from 'shimmer';
+import { InternalPlugin } from './InternalPlugin';
 
 type Wrapper<W> = () => W;
 export interface MonkeyPatch<
@@ -13,13 +14,13 @@ export interface MonkeyPatch<
 export abstract class MonkeyPatched<
     Nodule extends object,
     FieldName extends keyof Nodule
-> {
+> extends InternalPlugin {
     public enable = this.patch.bind(this, true);
     public disable = this.patch.bind(this, false);
 
-    protected abstract patches: MonkeyPatch<Nodule, FieldName>[];
+    protected enabled: boolean = false;
 
-    private enabled: boolean = false;
+    protected abstract patches: MonkeyPatch<Nodule, FieldName>[];
 
     private patch(shouldPatch: boolean = true) {
         if (this.enabled !== shouldPatch) {

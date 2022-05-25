@@ -1,8 +1,8 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 
-export const JS_ERROR_EVENT_PLUGIN_ID = 'com.amazonaws.rum.js-error';
+export const JS_ERROR_EVENT_PLUGIN_ID = 'js-error';
 
 export type PartialJsErrorPluginConfig = {
     stackTraceLength?: number;
@@ -16,21 +16,12 @@ const defaultConfig: JsErrorPluginConfig = {
     stackTraceLength: 200
 };
 
-export class JsErrorPlugin implements Plugin {
-    private pluginId: string;
-    private enabled: boolean;
+export class JsErrorPlugin extends InternalPlugin {
     private config: JsErrorPluginConfig;
-    private recordEvent: RecordEvent;
 
     constructor(config?: PartialJsErrorPluginConfig) {
-        this.pluginId = JS_ERROR_EVENT_PLUGIN_ID;
-        this.enabled = true;
+        super(JS_ERROR_EVENT_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
-    }
-
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        this.addEventHandler();
     }
 
     enable(): void {
@@ -49,10 +40,6 @@ export class JsErrorPlugin implements Plugin {
         this.enabled = false;
     }
 
-    getPluginId(): string {
-        return this.pluginId;
-    }
-
     record(error: any): void {
         if (error instanceof ErrorEvent) {
             this.eventHandler(error);
@@ -61,8 +48,12 @@ export class JsErrorPlugin implements Plugin {
         }
     }
 
+    protected onload(): void {
+        this.addEventHandler();
+    }
+
     private eventHandler = (errorEvent: ErrorEvent) => {
-        this.recordEvent(
+        this.context?.record(
             JS_ERROR_EVENT_TYPE,
             errorEventToJsErrorEvent(errorEvent, this.config.stackTraceLength)
         );

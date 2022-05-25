@@ -1,32 +1,30 @@
-import { Plugin, PluginContext } from './Plugin';
-import { DOM_EVENT_PLUGIN_ID } from '../plugins/event-plugins/DomEventPlugin';
+import { Plugin } from './Plugin';
+import { PluginContext } from './types';
+import { InternalPlugin } from './InternalPlugin';
 
 /**
  * The plugin manager maintains a list of plugins
  * and notifies plugins of configuration or lifecycle changes.
  */
 export class PluginManager {
-    private plugins: Map<string, Plugin>;
-    private context: PluginContext;
+    private plugins: Map<string, Plugin> = new Map();
 
-    constructor(context: PluginContext) {
-        this.plugins = new Map();
-        this.context = context;
-    }
+    constructor(private readonly context: PluginContext) {}
 
     /**
      * Add an event plugin to PluginManager and initialize the plugin.
      * @param plugin The plugin which adheres to the RUM web client's plugin interface.
      */
     public addPlugin(plugin: Plugin): void {
-        const pluginId: string = plugin.getPluginId();
+        const pluginId = plugin.getPluginId();
 
-        // add to plugin map
-        if (pluginId) {
-            this.plugins.set(pluginId, plugin);
-        } else {
-            throw new Error('InvalidPluginIdException');
+        if (this.hasPlugin(pluginId)) {
+            throw new Error(
+                `Plugin "${pluginId}" already defined in the PluginManager`
+            );
         }
+
+        this.plugins.set(pluginId, plugin);
 
         // initialize plugin
         plugin.load(this.context);
@@ -34,13 +32,13 @@ export class PluginManager {
 
     /**
      * Update an event plugin
-     * @param config The config to update the plugin with.
+     * @param pluginId
+     * @param updateWith The config to update the plugin with.
      */
-    public updatePlugin(pluginId: string, config: object) {
-        const plugin = this.plugins.get(pluginId);
-        if (plugin && plugin.update instanceof Function) {
-            plugin.update(config);
-        }
+    public updatePlugin<O extends unknown>(pluginId: string, updateWith: O) {
+        const plugin = this.getPlugin(pluginId);
+
+        plugin?.update?.(updateWith);
     }
 
     /**
@@ -62,7 +60,7 @@ export class PluginManager {
      * @param pluginId a unique identifier for the plugin
      */
     public hasPlugin(pluginId: string): boolean {
-        return this.plugins.has(pluginId);
+        return Boolean(this.getPlugin(pluginId));
     }
 
     /**
@@ -71,11 +69,18 @@ export class PluginManager {
      * @param data The data to be recorded by the plugin.
      */
     public record(pluginId: string, data: any): void {
-        const plugin = this.plugins.get(pluginId);
-        if (plugin && plugin.record instanceof Function) {
+        const plugin = this.getPlugin(pluginId);
+        if (plugin?.record instanceof Function) {
             plugin.record(data);
         } else {
             throw new Error('AWS RUM Client record: Invalid plugin ID');
         }
+    }
+
+    private getPlugin(id: string): Plugin | undefined {
+        return (
+            this.plugins.get(id) ??
+            this.plugins.get(InternalPlugin.generatePluginId(id))
+        );
     }
 }

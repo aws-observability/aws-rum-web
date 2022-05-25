@@ -1,7 +1,8 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { Plugin } from '../Plugin';
+import { RecordEvent, PluginContext } from '../types';
 
 export const DEMO_EVENT_TYPE = 'com.amazon.rum.demo_event';
-export const DEMO_PLUGIN_ID = 'com.amazonaws.rum.demo';
+export const DEMO_PLUGIN_ID = 'demo';
 
 /**
  * The demo plugin is a dummy plugins. The demo plugin:
@@ -17,6 +18,10 @@ export class DemoPlugin implements Plugin {
     constructor() {
         this.configuration = {};
         this.timerId = undefined;
+    }
+
+    getPluginId(): string {
+        return DEMO_PLUGIN_ID;
     }
 
     load(context: PluginContext): void {
@@ -40,10 +45,6 @@ export class DemoPlugin implements Plugin {
             window.clearInterval(this.timerId);
             this.timerId = undefined;
         }
-    }
-
-    getPluginId(): string {
-        return DEMO_PLUGIN_ID;
     }
 
     record(data: any): void {

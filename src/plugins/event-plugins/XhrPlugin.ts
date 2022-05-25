@@ -1,4 +1,3 @@
-import { Plugin, PluginContext } from '../Plugin';
 import { XRayTraceEvent } from '../../events/xray-trace-event';
 import { HttpEvent } from '../../events/http-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
@@ -37,7 +36,7 @@ type Error = {
     stack?: string; // non-standard Mozilla
 };
 
-export const XHR_PLUGIN_ID = 'com.amazonaws.rum.xhr';
+export const XHR_PLUGIN_ID = 'xhr';
 
 /**
  * A plugin which initiates and records AWS X-Ray traces for XML HTTP requests (XMLHttpRequest).
@@ -91,28 +90,18 @@ export const XHR_PLUGIN_ID = 'com.amazonaws.rum.xhr';
  * - https://xhr.spec.whatwg.org/#event-handlers.
  * - https://xhr.spec.whatwg.org/#events
  */
-export class XhrPlugin
-    extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'>
-    implements Plugin {
-    private readonly pluginId: string;
+export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private config: HttpPluginConfig;
     private xhrMap: Map<XMLHttpRequest, XhrDetails>;
-    private context: PluginContext;
 
     constructor(config?: PartialHttpPluginConfig) {
-        super();
-        this.pluginId = XHR_PLUGIN_ID;
+        super(XHR_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
         this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();
     }
 
-    public load(context: PluginContext): void {
-        this.context = context;
+    protected onload(): void {
         this.enable();
-    }
-
-    public getPluginId(): string {
-        return this.pluginId;
     }
 
     protected get patches() {

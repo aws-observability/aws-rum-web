@@ -1,8 +1,8 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
 
-export const NAVIGATION_EVENT_PLUGIN_ID = 'com.amazonaws.rum.navigation';
+export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 
 const NAVIGATION = 'navigation';
 const LOAD = 'load';
@@ -12,34 +12,9 @@ const LOAD = 'load';
  * Paint, resource and performance event types make sense only if all or none are included.
  * For RUM, these event types are inter-dependent. So they are recorded under one plugin.
  */
-export class NavigationPlugin implements Plugin {
-    private pluginId: string;
-    private enabled: boolean;
-    private recordEvent: RecordEvent | undefined;
-
+export class NavigationPlugin extends InternalPlugin {
     constructor() {
-        this.pluginId = NAVIGATION_EVENT_PLUGIN_ID;
-        this.enabled = true;
-    }
-
-    /**
-     * loadEventEnd is populated as 0 if the web page has not loaded completely, even though LOAD has been fired.
-     * As a result, if loadEventEnd is populated, we can ignore eventListener and record the data directly.
-     * On the other hand, if not, we have to use eventListener to initializes PerformanceObserver.
-     * PerformanceObserver will act as a second check for the final load timings.
-     */
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        if (this.enabled) {
-            if (this.hasTheWindowLoadEventFired()) {
-                const navData = window.performance.getEntriesByType(
-                    NAVIGATION
-                )[0] as PerformanceNavigationTiming;
-                this.performanceNavigationEventHandlerTimingLevel2(navData);
-            } else {
-                window.addEventListener(LOAD, this.eventListener);
-            }
-        }
+        super(NAVIGATION_EVENT_PLUGIN_ID);
     }
 
     enable(): void {
@@ -76,10 +51,6 @@ export class NavigationPlugin implements Plugin {
             return Boolean(navData.loadEventEnd);
         }
         return false;
-    }
-
-    getPluginId(): string {
-        return this.pluginId;
     }
 
     /**
@@ -198,8 +169,8 @@ export class NavigationPlugin implements Plugin {
                 duration: entryData.loadEventEnd - entryData.navigationStart,
                 navigationTimingLevel: 1
             };
-            if (this.recordEvent) {
-                this.recordEvent(
+            if (this.context?.record) {
+                this.context.record(
                     PERFORMANCE_NAVIGATION_EVENT_TYPE,
                     eventDataNavigationTimingLevel1
                 );
@@ -273,11 +244,30 @@ export class NavigationPlugin implements Plugin {
             navigationTimingLevel: 2
         };
 
-        if (this.recordEvent) {
-            this.recordEvent(
+        if (this.context?.record) {
+            this.context.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
                 eventDataNavigationTimingLevel2
             );
         }
     };
+
+    /**
+     * loadEventEnd is populated as 0 if the web page has not loaded completely, even though LOAD has been fired.
+     * As a result, if loadEventEnd is populated, we can ignore eventListener and record the data directly.
+     * On the other hand, if not, we have to use eventListener to initializes PerformanceObserver.
+     * PerformanceObserver will act as a second check for the final load timings.
+     */
+    protected onload(): void {
+        if (this.enabled) {
+            if (this.hasTheWindowLoadEventFired()) {
+                const navData = window.performance.getEntriesByType(
+                    NAVIGATION
+                )[0] as PerformanceNavigationTiming;
+                this.performanceNavigationEventHandlerTimingLevel2(navData);
+            } else {
+                window.addEventListener(LOAD, this.eventListener);
+            }
+        }
+    }
 }

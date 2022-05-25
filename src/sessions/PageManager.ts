@@ -1,5 +1,5 @@
 import { Config } from '../orchestration/Orchestration';
-import { RecordEvent } from '../plugins/Plugin';
+import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';

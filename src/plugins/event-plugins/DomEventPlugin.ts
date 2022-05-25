@@ -1,8 +1,8 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { DomEvent } from '../../events/dom-event';
 import { DOM_EVENT_TYPE } from '../utils/constant';
 
-export const DOM_EVENT_PLUGIN_ID = 'com.amazonaws.rum.dom-event';
+export const DOM_EVENT_PLUGIN_ID = 'dom-event';
 
 export type TargetDomEvent = {
     /**
@@ -46,27 +46,37 @@ export type ElementEventListener = {
     eventListener: EventListener;
 };
 
-export class DomEventPlugin implements Plugin {
-    private recordEvent: RecordEvent | undefined;
-    private pluginId: string;
+export class DomEventPlugin<
+    UpdateType extends TargetDomEvent = TargetDomEvent
+> extends InternalPlugin<UpdateType[]> {
+    enabled = false;
     private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
-    private enabled: boolean;
     private config: DomEventPluginConfig;
     private observer: MutationObserver;
 
     constructor(config?: PartialDomEventPluginConfig) {
-        this.pluginId = DOM_EVENT_PLUGIN_ID;
+        super(DOM_EVENT_PLUGIN_ID);
         this.eventListenerMap = new Map<
             TargetDomEvent,
             ElementEventListener[]
         >();
         this.config = { ...defaultConfig, ...config };
-        this.enabled = false;
     }
 
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        this.enable();
+    private static getElementId(event: Event) {
+        if (!event.target) {
+            return '';
+        }
+
+        if (event.target instanceof Element && event.target.id) {
+            return event.target.id;
+        }
+
+        if (event.target instanceof Node) {
+            return event.target.nodeName;
+        }
+
+        return '';
     }
 
     enable(): void {
@@ -97,15 +107,15 @@ export class DomEventPlugin implements Plugin {
         this.enabled = false;
     }
 
-    getPluginId(): string {
-        return this.pluginId;
-    }
-
-    update(events: TargetDomEvent[]): void {
+    update(events: UpdateType[]): void {
         events.forEach((domEvent) => {
             this.addEventHandler(domEvent);
             this.config.events.push(domEvent);
         });
+    }
+
+    protected onload(): void {
+        this.enable();
     }
 
     private removeListeners() {
@@ -125,31 +135,15 @@ export class DomEventPlugin implements Plugin {
             const eventData: DomEvent = {
                 version: '1.0.0',
                 event: event.type,
-                elementId: this.getElementId(event)
+                elementId: DomEventPlugin.getElementId(event)
             };
             if (cssLocator !== undefined) {
                 eventData.cssLocator = cssLocator;
             }
-            if (this.recordEvent) {
-                this.recordEvent(DOM_EVENT_TYPE, eventData);
+            if (this.context?.record) {
+                this.context.record(DOM_EVENT_TYPE, eventData);
             }
         };
-    }
-
-    private getElementId(event: Event) {
-        if (!event.target) {
-            return '';
-        }
-
-        if (event.target instanceof Element && event.target.id) {
-            return event.target.id;
-        }
-
-        if (event.target instanceof Node) {
-            return event.target.nodeName;
-        }
-
-        return '';
     }
 
     private addEventHandler(domEvent: TargetDomEvent): void {

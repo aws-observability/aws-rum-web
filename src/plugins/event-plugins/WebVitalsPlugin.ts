@@ -1,4 +1,4 @@
-import { RecordEvent, Plugin, PluginContext } from '../Plugin';
+import { InternalPlugin } from '../InternalPlugin';
 import { LargestContentfulPaintEvent } from '../../events/largest-contentful-paint-event';
 import { FirstInputDelayEvent } from '../../events/first-input-delay-event';
 import { CumulativeLayoutShiftEvent } from '../../events/cumulative-layout-shift-event';
@@ -9,21 +9,11 @@ import {
     CLS_EVENT_TYPE
 } from '../utils/constant';
 
-export const WEB_VITAL_EVENT_PLUGIN_ID = 'com.amazonaws.rum.web-vitals';
+export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
-export class WebVitalsPlugin implements Plugin {
-    private recordEvent: RecordEvent | undefined;
-    private pluginId: string;
-
+export class WebVitalsPlugin extends InternalPlugin {
     constructor() {
-        this.pluginId = WEB_VITAL_EVENT_PLUGIN_ID;
-    }
-
-    load(context: PluginContext): void {
-        this.recordEvent = context.record;
-        getLCP((data) => this.getWebVitalData(data, LCP_EVENT_TYPE));
-        getFID((data) => this.getWebVitalData(data, FID_EVENT_TYPE));
-        getCLS((data) => this.getWebVitalData(data, CLS_EVENT_TYPE));
+        super(WEB_VITAL_EVENT_PLUGIN_ID);
     }
 
     // tslint:disable-next-line:no-empty
@@ -31,10 +21,6 @@ export class WebVitalsPlugin implements Plugin {
 
     // tslint:disable-next-line:no-empty
     disable(): void {}
-
-    getPluginId(): string {
-        return this.pluginId;
-    }
 
     // tslint:disable-next-line:no-empty
     configure(config: any): void {}
@@ -47,6 +33,12 @@ export class WebVitalsPlugin implements Plugin {
             version: '1.0.0',
             value: webVitalData.value
         };
-        this.recordEvent(eventType, webVitalEvent);
+        this.context?.record(eventType, webVitalEvent);
+    }
+
+    protected onload(): void {
+        getLCP((data) => this.getWebVitalData(data, LCP_EVENT_TYPE));
+        getFID((data) => this.getWebVitalData(data, FID_EVENT_TYPE));
+        getCLS((data) => this.getWebVitalData(data, CLS_EVENT_TYPE));
     }
 }
