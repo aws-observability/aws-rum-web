@@ -12,7 +12,7 @@ const triggerPromiseRejection: Selector = Selector(`#uncaughtPromiseRejection`);
 const dispatch: Selector = Selector(`#dispatch`);
 
 fixture('JSErrorEvent Plugin').page(
-    'http://localhost:9000/js_error_event.html'
+    'http://localhost:8080/js_error_event.html'
 );
 
 const removeUnwantedEvents = (json: any) => {
