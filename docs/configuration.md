@@ -59,17 +59,8 @@ For example, the following telemetry config arrays are both valid. The one on th
 telemetries: [ 'errors', 'performance', 'http' ]
 ```
 ```javascript
-telemetries: [ 
-    [ 'errors', { 
-        stackTraceLength: 500, 
-        filter: (errorEvent) => {
-            const patternsToIgnore = [/ResizeObserver loop/, /undefined/];
-            return (
-                patternsToIgnore.filter((pattern) =>
-                    patternsToIgnore.test(errorEvent.message)
-                ).length !== 0
-            );
-        }} ], 
+telemetries: [
+    [ 'errors', { stackTraceLength: 500 } ],
     'performance',
     [ 'http', { stackTraceLength: 500, addXRayTraceIdHeader: true } ]
 ]
@@ -87,8 +78,29 @@ telemetries: [
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | stackTraceLength | Number | `200` | The number of characters to record from a JavaScript error's stack trace (if available). |
-| filter | Function | `() => false` | By default, the web client will record all errors. If you wish to filter out certain errors, pass in a function that will return true if the error should be ignored, similar to the example above. |
+| ignore | Function | `() => false` | A function which accepts an [`ErrorEvent`](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent) or a [`PromiseRejectionEvent`](https://developer.mozilla.org/en-US/docs/Web/API/PromiseRejectionEvent) and returns a value that coerces to true when the error should be ignored. By default, no errors are ignored. |
 
+For example, the following telemetry config array causes the web client to ignore all errors whose message begins with "Warning:".
+
+```javascript
+telemetries: [
+    [
+        'errors',
+        {
+            stackTraceLength: 500,
+            ignore: (errorEvent) => {
+                return (
+                    errorEvent &&
+                    errorEvent.message &&
+                    errorEvent.message.test(/^Warning:/)
+                );
+            }
+        }
+    ],
+    'performance',
+    'http'
+]
+```
 
 ## HTTP
 

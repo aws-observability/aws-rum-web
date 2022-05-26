@@ -171,7 +171,7 @@ test('when the application records a caught error then the plugin records the er
         .contains('My error message');
 });
 
-test('when filter function matches error then the plugin does not record the error', async (t: TestController) => {
+test('when ignore function matches error then the plugin does not record the error', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t

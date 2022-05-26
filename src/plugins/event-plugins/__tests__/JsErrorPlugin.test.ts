@@ -29,27 +29,6 @@ expect.extend({
     }
 });
 
-const filter = (errorEvent: ErrorEvent | PromiseRejectionEvent) => {
-    const patterns = [/ResizeObserver loop/, /undefined/];
-    if (errorEvent instanceof ErrorEvent) {
-        return (
-            patterns.filter((pattern) => pattern.test(errorEvent.message))
-                .length !== 0
-        );
-    } else {
-        return (
-            patterns.filter((pattern) =>
-                pattern.test(
-                    ({
-                        type: errorEvent.type,
-                        error: errorEvent.reason
-                    } as ErrorEvent).error.message
-                )
-            ).length !== 0
-        );
-    }
-};
-
 describe('JsErrorPlugin tests', () => {
     beforeEach(() => {
         record.mockClear();
@@ -543,61 +522,52 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
-    test('when record is used then errors are not filtered', async () => {
+    test('when record is used then errors are not passed to the ignore function', async () => {
         // Init
-        const resizeCount = 2;
-        const undefinedCount = 2;
-
-        // Mocking filter function to verify method will not be called
-        const mockFilter = jest.fn();
+        const mockIgnore = jest.fn();
         const plugin: JsErrorPlugin = new JsErrorPlugin({
-            filter: mockFilter
+            ignore: mockIgnore
         });
 
         // Run
         plugin.load(context);
-        for (let i = 0; i < resizeCount; i++) {
-            plugin.record({
-                name: 'Error',
-                message: 'ResizeObserver loop limit exceeded',
-                fileName: 'main.js',
-                lineNumber: 1,
-                columnNumber: 2
-            });
-        }
-        for (let i = 0; i < undefinedCount; i++) {
-            // This creates an error event with 'undefined' as message
-            plugin.record({});
-        }
+        plugin.record({
+            message: 'ResizeObserver loop limit exceeded'
+        });
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(resizeCount + undefinedCount);
-        expect(mockFilter).toHaveBeenCalledTimes(0);
+        expect(record).toHaveBeenCalled();
+        expect(mockIgnore).not.toHaveBeenCalled();
     });
 
-    test('when filter method is passed via PartialJsErrorPluginConfig then JsErrorPlugin filters errors using the passed method', async () => {
+    test('by default ErrorEvents are not ignored', async () => {
         // Init
-        let expectedErrorCount = 0;
-        const plugin: JsErrorPlugin = new JsErrorPlugin({
-            filter
-        });
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
 
         // Run
         plugin.load(context);
 
-        // This PromiseRejectionEvent should be ignored - message is undefined
+        const ignoredError = new ErrorEvent('error', {
+            error: new Error('Something went wrong!')
+        });
+        window.dispatchEvent(ignoredError);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+    });
+
+    test('by default PromiseRejectionEvents are not ignored', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+
         const promiseRejectionEvent: PromiseRejectionEvent = new Event(
             'unhandledrejection'
         ) as PromiseRejectionEvent;
-        window.dispatchEvent(
-            Object.assign(promiseRejectionEvent, {
-                promise: new Promise(() => ({})),
-                reason: {}
-            })
-        );
-
-        // This PromiseRejectionEvent shouldn't be ignored
         window.dispatchEvent(
             Object.assign(promiseRejectionEvent, {
                 promise: new Promise(() => ({})),
@@ -608,32 +578,103 @@ describe('JsErrorPlugin tests', () => {
                 }
             })
         );
-        expectedErrorCount += 1;
-
-        // This ErrorEvent should be ignored - message is ResizeObserver loop exceeded
-        const ignoredError = new ErrorEvent('error', {
-            colno: 1,
-            error: new Error('Something went wrong!'),
-            filename: 'main.js',
-            lineno: 2,
-            message: 'ResizeObserver loop exceeded.'
-        });
-        window.dispatchEvent(ignoredError);
-
-        // This ErrorEvent shouldn't be ignored
-        const error = new ErrorEvent('error', {
-            colno: 1,
-            error: new Error('Something went wrong!'),
-            filename: 'main.js',
-            lineno: 2,
-            message: 'This error should not be ignored.'
-        });
-        window.dispatchEvent(error);
-        expectedErrorCount += 1;
-
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(expectedErrorCount);
+        expect(record).toHaveBeenCalled();
+    });
+
+    test('when errors are ignored then ErrorEvents are not recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !!(e as ErrorEvent).error // true
+        });
+
+        // Run
+        plugin.load(context);
+
+        const ignoredError = new ErrorEvent('error', {
+            error: new Error('Something went wrong!')
+        });
+        window.dispatchEvent(ignoredError);
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when errors are ignored then PromiseRejectionEvents are not recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !!(e as PromiseRejectionEvent).reason // true
+        });
+
+        // Run
+        plugin.load(context);
+
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when errors are explicitly not ignored then ErrorEvents are recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !(e as ErrorEvent).error // false
+        });
+
+        // Run
+        plugin.load(context);
+
+        const ignoredError = new ErrorEvent('error', {
+            error: new Error('Something went wrong!')
+        });
+        window.dispatchEvent(ignoredError);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+    });
+
+    test('when errors are explicitly not ignored then PromiseRejectionEvents are recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !(e as PromiseRejectionEvent).reason // false
+        });
+
+        // Run
+        plugin.load(context);
+
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
     });
 });

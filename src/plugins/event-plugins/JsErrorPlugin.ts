@@ -6,17 +6,17 @@ export const JS_ERROR_EVENT_PLUGIN_ID = 'js-error';
 
 export type PartialJsErrorPluginConfig = {
     stackTraceLength?: number;
-    filter?: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
+    ignore?: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
 };
 
 export type JsErrorPluginConfig = {
     stackTraceLength: number;
-    filter: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
+    ignore: (error: ErrorEvent | PromiseRejectionEvent) => boolean;
 };
 
 const defaultConfig: JsErrorPluginConfig = {
     stackTraceLength: 200,
-    filter: () => false
+    ignore: () => false
 };
 
 export class JsErrorPlugin extends InternalPlugin {
@@ -56,13 +56,13 @@ export class JsErrorPlugin extends InternalPlugin {
     }
 
     private eventHandler = (errorEvent: ErrorEvent) => {
-        if (!this.config.filter(errorEvent)) {
+        if (!this.config.ignore(errorEvent)) {
             this.recordJsErrorEvent(errorEvent);
         }
     };
 
     private promiseRejectEventHandler = (event: PromiseRejectionEvent) => {
-        if (!this.config.filter(event)) {
+        if (!this.config.ignore(event)) {
             this.recordJsErrorEvent({
                 type: event.type,
                 error: event.reason

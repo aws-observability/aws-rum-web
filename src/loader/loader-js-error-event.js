@@ -7,7 +7,7 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     metaDataPluginsToLoad: [],
     eventPluginsToLoad: [
         new JsErrorPlugin({
-            filter: (errorEvent) => {
+            ignore: (errorEvent) => {
                 const patterns = [/ResizeObserver loop/];
                 return (
                     patterns.filter((pattern) =>
