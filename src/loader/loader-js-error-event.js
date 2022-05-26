@@ -5,7 +5,18 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     allowCookies: true,
     dispatchInterval: 0,
     metaDataPluginsToLoad: [],
-    eventPluginsToLoad: [new JsErrorPlugin()],
+    eventPluginsToLoad: [
+        new JsErrorPlugin({
+            ignore: (errorEvent) => {
+                const patterns = [/ResizeObserver loop/];
+                return (
+                    patterns.filter((pattern) =>
+                        pattern.test(errorEvent.message)
+                    ).length !== 0
+                );
+            }
+        })
+    ],
     telemetries: [],
     clientBuilder: showRequestClientBuilder
 });

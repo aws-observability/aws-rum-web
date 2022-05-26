@@ -4,8 +4,9 @@ import { JS_ERROR_EVENT_TYPE } from '../../utils/constant';
 
 const triggerTypeError: Selector = Selector(`#triggerTypeError`);
 const throwErrorString: Selector = Selector(`#throwErrorString`);
-const recordStackTrace: Selector = Selector(`#recordStackTrace`);
 const recordCaughtError: Selector = Selector(`#recordCaughtError`);
+const triggerResizeObserver: Selector = Selector(`#resizeObserverLoopError`);
+const recordResizeObserver: Selector = Selector(`#recordObserverLoopError`);
 const triggerPromiseRejection: Selector = Selector(`#uncaughtPromiseRejection`);
 
 const dispatch: Selector = Selector(`#dispatch`);
@@ -168,4 +169,38 @@ test('when the application records a caught error then the plugin records the er
         .contains('Error')
         .expect(eventDetails.message)
         .contains('My error message');
+});
+
+test('when ignore function matches error then the plugin does not record the error', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(triggerResizeObserver)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const json = removeUnwantedEvents(
+        JSON.parse(await REQUEST_BODY.textContent)
+    );
+
+    await t.expect(json.RumEvents.length).eql(0);
+});
+
+test('when error invoked with record method then the plugin records the error', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+    await t
+        .wait(300)
+        .click(recordResizeObserver)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const json = removeUnwantedEvents(
+        JSON.parse(await REQUEST_BODY.textContent)
+    );
+
+    await t.expect(json.RumEvents.length).eql(1);
 });

@@ -59,8 +59,8 @@ For example, the following telemetry config arrays are both valid. The one on th
 telemetries: [ 'errors', 'performance', 'http' ]
 ```
 ```javascript
-telemetries: [ 
-    [ 'errors', { stackTraceLength: 500 } ], 
+telemetries: [
+    [ 'errors', { stackTraceLength: 500 } ],
     'performance',
     [ 'http', { stackTraceLength: 500, addXRayTraceIdHeader: true } ]
 ]
@@ -78,6 +78,29 @@ telemetries: [
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | stackTraceLength | Number | `200` | The number of characters to record from a JavaScript error's stack trace (if available). |
+| ignore | Function | `() => false` | A function which accepts an [`ErrorEvent`](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent) or a [`PromiseRejectionEvent`](https://developer.mozilla.org/en-US/docs/Web/API/PromiseRejectionEvent) and returns a value that coerces to true when the error should be ignored. By default, no errors are ignored. |
+
+For example, the following telemetry config array causes the web client to ignore all errors whose message begins with "Warning:".
+
+```javascript
+telemetries: [
+    [
+        'errors',
+        {
+            stackTraceLength: 500,
+            ignore: (errorEvent) => {
+                return (
+                    errorEvent &&
+                    errorEvent.message &&
+                    errorEvent.message.test(/^Warning:/)
+                );
+            }
+        }
+    ],
+    'performance',
+    'http'
+]
+```
 
 ## HTTP
 

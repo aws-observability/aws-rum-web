@@ -521,4 +521,160 @@ describe('JsErrorPlugin tests', () => {
             })
         );
     });
+
+    test('when record is used then errors are not passed to the ignore function', async () => {
+        // Init
+        const mockIgnore = jest.fn();
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: mockIgnore
+        });
+
+        // Run
+        plugin.load(context);
+        plugin.record({
+            message: 'ResizeObserver loop limit exceeded'
+        });
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+        expect(mockIgnore).not.toHaveBeenCalled();
+    });
+
+    test('by default ErrorEvents are not ignored', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+
+        const ignoredError = new ErrorEvent('error', {
+            error: new Error('Something went wrong!')
+        });
+        window.dispatchEvent(ignoredError);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+    });
+
+    test('by default PromiseRejectionEvents are not ignored', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+    });
+
+    test('when errors are ignored then ErrorEvents are not recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !!(e as ErrorEvent).error // true
+        });
+
+        // Run
+        plugin.load(context);
+
+        const ignoredError = new ErrorEvent('error', {
+            error: new Error('Something went wrong!')
+        });
+        window.dispatchEvent(ignoredError);
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when errors are ignored then PromiseRejectionEvents are not recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !!(e as PromiseRejectionEvent).reason // true
+        });
+
+        // Run
+        plugin.load(context);
+
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when errors are explicitly not ignored then ErrorEvents are recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !(e as ErrorEvent).error // false
+        });
+
+        // Run
+        plugin.load(context);
+
+        const ignoredError = new ErrorEvent('error', {
+            error: new Error('Something went wrong!')
+        });
+        window.dispatchEvent(ignoredError);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+    });
+
+    test('when errors are explicitly not ignored then PromiseRejectionEvents are recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin({
+            ignore: (e) => !(e as PromiseRejectionEvent).reason // false
+        });
+
+        // Run
+        plugin.load(context);
+
+        const promiseRejectionEvent: PromiseRejectionEvent = new Event(
+            'unhandledrejection'
+        ) as PromiseRejectionEvent;
+        window.dispatchEvent(
+            Object.assign(promiseRejectionEvent, {
+                promise: new Promise(() => ({})),
+                reason: {
+                    name: 'TypeError',
+                    message: 'NetworkError when attempting to fetch resource.',
+                    stack: 't/n.fetch@mock_client.js:2:104522t/n.fetchWrapper'
+                }
+            })
+        );
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
+    });
 });

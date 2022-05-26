@@ -38,6 +38,18 @@
                 throw 'thrown string';
             }
 
+            function throwObserverLoopError() {
+                throw 'ResizeObserver loop limit exceeded';
+                throw new Error('ResizeObserver loop limit exceeded');
+            }
+
+            function recordObserverLoopError() {
+                cwr(
+                    'recordError',
+                    new Error('ResizeObserver loop limit exceeded')
+                );
+            }
+
             function recordCaughtError() {
                 cwr('recordError', new Error('My error message'));
             }
@@ -83,6 +95,15 @@
         </button>
         <button id="recordCaughtError" onclick="recordCaughtError()">
             Record caught error
+        </button>
+        <button id="resizeObserverLoopError" onclick="throwObserverLoopError()">
+            Throw ResizeObserverLoopError
+        </button>
+        <button
+            id="recordObserverLoopError"
+            onclick="recordObserverLoopError()"
+        >
+            Record ResizeObserverLoopError
         </button>
         <button id="disable" onclick="disable()">Disable</button>
         <button id="enable" onclick="enable()">Enable</button>
