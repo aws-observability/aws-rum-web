@@ -31,9 +31,9 @@
                 guestRoleArn: $GUEST_ARN,
                 identityPoolId: $IDENTITY_POOL,
                 endpoint: $ENDPOINT,
-                telemetries: ['performance', 'errors', 'http'],
+                telemetries: ['performance', 'errors', 'http', 'interaction'],
                 allowCookies: true,
-                enableXRay: false
+                enableXRay: true
             });
         </script>
 
@@ -153,6 +153,24 @@
                 });
                 xhr.send();
             }
+
+            function dispatchCLS() {
+                Object.defineProperty(document, 'visibilityState', {
+                    value: 'hidden',
+                    writable: true
+                });
+                Object.defineProperty(document, 'hidden', {
+                    value: true,
+                    writable: true
+                });
+                document.dispatchEvent(new Event('visibilitychange'));
+            }
+
+            function registerDomEvents() {
+                cwr('registerDomEvents', [
+                    { event: 'click', cssLocator: '[label="triggerDom"]' }
+                ]);
+            }
         </script>
 
         <style nonce="smokeTest">
@@ -212,6 +230,11 @@
         <button id="httpStatXhr500" onclick="httpStatXhr500()">
             httpstat xhr 500
         </button>
+        <button id="dispatchCLS" onclick="dispatchCLS()">dispatch CLS</button>
+        <button id="registerDomEvents" onclick="registerDomEvents()">
+            Update DOM Plugin
+        </button>
+        <button id="triggerDom" label="triggerDom">Trigger DOM Event</button>
         <hr />
         <button id="disable" onclick="disable()">Disable</button>
         <button id="enable" onclick="enable()">Enable</button>
