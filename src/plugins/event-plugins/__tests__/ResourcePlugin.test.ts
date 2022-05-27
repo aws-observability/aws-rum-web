@@ -13,6 +13,7 @@ import { mockRandom } from 'jest-mock-random';
 import {
     context,
     DEFAULT_CONFIG,
+    getPage,
     getSession,
     record,
     recordPageView
@@ -72,7 +73,8 @@ describe('ResourcePlugin tests', () => {
             config: { ...DEFAULT_CONFIG, recordResourceUrl: false },
             record,
             recordPageView,
-            getSession
+            getSession,
+            getPage
         };
         const plugin: ResourcePlugin = buildResourcePlugin();
 

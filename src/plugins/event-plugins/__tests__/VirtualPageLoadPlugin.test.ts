@@ -1,18 +1,18 @@
 // tslint:disable:max-line-length
 import { advanceTo } from 'jest-date-mock';
-import { Page, PageManager } from '../PageManager';
 import {
+    context,
     DEFAULT_CONFIG,
     mockFetch,
     mockFetchWith500,
     mockFetchWithError,
     mockFetchWithErrorObject,
     mockFetchWithErrorObjectAndStack
-} from '../../test-utils/test-utils';
-import { Config } from '../../orchestration/Orchestration';
-import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../plugins/utils/constant';
+} from '../../../test-utils/test-utils';
+import { Config } from '../../../orchestration/Orchestration';
+import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
 import mock from 'xhr-mock';
-import { VirtualPageLoadTimer } from '../VirtualPageLoadTimer';
+import { VirtualPageLoadPlugin } from '../VirtualPageLoadPlugin';
 
 const record = jest.fn();
 
@@ -24,17 +24,6 @@ Object.defineProperty(document, 'referrer', {
 Object.defineProperty(document, 'title', { value: 'Amazon AWS Console' });
 global.fetch = mockFetch;
 
-const page: Page = {
-    pageId: 'mockPage',
-    interaction: 0,
-    start: 0
-};
-const getPage = jest.fn(() => page);
-jest.mock('../PageManager', () => ({
-    PageManager: jest.fn().mockImplementation(() => ({
-        getPage
-    }))
-}));
 const config: Config = {
     ...DEFAULT_CONFIG,
     allowCookies: true
@@ -44,11 +33,10 @@ const timeoutConfig: Config = {
     routeChangeTimeout: 10,
     allowCookies: true
 };
-const pageManager = new PageManager(config, record);
 
 /* tslint:disable:no-string-literal */
-describe('VirtualPageLoadTimer tests', () => {
-    let url;
+describe('VirtualPageLoadPlugin tests', () => {
+    let url: string;
 
     beforeAll(() => {
         url = window.location.toString();
@@ -69,11 +57,8 @@ describe('VirtualPageLoadTimer tests', () => {
 
     test('when route change is happening then items in requestBuffer should be added to ongoingRequests', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
@@ -91,11 +76,8 @@ describe('VirtualPageLoadTimer tests', () => {
 
     test('when route change is not happening then items in requestBuffer should not be added to ongoingRequests', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Adding requests to requestBuffer
         for (let i = 0; i < 3; i++) {
@@ -111,11 +93,8 @@ describe('VirtualPageLoadTimer tests', () => {
 
     test('when dom mutation occurs then periodic checker is resetted', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         virtualPageLoadTimer.startTiming();
 
@@ -133,31 +112,10 @@ describe('VirtualPageLoadTimer tests', () => {
         expect(timeoutId).toEqual(virtualPageLoadTimer['timeoutCheckerId']);
     });
 
-    test('when updateLatestInteractionTime is invoked then latestInteractionTime is updated with Date.now', async () => {
-        // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
-        Date.now = jest.fn(() => 505);
-
-        // Directly using callback instead of simulating document events
-        virtualPageLoadTimer['updateLatestInteractionTime'](
-            new Event('mousedown')
-        );
-
-        // Assert
-        expect(virtualPageLoadTimer['latestInteractionTime']).toEqual(505);
-    });
-
     test('when XMLHttpRequest is detected without route change then latestEndTime is not updated', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Send XMLHttpRequest
         const xhr = new XMLHttpRequest();
@@ -181,11 +139,8 @@ describe('VirtualPageLoadTimer tests', () => {
 
     test('when XMLHttpRequest is detected during route change then latestEndTime is updated', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
         virtualPageLoadTimer.startTiming();
 
         // Mocking Date.now to return 100 to simulate time passed
@@ -211,11 +166,8 @@ describe('VirtualPageLoadTimer tests', () => {
 
     test('when fetch is fetch counter should be updated to 1 until finished', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
@@ -233,11 +185,9 @@ describe('VirtualPageLoadTimer tests', () => {
 
     test('when fetch is detected during route change then latestEndTime is updated', async () => {
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
+        virtualPageLoadTimer.load(context);
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
@@ -254,11 +204,8 @@ describe('VirtualPageLoadTimer tests', () => {
     test('when fetch returns 500 during route change then latestEndTime is updated', async () => {
         // Init
         global.fetch = mockFetchWith500;
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
@@ -275,11 +222,8 @@ describe('VirtualPageLoadTimer tests', () => {
     test('when fetch returns error during route change then latestEndTime is updated', async () => {
         // Init
         global.fetch = mockFetchWithError;
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
@@ -298,11 +242,8 @@ describe('VirtualPageLoadTimer tests', () => {
     test('when fetch returns error object during route change then latestEndTime is updated', async () => {
         // Init
         global.fetch = mockFetchWithErrorObject;
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
@@ -321,11 +262,8 @@ describe('VirtualPageLoadTimer tests', () => {
     test('when fetch returns error object and stack trace during route change then latestEndTime is updated', async () => {
         // Init
         global.fetch = mockFetchWithErrorObjectAndStack;
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
 
         // Mocking Date.now to return 100 to simulate time passed
         Date.now = jest.fn(() => 100);
@@ -345,11 +283,8 @@ describe('VirtualPageLoadTimer tests', () => {
         // Setting up fake timer to invoke periodic tasks
         jest.useFakeTimers();
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
         // Mocking Date.now
         Date.now = jest.fn(() => 100);
 
@@ -358,15 +293,12 @@ describe('VirtualPageLoadTimer tests', () => {
         jest.advanceTimersByTime(100);
 
         // Navigation event should be recorded
-        expect(record.mock.calls.length).toEqual(1);
-        expect(record.mock.calls[0][0]).toEqual(
-            PERFORMANCE_NAVIGATION_EVENT_TYPE
+        expect(context.record).toHaveBeenCalledTimes(1);
+        expect(context.record).toHaveBeenCalledWith(
+            PERFORMANCE_NAVIGATION_EVENT_TYPE,
+            expect.objectContaining({ initiatorType: 'route_change' })
         );
-        expect(record.mock.calls[0][1].initiatorType).toEqual('route_change');
 
-        // periodic checker and timeout should be undefined and isPageLoaded should be true
-        expect(virtualPageLoadTimer['timeoutCheckerId']).toEqual(undefined);
-        expect(virtualPageLoadTimer['periodicCheckerId']).toEqual(undefined);
         expect(virtualPageLoadTimer['isPageLoaded']).toEqual(true);
     });
 
@@ -374,19 +306,14 @@ describe('VirtualPageLoadTimer tests', () => {
         // Setting up fake timer to invoke periodic tasks
         jest.useFakeTimers();
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            config,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(config);
+        virtualPageLoadTimer.load(context);
         jest.advanceTimersByTime(100);
 
         // recordRoutChangeNavigationEvent is not invoked
         expect(record.mock.calls.length).toEqual(0);
 
         // Virtual timing resoureces should not be initialized
-        expect(virtualPageLoadTimer['timeoutCheckerId']).toEqual(undefined);
-        expect(virtualPageLoadTimer['periodicCheckerId']).toEqual(undefined);
         expect(virtualPageLoadTimer['isPageLoaded']).toEqual(true);
     });
 
@@ -394,27 +321,20 @@ describe('VirtualPageLoadTimer tests', () => {
         // Setting up fake timer to invoke periodic tasks
         jest.useFakeTimers();
         // Init
-        const virtualPageLoadTimer = new VirtualPageLoadTimer(
-            pageManager,
-            timeoutConfig,
-            record
-        );
+        const virtualPageLoadTimer = new VirtualPageLoadPlugin(timeoutConfig);
+        virtualPageLoadTimer.load(context);
 
         virtualPageLoadTimer.startTiming();
 
         // Before timeout timing resources are initialized
-        expect(virtualPageLoadTimer['timeoutCheckerId']).not.toEqual(undefined);
-        expect(virtualPageLoadTimer['periodicCheckerId']).not.toEqual(
-            undefined
-        );
+        expect(virtualPageLoadTimer['timeoutCheckerId']).toBeDefined();
+        expect(virtualPageLoadTimer['periodicCheckerId']).toBeDefined();
         expect(virtualPageLoadTimer['isPageLoaded']).toEqual(false);
 
         // Trigger timeout
         jest.advanceTimersByTime(10);
 
         // After timeout timing resources are cleared
-        expect(virtualPageLoadTimer['timeoutCheckerId']).toEqual(undefined);
-        expect(virtualPageLoadTimer['periodicCheckerId']).toEqual(undefined);
         expect(virtualPageLoadTimer['isPageLoaded']).toEqual(true);
 
         // Navigation event is not recorded

@@ -1,20 +1,21 @@
-import { NavigationEvent } from '../events/navigation-event';
-import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
-import { MonkeyPatched } from '../plugins/MonkeyPatched';
-import { Config } from '../orchestration/Orchestration';
-import { RecordEvent } from '../plugins/types';
-import { PageManager, Page } from './PageManager';
+import { NavigationEvent } from '../../events/navigation-event';
+import { Config } from '../../orchestration/Orchestration';
+import { Page } from '../../sessions/PageManager';
+import { MonkeyPatched } from '../MonkeyPatched';
+import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
 
 type Fetch = typeof fetch;
 type Send = () => void;
 type Patching = Pick<XMLHttpRequest & Window, 'fetch' | 'send'>;
+
+export const VIRTUAL_PAGELOAD_PLUGIN_ID = 'virtual-page-load-timer';
 /**
  * Maintains the core logic for virtual page load timing functionality.
  * (1) Holds all virtual page load timing related resources
  * (2) Intercepts outgoing XMLHttpRequests and Fetch requests and listens for DOM changes
  * (3) Records virtual page load
  */
-export class VirtualPageLoadTimer extends MonkeyPatched<
+export class VirtualPageLoadPlugin extends MonkeyPatched<
     Patching,
     'fetch' | 'send'
 > {
@@ -32,65 +33,34 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             }
         ];
     }
-    /** Latest interaction time by user on the document */
-    public latestInteractionTime: number;
+
     /** Unique ID of virtual page load periodic checker. */
-    private periodicCheckerId;
+    private periodicCheckerId?: ReturnType<typeof setInterval>;
     /** Unique ID of virtual page load timeout checker. */
-    private timeoutCheckerId;
+    private timeoutCheckerId?: ReturnType<typeof setTimeout>;
     /** Observer to liten for DOM changes. */
     private domMutationObserver: MutationObserver;
     /** Set to hold outgoing XMLHttpRequests for current virtual page. */
-    private ongoingRequests: Set<XMLHttpRequest>;
+    private ongoingRequests: Set<XMLHttpRequest> = new Set<XMLHttpRequest>();
     /** Buffer to hold outgoing XMLHttpRequests before new page is created. */
-    private requestBuffer: Set<XMLHttpRequest>;
+    private requestBuffer: Set<XMLHttpRequest> = new Set<XMLHttpRequest>();
     /** Indicate the number of active Fetch requests. */
-    private fetchCounter: number;
+    private fetchCounter: number = 0;
     /** Indicate the status of the current Page */
-    private isPageLoaded: boolean;
+    private isPageLoaded: boolean = true;
     /** Indicate the current page's load end time value. */
-    private latestEndTime: number;
+    private latestEndTime: number = 0;
 
-    private config: Config;
-    private pageManager: PageManager;
-    // @ts-ignore
-    private readonly record: RecordEvent;
-
-    constructor(pageManager: PageManager, config: Config, record: RecordEvent) {
-        super('virtual-page-load-timer');
-        this.periodicCheckerId = undefined;
-        this.timeoutCheckerId = undefined;
-        this.domMutationObserver = new MutationObserver(this.resetInterval);
-        this.ongoingRequests = new Set<XMLHttpRequest>();
-        this.requestBuffer = new Set();
-        this.fetchCounter = 0;
-        this.isPageLoaded = true;
-        this.latestEndTime = 0;
-        this.latestInteractionTime = 0;
-
-        this.config = config;
-        this.pageManager = pageManager;
-        this.record = record;
-        this.enable();
-
-        // Start tracking the timestamps
-        document.addEventListener(
-            'mousedown',
-            this.updateLatestInteractionTime
-        );
-        document.addEventListener('keydown', this.updateLatestInteractionTime);
+    constructor(private config: Config) {
+        super(VIRTUAL_PAGELOAD_PLUGIN_ID);
     }
 
     /** Initializes timing related resources for current page. */
     public startTiming() {
         this.latestEndTime = Date.now();
         // Clean up existing timer objects and mutationObserver
-        if (this.periodicCheckerId) {
-            clearInterval(this.periodicCheckerId);
-        }
-        if (this.timeoutCheckerId) {
-            clearTimeout(this.timeoutCheckerId);
-        }
+        clearInterval(this.periodicCheckerId);
+        clearTimeout(this.timeoutCheckerId);
         this.domMutationObserver.disconnect();
 
         // Initialize timer objects and start observing
@@ -116,6 +86,15 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         this.requestBuffer.clear();
     }
 
+    update(): void {
+        this.startTiming();
+    }
+
+    protected onload(): void {
+        this.domMutationObserver = new MutationObserver(this.resetInterval);
+        this.enable();
+    }
+
     private sendWrapper = (): ((original: Send) => Send) => {
         const self = this;
 
@@ -129,7 +108,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     };
 
     private recordXhr(item: XMLHttpRequest) {
-        const page = this.pageManager.getPage();
+        const page = this.context?.getPage?.();
         if (page && this.isPageLoaded === false) {
             this.ongoingRequests.add(item);
         } else {
@@ -138,7 +117,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     }
 
     private removeXhr(item: XMLHttpRequest, currTime: number) {
-        const page = this.pageManager.getPage();
+        const page = this.context?.getPage?.();
         if (page && this.ongoingRequests.has(item)) {
             this.ongoingRequests.delete(item);
             this.latestEndTime = currTime;
@@ -209,9 +188,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             clearInterval(this.periodicCheckerId);
             clearTimeout(this.timeoutCheckerId);
             this.domMutationObserver.disconnect();
-            this.recordRouteChangeNavigationEvent(this.pageManager.getPage());
-            this.periodicCheckerId = undefined;
-            this.timeoutCheckerId = undefined;
+            this.recordRouteChangeNavigationEvent(this.context?.getPage?.());
             this.isPageLoaded = true;
         }
     };
@@ -219,8 +196,6 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     /** Clears timers and disconnects observer to stop page timing. */
     private declareTimeout = () => {
         clearInterval(this.periodicCheckerId);
-        this.periodicCheckerId = undefined;
-        this.timeoutCheckerId = undefined;
         this.domMutationObserver.disconnect();
         this.isPageLoaded = true;
     };
@@ -246,15 +221,11 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             startTime: page.start,
             duration: this.latestEndTime - page.start
         };
-        if (this.record) {
-            this.record(
+        if (this.context?.record) {
+            this.context.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
                 virtualPageNavigationEvent
             );
         }
     }
-
-    private updateLatestInteractionTime = (e: Event) => {
-        this.latestInteractionTime = Date.now();
-    };
 }

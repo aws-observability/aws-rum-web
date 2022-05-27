@@ -3,8 +3,7 @@ import { MonkeyPatched } from '../MonkeyPatched';
 
 export const PAGE_EVENT_PLUGIN_ID = 'page-view';
 
-export type Push = (data: any, title: string, url?: string | null) => void;
-export type Replace = (data: any, title: string, url?: string | null) => void;
+export type ChangeHistory = History['replaceState'] | History['pushState'];
 
 /**
  * A plugin which records page view transitions.
@@ -14,7 +13,7 @@ export type Replace = (data: any, title: string, url?: string | null) => void;
  */
 export class PageViewPlugin extends MonkeyPatched<
     History,
-    'pushState' | 'replaceState'
+    'replaceState' | 'pushState'
 > {
     constructor() {
         super(PAGE_EVENT_PLUGIN_ID);
@@ -22,7 +21,7 @@ export class PageViewPlugin extends MonkeyPatched<
     }
 
     protected onload(): void {
-        this.addListener();
+        this.addHistoryListener();
         this.recordPageView();
     }
 
@@ -30,22 +29,22 @@ export class PageViewPlugin extends MonkeyPatched<
         return [
             {
                 nodule: History.prototype,
-                name: 'pushState' as const,
-                wrapper: this.pushState
+                name: 'replaceState' as const,
+                wrapper: this.historyState
             },
             {
                 nodule: History.prototype,
-                name: 'replaceState' as const,
-                wrapper: this.replaceState
+                name: 'pushState' as const,
+                wrapper: this.historyState
             }
         ];
     }
 
-    private pushState = (): ((original: Push) => Push) => {
+    private historyState = () => {
         const self = this;
-        return (original: Push): Push => {
+        return (original: ChangeHistory): ChangeHistory => {
             return function (
-                this: Push,
+                this: ChangeHistory,
                 data: string,
                 title: string,
                 url?: string | null
@@ -57,35 +56,24 @@ export class PageViewPlugin extends MonkeyPatched<
         };
     };
 
-    private replaceState = () => {
-        const self = this;
-        return (original: Replace): Replace => {
-            return function (
-                this: Replace,
-                data: string,
-                title: string,
-                url?: string | null
-            ): void {
-                const retVal = original.apply(this, arguments);
-                self.recordPageView();
-                return retVal;
-            };
-        };
-    };
-
-    private addListener() {
-        // popstate will fire under the following conditions:
-        // (1) The history back, forward or go APIs are used
-        // (2) The URI's fragment (hash) changes
-        window.addEventListener('popstate', this.popstateListener);
+    /**
+     * See note here in MDN docs as to why it needs to be wrapped in a setTimeout
+     * https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event#sect1
+     * (basically to wait for the end of the page load event loop)
+     */
+    private addHistoryListener() {
+        window.addEventListener('popstate', () => {
+            // this will save the current time before waiting for the load stack to finish
+            const interactionStart = Date.now();
+            setTimeout(() => this.recordPageView(interactionStart), 0);
+        });
     }
 
-    private popstateListener: EventListener = (event: Event) => {
-        this.recordPageView();
-    };
-
-    private recordPageView = () => {
-        this.context.recordPageView(this.createIdForCurrentPage());
+    private recordPageView = (interactionStart?: number) => {
+        this.context.recordPageView(
+            this.createIdForCurrentPage(),
+            interactionStart
+        );
     };
 
     private createIdForCurrentPage(): string {

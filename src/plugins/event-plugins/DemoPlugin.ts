@@ -13,7 +13,7 @@ export const DEMO_PLUGIN_ID = 'demo';
 export class DemoPlugin implements Plugin {
     configuration: any;
     timerId: number | undefined;
-    private recordEvent: RecordEvent | undefined;
+    private context: PluginContext;
 
     constructor() {
         this.configuration = {};
@@ -24,19 +24,19 @@ export class DemoPlugin implements Plugin {
         return DEMO_PLUGIN_ID;
     }
 
+    recordEvent(evt: string, obj: object) {
+        this.context?.record(evt, obj);
+    }
+
     load(context: PluginContext): void {
-        this.recordEvent = context.record;
+        this.context = context;
         this.enable();
     }
 
     enable(): void {
         // dummy activity every 1 sec
         if (!this.timerId) {
-            this.timerId = window.setInterval(() => {
-                if (this.recordEvent) {
-                    this.eventHandler(this.recordEvent);
-                }
-            }, 1_000);
+            this.timerId = window.setInterval(this.eventHandler, 1_000);
         }
     }
 
@@ -54,12 +54,12 @@ export class DemoPlugin implements Plugin {
         this.recordEvent(DEMO_EVENT_TYPE, demoEvent);
     }
 
-    private eventHandler(recordEvent: RecordEvent): void {
+    private eventHandler = (): void => {
         if (this.configuration.enable) {
             const demoEvent = {
                 eventData: 'demoEventData'
             };
-            recordEvent(DEMO_EVENT_TYPE, demoEvent);
+            this.recordEvent(DEMO_EVENT_TYPE, demoEvent);
         }
-    }
+    };
 }

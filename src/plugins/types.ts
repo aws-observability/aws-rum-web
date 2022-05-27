@@ -1,10 +1,11 @@
+import { EventCache } from '../event-cache/EventCache';
 import { Config } from '../orchestration/Orchestration';
-import { Session } from '../sessions/SessionManager';
 
-export type RecordEvent = (type: string, eventData: object) => void;
-export type RecordPageView = (pageId: string) => void;
-
-export type GetSession = () => Session;
+type EventCacheInstanceType = InstanceType<typeof EventCache>;
+export type RecordEvent = EventCacheInstanceType['recordEvent'];
+export type RecordPageView = EventCacheInstanceType['recordPageView'];
+export type GetSession = EventCacheInstanceType['getSession'];
+export type GetPage = EventCacheInstanceType['getPage'];
 
 export type PluginContext = {
     applicationId: string;
@@ -13,4 +14,5 @@ export type PluginContext = {
     record: RecordEvent;
     recordPageView: RecordPageView;
     getSession: GetSession;
+    getPage: GetPage;
 };

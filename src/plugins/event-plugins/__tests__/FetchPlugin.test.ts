@@ -6,9 +6,7 @@ import {
 } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
-    DEFAULT_CONFIG,
     record,
-    recordPageView,
     xRayOffContext,
     xRayOnContext,
     mockFetch,
@@ -17,7 +15,7 @@ import {
     mockFetchWithErrorObject,
     mockFetchWithErrorObjectAndStack
 } from '../../../test-utils/test-utils';
-import { GetSession, PluginContext } from '../../types';
+import { GetSession } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { HttpEvent } from '../../../events/http-event';
 
@@ -403,17 +401,9 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const xRayOnContext: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
+        plugin.load({ ...xRayOnContext, getSession });
 
         // Run
         await fetch('https://aws.amazon.com');
@@ -432,17 +422,9 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const xRayOnContext: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
+        plugin.load({ ...xRayOnContext, getSession });
 
         // Run
         await fetch('https://aws.amazon.com');

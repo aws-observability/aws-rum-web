@@ -57,28 +57,18 @@ export type Attributes = {
  * id expiration time.
  */
 export class SessionManager {
-    private pageManager: PageManager;
-
-    private appMonitorDetails: AppMonitorDetails;
     private userExpiry: Date;
     private sessionExpiry: Date;
     private userId!: string;
     private session: Session;
-    private config: Config;
-    private record: RecordSessionInitEvent;
     private attributes: Attributes;
 
     constructor(
-        appMonitorDetails: AppMonitorDetails,
-        config: Config,
-        record: RecordSessionInitEvent,
-        pageManager: PageManager
+        private appMonitorDetails: AppMonitorDetails,
+        private config: Config,
+        private record: RecordSessionInitEvent,
+        private pageManager: PageManager
     ) {
-        this.appMonitorDetails = appMonitorDetails;
-        this.config = config;
-        this.record = record;
-        this.pageManager = pageManager;
-
         // Initialize the session to the nil session
         this.session = {
             sessionId: NIL_UUID,

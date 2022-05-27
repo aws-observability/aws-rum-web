@@ -20,6 +20,7 @@ import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
 import {
     APPLICATION_ID,
     APP_MONITOR_DETAILS,
+    createPluginManager,
     DEFAULT_CONFIG,
     mockFetch
 } from '../../test-utils/test-utils';
@@ -63,7 +64,7 @@ const defaultSessionManager = (config) => {
         APP_MONITOR_DETAILS,
         config,
         mockRecord,
-        new PageManager(config, mockRecord)
+        new PageManager(config, mockRecord, createPluginManager())
     );
 };
 
@@ -357,7 +358,7 @@ describe('SessionManager tests', () => {
             APP_MONITOR_DETAILS,
             config,
             mockRecord,
-            new PageManager(config, mockRecord)
+            new PageManager(config, mockRecord, createPluginManager())
         );
 
         const sessionOne = sessionManager.getSession();

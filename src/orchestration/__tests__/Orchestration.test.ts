@@ -110,6 +110,7 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.navigation',
             'com.amazonaws.rum.page-view',
             'com.amazonaws.rum.resource',
+            'com.amazonaws.rum.virtual-page-load-timer',
             'com.amazonaws.rum.web-vitals'
         ];
         const actual = [];
@@ -188,7 +189,10 @@ describe('Orchestration tests', () => {
     test('data collection defaults to only page views', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
-        const expected = ['com.amazonaws.rum.page-view'];
+        const expected = [
+            'com.amazonaws.rum.page-view',
+            'com.amazonaws.rum.virtual-page-load-timer'
+        ];
         const actual = [];
 
         // Assert
@@ -209,6 +213,7 @@ describe('Orchestration tests', () => {
         const expected = [
             'com.amazonaws.rum.xhr',
             'com.amazonaws.rum.fetch',
+            'com.amazonaws.rum.virtual-page-load-timer',
             'com.amazonaws.rum.page-view'
         ];
         const actual = [];
@@ -247,7 +252,8 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.navigation',
             'com.amazonaws.rum.resource',
             'com.amazonaws.rum.web-vitals',
-            'com.amazonaws.rum.page-view'
+            'com.amazonaws.rum.page-view',
+            'com.amazonaws.rum.virtual-page-load-timer'
         ];
         const actual = [];
 
@@ -268,7 +274,8 @@ describe('Orchestration tests', () => {
         });
         const expected = [
             'com.amazonaws.rum.js-error',
-            'com.amazonaws.rum.page-view'
+            'com.amazonaws.rum.page-view',
+            'com.amazonaws.rum.virtual-page-load-timer'
         ];
         const actual = [];
 
@@ -289,7 +296,8 @@ describe('Orchestration tests', () => {
         });
         const expected = [
             'com.amazonaws.rum.dom-event',
-            'com.amazonaws.rum.page-view'
+            'com.amazonaws.rum.page-view',
+            'com.amazonaws.rum.virtual-page-load-timer'
         ];
         const actual = [];
 
@@ -308,7 +316,10 @@ describe('Orchestration tests', () => {
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             telemetries: []
         });
-        const expected = ['com.amazonaws.rum.page-view'];
+        const expected = [
+            'com.amazonaws.rum.page-view',
+            'com.amazonaws.rum.virtual-page-load-timer'
+        ];
         const actual = [];
 
         // Assert

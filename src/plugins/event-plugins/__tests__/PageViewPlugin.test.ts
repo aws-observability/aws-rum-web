@@ -1,4 +1,4 @@
-import { context } from '../../../test-utils/test-utils';
+import { context, sleep } from '../../../test-utils/test-utils';
 import { PageViewPlugin } from '../PageViewPlugin';
 import { PageIdFormatEnum } from '../../../orchestration/Orchestration';
 
@@ -89,6 +89,8 @@ describe('PageViewPlugin tests', () => {
         // Run
         window.history.pushState({}, '', PAGE_VIEW_ONE_PATH);
         dispatchEvent(new PopStateEvent('popstate'));
+
+        await sleep(0);
 
         // Assert
         expect((context.recordPageView as any).mock.calls[1][0]).toEqual(

@@ -6,6 +6,7 @@ import {
     defaultCookieAttributes
 } from '../orchestration/Orchestration';
 import {
+    GetPage,
     GetSession,
     PluginContext,
     RecordEvent,
@@ -17,6 +18,7 @@ import {
     UserDetails
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
+import { PluginManager } from '../plugins/PluginManager';
 
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'
@@ -60,18 +62,39 @@ export const PUT_RUM_EVENTS_REQUEST: PutRumEventsRequest = {
 
 export const DEFAULT_CONFIG: Config = defaultConfig(defaultCookieAttributes());
 
-export const createDefaultEventCache = (): EventCache => {
-    return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
+export const createDefaultEventCache = (
+    pluginManager: PluginManager = new PluginManager(context)
+): EventCache => {
+    return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG, pluginManager);
 };
 
-export const createEventCache = (config: Config): EventCache => {
-    return new EventCache(APP_MONITOR_DETAILS, config);
+export const createPluginManager = (initEventCache = false): PluginManager => {
+    const manager = new PluginManager(context);
+
+    if (initEventCache) {
+        createDefaultEventCache(manager);
+    }
+
+    return manager;
 };
 
-export const createDefaultEventCacheWithEvents = (): EventCache => {
+export const createEventCache = (
+    config: Config,
+    pluginManager: PluginManager = new PluginManager(context)
+): EventCache => {
+    return new EventCache(APP_MONITOR_DETAILS, config, pluginManager);
+};
+
+export const createDefaultEventCacheWithEvents = (
+    pluginManager: PluginManager = new PluginManager(context)
+): EventCache => {
     const EVENT1_SCHEMA = 'com.amazon.rum.event1';
     const EVENT2_SCHEMA = 'com.amazon.rum.event2';
-    const eventCache = new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
+    const eventCache = new EventCache(
+        APP_MONITOR_DETAILS,
+        DEFAULT_CONFIG,
+        pluginManager
+    );
     eventCache.recordEvent(EVENT1_SCHEMA, {});
     eventCache.recordEvent(EVENT2_SCHEMA, {});
     return eventCache;
@@ -105,6 +128,11 @@ export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     record: true,
     eventCount: 0
 }));
+export const getPage: jest.MockedFunction<GetPage> = jest.fn(() => ({
+    pageId: '1234',
+    interaction: 1243,
+    start: 3546
+}));
 
 export const context: PluginContext = {
     applicationId: 'b',
@@ -112,7 +140,8 @@ export const context: PluginContext = {
     config: DEFAULT_CONFIG,
     record,
     recordPageView,
-    getSession
+    getSession,
+    getPage
 };
 
 export const xRayOffContext: PluginContext = {
@@ -121,7 +150,8 @@ export const xRayOffContext: PluginContext = {
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
     record,
     recordPageView,
-    getSession
+    getSession,
+    getPage
 };
 
 export const xRayOnContext: PluginContext = {
@@ -130,7 +160,8 @@ export const xRayOnContext: PluginContext = {
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
     record,
     recordPageView,
-    getSession
+    getSession,
+    getPage
 };
 
 export const stringToUtf16 = (inputString: string) => {

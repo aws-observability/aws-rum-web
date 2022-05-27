@@ -1,9 +1,14 @@
 // tslint:disable:max-line-length
 import { advanceTo } from 'jest-date-mock';
 import { PageManager } from '../PageManager';
-import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
+import {
+    createPluginManager,
+    DEFAULT_CONFIG,
+    mockFetch
+} from '../../test-utils/test-utils';
 import { Config } from '../../orchestration/Orchestration';
 import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
+import { VirtualPageLoadPlugin } from '../../plugins/event-plugins/VirtualPageLoadPlugin';
 
 import mock from 'xhr-mock';
 
@@ -19,7 +24,7 @@ global.fetch = mockFetch;
 
 /* tslint:disable:no-string-literal */
 describe('PageManager tests', () => {
-    let url;
+    let url: string;
 
     beforeAll(() => {
         url = window.location.toString();
@@ -45,7 +50,8 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
 
         // Run
@@ -70,7 +76,8 @@ describe('PageManager tests', () => {
             {
                 ...DEFAULT_CONFIG
             },
-            record
+            record,
+            createPluginManager(true)
         );
 
         // Assert
@@ -89,7 +96,8 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
 
         // Run
@@ -114,7 +122,8 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
 
         // Run
@@ -140,7 +149,11 @@ describe('PageManager tests', () => {
             ...DEFAULT_CONFIG,
             allowCookies: false
         };
-        const pageManager: PageManager = new PageManager(config, record);
+        const pageManager: PageManager = new PageManager(
+            config,
+            record,
+            createPluginManager(true)
+        );
 
         // Run
         pageManager.recordPageView('/console/home');
@@ -167,7 +180,8 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: false
             },
-            record
+            record,
+            createPluginManager()
         );
 
         // Run
@@ -191,7 +205,11 @@ describe('PageManager tests', () => {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
-        const pageManager: PageManager = new PageManager(config, record);
+        const pageManager: PageManager = new PageManager(
+            config,
+            record,
+            createPluginManager()
+        );
         pageManager.resumeSession('/console/home', 1);
 
         // Run
@@ -216,7 +234,8 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
 
         // Run
@@ -244,7 +263,11 @@ describe('PageManager tests', () => {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
-        const pageManager: PageManager = new PageManager(config, record);
+        const pageManager: PageManager = new PageManager(
+            config,
+            record,
+            createPluginManager(true)
+        );
 
         // Run
         pageManager.recordPageView('/rum/home');
@@ -272,10 +295,13 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
-        const helper = pageManager['virtualPageLoadTimer'];
-        const startTiming = jest.spyOn(helper, 'startTiming');
+        const helper = pageManager['pluginManager'];
+        const pageLoadPlugin = new VirtualPageLoadPlugin(DEFAULT_CONFIG);
+        helper.addPlugin(pageLoadPlugin);
+        const startTiming = jest.spyOn(pageLoadPlugin, 'startTiming');
 
         // Run
         pageManager.resumeSession('/console/home', 1);
@@ -291,9 +317,9 @@ describe('PageManager tests', () => {
 
         // Assert
         expect(startTiming).toBeCalledTimes(0);
-        expect(helper['isPageLoaded']).toEqual(true);
-        expect(helper['timeoutCheckerId']).toEqual(undefined);
-        expect(helper['periodicCheckerId']).toEqual(undefined);
+        expect(pageLoadPlugin['isPageLoaded']).toEqual(true);
+        expect(pageLoadPlugin['timeoutCheckerId']).toEqual(undefined);
+        expect(pageLoadPlugin['periodicCheckerId']).toEqual(undefined);
 
         window.removeEventListener(
             'popstate',
@@ -308,10 +334,14 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
-        const helper = pageManager['virtualPageLoadTimer'];
-        const startTiming = jest.spyOn(helper, 'startTiming');
+        const helper = pageManager['pluginManager'];
+
+        const pageLoadPlugin = new VirtualPageLoadPlugin(DEFAULT_CONFIG);
+        helper.addPlugin(pageLoadPlugin);
+        const startTiming = jest.spyOn(pageLoadPlugin, 'startTiming');
 
         // Run
         pageManager.recordPageView('/rum/home');
@@ -326,9 +356,9 @@ describe('PageManager tests', () => {
 
         // Assert
         expect(startTiming).toBeCalledTimes(0);
-        expect(helper['isPageLoaded']).toEqual(true);
-        expect(helper['timeoutCheckerId']).toEqual(undefined);
-        expect(helper['periodicCheckerId']).toEqual(undefined);
+        expect(pageLoadPlugin['isPageLoaded']).toEqual(true);
+        expect(pageLoadPlugin['timeoutCheckerId']).toEqual(undefined);
+        expect(pageLoadPlugin['periodicCheckerId']).toEqual(undefined);
 
         window.removeEventListener(
             'popstate',
@@ -343,10 +373,13 @@ describe('PageManager tests', () => {
                 ...DEFAULT_CONFIG,
                 allowCookies: true
             },
-            record
+            record,
+            createPluginManager(true)
         );
-        const helper = pageManager['virtualPageLoadTimer'];
-        const startTiming = jest.spyOn(helper, 'startTiming');
+        const helper = pageManager['pluginManager'];
+        const pageLoadPlugin = new VirtualPageLoadPlugin(DEFAULT_CONFIG);
+        helper.addPlugin(pageLoadPlugin);
+        const startTiming = jest.spyOn(pageLoadPlugin, 'startTiming');
 
         // Run
         pageManager.recordPageView('/rum/home');
@@ -362,9 +395,9 @@ describe('PageManager tests', () => {
 
         // Assert
         expect(startTiming).toBeCalledTimes(1);
-        expect(helper['isPageLoaded']).toEqual(false);
-        expect(helper['timeoutCheckerId']).not.toEqual(undefined);
-        expect(helper['periodicCheckerId']).not.toEqual(undefined);
+        expect(pageLoadPlugin['isPageLoaded']).toEqual(false);
+        expect(pageLoadPlugin['timeoutCheckerId']).not.toEqual(undefined);
+        expect(pageLoadPlugin['periodicCheckerId']).not.toEqual(undefined);
     });
 
     test('when latestInteractionTime is outside the scope of routeChangeTimeout then page.start is Date.now', async () => {
@@ -373,18 +406,22 @@ describe('PageManager tests', () => {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
-        const pageManager: PageManager = new PageManager(config, record);
-        const helper = pageManager['virtualPageLoadTimer'];
-        const startTiming = jest.spyOn(helper, 'startTiming');
+        const pageManager: PageManager = new PageManager(
+            config,
+            record,
+            createPluginManager()
+        );
+        const helper = pageManager['pluginManager'];
+        const startTiming = jest.spyOn(helper, 'updatePlugin');
 
         // Mocking Date.now
         Date.now = jest.fn(() => 3000);
-        helper.latestInteractionTime = 500;
+        const lastInteractionTime = 1000;
 
         // Run
         pageManager.resumeSession('/console/home', 1);
-        pageManager.recordPageView('/console/home');
-        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/home', lastInteractionTime);
+        pageManager.recordPageView('/rum/home', lastInteractionTime + 500);
 
         // Should not time
         expect(startTiming).toBeCalledTimes(0);
@@ -397,18 +434,21 @@ describe('PageManager tests', () => {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
-        const pageManager: PageManager = new PageManager(config, record);
-        const helper = pageManager['virtualPageLoadTimer'];
-        const startTiming = jest.spyOn(helper, 'startTiming');
+        const pageManager: PageManager = new PageManager(
+            config,
+            record,
+            createPluginManager()
+        );
+        const helper = pageManager['pluginManager'];
+        const startTiming = jest.spyOn(helper, 'updatePlugin');
 
         // Mocking Date.now
         Date.now = jest.fn(() => 3000);
-        helper.latestInteractionTime = 2500;
 
         // Run
         pageManager.resumeSession('/console/home', 1);
-        pageManager.recordPageView('/console/home');
-        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/home', Date.now() - 700);
+        pageManager.recordPageView('/rum/home', Date.now() - 500);
 
         // Should timing
         expect(startTiming).toBeCalledTimes(1);

@@ -4,12 +4,12 @@ import {
     DEMO_EVENT_TYPE,
     DEMO_PLUGIN_ID
 } from '../event-plugins/DemoPlugin';
-import { context } from '../../test-utils/test-utils';
+import { createPluginManager } from '../../test-utils/test-utils';
 
 describe('Plugins tests', () => {
     test('add a valid plugin', async () => {
         // Init
-        const pluginManager: PluginManager = new PluginManager(context);
+        const pluginManager: PluginManager = createPluginManager(true);
         const demoPlugin: DemoPlugin = new DemoPlugin();
 
         // Run
@@ -21,7 +21,7 @@ describe('Plugins tests', () => {
 
     test('when data is recorded to an invalid plugin then the plugin manager throws an error', async () => {
         // Init
-        const pluginManager: PluginManager = new PluginManager(context);
+        const pluginManager: PluginManager = createPluginManager(true);
 
         // Run and Assert
         expect(() => pluginManager.record('does_not_exist', {})).toThrowError(
@@ -31,16 +31,18 @@ describe('Plugins tests', () => {
 
     test('when the application manually records data then the plugin records the error', async () => {
         // Init
-        const pluginManager: PluginManager = new PluginManager(context);
+        const pluginManager: PluginManager = createPluginManager(true);
         const demoPlugin: DemoPlugin = new DemoPlugin();
         pluginManager.addPlugin(demoPlugin);
+
+        const recordEvent = jest.spyOn(demoPlugin, 'recordEvent');
 
         // Run
         pluginManager.record(DEMO_PLUGIN_ID, 'data to record');
 
         // Assert
-        expect(context.record).toHaveBeenCalledTimes(1);
+        expect(recordEvent).toHaveBeenCalledTimes(1);
         // @ts-ignore
-        expect(context.record.mock.calls[0][0]).toEqual(DEMO_EVENT_TYPE);
+        expect(recordEvent.mock.calls[0][0]).toEqual(DEMO_EVENT_TYPE);
     });
 });

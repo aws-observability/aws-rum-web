@@ -3,7 +3,7 @@ import { PluginContext } from '../plugins/types';
 import { InternalPlugin } from '../plugins/InternalPlugin';
 import { Authentication } from '../dispatch/Authentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
-import { PluginManager } from '../plugins/PluginManager';
+import { PluginManager, PluginManagerConfig } from '../plugins/PluginManager';
 import {
     DomEventPlugin,
     DOM_EVENT_PLUGIN_ID,
@@ -23,6 +23,7 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
+import { VirtualPageLoadPlugin } from '../plugins/event-plugins/VirtualPageLoadPlugin';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -245,16 +246,23 @@ export class Orchestration {
         // code.
         this.config.endpointUrl = new URL(this.config.endpoint);
 
+        const pluginContext: PluginManagerConfig = {
+            applicationId,
+            applicationVersion,
+            config: this.config
+        };
+
+        // Initialize PluginManager
+        const pluginManager: PluginManager = new PluginManager(pluginContext);
+
         this.eventCache = this.initEventCache(
             applicationId,
-            applicationVersion
+            applicationVersion,
+            pluginManager
         );
 
         this.dispatchManager = this.initDispatch(region);
-        this.pluginManager = this.initPluginManager(
-            applicationId,
-            applicationVersion
-        );
+        this.pluginManager = this.initPluginManager(pluginManager);
 
         if (this.config.enableRumClient) {
             this.enable();
@@ -352,14 +360,16 @@ export class Orchestration {
 
     private initEventCache(
         applicationId: string,
-        applicationVersion: string
+        applicationVersion: string,
+        pluginManager: PluginManager
     ): EventCache {
         return new EventCache(
             {
                 id: applicationId,
                 version: applicationVersion
             },
-            this.config
+            this.config,
+            pluginManager
         );
     }
 
@@ -386,32 +396,14 @@ export class Orchestration {
         return dispatch;
     }
 
-    private initPluginManager(
-        applicationId: string,
-        applicationVersion: string
-    ) {
-        const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins();
+    private initPluginManager(pluginManager: PluginManager) {
+        const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins(
+            this.config.disableAutoPageView
+        );
         const PLUGINS: Plugin[] = [
             ...BUILTIN_PLUGINS,
             ...this.config.eventPluginsToLoad
         ];
-
-        const pluginContext: PluginContext = {
-            applicationId,
-            applicationVersion,
-            config: this.config,
-            record: this.eventCache.recordEvent,
-            recordPageView: this.eventCache.recordPageView,
-            getSession: this.eventCache.getSession
-        };
-
-        // Initialize PluginManager
-        const pluginManager: PluginManager = new PluginManager(pluginContext);
-
-        // Load page view plugin
-        if (!this.config.disableAutoPageView) {
-            pluginManager.addPlugin(new PageViewPlugin());
-        }
 
         // Load plugins
         PLUGINS.forEach((p) => {
@@ -421,7 +413,9 @@ export class Orchestration {
         return pluginManager;
     }
 
-    private constructBuiltinPlugins(): InternalPlugin[] {
+    private constructBuiltinPlugins(
+        disableAutoPageView = false
+    ): InternalPlugin[] {
         let plugins: InternalPlugin[] = [];
         const functor: TelemetriesFunctor = this.telemetryFunctor();
 
@@ -440,6 +434,11 @@ export class Orchestration {
                 ];
             }
         });
+
+        if (!disableAutoPageView) {
+            plugins.push(new VirtualPageLoadPlugin(this.config));
+            plugins.push(new PageViewPlugin());
+        }
 
         return plugins;
     }

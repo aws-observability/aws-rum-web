@@ -1,8 +1,12 @@
 import { Config } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
-import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
+import {
+    VirtualPageLoadPlugin,
+    VIRTUAL_PAGELOAD_PLUGIN_ID
+} from '../plugins/event-plugins/VirtualPageLoadPlugin';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
+import { PluginManager } from '../plugins/PluginManager';
 
 export type Page = {
     pageId: string;
@@ -35,12 +39,9 @@ export type PageAttributes = {
  * The interaction level is the order of a page in the sequence of pages sorted by the time they were viewed.
  */
 export class PageManager {
-    private config: Config;
-    private record: RecordEvent;
     private page: Page | undefined;
     private resumed: Page | undefined;
     private attributes: Attributes | undefined;
-    private virtualPageLoadTimer: VirtualPageLoadTimer;
     private TIMEOUT = 1000;
 
     /**
@@ -49,20 +50,13 @@ export class PageManager {
      * We will only record the interaction (i.e., depth and parent) after
      * cookies have been enabled once.
      */
-    private recordInteraction: boolean;
+    private recordInteraction: boolean = false;
 
-    constructor(config: Config, record: RecordEvent) {
-        this.config = config;
-        this.record = record;
-        this.page = undefined;
-        this.resumed = undefined;
-        this.recordInteraction = false;
-        this.virtualPageLoadTimer = new VirtualPageLoadTimer(
-            this,
-            config,
-            record
-        );
-    }
+    constructor(
+        private config: Config,
+        private record: RecordEvent,
+        private pluginManager: PluginManager
+    ) {}
 
     public getPage(): Page | undefined {
         return this.page;
@@ -81,8 +75,11 @@ export class PageManager {
         };
     }
 
-    public recordPageView(payload: string | PageAttributes) {
-        let pageId;
+    public recordPageView(
+        payload: string | PageAttributes,
+        interactionStart?: number
+    ) {
+        let pageId: string;
         if (typeof payload === 'string') {
             pageId = payload;
         } else {
@@ -94,11 +91,11 @@ export class PageManager {
         }
 
         if (!this.page && this.resumed) {
-            this.createResumedPage(pageId);
+            this.createResumedPage(pageId, interactionStart);
         } else if (!this.page) {
-            this.createLandingPage(pageId);
+            this.createLandingPage(pageId, interactionStart);
         } else if (this.page.pageId !== pageId) {
-            this.createNextPage(pageId);
+            this.createNextPage(pageId, interactionStart);
         } else {
             // The view has not changed.
             return;
@@ -113,19 +110,19 @@ export class PageManager {
         this.recordPageViewEvent();
     }
 
-    private createResumedPage(pageId: string) {
+    private createResumedPage(pageId: string, interactionStart?: number) {
         this.page = {
             pageId,
             parentPageId: this.resumed.pageId,
             interaction: this.resumed.interaction + 1,
-            start: Date.now()
+            start: interactionStart ?? Date.now()
         };
         this.resumed = undefined;
     }
 
-    private createNextPage(pageId: string) {
-        let startTime = Date.now();
-        const interactionTime = this.virtualPageLoadTimer.latestInteractionTime;
+    private createNextPage(pageId: string, interactionStart?: number) {
+        let nextPageTime = Date.now();
+        const interactionTime = interactionStart ?? Date.now();
 
         // The latest interaction time (latest) is not guaranteed to be the
         // interaction that triggered the route change (actual). There are two
@@ -146,23 +143,27 @@ export class PageManager {
         //
         // We do not believe that case (2) has a high risk of skewing route
         // change timing, and therefore ignore case (2).
-        if (startTime - interactionTime <= this.TIMEOUT) {
-            startTime = interactionTime;
-            this.virtualPageLoadTimer.startTiming();
+        if (
+            nextPageTime >= interactionTime &&
+            nextPageTime - interactionTime <= this.TIMEOUT
+        ) {
+            nextPageTime = interactionTime;
+            this.pluginManager.updatePlugin(VIRTUAL_PAGELOAD_PLUGIN_ID);
         }
+
         this.page = {
             pageId,
             parentPageId: this.page.pageId,
             interaction: this.page.interaction + 1,
-            start: startTime
+            start: nextPageTime
         };
     }
 
-    private createLandingPage(pageId: string) {
+    private createLandingPage(pageId: string, interactionStart?: number) {
         this.page = {
             pageId,
             interaction: 0,
-            start: Date.now()
+            start: interactionStart ?? Date.now()
         };
     }
 

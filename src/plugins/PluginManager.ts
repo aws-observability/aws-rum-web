@@ -1,6 +1,12 @@
 import { Plugin } from './Plugin';
 import { PluginContext } from './types';
 import { InternalPlugin } from './InternalPlugin';
+import { EventCache } from '../event-cache/EventCache';
+
+export type PluginManagerConfig = Pick<
+    PluginContext,
+    'config' | 'applicationId' | 'applicationVersion'
+>;
 
 /**
  * The plugin manager maintains a list of plugins
@@ -8,14 +14,31 @@ import { InternalPlugin } from './InternalPlugin';
  */
 export class PluginManager {
     private plugins: Map<string, Plugin> = new Map();
+    private context: PluginContext;
 
-    constructor(private readonly context: PluginContext) {}
+    constructor(private readonly config: PluginManagerConfig) {}
+
+    initEventCache(eventCache: EventCache) {
+        this.context = {
+            ...this.config,
+            record: eventCache.recordEvent,
+            getPage: eventCache.getPage,
+            getSession: eventCache.getSession,
+            recordPageView: eventCache.recordPageView
+        };
+    }
 
     /**
      * Add an event plugin to PluginManager and initialize the plugin.
      * @param plugin The plugin which adheres to the RUM web client's plugin interface.
      */
     public addPlugin(plugin: Plugin): void {
+        if (!this.context) {
+            throw new Error(
+                'PluginManager context not set, cannot add plugins yet'
+            );
+        }
+
         const pluginId = plugin.getPluginId();
 
         if (this.hasPlugin(pluginId)) {
@@ -35,7 +58,10 @@ export class PluginManager {
      * @param pluginId
      * @param updateWith The config to update the plugin with.
      */
-    public updatePlugin<O extends unknown>(pluginId: string, updateWith: O) {
+    public updatePlugin<O extends unknown = unknown>(
+        pluginId: string,
+        updateWith?: O
+    ) {
         const plugin = this.getPlugin(pluginId);
 
         plugin?.update?.(updateWith);
