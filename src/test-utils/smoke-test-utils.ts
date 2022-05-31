@@ -34,7 +34,7 @@ export const isDataPlaneRequest = (response, targetUrl) => {
     return (
         request.method() === 'POST' &&
         response.status() === 200 &&
-        response.url() === targetUrl
+        response.url().includes(targetUrl)
     );
 };
 
