@@ -76,7 +76,20 @@ export class ResourcePlugin extends InternalPlugin {
                     // Out of n resource events, x events are recorded using Observer API
                     const type: ResourceType = getResourceFileType(event.name);
                     if (this.config.recordAllTypes.includes(type)) {
-                        recordAll.push(event);
+                        // record ALL fetch/xmlhttprequest requests ignoring this.config.eventLimit
+                        // requires ResourceType.OTHER to be added to this.config.recordAllTypes
+                        // added because observer was capturing events but record event blocks only ran on page load
+                        // probably a better way to do this, but quick fix for our use case to capture API calls
+                        const prt: PerformanceResourceTiming = event as PerformanceResourceTiming;
+                        if (
+                            ['fetch', 'xmlhttprequest'].includes(
+                                prt.initiatorType
+                            )
+                        ) {
+                            this.recordResourceEvent(prt);
+                        } else {
+                            recordAll.push(event);
+                        }
                     } else if (this.config.sampleTypes.includes(type)) {
                         sample.push(event);
                     }
@@ -93,7 +106,18 @@ export class ResourcePlugin extends InternalPlugin {
             events.forEach((event) => {
                 const type: ResourceType = getResourceFileType(event.name);
                 if (this.config.recordAllTypes.includes(type)) {
-                    recordAll.push(event);
+                    // record ALL fetch/xmlhttprequest requests ignoring this.config.eventLimit
+                    // requires ResourceType.OTHER to be added to this.config.recordAllTypes
+                    // added because observer was capturing events but record event blocks only ran on page load
+                    // probably a better way to do this, but quick fix for our use case to capture API calls
+                    const prt: PerformanceResourceTiming = event as PerformanceResourceTiming;
+                    if (
+                        ['fetch', 'xmlhttprequest'].includes(prt.initiatorType)
+                    ) {
+                        this.recordResourceEvent(prt);
+                    } else {
+                        recordAll.push(event);
+                    }
                 } else if (this.config.sampleTypes.includes(type)) {
                     sample.push(event);
                 }
