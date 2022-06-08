@@ -6,6 +6,7 @@ import { FetchHttpHandler } from './FetchHttpHandler';
 import { PutRumEventsRequest } from './dataplane';
 import { Config } from '../orchestration/Orchestration';
 import { v4 } from 'uuid';
+import { RetryHttpHandler } from './RetryHttpHandler';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -101,7 +102,7 @@ export class Dispatch {
      * Send meta data and events to the AWS RUM data plane service via fetch.
      */
     public dispatchFetch = async (): Promise<{ response: HttpResponse }> => {
-        return this.dispatch(this.rum.sendFetch);
+        return this.dispatch(this.rum.sendFetch).catch(this.handleReject);
     };
 
     /**
@@ -189,6 +190,14 @@ export class Dispatch {
         return send(putRumEventsRequest);
     }
 
+    private handleReject = (e: any): { response: HttpResponse } => {
+        // The handler has run out of retries. We adhere to our convention to
+        // fail safe by disabling dispatch. This ensures that we will not
+        // continue to attempt requests when the problem is not recoverable.
+        this.disable();
+        throw e;
+    };
+
     /**
      * The default method for creating data plane service clients.
      * @param endpoint Service endpoint.
@@ -201,9 +210,12 @@ export class Dispatch {
         credentials
     ) => {
         return new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler({
-                fetchFunction: this.config.fetchFunction
-            }),
+            fetchRequestHandler: new RetryHttpHandler(
+                new FetchHttpHandler({
+                    fetchFunction: this.config.fetchFunction
+                }),
+                this.config.retries
+            ),
             beaconRequestHandler: new BeaconHttpHandler(),
             endpoint,
             region,
