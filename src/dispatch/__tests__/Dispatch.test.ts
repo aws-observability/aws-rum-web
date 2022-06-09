@@ -3,6 +3,7 @@ import * as Utils from '../../test-utils/test-utils';
 import { DataPlaneClient } from '../DataPlaneClient';
 import { CredentialProvider } from '@aws-sdk/types';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
+import { EventCache } from 'event-cache/EventCache';
 
 global.fetch = mockFetch;
 const sendFetch = jest.fn(() => Promise.resolve());
@@ -67,7 +68,7 @@ describe('Dispatch tests', () => {
         expect(credentialProvider).toHaveBeenCalledTimes(1);
     });
 
-    test('dispatch() throws exception when LogEventsCommand fails', async () => {
+    test('dispatch() throws exception when send fails', async () => {
         // Init
         const sendFetch = jest.fn(() =>
             Promise.reject('Something went wrong.')
@@ -372,5 +373,36 @@ describe('Dispatch tests', () => {
         await expect(dispatch.dispatchBeaconFailSilent()).resolves.toEqual(
             undefined
         );
+    });
+
+    test('when a fetch request is rejected then dispatch is disabled', async () => {
+        // Init
+        const ERROR = 'Something went wrong.';
+        const sendFetch = jest.fn(() => Promise.reject(ERROR));
+        (DataPlaneClient as any).mockImplementation(() => {
+            return {
+                sendFetch
+            };
+        });
+
+        const eventCache: EventCache = Utils.createDefaultEventCacheWithEvents();
+
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+        // Run
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(ERROR);
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).resolves.toEqual(undefined);
     });
 });
