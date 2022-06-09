@@ -46,9 +46,7 @@ export class RetryHttpHandler implements HttpHandler {
 
     private async sleep(milliseconds): Promise<void> {
         return new Promise<void>((resolve) =>
-            setTimeout(() => {
-                resolve();
-            }, milliseconds)
+            setTimeout(resolve, milliseconds)
         );
     }
 
