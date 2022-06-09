@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/aws-observability/aws-rum-web/compare/v1.5.1...v1.6.0) (2022-06-09)
+
+
+### Features
+
+* Ignore errors ([#164](https://github.com/aws-observability/aws-rum-web/issues/164)) ([75dee61](https://github.com/aws-observability/aws-rum-web/commit/75dee618b95f2454f95ab50a43839feba98993b4))
+* Retry fetch requests and disable dispatch on failure. ([#174](https://github.com/aws-observability/aws-rum-web/issues/174)) ([587929c](https://github.com/aws-observability/aws-rum-web/commit/587929c2b801e3a01e2a79d78d1fc41bc0133722))
+* Use data plane endpoint path prefix. ([#156](https://github.com/aws-observability/aws-rum-web/issues/156)) ([3dd112f](https://github.com/aws-observability/aws-rum-web/commit/3dd112fe8bce2994147f7c1f11cc44978c632ad3))
+
+
+### Bug Fixes
+
+* Export types used in config object ([#154](https://github.com/aws-observability/aws-rum-web/issues/154)) ([9d4238b](https://github.com/aws-observability/aws-rum-web/commit/9d4238bc03a309e2dcacc997393b15d9cfe2752e))
+* Remove duplicate PageIdFormat type in orchestration ([#162](https://github.com/aws-observability/aws-rum-web/issues/162)) ([6cec9da](https://github.com/aws-observability/aws-rum-web/commit/6cec9da3b6308bcec4f6e2adc613824401549625))
+
 ### [1.5.1](https://github.com/aws-observability/aws-rum-web/compare/v1.5.0...v1.5.1) (2022-05-13)
 
 
