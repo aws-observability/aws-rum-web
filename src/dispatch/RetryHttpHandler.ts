@@ -1,5 +1,7 @@
 import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
 
+export type BackoffFunction = (retry: number) => number;
+
 /**
  * An HttpHandler which wraps other HttpHandlers to retry requests.
  *
@@ -9,10 +11,16 @@ import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
 export class RetryHttpHandler implements HttpHandler {
     private handler: HttpHandler;
     private retries: number;
+    private backoff: BackoffFunction;
 
-    public constructor(handler: HttpHandler, retries: number) {
+    public constructor(
+        handler: HttpHandler,
+        retries: number,
+        backoff: BackoffFunction = (n) => n * 2000
+    ) {
         this.handler = handler;
         this.retries = retries;
+        this.backoff = backoff;
     }
 
     public async handle(
@@ -31,8 +39,17 @@ export class RetryHttpHandler implements HttpHandler {
                     throw e;
                 }
                 retriesLeft--;
+                await this.sleep(this.backoff(this.retries - retriesLeft));
             }
         }
+    }
+
+    private async sleep(milliseconds): Promise<void> {
+        return new Promise<void>((resolve) =>
+            setTimeout(() => {
+                resolve();
+            }, milliseconds)
+        );
     }
 
     private isStatusCode2xx = (statusCode: number): boolean => {

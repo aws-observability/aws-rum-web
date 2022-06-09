@@ -12,6 +12,8 @@ jest.mock('@aws-sdk/fetch-http-handler', () => ({
         .mockImplementation(() => ({ handle: fetchHandler }))
 }));
 
+const mockBackoff = () => 0;
+
 describe('RetryHttpHandler tests', () => {
     beforeEach(() => {
         advanceTo(0);
@@ -31,7 +33,8 @@ describe('RetryHttpHandler tests', () => {
         const retries = 1;
         const retryHandler = new RetryHttpHandler(
             new FetchHttpHandler(),
-            retries
+            retries,
+            mockBackoff
         );
 
         const client: DataPlaneClient = new DataPlaneClient({
@@ -66,7 +69,8 @@ describe('RetryHttpHandler tests', () => {
         const retries = 1;
         const retryHandler = new RetryHttpHandler(
             new FetchHttpHandler(),
-            retries
+            retries,
+            mockBackoff
         );
 
         const client: DataPlaneClient = new DataPlaneClient({
@@ -94,7 +98,8 @@ describe('RetryHttpHandler tests', () => {
         const retries = 0;
         const retryHandler = new RetryHttpHandler(
             new FetchHttpHandler(),
-            retries
+            retries,
+            mockBackoff
         );
 
         const client: DataPlaneClient = new DataPlaneClient({
@@ -128,7 +133,8 @@ describe('RetryHttpHandler tests', () => {
         const retries = 1;
         const retryHandler = new RetryHttpHandler(
             new FetchHttpHandler(),
-            retries
+            retries,
+            mockBackoff
         );
 
         const client: DataPlaneClient = new DataPlaneClient({

@@ -124,7 +124,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pagesToExclude: [],
         pagesToInclude: [],
         recordResourceUrl: true,
-        retries: 3,
+        retries: 2,
         routeChangeComplete: 100,
         routeChangeTimeout: 10000,
         sessionEventLimit: 200,
