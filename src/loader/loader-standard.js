@@ -4,7 +4,10 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     allowCookies: true,
     dispatchInterval: 0,
     telemetries: ['performance'],
-    clientBuilder: showRequestClientBuilder
+    clientBuilder: showRequestClientBuilder,
+    customAttributesMap: {
+        customAttributeAtInit: 'customAttributeAtInitValue'
+    }
 });
 window.cwr('setAwsCredentials', {
     accessKeyId: 'a',

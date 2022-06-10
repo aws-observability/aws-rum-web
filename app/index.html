@@ -87,12 +87,31 @@
                 cwr('allowCookies', false);
             }
         </script>
+        <script>
+            function recordPageView() {
+                cwr('recordPageView', '/page_view_one');
+            }
+
+            function setCustomAttributes() {
+                cwr('setCustomAttributes', {
+                    customPageAttributeAtRuntimeString: 'stringCustomAttributeAtRunTimeValue',
+                    customPageAttributeAtRuntimeNumber: 1,
+                    customPageAttributeAtRuntimeBoolean: true,
+                });
+            }
+        </script>
         <button id="createHTTPError" onclick="createHTTPError()">
             Create HTTP Error
         </button>
         <button id="randomSessionClick">Random Session click</button>
         <button id="disallowCookies" onclick="disallowCookies()">
             Disallow Cookies
+        </button>
+        <button id="setCustomAttributes" onclick="setCustomAttributes()">
+            Set Custom Attributes
+        </button>
+        <button id="recordPageView" onclick="recordPageView()">
+            Record Page View
         </button>
         <span id="request"></span>
         <span id="response"></span>

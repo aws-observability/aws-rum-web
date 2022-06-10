@@ -14,12 +14,14 @@ const getSession = jest.fn(() => ({
 const getUserId = jest.fn(() => 'b');
 const getAttributes = jest.fn();
 const incrementSessionEventCount = jest.fn();
+const setCustomAttributes = jest.fn();
 jest.mock('../../sessions/SessionManager', () => ({
     SessionManager: jest.fn().mockImplementation(() => ({
         getSession,
         getUserId,
         getAttributes,
-        incrementSessionEventCount
+        incrementSessionEventCount,
+        setCustomAttributes
     }))
 }));
 
@@ -251,6 +253,69 @@ describe('EventCache tests', () => {
         expect(await eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
+    });
+
+    test('when page is recorded with custom page attributes, metadata records the custom page attributes', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.page_view_event';
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata:
+                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true}',
+                details: '{"version":"1.0.0","pageId":"/rum/home"}'
+            }
+        ];
+
+        // Run
+        eventCache.recordPageView({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            customPageAttributeString: 'customPageAttributeValue',
+            customPageAttributeNumber: 1,
+            customPageAttributeBoolean: true
+        });
+
+        // Assert
+        expect(await eventCache.getEventBatch()).toEqual(
+            expect.arrayContaining(expectedEvents)
+        );
+    });
+
+    /**
+     * Test title truncated to meet lint requirements
+     * Full title:
+     *  when EventCache.setCustomAttributes() is called
+     *  then SessionManager.setCustomAttributes() is called
+     */
+    test('EventCache.setCustomAttributes() calls SessionManager.setCustomAttributes()', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const expected = {
+            customAttributeString: 'customAttributeValue',
+            customAttributeNumber: 1,
+            customAttributeBoolean: true
+        };
+
+        // Run
+        eventCache.setCustomAttributes(expected);
+
+        // Assert
+        let actual;
+
+        // Assert
+        expect(setCustomAttributes).toHaveBeenCalledTimes(1);
+        actual = setCustomAttributes.mock.calls[0][0];
+
+        expect(actual).toEqual(expected);
     });
 
     test('when page matches both allowed and denied, recordEvent does not record the event', async () => {

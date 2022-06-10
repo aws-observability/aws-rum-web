@@ -667,4 +667,51 @@ describe('SessionManager tests', () => {
             sessionManager.getSession().sessionId
         );
     });
+
+    test('when custom session attributes are set at initialization then custom session attributes are added to the session attributes', async () => {
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{
+                customAttributesMap: {
+                    customAttributeString: 'customPageAttributeValue',
+                    customAttributeNumber: 1,
+                    customAttributeBoolean: true
+                }
+            }
+        });
+
+        const sessionAttributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(sessionAttributes.customAttributeString).toEqual(
+            'customPageAttributeValue'
+        );
+        expect(sessionAttributes.customAttributeNumber).toEqual(1);
+        expect(sessionAttributes.customAttributeBoolean).toEqual(true);
+    });
+
+    test('when custom session attributes are set at runtime then custom session attributes are added to the session attributes', async () => {
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG
+        });
+
+        const customAttributesMap = {
+            customAttributeString: 'customPageAttributeValue',
+            customAttributeNumber: 1,
+            customAttributeBoolean: true
+        };
+
+        sessionManager.setCustomAttributes(customAttributesMap);
+
+        const sessionAttributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(sessionAttributes.customAttributeString).toEqual(
+            'customPageAttributeValue'
+        );
+        expect(sessionAttributes.customAttributeNumber).toEqual(1);
+        expect(sessionAttributes.customAttributeBoolean).toEqual(true);
+    });
 });

@@ -3,14 +3,17 @@ import { REQUEST_BODY } from '../../test-utils/integ-test-utils';
 import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 
 const recordPageView: Selector = Selector(`#recordPageView`);
-const recordPageViewWithPageAttributes: Selector = Selector(
-    `#recordPageViewWithPageAttributes`
+const recordPageViewWithPageTagAttribute: Selector = Selector(
+    `#recordPageViewWithPageTagAttribute`
+);
+const recordPageViewWithCustomPageAttributes: Selector = Selector(
+    `#recordPageViewWithCustomPageAttributes`
 );
 const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 const doNotRecordPageView = Selector(`#doNotRecordPageView`);
 
-fixture('PageViewEventPlugin').page('http://localhost:8080/page_event.html');
+fixture('PageViewEventPlugin').page('http://localhost:9000/page_event.html');
 
 const removeUnwantedEvents = (json: any) => {
     for (let i = 0; i < json.RumEvents.length; i++) {
@@ -131,7 +134,7 @@ test('when pageTag attribute is passed in when manually recording page view even
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId')
         .click(clear)
-        .click(recordPageViewWithPageAttributes)
+        .click(recordPageViewWithPageTagAttribute)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
@@ -160,4 +163,46 @@ test('when pageTag attribute is passed in when manually recording page view even
         })
         .expect(metaData.pageTags[0])
         .eql('pageGroup1');
+});
+
+test('when custom page attributes are set when manually recording page view event, then PageViewEventPlugin records custom page attributes in metadata', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+
+    await t
+        .wait(300)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId')
+        .click(clear)
+        .click(recordPageViewWithCustomPageAttributes)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const json = removeUnwantedEvents(
+        JSON.parse(await REQUEST_BODY.textContent)
+    );
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
+    const metaData = JSON.parse(json.RumEvents[0].metadata);
+
+    await t
+        .expect(eventType)
+        .eql('com.amazon.rum.page_view_event')
+        .expect(eventDetails)
+        .contains({
+            pageId: '/page_view_two',
+            interaction: 1,
+            pageInteractionId: '/page_view_two-1',
+            parentPageInteractionId: '/page_event.html-0'
+        })
+        .expect(metaData)
+        .contains({
+            pageId: '/page_view_two',
+            title: 'RUM Integ Test',
+            customPageAttributeString: 'customPageAttributeValue',
+            customPageAttributeNumber: 1,
+            customPageAttributeBoolean: true
+        });
 });

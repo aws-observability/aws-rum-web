@@ -38,6 +38,9 @@ export class CommandQueue {
         ): void => {
             this.orchestration.setAwsCredentials(payload);
         },
+        setCustomAttributes: (payload: { [k: string]: any }): void => {
+            this.orchestration.setCustomAttributes(payload);
+        },
         recordPageView: (payload: any): void => {
             this.orchestration.recordPageView(payload);
         },

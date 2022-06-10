@@ -15,6 +15,9 @@ import { SESSION_START_EVENT_TYPE } from '../SessionManager';
 const randomSessionClickButton: Selector = Selector('#randomSessionClick');
 const disallowCookiesClickButton: Selector = Selector('#disallowCookies');
 
+const setCustomAttributesButton: Selector = Selector(`#setCustomAttributes`);
+const recordPageViewButton: Selector = Selector(`#recordPageView`);
+
 const BROWSER_LANGUAGE = 'browserLanguage';
 const BROWSER_NAME = 'browserName';
 const BROWSER_VERSION = 'browserVersion';
@@ -26,6 +29,15 @@ const PLATFORM_TYPE = 'platformType';
 const button1: Selector = Selector(`#${BUTTON_ID_1}`);
 
 fixture('Session Handler usage').page('http://localhost:8080/');
+
+const removeUnwantedEvents = (json: any) => {
+    for (let i = 0; i < json.RumEvents.length; i++) {
+        if (/(session_start_event)/.test(json.RumEvents[i].type)) {
+            json.RumEvents.splice(i, 1);
+        }
+    }
+    return json;
+};
 
 test('When cookies are enabled, sessionManager records events using cookies', async (t: TestController) => {
     await t.wait(300);
@@ -103,4 +115,60 @@ test('UserAgentMetaDataPlugin records user agent metadata', async (t: TestContro
         .contains(PLATFORM_TYPE)
         .expect(RESPONSE_STATUS.textContent)
         .eql(STATUS_202.toString());
+});
+
+test('When custom attribute set at init, custom attribute recorded in event metadata', async (t: TestController) => {
+    await t.wait(300);
+
+    await t.click(randomSessionClickButton);
+
+    await t.wait(300);
+
+    await t
+        .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
+        .click(PAYLOAD)
+        .pressKey('ctrl+a delete')
+        .click(SUBMIT);
+
+    const json = removeUnwantedEvents(
+        JSON.parse(await REQUEST_BODY.textContent)
+    );
+
+    const metaData = JSON.parse(json.RumEvents[0].metadata);
+
+    await t
+        .expect(metaData.customAttributeAtInit)
+        .eql('customAttributeAtInitValue');
+});
+
+test('When custom attribute set at runtime, custom attribute recorded in event metadata', async (t: TestController) => {
+    await t.wait(300);
+
+    await t.click(setCustomAttributesButton);
+
+    await t.click(recordPageViewButton);
+
+    await t.wait(300);
+
+    await t
+        .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
+        .click(PAYLOAD)
+        .pressKey('ctrl+a delete')
+        .click(SUBMIT);
+
+    const json = removeUnwantedEvents(
+        JSON.parse(await REQUEST_BODY.textContent)
+    );
+
+    const metaData = JSON.parse(
+        json.RumEvents[json.RumEvents.length - 1].metadata
+    );
+
+    await t
+        .expect(metaData.customPageAttributeAtRuntimeString)
+        .eql('stringCustomAttributeAtRunTimeValue')
+        .expect(metaData.customPageAttributeAtRuntimeNumber)
+        .eql(1)
+        .expect(metaData.customPageAttributeAtRuntimeBoolean)
+        .eql(true);
 });
