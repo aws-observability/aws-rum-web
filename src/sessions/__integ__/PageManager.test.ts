@@ -13,7 +13,7 @@ const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 const doNotRecordPageView = Selector(`#doNotRecordPageView`);
 
-fixture('PageViewEventPlugin').page('http://localhost:9000/page_event.html');
+fixture('PageViewEventPlugin').page('http://localhost:8080/page_event.html');
 
 const removeUnwantedEvents = (json: any) => {
     for (let i = 0; i < json.RumEvents.length; i++) {
