@@ -114,6 +114,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         allowCookies: false,
         batchLimit: 100,
         cookieAttributes,
+        sessionAttributes: {},
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
@@ -151,7 +152,7 @@ export type Config = {
     batchLimit: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes: CookieAttributes;
-    sessionAttributes?: { [k: string]: string | number | boolean };
+    sessionAttributes: { [k: string]: string | number | boolean };
     disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
@@ -285,10 +286,10 @@ export class Orchestration {
      * Set custom session attributes to add them to all event metadata.
      * @param payload object containing custom attribute data in the form of key, value pairs
      */
-    public setCustomAttributes(payload: {
+    public addSessionAttributes(sessionAttributes: {
         [key: string]: string | boolean | number;
     }): void {
-        this.eventCache.setCustomAttributes(payload);
+        this.eventCache.addSessionAttributes(sessionAttributes);
     }
 
     /**

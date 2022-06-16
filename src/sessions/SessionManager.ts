@@ -95,7 +95,7 @@ export class SessionManager {
         this.collectAttributes();
 
         // Set custom session attributes
-        this.setCustomAttributes(this.config.sessionAttributes);
+        this.addSessionAttributes(this.config.sessionAttributes);
 
         // Attempt to restore the previous session
         this.getSessionFromCookie();
@@ -134,7 +134,7 @@ export class SessionManager {
      * Adds custom session attributes to the session's attributes
      * @param sessionAttributes object containing custom attribute data in the form of key, value pairs
      */
-    public setCustomAttributes(sessionAttributes: {
+    public addSessionAttributes(sessionAttributes: {
         [k: string]: string | number | boolean;
     }) {
         this.attributes = { ...this.attributes, ...sessionAttributes };

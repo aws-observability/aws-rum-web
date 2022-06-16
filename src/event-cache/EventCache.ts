@@ -155,10 +155,10 @@ export class EventCache {
      * Set custom session attributes to add them to all event metadata.
      * @param payload object containing custom attribute data in the form of key, value pairs
      */
-    public setCustomAttributes(payload: {
+    public addSessionAttributes(sessionAttributes: {
         [k: string]: string | number | boolean;
     }): void {
-        this.sessionManager.setCustomAttributes(payload);
+        this.sessionManager.addSessionAttributes(sessionAttributes);
     }
 
     /**

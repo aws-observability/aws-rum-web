@@ -92,8 +92,8 @@
                 cwr('recordPageView', '/page_view_one');
             }
 
-            function setCustomAttributes() {
-                cwr('setCustomAttributes', {
+            function addSessionAttributes() {
+                cwr('addSessionAttributes', {
                     customPageAttributeAtRuntimeString:
                         'stringCustomAttributeAtRunTimeValue',
                     customPageAttributeAtRuntimeNumber: 1,
@@ -108,7 +108,7 @@
         <button id="disallowCookies" onclick="disallowCookies()">
             Disallow Cookies
         </button>
-        <button id="setCustomAttributes" onclick="setCustomAttributes()">
+        <button id="addSessionAttributes" onclick="addSessionAttributes()">
             Set Custom Attributes
         </button>
         <button id="recordPageView" onclick="recordPageView()">

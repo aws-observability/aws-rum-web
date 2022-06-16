@@ -703,7 +703,7 @@ describe('SessionManager tests', () => {
             customAttributeBoolean: true
         };
 
-        sessionManager.setCustomAttributes(sessionAttributes);
+        sessionManager.addSessionAttributes(sessionAttributes);
 
         const actualSessionAttributes = sessionManager.getAttributes();
 

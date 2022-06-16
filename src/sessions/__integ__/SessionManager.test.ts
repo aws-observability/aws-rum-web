@@ -16,7 +16,7 @@ import { SESSION_START_EVENT_TYPE } from '../SessionManager';
 const randomSessionClickButton: Selector = Selector('#randomSessionClick');
 const disallowCookiesClickButton: Selector = Selector('#disallowCookies');
 
-const setCustomAttributesButton: Selector = Selector(`#setCustomAttributes`);
+const addSessionAttributesButton: Selector = Selector(`#addSessionAttributes`);
 const recordPageViewButton: Selector = Selector(`#recordPageView`);
 
 const BROWSER_LANGUAGE = 'browserLanguage';
@@ -136,7 +136,7 @@ test('When custom attribute set at init, custom attribute recorded in event meta
 test('When custom attribute set at runtime, custom attribute recorded in event metadata', async (t: TestController) => {
     await t.wait(300);
 
-    await t.click(setCustomAttributesButton);
+    await t.click(addSessionAttributesButton);
 
     await t.click(recordPageViewButton);
 

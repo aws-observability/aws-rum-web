@@ -23,14 +23,14 @@ jest.mock('../../dispatch/Dispatch', () => ({
 const enableEventCache = jest.fn();
 const disableEventCache = jest.fn();
 const recordPageView = jest.fn();
-const setCustomAttributes = jest.fn();
+const addSessionAttributes = jest.fn();
 
 jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
         recordPageView,
-        setCustomAttributes
+        addSessionAttributes
     }))
 }));
 
@@ -148,6 +148,7 @@ describe('Orchestration tests', () => {
                 sameSite: 'Strict',
                 secure: true
             },
+            sessionAttributes: {},
             telemetries: [],
             disableAutoPageView: false,
             dispatchInterval: 5000,
@@ -409,7 +410,7 @@ describe('Orchestration tests', () => {
         expect(actual).toEqual(expected);
     });
 
-    test('when Orchestration.setCustomAttributes is called then EventCache.setCustomAttributes() is called', async () => {
+    test('when Orchestration.addSessionAttributes is called then EventCache.addSessionAttributes() is called', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
 
@@ -418,16 +419,16 @@ describe('Orchestration tests', () => {
             customAttributeNumber: 1,
             customAttributeBoolean: true
         };
-        orchestration.setCustomAttributes(expected);
+        orchestration.addSessionAttributes(expected);
 
         // Assert
-        expect(setCustomAttributes).toHaveBeenCalledTimes(1);
-        const actual = setCustomAttributes.mock.calls[0][0];
+        expect(addSessionAttributes).toHaveBeenCalledTimes(1);
+        const actual = addSessionAttributes.mock.calls[0][0];
 
         expect(actual).toEqual(expected);
     });
 
-    test('when custom session attributes are initialized at setup then EventCache.setCustomAttributes() is called', async () => {
+    test('when custom session attributes are initialized at setup then EventCache.addSessionAttributes() is called', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {
             sessionAttributes: {
@@ -442,11 +443,11 @@ describe('Orchestration tests', () => {
             customAttributeNumber: 1,
             customAttributeBoolean: true
         };
-        orchestration.setCustomAttributes(expected);
+        orchestration.addSessionAttributes(expected);
 
         // Assert
-        expect(setCustomAttributes).toHaveBeenCalledTimes(1);
-        const actual = setCustomAttributes.mock.calls[0][0];
+        expect(addSessionAttributes).toHaveBeenCalledTimes(1);
+        const actual = addSessionAttributes.mock.calls[0][0];
 
         expect(actual).toEqual(expected);
     });

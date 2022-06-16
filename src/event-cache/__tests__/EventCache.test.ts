@@ -14,14 +14,14 @@ const getSession = jest.fn(() => ({
 const getUserId = jest.fn(() => 'b');
 const getAttributes = jest.fn();
 const incrementSessionEventCount = jest.fn();
-const setCustomAttributes = jest.fn();
+const addSessionAttributes = jest.fn();
 jest.mock('../../sessions/SessionManager', () => ({
     SessionManager: jest.fn().mockImplementation(() => ({
         getSession,
         getUserId,
         getAttributes,
         incrementSessionEventCount,
-        setCustomAttributes
+        addSessionAttributes
     }))
 }));
 
@@ -290,10 +290,10 @@ describe('EventCache tests', () => {
     /**
      * Test title truncated to meet lint requirements
      * Full title:
-     *  when EventCache.setCustomAttributes() is called
-     *  then SessionManager.setCustomAttributes() is called
+     *  when EventCache.addSessionAttributes() is called
+     *  then SessionManager.addSessionAttributes() is called
      */
-    test('EventCache.setCustomAttributes() calls SessionManager.setCustomAttributes()', async () => {
+    test('EventCache.addSessionAttributes() calls SessionManager.addSessionAttributes()', async () => {
         // Init
         const eventCache: EventCache = Utils.createEventCache({
             ...DEFAULT_CONFIG
@@ -306,14 +306,14 @@ describe('EventCache tests', () => {
         };
 
         // Run
-        eventCache.setCustomAttributes(expected);
+        eventCache.addSessionAttributes(expected);
 
         // Assert
         let actual;
 
         // Assert
-        expect(setCustomAttributes).toHaveBeenCalledTimes(1);
-        actual = setCustomAttributes.mock.calls[0][0];
+        expect(addSessionAttributes).toHaveBeenCalledTimes(1);
+        actual = addSessionAttributes.mock.calls[0][0];
 
         expect(actual).toEqual(expected);
     });

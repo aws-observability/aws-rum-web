@@ -42,7 +42,7 @@ const enable = jest.fn();
 const dispatch = jest.fn();
 const dispatchBeacon = jest.fn();
 const setAwsCredentials = jest.fn();
-const setCustomAttributes = jest.fn();
+const addSessionAttributes = jest.fn();
 const allowCookies = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
@@ -54,7 +54,7 @@ jest.mock('../orchestration/Orchestration', () => ({
         dispatch,
         dispatchBeacon,
         setAwsCredentials,
-        setCustomAttributes,
+        addSessionAttributes,
         allowCookies,
         recordPageView,
         recordError,
@@ -247,14 +247,14 @@ describe('CommandQueue tests', () => {
         expect(setAwsCredentials).toHaveBeenCalled();
     });
 
-    test('setCustomAttributes calls Orchestration.setCustomAttributes', async () => {
+    test('addSessionAttributes calls Orchestration.addSessionAttributes', async () => {
         const cq: CommandQueue = getCommandQueue();
         const result = await cq.push({
-            c: 'setCustomAttributes',
+            c: 'addSessionAttributes',
             p: { customAttribute: 'customAttributeValue' }
         });
         expect(Orchestration).toHaveBeenCalled();
-        expect(setCustomAttributes).toHaveBeenCalled();
+        expect(addSessionAttributes).toHaveBeenCalled();
     });
 
     test('allowCookies calls Orchestration.allowCookies', async () => {
