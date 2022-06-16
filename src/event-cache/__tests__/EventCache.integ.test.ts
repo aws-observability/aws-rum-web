@@ -78,7 +78,7 @@ describe('EventCache tests', () => {
             ...{
                 allowCookies: false,
                 sessionLengthSeconds: 0,
-                customAttributesMap: {
+                sessionAttributes: {
                     version: '2.0.0',
                     domain: 'overridden.console.aws.amazon.com',
                     browserLanguage: 'en-UK',

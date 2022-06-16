@@ -5,7 +5,7 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     dispatchInterval: 0,
     telemetries: ['performance'],
     clientBuilder: showRequestClientBuilder,
-    customAttributesMap: {
+    sessionAttributes: {
         customAttributeAtInit: 'customAttributeAtInitValue'
     }
 });

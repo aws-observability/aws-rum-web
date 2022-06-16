@@ -673,7 +673,7 @@ describe('SessionManager tests', () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{
-                customAttributesMap: {
+                sessionAttributes: {
                     customAttributeString: 'customPageAttributeValue',
                     customAttributeNumber: 1,
                     customAttributeBoolean: true
@@ -697,21 +697,21 @@ describe('SessionManager tests', () => {
             ...DEFAULT_CONFIG
         });
 
-        const customAttributesMap = {
+        const sessionAttributes = {
             customAttributeString: 'customPageAttributeValue',
             customAttributeNumber: 1,
             customAttributeBoolean: true
         };
 
-        sessionManager.setCustomAttributes(customAttributesMap);
+        sessionManager.setCustomAttributes(sessionAttributes);
 
-        const sessionAttributes = sessionManager.getAttributes();
+        const actualSessionAttributes = sessionManager.getAttributes();
 
         // Assert
-        expect(sessionAttributes.customAttributeString).toEqual(
+        expect(actualSessionAttributes.customAttributeString).toEqual(
             'customPageAttributeValue'
         );
-        expect(sessionAttributes.customAttributeNumber).toEqual(1);
-        expect(sessionAttributes.customAttributeBoolean).toEqual(true);
+        expect(actualSessionAttributes.customAttributeNumber).toEqual(1);
+        expect(actualSessionAttributes.customAttributeBoolean).toEqual(true);
     });
 });

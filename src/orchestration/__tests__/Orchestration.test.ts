@@ -430,7 +430,7 @@ describe('Orchestration tests', () => {
     test('when custom session attributes are initialized at setup then EventCache.setCustomAttributes() is called', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {
-            customAttributesMap: {
+            sessionAttributes: {
                 customAttributeString: 'customAttributeValue',
                 customAttributeNumber: 1,
                 customAttributeBoolean: true

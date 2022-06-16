@@ -95,9 +95,7 @@ export class SessionManager {
         this.collectAttributes();
 
         // Set custom session attributes
-        if (this.config.customAttributesMap) {
-            this.setCustomAttributes(this.config.customAttributesMap);
-        }
+        this.setCustomAttributes(this.config.sessionAttributes);
 
         // Attempt to restore the previous session
         this.getSessionFromCookie();
@@ -134,15 +132,12 @@ export class SessionManager {
 
     /**
      * Adds custom session attributes to the session's attributes
-     * @param customAttributesMap object containing custom attribute data in the form of key, value pairs
+     * @param sessionAttributes object containing custom attribute data in the form of key, value pairs
      */
-    public setCustomAttributes(customAttributesMap: {
+    public setCustomAttributes(sessionAttributes: {
         [k: string]: string | number | boolean;
     }) {
-        const attributeKeys = Object.keys(customAttributesMap);
-        for (const attribute of attributeKeys) {
-            this.attributes[attribute] = customAttributesMap[attribute];
-        }
+        this.attributes = { ...this.attributes, ...sessionAttributes };
     }
 
     public getUserId(): string {

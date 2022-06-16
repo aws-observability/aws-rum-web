@@ -1,3 +1,4 @@
+import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 import { Selector } from 'testcafe';
 import {
     STATUS_202,
@@ -29,15 +30,6 @@ const PLATFORM_TYPE = 'platformType';
 const button1: Selector = Selector(`#${BUTTON_ID_1}`);
 
 fixture('Session Handler usage').page('http://localhost:8080/');
-
-const removeUnwantedEvents = (json: any) => {
-    for (let i = 0; i < json.RumEvents.length; i++) {
-        if (/(session_start_event)/.test(json.RumEvents[i].type)) {
-            json.RumEvents.splice(i, 1);
-        }
-    }
-    return json;
-};
 
 test('When cookies are enabled, sessionManager records events using cookies', async (t: TestController) => {
     await t.wait(300);
@@ -130,11 +122,11 @@ test('When custom attribute set at init, custom attribute recorded in event meta
         .pressKey('ctrl+a delete')
         .click(SUBMIT);
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === SESSION_START_EVENT_TYPE
     );
 
-    const metaData = JSON.parse(json.RumEvents[0].metadata);
+    const metaData = JSON.parse(events[0].metadata);
 
     await t
         .expect(metaData.customAttributeAtInit)
@@ -156,13 +148,11 @@ test('When custom attribute set at runtime, custom attribute recorded in event m
         .pressKey('ctrl+a delete')
         .click(SUBMIT);
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === PAGE_VIEW_EVENT_TYPE
     );
 
-    const metaData = JSON.parse(
-        json.RumEvents[json.RumEvents.length - 1].metadata
-    );
+    const metaData = JSON.parse(events[events.length - 1].metadata);
 
     await t
         .expect(metaData.customPageAttributeAtRuntimeString)
