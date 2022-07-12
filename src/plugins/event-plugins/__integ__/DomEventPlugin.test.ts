@@ -62,7 +62,7 @@ test('when element without an id is clicked then node type is recorded', async (
 
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
-            e.type === DOM_EVENT_TYPE && JSON.parse(e.details).elementId === 'A'
+            e.type === DOM_EVENT_TYPE && JSON.parse(e.details).element === 'A'
     );
 
     const eventType = events[0].type;
@@ -74,7 +74,7 @@ test('when element without an id is clicked then node type is recorded', async (
         .expect(eventDetails)
         .contains({
             event: 'click',
-            elementId: 'A'
+            element: 'A'
         });
 });
 

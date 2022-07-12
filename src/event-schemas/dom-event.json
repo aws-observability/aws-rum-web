@@ -5,13 +5,17 @@
     "type": "object",
     "properties": {
         "version": {
-            "const": "1.0.0",
+            "const": "1.1.0",
             "type": "string",
             "description": "Schema version."
         },
         "event": {
             "type": "string",
             "description": "DOM event type (e.g., click, scroll, hover, etc.)"
+        },
+        "element": {
+            "type": "string",
+            "description": "DOM element type."
         },
         "elementId": {
             "type": "string",
@@ -20,8 +24,12 @@
         "cssLocator": {
             "type": "string",
             "description": "CSS Locator string."
+        },
+        "interactionId": {
+            "type": "string",
+            "description": "A unique ID for the interaction."
         }
     },
     "additionalProperties": false,
-    "required": ["version", "event", "elementId"]
+    "required": ["version", "event"]
 }

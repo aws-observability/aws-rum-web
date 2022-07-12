@@ -47,7 +47,8 @@
 
             function registerDomEvents() {
                 cwr('registerDomEvents', [
-                    { event: 'click', cssLocator: '[label="label2"]' }
+                    { event: 'click', cssLocator: '[label="label2"]' },
+                    { event: 'click', cssLocator: '[label^="button-"]' }
                 ]);
             }
         </script>
@@ -89,6 +90,14 @@
             Update Plugin
         </button>
         <button id="button5" label="label2">Button Five</button>
+        <hr />
+        <button id="button6" data-rum-id="button-six" label="button-label1">
+            Button Six
+        </button>
+        <button id="button7" data-rum-id="button-seven" label="button-label2">
+            <span>Button Seven</span>
+        </button>
+        <button>Button Eight</button>
         <hr />
         <button id="dispatch" onclick="dispatch()">Dispatch</button>
         <button id="clearRequestResponse" onclick="clearRequestResponse()">
