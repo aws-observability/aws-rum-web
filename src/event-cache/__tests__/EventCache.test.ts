@@ -203,10 +203,7 @@ describe('EventCache tests', () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const eventCache: EventCache = Utils.createEventCache({
-            ...DEFAULT_CONFIG,
-            ...{
-                pagesToInclude: [/.*/]
-            }
+            ...DEFAULT_CONFIG
         });
         const expectedEvents: RumEvent[] = [
             {

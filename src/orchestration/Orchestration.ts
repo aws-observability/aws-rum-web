@@ -122,7 +122,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         eventPluginsToLoad: [],
         pageIdFormat: PageIdFormatEnum.Path,
         pagesToExclude: [],
-        pagesToInclude: [],
+        pagesToInclude: [/.*/],
         recordResourceUrl: true,
         retries: 2,
         routeChangeComplete: 100,
