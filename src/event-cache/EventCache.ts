@@ -218,19 +218,14 @@ export class EventCache {
      */
     private isCurrentUrlAllowed() {
         const location = document.location.toString();
+        const exclude = this.config.pagesToExclude.some((re) =>
+            re.test(location)
+        );
 
-        if (
-            this.config.pagesToExclude.length > 0 &&
-            this.config.pagesToExclude.some((re) => re.test(location))
-        ) {
-            return false;
-        }
+        const include = this.config.pagesToInclude.some((re) =>
+            re.test(location)
+        );
 
-        if (
-            !this.config.pagesToInclude.length ||
-            this.config.pagesToInclude.some((re) => re.test(location))
-        ) {
-            return true;
-        }
+        return include && !exclude;
     }
 }

@@ -157,7 +157,7 @@ describe('Orchestration tests', () => {
             eventPluginsToLoad: [],
             pageIdFormat: PageIdFormatEnum.Path,
             pagesToExclude: [],
-            pagesToInclude: [],
+            pagesToInclude: [/.*/],
             recordResourceUrl: true,
             retries: 2,
             routeChangeComplete: 100,
