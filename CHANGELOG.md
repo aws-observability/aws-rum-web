@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* DOM event plugin add data-rum-id attribute ([#163](https://github.com/aws-observability/aws-rum-web/issues/163)) ([ee8f548](https://github.com/aws-observability/aws-rum-web/pull/163/commits/ee8f54872155d29014996659f579dde7e8fb0ff7))
+* Add interaction Id to DOM event plugin ([#163](https://github.com/aws-observability/aws-rum-web/issues/163)) ([ee8f548](https://github.com/aws-observability/aws-rum-web/pull/163/commits/ee8f54872155d29014996659f579dde7e8fb0ff7))
 
 
 ### Bug Fixes
