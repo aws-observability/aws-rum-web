@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/aws-observability/aws-rum-web/compare/v1.6.0...v1.7.0) (2022-07-19)
+
+
+### Features
+
+* DOM event plugin add data-rum-id attribute ([#163](https://github.com/aws-observability/aws-rum-web/issues/163)) ([ee8f548](https://github.com/aws-observability/aws-rum-web/pull/163/commits/ee8f54872155d29014996659f579dde7e8fb0ff7))
+
+
+### Bug Fixes
+
+
 ## [1.6.0](https://github.com/aws-observability/aws-rum-web/compare/v1.5.1...v1.6.0) (2022-06-09)
 
 
