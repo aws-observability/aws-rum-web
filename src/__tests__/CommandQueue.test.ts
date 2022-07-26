@@ -45,6 +45,7 @@ const setAwsCredentials = jest.fn();
 const allowCookies = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
+const recordEvent = jest.fn();
 const registerDomEvents = jest.fn();
 jest.mock('../orchestration/Orchestration', () => ({
     Orchestration: jest.fn().mockImplementation(() => ({
@@ -56,6 +57,7 @@ jest.mock('../orchestration/Orchestration', () => ({
         allowCookies,
         recordPageView,
         recordError,
+        recordEvent,
         registerDomEvents
     }))
 }));
@@ -193,15 +195,15 @@ describe('CommandQueue tests', () => {
         ).rejects.toEqual(Error('CWR: Failed to load remote config: 403'));
     });
 
-    test('push() recordEvent throws UnsupportedOperationException', async () => {
+    test('push() recordLog throws UnsupportedOperationException', async () => {
         const commandQueue: CommandQueue = getCommandQueue();
         return expect(
             commandQueue.push({
-                c: 'recordEvent',
-                p: { event: 'my_event' }
+                c: 'recordLog',
+                p: { event: 'my_log' }
             })
         ).rejects.toEqual(
-            new Error('CWR: UnsupportedOperationException: recordEvent')
+            new Error('CWR: UnsupportedOperationException: recordLog')
         );
     });
 
@@ -273,6 +275,16 @@ describe('CommandQueue tests', () => {
         });
         expect(Orchestration).toHaveBeenCalled();
         expect(recordError).toHaveBeenCalled();
+    });
+
+    test('recordEvent calls Orchestration.recordEvent', async () => {
+        const cq: CommandQueue = getCommandQueue();
+        await cq.push({
+            c: 'recordEvent',
+            p: false
+        });
+        expect(Orchestration).toHaveBeenCalled();
+        expect(recordEvent).toHaveBeenCalled();
     });
 
     test('registerDomEvents calls Orchestration.registerDomEvents', async () => {

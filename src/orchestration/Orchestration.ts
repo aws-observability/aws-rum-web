@@ -13,6 +13,10 @@ import {
     JsErrorPlugin,
     JS_ERROR_EVENT_PLUGIN_ID
 } from '../plugins/event-plugins/JsErrorPlugin';
+import {
+    JsEventPlugin,
+    JS_GENERAL_EVENT_PLUGIN_ID
+} from '../plugins/event-plugins/JsEventPlugin';
 import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
@@ -23,6 +27,7 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
+import { HttpResponse } from '@aws-sdk/protocol-http';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -189,10 +194,11 @@ export type Config = {
  * - If the client was loaded as an NPM module, Orchestration is called directly by the application.
  */
 export class Orchestration {
+    private readonly eventCache: EventCache;
+    private readonly config: Config;
+
     private pluginManager: PluginManager;
-    private eventCache: EventCache;
     private dispatchManager: Dispatch;
-    private config: Config;
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
@@ -285,17 +291,17 @@ export class Orchestration {
     }
 
     /**
-     * Force the cllient to immediately dispatch events to the collector.
+     * Force the client to immediately dispatch events to the collector.
      */
-    public dispatch(): void {
-        this.dispatchManager.dispatchFetch();
+    public dispatch(): Promise<{ response: HttpResponse }> {
+        return this.dispatchManager.dispatchFetch();
     }
 
     /**
-     * Force the cllient to immediately dispatch events to the collector using a beacon.
+     * Force the client to immediately dispatch events to the collector using a beacon.
      */
-    public dispatchBeacon(): void {
-        this.dispatchManager.dispatchBeacon();
+    public dispatchBeacon(): Promise<{ response: HttpResponse }> {
+        return this.dispatchManager.dispatchBeacon();
     }
 
     /**
@@ -326,7 +332,7 @@ export class Orchestration {
     /**
      * Update the current page the user is interacting with.
      * @param payload Can be string or PageAttributes object
-     *      If string, payload is pageId (The unique ID for the page within the application).
+     *      If a string, payload is pageId (The unique ID for the page within the application).
      *      If PageAttributes, payload contains pageId as well as page attributes to include in events with pageId
      */
     public recordPageView(payload: string | PageAttributes) {
@@ -339,6 +345,14 @@ export class Orchestration {
      */
     public recordError(error: any) {
         this.pluginManager.record(JS_ERROR_EVENT_PLUGIN_ID, error);
+    }
+
+    /**
+     * Record an error using the JS event plugin.
+     * @param event any metadata.
+     */
+    public recordEvent(event: any) {
+        this.pluginManager.record(JS_GENERAL_EVENT_PLUGIN_ID, event);
     }
 
     /**
@@ -473,6 +487,7 @@ export class Orchestration {
             },
             [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {
                 return [new DomEventPlugin(config)];
+                return [new JsEventPlugin(config)];
             },
             [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];

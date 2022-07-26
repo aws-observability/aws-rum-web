@@ -20,8 +20,9 @@ export const PERFORMANCE_FIRST_CONTENTFUL_PAINT_EVENT_TYPE = `${RUM_AMZ_PREFIX}.
 // DOM event schemas
 export const DOM_EVENT_TYPE = `${RUM_AMZ_PREFIX}.dom_event`;
 
-// JS error event schemas
+// JS event schemas
 export const JS_ERROR_EVENT_TYPE = `${RUM_AMZ_PREFIX}.js_error_event`;
+export const JS_GENERAL_EVENT_TYPE = `${RUM_AMZ_PREFIX}.js_general_event`;
 
 // Page view event
 export const PAGE_VIEW_EVENT_TYPE = `${RUM_AMZ_PREFIX}.page_view_event`;

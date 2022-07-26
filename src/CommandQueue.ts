@@ -44,6 +44,9 @@ export class CommandQueue {
         recordError: (payload: any): void => {
             this.orchestration.recordError(payload);
         },
+        recordEvent: (payload: any): void => {
+            this.orchestration.recordEvent(payload);
+        },
         registerDomEvents: (payload: any): void => {
             this.orchestration.registerDomEvents(payload);
         },
@@ -84,7 +87,7 @@ export class CommandQueue {
             awsRum.c = config;
             this.initCwr(awsRum);
         } else {
-            // Ther is no remote config file -- initialize CWR immediately.
+            // There is no remote config file -- initialize CWR immediately.
             this.initCwr(awsRum);
         }
     }
