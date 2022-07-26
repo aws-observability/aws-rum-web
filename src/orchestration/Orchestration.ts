@@ -349,7 +349,7 @@ export class Orchestration {
     }
 
     /**
-     * Record an error using the JS event plugin.
+     * Record an event using the JS event plugin.
      * @param event name and any data.
      */
     public recordEvent(event: RecordJsEvent) {
@@ -487,8 +487,7 @@ export class Orchestration {
                 ];
             },
             [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {
-                return [new DomEventPlugin(config)];
-                return [new JsEventPlugin(config)];
+                return [new DomEventPlugin(config), new JsEventPlugin(config)];
             },
             [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];

@@ -290,6 +290,7 @@ describe('Orchestration tests', () => {
         });
         const expected = [
             'com.amazonaws.rum.dom-event',
+            'com.amazonaws.rum.js-event',
             'com.amazonaws.rum.page-view'
         ];
         const actual = [];
