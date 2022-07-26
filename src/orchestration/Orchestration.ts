@@ -15,7 +15,8 @@ import {
 } from '../plugins/event-plugins/JsErrorPlugin';
 import {
     JsEventPlugin,
-    JS_GENERAL_EVENT_PLUGIN_ID
+    JS_GENERAL_EVENT_PLUGIN_ID,
+    RecordJsEvent
 } from '../plugins/event-plugins/JsEventPlugin';
 import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
@@ -349,9 +350,9 @@ export class Orchestration {
 
     /**
      * Record an error using the JS event plugin.
-     * @param event any metadata.
+     * @param event name and any data.
      */
-    public recordEvent(event: any) {
+    public recordEvent(event: RecordJsEvent) {
         this.pluginManager.record(JS_GENERAL_EVENT_PLUGIN_ID, event);
     }
 

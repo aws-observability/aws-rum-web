@@ -1,6 +1,7 @@
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
+import { RecordJsEvent } from './plugins/event-plugins/JsEventPlugin';
 
 /**
  * An AWS RUM Client command.
@@ -44,7 +45,7 @@ export class CommandQueue {
         recordError: (payload: any): void => {
             this.orchestration.recordError(payload);
         },
-        recordEvent: (payload: any): void => {
+        recordEvent: (payload: RecordJsEvent): void => {
             this.orchestration.recordEvent(payload);
         },
         registerDomEvents: (payload: any): void => {

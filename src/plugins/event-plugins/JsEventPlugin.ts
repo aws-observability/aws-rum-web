@@ -4,15 +4,22 @@ import { JSGeneralEvent } from '../../events/js-general-event';
 
 export const JS_GENERAL_EVENT_PLUGIN_ID = 'js-event';
 
+interface JsEvent {
+    name: string;
+    data?: any;
+}
+
+export type RecordJsEvent = JsEvent | string;
+
 export type JsEventPluginConfig = {
-    ignore: (event: any) => boolean;
+    ignore: (event: JsEvent) => boolean;
 };
 
 const defaultConfig: JsEventPluginConfig = {
     ignore: () => false
 };
 
-export class JsEventPlugin extends InternalPlugin {
+export class JsEventPlugin extends InternalPlugin<unknown, RecordJsEvent> {
     private config: JsEventPluginConfig;
 
     constructor(config?: Partial<JsEventPluginConfig>) {
@@ -34,14 +41,22 @@ export class JsEventPlugin extends InternalPlugin {
         this.enabled = false;
     }
 
-    record(event: any): void {
-        if (!this.enabled || this.config.ignore(event)) {
+    record(event: RecordJsEvent): void {
+        let eventToSend: JsEvent;
+
+        if (typeof event === 'string') {
+            eventToSend = { name: event };
+        } else {
+            eventToSend = event;
+        }
+
+        if (!this.enabled || this.config.ignore(eventToSend)) {
             return;
         }
 
         const rumEvent: JSGeneralEvent = {
             version: '1.0.0',
-            metadata: event
+            ...eventToSend
         };
 
         this.context?.record(JS_GENERAL_EVENT_TYPE, rumEvent);

@@ -9,11 +9,15 @@
             "type": "string",
             "description": "Schema version."
         },
-        "metadata": {
+        "name": {
+            "type": "string",
+            "description": "Event name"
+        },
+        "data": {
             "type": ["object", "string"],
-            "description": "Any event metadata"
+            "description": "Optional event data"
         }
     },
     "additionalProperties": false,
-    "required": ["version", "metadata"]
+    "required": ["version", "name"]
 }

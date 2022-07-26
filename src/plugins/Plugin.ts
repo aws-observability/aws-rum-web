@@ -1,6 +1,9 @@
 import { PluginContext } from './types';
 
-export interface Plugin<UpdateType extends unknown = unknown> {
+export interface Plugin<
+    UpdateType extends unknown = unknown,
+    RecordType extends unknown = unknown
+> {
     /**
      * Load the plugin. The plugin should initialize itself and start recording events
      * for which it is configured.
@@ -27,7 +30,7 @@ export interface Plugin<UpdateType extends unknown = unknown> {
      * Manually record an event.
      * @param data Data that the plugin will use to create an event.
      */
-    record?<D extends unknown>(data: D): void;
+    record?(data: RecordType): void;
 
     /**
      * Update the plugin.

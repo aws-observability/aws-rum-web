@@ -8,18 +8,34 @@ describe('JsEventPlugin tests', () => {
         getSession.mockClear();
     });
 
-    test('when a string is thrown then the plugin records the name and message', async () => {
+    test('when a string is sent then the plugin records the event name', async () => {
         const plugin: JsEventPlugin = new JsEventPlugin();
 
         // Run
         plugin.load(context);
 
-        plugin.record('Something happened');
+        plugin.record('some-event');
 
         // Assert
         expect(record.mock.calls[0][0]).toEqual(JS_GENERAL_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
-            metadata: 'Something happened'
+            name: 'some-event'
+        });
+    });
+
+    test('when a JsEvent object is sent then the plugin records the event name and data', async () => {
+        const plugin: JsEventPlugin = new JsEventPlugin();
+
+        // Run
+        plugin.load(context);
+
+        plugin.record({ name: 'some-event', data: 'event data' });
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(JS_GENERAL_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            name: 'some-event',
+            data: 'event data'
         });
     });
 
@@ -47,7 +63,7 @@ describe('JsEventPlugin tests', () => {
     test('when ignore passed, ignore certain events', async () => {
         const plugin: JsEventPlugin = new JsEventPlugin({
             ignore(event) {
-                return event === 'Something happened';
+                return event.name === 'Something happened';
             }
         });
 
