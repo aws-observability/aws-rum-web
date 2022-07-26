@@ -15,6 +15,7 @@ module.exports = merge(common, {
             './src/loader/loader-dom-event-mutation-observer-enabled.js',
         loader_ingestion: './src/loader/loader-ingestion.js',
         loader_js_error_event: './src/loader/loader-js-error-event.js',
+        loader_js_general_event: './src/loader/loader-js-general-event.js',
         loader_http_fetch_event: './src/loader/loader-http-fetch-event.js',
         loader_http_xhr_event: './src/loader/loader-http-xhr-event.js',
         loader_web_vital_event: './src/loader/loader-web-vital-event.js',

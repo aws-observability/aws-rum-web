@@ -10,6 +10,7 @@ export {
 export { ClientBuilder } from './dispatch/Dispatch';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';
+export * from './plugins/event-plugins/JsEventPlugin';
 export * from './plugins/event-plugins/NavigationPlugin';
 export * from './plugins/event-plugins/PageViewPlugin';
 export * from './plugins/event-plugins/ResourcePlugin';

@@ -1,5 +1,6 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { JS_GENERAL_EVENT_TYPE } from '../utils/constant';
+import { JSGeneralEvent } from '../../events/js-general-event';
 
 export const JS_GENERAL_EVENT_PLUGIN_ID = 'js-event';
 
@@ -38,6 +39,11 @@ export class JsEventPlugin extends InternalPlugin {
             return;
         }
 
-        this.context?.record(JS_GENERAL_EVENT_TYPE, { metadata: event });
+        const rumEvent: JSGeneralEvent = {
+            version: '1.0.0',
+            metadata: event
+        };
+
+        this.context?.record(JS_GENERAL_EVENT_TYPE, rumEvent);
     }
 }

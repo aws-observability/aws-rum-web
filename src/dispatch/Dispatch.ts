@@ -99,7 +99,7 @@ export class Dispatch {
     }
 
     /**
-     * Send meta data and events to the AWS RUM data plane service via fetch.
+     * Send metadata and events to the AWS RUM data plane service via fetch.
      */
     public dispatchFetch = async (): Promise<{ response: HttpResponse }> => {
         return this.dispatch(this.rum.sendFetch).catch(this.handleReject);
@@ -113,7 +113,7 @@ export class Dispatch {
     };
 
     /**
-     * Send meta data and events to the AWS RUM data plane service via fetch.
+     * Send metadata and events to the AWS RUM data plane service via fetch.
      *
      * Returns undefined on failure.
      */
@@ -125,7 +125,7 @@ export class Dispatch {
     };
 
     /**
-     * Send meta data and events to the AWS RUM data plane service via beacon.
+     * Send metadata and events to the AWS RUM data plane service via beacon.
      *
      * Returns undefined on failure.
      */

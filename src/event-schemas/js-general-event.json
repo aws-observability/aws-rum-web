@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.js_general_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "JSGeneralEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "metadata": {
+            "type": ["object", "string"],
+            "description": "Any event metadata"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "metadata"]
+}
