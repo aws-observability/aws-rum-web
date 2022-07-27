@@ -96,4 +96,4 @@ The snippet below shows several configuration options with the body of the snipp
 </script>
 ```
 
-For a complete list of configuration options, see [Application-specific Configurations](docs/configuration.md).
+For a complete list of configuration options, see [Application-specific Configurations](configuration.md).
