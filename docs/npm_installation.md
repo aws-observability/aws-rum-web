@@ -78,4 +78,4 @@ const config: AwsRumConfig = {
 };
 ```
 
-For a complete list of configuration options, see [Application-specific Configurations](docs/configuration.md).
+For a complete list of configuration options, see [Application-specific Configurations](configuration.md).
