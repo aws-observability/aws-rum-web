@@ -377,6 +377,15 @@ export class Orchestration {
         );
     }
 
+    /**
+     * Records a custom event.
+     * @param type A unique name for the type of event being recorded.
+     * @param eventData A JSON object containing the event's attributes.
+     */
+    public recordEvent(eventType: string, eventData: object) {
+        this.eventCache.recordEvent(eventType, eventData);
+    }
+
     private initEventCache(
         applicationId: string,
         applicationVersion: string

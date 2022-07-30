@@ -1,4 +1,5 @@
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
+import { Plugin } from 'plugins/Plugin';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 
@@ -65,6 +66,20 @@ export class CommandQueue {
         registerDomEvents: (payload: any): void => {
             this.orchestration.registerDomEvents(payload);
         },
+        recordEvent: (payload: any) => {
+            if (
+                typeof payload === 'object' &&
+                typeof payload.event_type === 'string' &&
+                typeof payload.event_data === 'object'
+            ) {
+                this.orchestration.recordEvent(
+                    payload.event_type,
+                    payload.event_data
+                );
+            } else {
+                throw new Error('IncorrectParametersException');
+            }
+        },
         dispatch: (): void => {
             this.orchestration.dispatch();
         },
@@ -102,7 +117,7 @@ export class CommandQueue {
             awsRum.c = config;
             this.initCwr(awsRum);
         } else {
-            // Ther is no remote config file -- initialize CWR immediately.
+            // There is no remote config file -- initialize CWR immediately.
             this.initCwr(awsRum);
         }
     }

@@ -5,7 +5,7 @@ import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
 import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
 import { PluginManager } from '../../plugins/PluginManager';
 import { PageIdFormatEnum } from '../Orchestration';
-import { PageAttributes } from 'sessions/PageManager';
+import { PageAttributes } from '../../sessions/PageManager';
 
 global.fetch = jest.fn();
 
@@ -23,13 +23,15 @@ const enableEventCache = jest.fn();
 const disableEventCache = jest.fn();
 const recordPageView = jest.fn();
 const addSessionAttributes = jest.fn();
+const recordEvent = jest.fn();
 
 jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
         recordPageView,
-        addSessionAttributes
+        addSessionAttributes,
+        recordEvent
     }))
 }));
 
@@ -451,6 +453,32 @@ describe('Orchestration tests', () => {
         expect(addSessionAttributes).toHaveBeenCalledTimes(1);
         const actual = addSessionAttributes.mock.calls[0][0];
 
+        expect(actual).toEqual(expected);
+    });
+
+    test('when recordEvent receives valid input then event is recorded', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+        const expected = {
+            int_field: 100,
+            string_field: 'string',
+            nested_field: { int_subfield: 100 }
+        };
+
+        orchestration.recordEvent('custom_event', expected);
+        expect(recordEvent).toHaveBeenCalledTimes(1);
+        const actual = recordEvent.mock.calls[0][1];
+        expect(actual).toEqual(expected);
+    });
+
+    test('when recordEvent has empty eventData then event is recorded', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+        const expected = {};
+
+        orchestration.recordEvent('custom_event', {});
+        expect(recordEvent).toHaveBeenCalledTimes(1);
+        const actual = recordEvent.mock.calls[0][1];
         expect(actual).toEqual(expected);
     });
 });

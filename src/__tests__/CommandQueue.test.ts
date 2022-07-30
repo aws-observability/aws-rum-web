@@ -47,6 +47,7 @@ const allowCookies = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
 const registerDomEvents = jest.fn();
+const recordEvent = jest.fn();
 jest.mock('../orchestration/Orchestration', () => ({
     Orchestration: jest.fn().mockImplementation(() => ({
         disable,
@@ -58,7 +59,8 @@ jest.mock('../orchestration/Orchestration', () => ({
         allowCookies,
         recordPageView,
         recordError,
-        registerDomEvents
+        registerDomEvents,
+        recordEvent
     }))
 }));
 
@@ -195,15 +197,15 @@ describe('CommandQueue tests', () => {
         ).rejects.toEqual(Error('CWR: Failed to load remote config: 403'));
     });
 
-    test('push() recordEvent throws UnsupportedOperationException', async () => {
+    test('push() recordLog throws UnsupportedOperationException', async () => {
         const commandQueue: CommandQueue = getCommandQueue();
         return expect(
             commandQueue.push({
-                c: 'recordEvent',
-                p: { event: 'my_event' }
+                c: 'recordLog',
+                p: { event: 'my_log' }
             })
         ).rejects.toEqual(
-            new Error('CWR: UnsupportedOperationException: recordEvent')
+            new Error('CWR: UnsupportedOperationException: recordLog')
         );
     });
 
@@ -340,5 +342,76 @@ describe('CommandQueue tests', () => {
             'us-west-2',
             undefined
         ]);
+    });
+
+    test('when recordEvent receives valid input then event is recorded', async () => {
+        const commandQueue: CommandQueue = getCommandQueue();
+        await commandQueue.init({ ...initArgsWithAppName });
+        await commandQueue.push({
+            c: 'recordEvent',
+            p: {
+                event_type: 'my_custom_event',
+                event_data: {
+                    version: 1.0,
+                    field1: { subfield1: 'subfield value' }
+                }
+            }
+        });
+        expect(Orchestration).toHaveBeenCalled();
+        expect(recordEvent).toHaveBeenCalled();
+        const mockEventType = recordEvent.mock.calls[0][0];
+        const mockEventData = recordEvent.mock.calls[0][1];
+        expect(mockEventType).toEqual('my_custom_event');
+        expect(mockEventData.version).toEqual(1.0);
+    });
+
+    test('when recordEvent payload is empty then throws IncorrectParameterException', async () => {
+        const commandQueue: CommandQueue = getCommandQueue();
+        await commandQueue.init({ ...initArgsWithAppName });
+        return expect(
+            commandQueue.push({
+                c: 'recordEvent',
+                p: {}
+            })
+        ).rejects.toEqual(new Error('IncorrectParametersException'));
+    });
+
+    test('when recordEvent payload.event_type is not a string then throws IncorrectParameterException', async () => {
+        const commandQueue: CommandQueue = getCommandQueue();
+        await commandQueue.init({ ...initArgsWithAppName });
+        return expect(
+            commandQueue.push({
+                c: 'recordEvent',
+                p: {
+                    event_type: { is_string: 'false' },
+                    event_data: { is_string: 'false' }
+                }
+            })
+        ).rejects.toEqual(new Error('IncorrectParametersException'));
+    });
+
+    test('when recordEvent payload.event_data is not an object then throws IncorrectParameterException', async () => {
+        const commandQueue: CommandQueue = getCommandQueue();
+        await commandQueue.init({ ...initArgsWithAppName });
+        return expect(
+            commandQueue.push({
+                c: 'recordEvent',
+                p: {
+                    event_type: 'custom_event_type',
+                    event_data: 'Not an object'
+                }
+            })
+        ).rejects.toEqual(new Error('IncorrectParametersException'));
+    });
+
+    test('when recordEvent payload is not an object then throws IncorrectParameterException', async () => {
+        const commandQueue: CommandQueue = getCommandQueue();
+        await commandQueue.init({ ...initArgsWithAppName });
+        return expect(
+            commandQueue.push({
+                c: 'recordEvent',
+                p: 'not object'
+            })
+        ).rejects.toEqual(new Error('IncorrectParametersException'));
     });
 });

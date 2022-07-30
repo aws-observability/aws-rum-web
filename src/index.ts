@@ -8,6 +8,8 @@ export {
     TelemetryEnum
 } from './orchestration/Orchestration';
 export { ClientBuilder } from './dispatch/Dispatch';
+export { Plugin } from './plugins/Plugin';
+export { PluginContext } from './plugins/types';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';
 export * from './plugins/event-plugins/NavigationPlugin';
