@@ -15,7 +15,8 @@ import {
     isUrlAllowed,
     createXRaySubsegment,
     requestInfoToHostname,
-    addAmznTraceIdHeaderToHeaders
+    addAmznTraceIdHeaderToHeaders,
+    resourceToUrlString
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -83,7 +84,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         argsArray: IArguments
     ): XRayTraceEvent => {
         const startTime = epochTime();
-        const http: Http = createXRayTraceEventHttp(init, true);
+        const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
             startTime
@@ -198,6 +199,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         return {
             version: '1.0.0',
             request: {
+                url: resourceToUrlString(input),
                 method: init?.method ? init.method : 'GET'
             }
         };
@@ -240,14 +242,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
 
-        let url: string;
-        if (typeof input === 'string') {
-            url = input;
-        } else {
-            url = input.url;
-        }
-
-        if (!isUrlAllowed(url, this.config)) {
+        if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray);
         }
 

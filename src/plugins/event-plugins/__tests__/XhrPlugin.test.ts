@@ -53,7 +53,8 @@ describe('XhrPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET'
+                method: 'GET',
+                url: './response.json'
             },
             response: {
                 status: 200,
@@ -106,7 +107,8 @@ describe('XhrPlugin tests', () => {
                     http: {
                         request: {
                             method: 'GET',
-                            traced: true
+                            traced: true,
+                            url: './response.json'
                         },
                         response: { status: 200, content_length: 125 }
                     }
@@ -256,7 +258,8 @@ describe('XhrPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET'
+                method: 'GET',
+                url: './response.json'
             },
             error: {
                 version: '1.0.0',

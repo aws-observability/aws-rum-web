@@ -24,6 +24,8 @@ import { HttpEvent } from '../../../events/http-event';
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
+const URL = 'https://aws.amazon.com';
+
 const TRACE_ID =
     'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1';
 
@@ -83,7 +85,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -92,7 +94,8 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET'
+                method: 'GET',
+                url: URL
             },
             response: {
                 status: 200,
@@ -113,7 +116,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com').catch((error) => {
+        await fetch(URL).catch((error) => {
             // Expected
         });
         plugin.disable();
@@ -124,7 +127,8 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET'
+                method: 'GET',
+                url: URL
             },
             error: {
                 version: '1.0.0',
@@ -145,7 +149,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com').catch((error) => {
+        await fetch(URL).catch((error) => {
             // Expected
         });
         plugin.disable();
@@ -156,7 +160,8 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             request: {
-                method: 'GET'
+                method: 'GET',
+                url: URL
             },
             error: {
                 version: '1.0.0',
@@ -178,7 +183,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOnContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -201,6 +206,7 @@ describe('FetchPlugin tests', () => {
                     http: {
                         request: {
                             method: 'GET',
+                            url: URL,
                             traced: true
                         },
                         response: { status: 200, content_length: 125 }
@@ -222,7 +228,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOnContext);
 
         // Run
-        await fetch('https://aws.amazon.com').catch((error) => {
+        await fetch(URL).catch((error) => {
             // Expected
         });
         plugin.disable();
@@ -246,6 +252,7 @@ describe('FetchPlugin tests', () => {
                     http: {
                         request: {
                             method: 'GET',
+                            url: URL,
                             traced: true
                         }
                     },
@@ -274,7 +281,7 @@ describe('FetchPlugin tests', () => {
         plugin.disable();
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -294,7 +301,7 @@ describe('FetchPlugin tests', () => {
         plugin.enable();
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -312,7 +319,7 @@ describe('FetchPlugin tests', () => {
         const init: RequestInit = {};
 
         // Run
-        await fetch('https://aws.amazon.com', init);
+        await fetch(URL, init);
         plugin.disable();
 
         // Assert
@@ -327,7 +334,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOnContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -346,7 +353,7 @@ describe('FetchPlugin tests', () => {
         const init: RequestInit = {};
 
         // Run
-        await fetch('https://aws.amazon.com', init);
+        await fetch(URL, init);
         plugin.disable();
 
         // Assert
@@ -364,7 +371,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOnContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -385,7 +392,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -416,7 +423,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOnContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -445,7 +452,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOnContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -465,7 +472,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com').catch((error) => {
+        await fetch(URL).catch((error) => {
             // Expected
         });
         plugin.disable();
@@ -500,7 +507,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com').catch((error) => {
+        await fetch(URL).catch((error) => {
             // Expected
         });
         plugin.disable();
@@ -535,7 +542,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -554,7 +561,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -574,7 +581,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
         global.fetch = mockFetch;
 
@@ -595,7 +602,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -615,7 +622,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch({ url: 'https://aws.amazon.com' } as Request);
+        await fetch({ url: URL } as Request);
         plugin.disable();
 
         // Assert
@@ -633,7 +640,7 @@ describe('FetchPlugin tests', () => {
         plugin.load(xRayOffContext);
 
         // Run
-        await fetch('https://aws.amazon.com');
+        await fetch(URL);
         plugin.disable();
 
         // Assert
@@ -720,7 +727,7 @@ describe('FetchPlugin tests', () => {
             }
         };
 
-        const request: Request = new Request('https://aws.amazon.com', init);
+        const request: Request = new Request(URL, init);
 
         // Run
         await fetch(request);
@@ -729,5 +736,37 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(request.headers.get(X_AMZN_TRACE_ID)).toEqual(TRACE_ID);
         expect(request.headers.get(SIGN_HEADER_KEY)).toEqual(SIGN_HEADER_VAL);
+    });
+
+    test('when fetch uses request object then the URL is added to the event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        const request: Request = new Request(URL);
+
+        // Run
+        await fetch(request);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'GET',
+                url: URL
+            },
+            response: {
+                status: 200,
+                statusText: 'OK'
+            }
+        });
     });
 });

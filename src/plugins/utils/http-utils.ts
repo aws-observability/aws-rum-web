@@ -71,12 +71,14 @@ export const epochTime = () => {
 };
 
 export const createXRayTraceEventHttp = (
+    input: RequestInfo,
     init: RequestInit,
     traced: boolean
 ): Http => {
     const http: Http = { request: {} };
     http.request.method = init?.method ? init.method : 'GET';
     http.request.traced = traced;
+    http.request.url = resourceToUrlString(input);
     return http;
 };
 
@@ -165,6 +167,15 @@ export const getAmznTraceIdHeaderValue = (
     segmentId: string
 ) => {
     return 'Root=' + traceId + ';Parent=' + segmentId + ';Sampled=1';
+};
+
+/**
+ * Extracts an URL string from the fetch resource parameter.
+ */
+export const resourceToUrlString = (resource: Request | URL | string) => {
+    return (resource as Request).url
+        ? (resource as Request).url
+        : resource.toString();
 };
 
 /**
