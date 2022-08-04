@@ -16,7 +16,10 @@ import {
     createXRaySubsegment,
     requestInfoToHostname,
     addAmznTraceIdHeaderToHeaders,
-    resourceToUrlString
+    resourceToUrlString,
+    is429,
+    is4xx,
+    is5xx
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -24,7 +27,6 @@ import {
     isErrorPrimitive
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
-import { InternalPlugin } from '../InternalPlugin';
 
 type Fetch = typeof fetch;
 
@@ -143,6 +145,18 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                 xRayTraceEvent.subsegments[0].http.response = {
                     status: response.status
                 };
+
+                if (is429(response.status)) {
+                    xRayTraceEvent.subsegments[0].throttle = true;
+                    xRayTraceEvent.throttle = true;
+                } else if (is4xx(response.status)) {
+                    xRayTraceEvent.subsegments[0].error = true;
+                    xRayTraceEvent.error = true;
+                } else if (is5xx(response.status)) {
+                    xRayTraceEvent.subsegments[0].fault = true;
+                    xRayTraceEvent.fault = true;
+                }
+
                 const cl = parseInt(response.headers.get('Content-Length'), 10);
                 if (!isNaN(cl)) {
                     xRayTraceEvent.subsegments[0].http.response.content_length = cl;
@@ -150,7 +164,12 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
             }
 
             if (error) {
-                xRayTraceEvent.subsegments[0].error = true;
+                // Guidance from X-Ray documentation:
+                // > Record errors in segments when your application returns an
+                // > error to the user, and in subsegments when a downstream call
+                // > returns an error.
+                xRayTraceEvent.fault = true;
+                xRayTraceEvent.subsegments[0].fault = true;
                 if (error instanceof Object) {
                     this.appendErrorCauseFromObject(
                         xRayTraceEvent.subsegments[0],

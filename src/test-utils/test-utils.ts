@@ -165,7 +165,29 @@ export const mockFetchWith500 = jest.fn(
         Promise.resolve({
             status: 500,
             statusText: 'InternalError',
-            headers: {},
+            headers: new Headers({ 'Content-Length': '125' }),
+            body: '',
+            ok: false
+        } as any)
+);
+
+export const mockFetchWith400 = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.resolve({
+            status: 404,
+            statusText: 'Not Found',
+            headers: new Headers({ 'Content-Length': '125' }),
+            body: '',
+            ok: false
+        } as any)
+);
+
+export const mockFetchWith429 = jest.fn(
+    (input: RequestInfo, init?: RequestInit): Promise<Response> =>
+        Promise.resolve({
+            status: 429,
+            statusText: 'Too Many Requests',
+            headers: new Headers({ 'Content-Length': '125' }),
             body: '',
             ok: false
         } as any)

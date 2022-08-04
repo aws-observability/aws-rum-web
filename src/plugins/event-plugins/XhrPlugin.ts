@@ -11,7 +11,10 @@ import {
     isUrlAllowed,
     HttpPluginConfig,
     createXRaySubsegment,
-    requestInfoToHostname
+    requestInfoToHostname,
+    is429,
+    is4xx,
+    is5xx
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
@@ -141,6 +144,18 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             xhrDetails.trace.subsegments[0].http.response = {
                 status: xhr.status
             };
+
+            if (is429(xhr.status)) {
+                xhrDetails.trace.subsegments[0].throttle = true;
+                xhrDetails.trace.throttle = true;
+            } else if (is4xx(xhr.status)) {
+                xhrDetails.trace.subsegments[0].error = true;
+                xhrDetails.trace.error = true;
+            } else if (is5xx(xhr.status)) {
+                xhrDetails.trace.subsegments[0].fault = true;
+                xhrDetails.trace.fault = true;
+            }
+
             const cl = parseInt(xhr.getResponseHeader('Content-Length'), 10);
             if (!isNaN(cl)) {
                 xhrDetails.trace.subsegments[0].http.response.content_length = parseInt(
@@ -162,9 +177,14 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             : xhr.status.toString();
         if (xhrDetails) {
             const endTime = epochTime();
+            // Guidance from X-Ray documentation:
+            // > Record errors in segments when your application returns an
+            // > error to the user, and in subsegments when a downstream call
+            // > returns an error.
+            xhrDetails.trace.fault = true;
             xhrDetails.trace.end_time = endTime;
             xhrDetails.trace.subsegments[0].end_time = endTime;
-            xhrDetails.trace.subsegments[0].error = true;
+            xhrDetails.trace.subsegments[0].fault = true;
             xhrDetails.trace.subsegments[0].cause = {
                 exceptions: [
                     {

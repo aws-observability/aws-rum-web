@@ -15,7 +15,9 @@ import {
     mockFetchWith500,
     mockFetchWithError,
     mockFetchWithErrorObject,
-    mockFetchWithErrorObjectAndStack
+    mockFetchWithErrorObjectAndStack,
+    mockFetchWith400,
+    mockFetchWith429
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
@@ -243,6 +245,7 @@ describe('FetchPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
+            fault: true,
             subsegments: [
                 {
                     id: '0000000000000000',
@@ -256,13 +259,103 @@ describe('FetchPlugin tests', () => {
                             traced: true
                         }
                     },
-                    error: true,
+                    fault: true,
                     cause: {
                         exceptions: [
                             {
                                 type: 'Timeout'
                             }
                         ]
+                    }
+                }
+            ]
+        });
+    });
+
+    test('when fetch returns a 404 then segment error is true', async () => {
+        // Init
+        global.fetch = mockFetchWith400;
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+        global.fetch = mockFetch;
+
+        // Assert
+        expect(record.mock.calls[0][1]).toMatchObject({
+            error: true,
+            subsegments: [
+                {
+                    error: true,
+                    http: {
+                        response: { status: 404 }
+                    }
+                }
+            ]
+        });
+    });
+
+    test('when fetch returns a 429 then segment throttle is true', async () => {
+        // Init
+        global.fetch = mockFetchWith429;
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+        global.fetch = mockFetch;
+
+        // Assert
+        expect(record.mock.calls[0][1]).toMatchObject({
+            throttle: true,
+            subsegments: [
+                {
+                    throttle: true,
+                    http: {
+                        response: { status: 429 }
+                    }
+                }
+            ]
+        });
+    });
+
+    test('when fetch returns a 500 then segment fault is true', async () => {
+        // Init
+        global.fetch = mockFetchWith500;
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+        global.fetch = mockFetch;
+
+        // Assert
+        expect(record.mock.calls[0][1]).toMatchObject({
+            fault: true,
+            subsegments: [
+                {
+                    fault: true,
+                    http: {
+                        response: { status: 500 }
                     }
                 }
             ]
