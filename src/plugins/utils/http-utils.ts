@@ -53,6 +53,18 @@ export const defaultConfig: HttpPluginConfig = {
     addXRayTraceIdHeader: false
 };
 
+export const is4xx = (status: number) => {
+    return Math.floor(status / 100) === 4;
+};
+
+export const is5xx = (status: number) => {
+    return Math.floor(status / 100) === 5;
+};
+
+export const is429 = (status: number) => {
+    return status === 429;
+};
+
 export const isUrlAllowed = (url: string, config: HttpPluginConfig) => {
     const include = config.urlsToInclude.some((urlPattern) =>
         urlPattern.test(url)

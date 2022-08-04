@@ -208,11 +208,13 @@ describe('XhrPlugin tests', () => {
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
             end_time: 0,
+            fault: true,
             subsegments: [
                 {
                     id: '0000000000000000',
                     start_time: 0,
                     end_time: 0,
+                    fault: true,
                     http: {
                         request: {
                             method: 'GET',
