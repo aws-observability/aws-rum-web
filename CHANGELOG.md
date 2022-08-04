@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/aws-observability/aws-rum-web/compare/v1.7.0...v1.8.0) (2022-08-04)
+
+
+### Features
+
+* Add URL to http events and trace segments. ([#190](https://github.com/aws-observability/aws-rum-web/issues/190)) ([fb1f758](https://github.com/aws-observability/aws-rum-web/commit/fb1f7586c1d9f983de3d2c515ce9a0e62c02e632))
+
+
 ## [1.7.0](https://github.com/aws-observability/aws-rum-web/compare/v1.6.0...v1.7.0) (2022-07-19)
 
 
