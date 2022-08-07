@@ -13,12 +13,8 @@ type SendFunction = (
 ) => Promise<{ response: HttpResponse }>;
 
 interface DataPlaneClientInterface {
-    sendFetch: (
-        putRumEventsRequest: PutRumEventsRequest
-    ) => Promise<{ response: HttpResponse }>;
-    sendBeacon: (
-        putRumEventsRequest: PutRumEventsRequest
-    ) => Promise<{ response: HttpResponse }>;
+    sendFetch: SendFunction;
+    sendBeacon: SendFunction;
 }
 
 const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
@@ -102,14 +98,23 @@ export class Dispatch {
      * Send meta data and events to the AWS RUM data plane service via fetch.
      */
     public dispatchFetch = async (): Promise<{ response: HttpResponse }> => {
-        return this.dispatch(this.rum.sendFetch).catch(this.handleReject);
+        if (this.doRequest()) {
+            return this.rum
+                .sendFetch(this.createRequest())
+                .catch(this.handleReject);
+        }
     };
 
     /**
      * Send meta data and events to the AWS RUM data plane service via beacon.
      */
     public dispatchBeacon = async (): Promise<{ response: HttpResponse }> => {
-        return this.dispatch(this.rum.sendBeacon);
+        if (this.doRequest()) {
+            const request: PutRumEventsRequest = this.createRequest();
+            return this.rum
+                .sendBeacon(request)
+                .catch(() => this.rum.sendFetch(request));
+        }
     };
 
     /**
@@ -142,9 +147,22 @@ export class Dispatch {
     public startDispatchTimer() {
         document.addEventListener(
             'visibilitychange',
-            this.dispatchBeaconFailSilent
+            // The page is moving to the hidden state, which means it may be
+            // unloaded. The sendBeacon API would typically be used in this
+            // case. However, ad-blockers prevent sendBeacon from functioning.
+            // We therefore have two bad options:
+            //
+            // (1) Use sendBeacon and accept missing data when ad blockers are
+            //     used and the page loses visibility
+            // (2) Use fetch and accept missing data when the page is unloaded
+            //     before fetch completes
+            //
+            // A third option is to send both, however this would increase
+            // bandwitch and require deduping server side.
+            this.config.useBeacon
+                ? this.dispatchBeaconFailSilent
+                : this.dispatchFetchFailSilent
         );
-        document.addEventListener('pagehide', this.dispatchBeaconFailSilent);
         if (this.config.dispatchInterval <= 0 || this.dispatchTimerId) {
             return;
         }
@@ -160,34 +178,27 @@ export class Dispatch {
     public stopDispatchTimer() {
         document.removeEventListener(
             'visibilitychange',
-            this.dispatchBeaconFailSilent
+            this.config.useBeacon
+                ? this.dispatchBeaconFailSilent
+                : this.dispatchFetchFailSilent
         );
-        document.removeEventListener('pagehide', this.dispatchBeaconFailSilent);
         if (this.dispatchTimerId) {
             window.clearInterval(this.dispatchTimerId);
             this.dispatchTimerId = undefined;
         }
     }
 
-    private async dispatch(
-        send: SendFunction
-    ): Promise<{ response: HttpResponse }> {
-        if (!this.enabled) {
-            return;
-        }
+    private doRequest(): boolean {
+        return this.enabled && this.eventCache.hasEvents();
+    }
 
-        if (!this.eventCache.hasEvents()) {
-            return;
-        }
-
-        const putRumEventsRequest: PutRumEventsRequest = {
+    private createRequest(): PutRumEventsRequest | undefined {
+        return {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
             RumEvents: this.eventCache.getEventBatch()
         };
-
-        return send(putRumEventsRequest);
     }
 
     private handleReject = (e: any): { response: HttpResponse } => {
