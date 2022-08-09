@@ -281,6 +281,50 @@ describe('Dispatch tests', () => {
         expect(sendBeacon).toHaveBeenCalled();
     });
 
+    test('when useBeacon is false then visibilitychange uses fetch dispatch', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 1, useBeacon: false }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('visibilitychange'));
+
+        // Assert
+        expect(sendBeacon).not.toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalled();
+    });
+
+    test('when useBeacon is false then pagehide uses fetch dispatch', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 1, useBeacon: false }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('pagehide'));
+
+        // Assert
+        expect(sendBeacon).not.toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalled();
+    });
+
     test('when plugin is disabled then beacon dispatch does not run', async () => {
         // Init
         const dispatch = new Dispatch(

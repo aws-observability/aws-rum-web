@@ -94,6 +94,7 @@ export type PartialConfig = {
      * plugins which map to the selected categories.
      */
     telemetries?: Telemetry[];
+    useBeacon?: boolean;
     userIdRetentionDays?: number;
 };
 
@@ -131,6 +132,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
         telemetries: [],
+        useBeacon: true,
         userIdRetentionDays: 30
     };
 };
@@ -178,6 +180,7 @@ export type Config = {
     sessionLengthSeconds: number;
     sessionSampleRate: number;
     telemetries: Telemetry[];
+    useBeacon: boolean;
     userIdRetentionDays: number;
 };
 

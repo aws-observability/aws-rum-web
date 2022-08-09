@@ -167,6 +167,7 @@ describe('Orchestration tests', () => {
             sessionSampleRate: 1,
             userIdRetentionDays: 30,
             enableRumClient: true,
+            useBeacon: true,
             fetchFunction: fetch
         });
     });
