@@ -152,13 +152,22 @@ export class Dispatch {
             // case. However, ad-blockers prevent sendBeacon from functioning.
             // We therefore have two bad options:
             //
-            // (1) Use sendBeacon and accept missing data when ad blockers are
+            // (1) Use sendBeacon. Data will be lost when ad blockers are
             //     used and the page loses visibility
-            // (2) Use fetch and accept missing data when the page is unloaded
+            // (2) Use fetch. Data will be lost when the page is unloaded
             //     before fetch completes
             //
             // A third option is to send both, however this would increase
             // bandwitch and require deduping server side.
+            this.config.useBeacon
+                ? this.dispatchBeaconFailSilent
+                : this.dispatchFetchFailSilent
+        );
+        // Using 'pagehide' is redundant most of the time (visibilitychange is
+        // always fired before pagehide) but older browsers may support
+        // 'pagehide' but not 'visibilitychange'.
+        document.addEventListener(
+            'pagehide',
             this.config.useBeacon
                 ? this.dispatchBeaconFailSilent
                 : this.dispatchFetchFailSilent
@@ -178,6 +187,12 @@ export class Dispatch {
     public stopDispatchTimer() {
         document.removeEventListener(
             'visibilitychange',
+            this.config.useBeacon
+                ? this.dispatchBeaconFailSilent
+                : this.dispatchFetchFailSilent
+        );
+        document.removeEventListener(
+            'pagehide',
             this.config.useBeacon
                 ? this.dispatchBeaconFailSilent
                 : this.dispatchFetchFailSilent
