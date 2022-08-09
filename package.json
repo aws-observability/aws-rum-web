@@ -116,7 +116,7 @@
         "shimmer": "^1.2.1",
         "ua-parser-js": "^0.7.23",
         "uuid": "^8.3.2",
-        "web-vitals": "^1.1.1"
+        "web-vitals": "^2.1.4"
     },
     "lint-staged": {
         "*.{ts}": "npm run lint",
