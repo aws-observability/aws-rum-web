@@ -4,6 +4,11 @@ import * as Utils from '../../test-utils/test-utils';
 import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
+import {
+    MAX_ATTRIBUTE_KEY_LENGTH,
+    MAX_ATTRIBUTE_KEY_VALUE_LENGTH,
+    RUM_CUSTOM_ATTRIBUTE_LIMIT_VALUE
+} from '../../utils/constants';
 
 global.fetch = mockFetch;
 const getSession = jest.fn(() => ({
@@ -238,7 +243,7 @@ describe('EventCache tests', () => {
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
                 metadata:
-                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}',
+                    '{"version":"1.0.0","pageId":"/rum/home","title":"","pageTags":["pageGroup1"]}',
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -267,7 +272,7 @@ describe('EventCache tests', () => {
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
                 metadata:
-                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true}',
+                    '{"version":"1.0.0","pageId":"/rum/home","title":"","pageTags":["pageGroup1"],"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true}',
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -448,5 +453,154 @@ describe('EventCache tests', () => {
 
         // Assert
         expect(eventCache.getEventBatch().length).toEqual(1);
+    });
+
+    test('when number of custom attributes exceed limit then metadata is properly truncated', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const testMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        const expectedMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        for (let i = 0; i < RUM_CUSTOM_ATTRIBUTE_LIMIT_VALUE; i++) {
+            testMetadata[`testCustomAttributeKey${i + 1}`] =
+                'testCustomAttributeValue';
+            expectedMetadata[`testCustomAttributeKey${i + 1}`] =
+                'testCustomAttributeValue';
+        }
+
+        testMetadata[
+            `testCustomAttributeKey${RUM_CUSTOM_ATTRIBUTE_LIMIT_VALUE + 1}`
+        ] = 'testCustomAttributeValue';
+
+        const actualMetadata = eventCache.getValidMetadata(testMetadata);
+        expect(actualMetadata).toEqual(expectedMetadata);
+    });
+
+    test('when custom attribute has value of object type then it is removed from metadata', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const testMetadata = {
+            version: '1.0.0',
+            domain: '',
+            testCustomAttributeKey: []
+        };
+
+        const expectedMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        const actualMetadata = eventCache.getValidMetadata(testMetadata);
+        expect(actualMetadata).toEqual(expectedMetadata);
+    });
+
+    test('when custom attribute is pageTag with value of string array type then is included in metadata', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const testMetadata = {
+            version: '1.0.0',
+            domain: '',
+            pageTags: ['pageGroup1']
+        };
+
+        const expectedMetadata = {
+            version: '1.0.0',
+            domain: '',
+            pageTags: ['pageGroup1']
+        };
+
+        const actualMetadata = eventCache.getValidMetadata(testMetadata);
+        expect(actualMetadata).toEqual(expectedMetadata);
+    });
+
+    test('when custom attribute key has invalid length then custom attribute is removed from metadata', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const testMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        const expectedMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        let longKey = '';
+        for (let i = 0; i <= MAX_ATTRIBUTE_KEY_LENGTH + 1; i++) {
+            longKey += 'a';
+        }
+        testMetadata[longKey] = 'customAttributeValue';
+
+        const actualMetadata = eventCache.getValidMetadata(testMetadata);
+        expect(actualMetadata).toEqual(expectedMetadata);
+    });
+
+    test('when custom attribute value has invalid length then custom attribute is removed from metadata', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        let longValue = '';
+        for (let i = 0; i <= MAX_ATTRIBUTE_KEY_VALUE_LENGTH + 1; i++) {
+            longValue += 'a';
+        }
+
+        const testMetadata = {
+            version: '1.0.0',
+            domain: '',
+            customAttributeKey: longValue
+        };
+
+        const expectedMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        const actualMetadata = eventCache.getValidMetadata(testMetadata);
+        expect(actualMetadata).toEqual(expectedMetadata);
+    });
+
+    test('when custom attribute key has invalid char then custom attribute is removed from metadata', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const testMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        const expectedMetadata = {
+            version: '1.0.0',
+            domain: ''
+        };
+
+        const invalidKey = '!';
+        testMetadata[invalidKey] = 'customAttributeValue';
+
+        const actualMetadata = eventCache.getValidMetadata(testMetadata);
+        expect(actualMetadata).toEqual(expectedMetadata);
     });
 });
