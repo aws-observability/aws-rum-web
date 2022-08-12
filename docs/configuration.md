@@ -22,6 +22,7 @@ For example, the config object may look similar to the following:
 | --- | --- | --- | --- |
 | allowCookies | Boolean | `false` | Enable the web client to set and read two cookies: a session cookie named `cwr_s` and a user cookie named `cwr_u`.<br/><br/>`cwr_s` stores session data including an anonymous session ID (uuid v4) created by the web client. This allows CloudWatch RUM to compute sessionized metrics like errors per session.<br/><br/>`cwr_u` stores an anonymous user ID (uuid v4) created by the web client. This allows CloudWatch RUM to count return visitors.<br/><br/>`true`: the web client will use cookies<br/>`false`: the web client will not use cookies. |
 | cookieAttributes | [CookieAttributes](#cookieattributes) | `{ domain: window.location.hostname, path: '/', sameSite: 'Strict', secure: true } ` | Cookie attributes are applied to all cookies stored by the web client, including `cwr_s` and `cwr_u`. |
+| sessionAttributes | [MetadataAttributes](#metadataattributes) | `{ stage: 'beta', secure: true, numberOfVisits: 5, appVersion: '1.0.0'} ` | Session attributes will be added the metadata of all events in the session.|
 | disableAutoPageView | Boolean | `false` | When this field is `false`, the web client will automatically record page views.<br/><br/>By default, the web client records page views when (1) the page first loads and (2) the browser's [history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) is called. The page ID is `window.location.pathname`.<br/><br/>In some cases, the web client's instrumentation will not record the desired page ID. In this case, the web client's page view automation must be disabled using the `disableAutoPageView` configuration, and the application must be instrumented to record page views using the `recordPageView` command. |
 | enableRumClient | Boolean | `true` | When this field is `true`, the web client will record and dispatch RUM events. |
 | enableXRay | Boolean | `false` | When this field is `true` **and** the `http` telemetry is used, the web client will record X-Ray traces for HTTP requests.<br/><br/>See the [HTTP telemetry configuration](#http) for more information, including how to connect client-side and server-side traces. |
@@ -47,6 +48,14 @@ For example, the config object may look similar to the following:
 | sameSite | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | secure | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is true `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
+
+## MetadataAttributes
+In addition to the [default attributes](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/meta-data.json), you can add up to 10 custom attributes (page and session attributes combined) per event. Given that attribute names are unique, default attributes in the metadata can be overwritten if provided in this object. Please note that overwriting default attributes may negative affect your RUM console experience.
+
+| Field Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `[k: string]` | String \| Number \| Boolean | N/A | A session attribute added to the metadata of all events in the session. Attribute keys must conform to the following regex: `^(?!pageTags)[a-zA-Z0-9_]{1,128}$`. Attribute values can have up to 256 characters.  |
+
 
 ## Telemetry Config Array
 
