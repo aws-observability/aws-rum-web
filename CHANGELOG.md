@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.2](https://github.com/aws-observability/aws-rum-web/compare/v1.5.0...v1.8.2) (2022-08-18)
+
+
+### Bug Fixes
+* Remove error flag from x-ray trace root. ([#211](https://github.com/aws-observability/aws-rum-web/issues/211)) ([b71aaa9](https://github.com/aws-observability/aws-rum-web/commit/b71aaa9e5d34fc12ac81f0edf2cdc1de375698a0))
+
+
 ### [1.8.1](https://github.com/aws-observability/aws-rum-web/compare/v1.5.1...v1.8.1) (2022-08-04)
 
 
