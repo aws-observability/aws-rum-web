@@ -151,7 +151,6 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                     xRayTraceEvent.throttle = true;
                 } else if (is4xx(response.status)) {
                     xRayTraceEvent.subsegments[0].error = true;
-                    xRayTraceEvent.error = true;
                 } else if (is5xx(response.status)) {
                     xRayTraceEvent.subsegments[0].fault = true;
                     xRayTraceEvent.fault = true;

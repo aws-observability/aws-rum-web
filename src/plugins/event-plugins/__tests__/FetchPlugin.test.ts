@@ -290,7 +290,6 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(record.mock.calls[0][1]).toMatchObject({
-            error: true,
             subsegments: [
                 {
                     error: true,
