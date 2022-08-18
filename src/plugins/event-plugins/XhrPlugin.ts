@@ -150,7 +150,6 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 xhrDetails.trace.throttle = true;
             } else if (is4xx(xhr.status)) {
                 xhrDetails.trace.subsegments[0].error = true;
-                xhrDetails.trace.error = true;
             } else if (is5xx(xhr.status)) {
                 xhrDetails.trace.subsegments[0].fault = true;
                 xhrDetails.trace.fault = true;
