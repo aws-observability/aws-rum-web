@@ -45,6 +45,8 @@ export type Attributes = {
     platformType: string;
     // The fully qualified domain name (i.e., host name + domain name)
     domain: string;
+    // Custom attribute value types are restricted to the types: string | number | boolean
+    [k: string]: string | number | boolean;
 };
 
 /**
@@ -92,6 +94,9 @@ export class SessionManager {
         // Collect the user agent and domain
         this.collectAttributes();
 
+        // Set custom session attributes
+        this.addSessionAttributes(this.config.sessionAttributes);
+
         // Attempt to restore the previous session
         this.getSessionFromCookie();
     }
@@ -123,6 +128,16 @@ export class SessionManager {
 
     public getAttributes(): Attributes {
         return this.attributes;
+    }
+
+    /**
+     * Adds custom session attributes to the session's attributes
+     * @param sessionAttributes object containing custom attribute data in the form of key, value pairs
+     */
+    public addSessionAttributes(sessionAttributes: {
+        [k: string]: string | number | boolean;
+    }) {
+        this.attributes = { ...this.attributes, ...sessionAttributes };
     }
 
     public getUserId(): string {

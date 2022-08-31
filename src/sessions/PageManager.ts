@@ -17,11 +17,19 @@ export type Attributes = {
     parentPageId?: string;
     interaction?: number;
     pageTags?: string[];
+    // The value types of custom attributes are restricted to the types: string | number | boolean
+    // However, given that pageTags is a string array, we need to include it as a valid type
+    // Events will be verified by our service to validate attribute value types where
+    //  1) pageTags attribute value must be of type string[]
+    //  2) any other attribute value must be of the following types:
+    //      string | number | boolean
+    [k: string]: string | number | boolean | string[];
 };
 
 export type PageAttributes = {
     pageId: string;
     pageTags?: string[];
+    [k: string]: string | number | boolean | string[];
 };
 
 /**

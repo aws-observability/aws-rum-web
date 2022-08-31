@@ -63,6 +63,7 @@ export type PartialConfig = {
     batchLimit?: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes?: PartialCookieAttributes;
+    sessionAttributes?: { [k: string]: string | number | boolean };
     disableAutoPageView?: boolean;
     dispatchInterval?: number;
     enableRumClient?: boolean;
@@ -113,6 +114,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         allowCookies: false,
         batchLimit: 100,
         cookieAttributes,
+        sessionAttributes: {},
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
@@ -150,6 +152,7 @@ export type Config = {
     batchLimit: number;
     clientBuilder?: ClientBuilder;
     cookieAttributes: CookieAttributes;
+    sessionAttributes: { [k: string]: string | number | boolean };
     disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
@@ -277,6 +280,16 @@ export class Orchestration {
         credentials: Credentials | CredentialProvider
     ): void {
         this.dispatchManager.setAwsCredentials(credentials);
+    }
+
+    /**
+     * Set custom session attributes to add them to all event metadata.
+     * @param payload object containing custom attribute data in the form of key, value pairs
+     */
+    public addSessionAttributes(sessionAttributes: {
+        [key: string]: string | boolean | number;
+    }): void {
+        this.eventCache.addSessionAttributes(sessionAttributes);
     }
 
     /**
