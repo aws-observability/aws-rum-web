@@ -2,9 +2,9 @@ name: AWS RUM Web Client Continuous Build
 
 on:
     push:
-        branches: [main]
+        branches: [main, feature-custom-attributes-part-2]
     pull_request:
-        branches: [main]
+        branches: [main, feature-custom-attributes-part-2]
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
