@@ -118,7 +118,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 nodule: XMLHttpRequest.prototype,
                 name: 'open' as const,
                 wrapper: this.openWrapper
-            } as MonkeyPatch<XMLHttpRequest, 'open'>
+            } as MonkeyPatch<XMLHttpRequest, 'send' | 'open'>
         ];
     }
 
