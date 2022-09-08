@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.3](https://github.com/aws-observability/aws-rum-web/compare/v1.8.2...v1.8.3) (2022-09-08)
+
+
+### Bug Fixes
+
+* Fix MonkeyPatch type arg. ([2cbbfa8](https://github.com/aws-observability/aws-rum-web/commit/2cbbfa8942b75990f3cf85782a38a6ae3c07b2f4))
+
 ### [1.8.2](https://github.com/aws-observability/aws-rum-web/compare/v1.5.0...v1.8.2) (2022-08-18)
 
 
