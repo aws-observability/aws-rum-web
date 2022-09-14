@@ -3,6 +3,7 @@ import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
+import { DEFAULT_PAGE_ATTRIBUTES } from '../utils/constants';
 
 export type Page = {
     pageId: string;
@@ -29,7 +30,7 @@ export type Attributes = {
 export type PageAttributes = {
     pageId: string;
     pageTags?: string[];
-    [k: string]: string | number | boolean | string[];
+    pageAttributes?: { [k: string]: string | number | boolean };
 };
 
 /**
@@ -187,10 +188,14 @@ export class PageManager {
             }
         }
 
-        if (customPageAttributes) {
-            Object.keys(customPageAttributes).forEach((attribute) => {
-                this.attributes[attribute] = customPageAttributes[attribute];
-            });
+        if (customPageAttributes?.pageTags) {
+            this.attributes.pageTags = customPageAttributes.pageTags;
+        }
+        if (customPageAttributes?.pageAttributes) {
+            this.attributes = {
+                ...customPageAttributes.pageAttributes,
+                ...this.attributes
+            };
         }
     }
 

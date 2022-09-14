@@ -267,7 +267,7 @@ describe('EventCache tests', () => {
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
                 metadata:
-                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true}',
+                    '{"version":"1.0.0","customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}',
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -276,9 +276,11 @@ describe('EventCache tests', () => {
         eventCache.recordPageView({
             pageId: '/rum/home',
             pageTags: ['pageGroup1'],
-            customPageAttributeString: 'customPageAttributeValue',
-            customPageAttributeNumber: 1,
-            customPageAttributeBoolean: true
+            pageAttributes: {
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
         });
 
         // Assert
