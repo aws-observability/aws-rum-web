@@ -192,14 +192,10 @@ export class PageManager {
             this.attributes.pageTags = customPageAttributes.pageTags;
         }
         if (customPageAttributes?.pageAttributes) {
-            Object.keys(customPageAttributes.pageAttributes).forEach(
-                (attribute) => {
-                    if (!DEFAULT_PAGE_ATTRIBUTES.includes(attribute)) {
-                        this.attributes[attribute] =
-                            customPageAttributes.pageAttributes[attribute];
-                    }
-                }
-            );
+            this.attributes = {
+                ...customPageAttributes.pageAttributes,
+                ...this.attributes
+            };
         }
     }
 
