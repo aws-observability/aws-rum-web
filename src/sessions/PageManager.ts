@@ -3,6 +3,7 @@ import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
+import { DEFAULT_PAGE_ATTRIBUTES } from '../utils/constants';
 
 export type Page = {
     pageId: string;
@@ -193,7 +194,7 @@ export class PageManager {
         if (customPageAttributes?.pageAttributes) {
             Object.keys(customPageAttributes.pageAttributes).forEach(
                 (attribute) => {
-                    if (attribute !== 'pageId') {
+                    if (!DEFAULT_PAGE_ATTRIBUTES.includes(attribute)) {
                         this.attributes[attribute] =
                             customPageAttributes.pageAttributes[attribute];
                     }

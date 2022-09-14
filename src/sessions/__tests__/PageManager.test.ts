@@ -289,6 +289,7 @@ describe('PageManager tests', () => {
             pageTags: ['pageGroup1'],
             pageAttributes: {
                 pageId: '/rum/home/override',
+                pageTags: 'testingOverride',
                 customPageAttributeString: 'customPageAttributeValue',
                 customPageAttributeNumber: 1,
                 customPageAttributeBoolean: true
