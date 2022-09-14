@@ -187,18 +187,18 @@ export class PageManager {
             }
         }
 
-        if (customPageAttributes) {
-            if (customPageAttributes.pageTags) {
-                this.attributes.pageTags = customPageAttributes.pageTags;
-            }
-            if (customPageAttributes.pageAttributes) {
-                Object.keys(customPageAttributes.pageAttributes).forEach(
-                    (attribute) => {
+        if (customPageAttributes?.pageTags) {
+            this.attributes.pageTags = customPageAttributes.pageTags;
+        }
+        if (customPageAttributes?.pageAttributes) {
+            Object.keys(customPageAttributes.pageAttributes).forEach(
+                (attribute) => {
+                    if (attribute !== 'pageId') {
                         this.attributes[attribute] =
                             customPageAttributes.pageAttributes[attribute];
                     }
-                );
-            }
+                }
+            );
         }
     }
 
