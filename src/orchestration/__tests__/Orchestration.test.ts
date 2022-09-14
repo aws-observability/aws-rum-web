@@ -397,9 +397,11 @@ describe('Orchestration tests', () => {
         const expected: PageAttributes = {
             pageId: '/rum/home',
             pageTags: ['pageGroup1'],
-            customPageAttributeString: 'customPageAttributeValue',
-            customPageAttributeNumber: 1,
-            customPageAttributeBoolean: true
+            pageAttributes: {
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
         };
         orchestration.recordPageView(expected);
 

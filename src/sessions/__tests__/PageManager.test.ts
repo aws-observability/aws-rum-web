@@ -251,9 +251,11 @@ describe('PageManager tests', () => {
         pageManager.recordPageView({
             pageId: '/rum/home',
             pageTags: ['pageGroup1'],
-            customPageAttributeString: 'customPageAttributeValue',
-            customPageAttributeNumber: 1,
-            customPageAttributeBoolean: true
+            pageAttributes: {
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
         });
 
         // Assert

@@ -82,9 +82,11 @@
                 cwr('recordPageView', {
                     pageId: '/page_view_two',
                     pageTags: ['pageGroup1'],
-                    customPageAttributeString: 'customPageAttributeValue',
-                    customPageAttributeNumber: 1,
-                    customPageAttributeBoolean: true
+                    pageAttributes: {
+                        customPageAttributeString: 'customPageAttributeValue',
+                        customPageAttributeNumber: 1,
+                        customPageAttributeBoolean: true
+                    }
                 });
             }
 

@@ -29,7 +29,7 @@ export type Attributes = {
 export type PageAttributes = {
     pageId: string;
     pageTags?: string[];
-    [k: string]: string | number | boolean | string[];
+    pageAttributes?: { [k: string]: string | number | boolean };
 };
 
 /**
@@ -188,9 +188,17 @@ export class PageManager {
         }
 
         if (customPageAttributes) {
-            Object.keys(customPageAttributes).forEach((attribute) => {
-                this.attributes[attribute] = customPageAttributes[attribute];
-            });
+            if (customPageAttributes.pageTags) {
+                this.attributes.pageTags = customPageAttributes.pageTags;
+            }
+            if (customPageAttributes.pageAttributes) {
+                Object.keys(customPageAttributes.pageAttributes).forEach(
+                    (attribute) => {
+                        this.attributes[attribute] =
+                            customPageAttributes.pageAttributes[attribute];
+                    }
+                );
+            }
         }
     }
 
