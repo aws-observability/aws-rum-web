@@ -271,6 +271,7 @@ export class Orchestration {
     /**
      * Set the credential provider that will be used to authenticate with the
      * data plane service (AWS auth).
+     *
      * @param credentials A provider of AWS credentials.
      */
     public setAwsCredentials(
@@ -281,6 +282,7 @@ export class Orchestration {
 
     /**
      * Add a telemetry plugin.
+     *
      * @param plugin A plugin which adheres to the RUM web client's plugin interface.
      */
     public addPlugin(plugin: Plugin): void {
@@ -328,9 +330,10 @@ export class Orchestration {
 
     /**
      * Update the current page the user is interacting with.
+     *
      * @param payload Can be string or PageAttributes object
-     *      If string, payload is pageId (The unique ID for the page within the application).
-     *      If PageAttributes, payload contains pageId as well as page attributes to include in events with pageId
+     * If string, payload is pageId (The unique ID for the page within the application).
+     * If PageAttributes, payload contains pageId as well as page attributes to include in events with pageId
      */
     public recordPageView(payload: string | PageAttributes) {
         this.eventCache.recordPageView(payload);
@@ -338,6 +341,7 @@ export class Orchestration {
 
     /**
      * Record an error using the JS error plugin.
+     *
      * @param error An ErrorEvent, Error or primitive.
      */
     public recordError(error: any) {
@@ -346,6 +350,7 @@ export class Orchestration {
 
     /**
      * Update DOM plugin to record the (additional) provided DOM events.
+     *
      * @param events
      */
     public registerDomEvents(events: TargetDomEvent[]) {

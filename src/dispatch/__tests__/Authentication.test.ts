@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { Authentication } from '../Authentication';
 import { CRED_KEY } from '../../utils/constants';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';

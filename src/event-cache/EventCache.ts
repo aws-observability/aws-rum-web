@@ -180,6 +180,7 @@ export class EventCache {
 
     /**
      * Add an event to the cache.
+     *
      * @param type The event schema.
      */
     private addRecordToCache = (type: string, eventData: object) => {

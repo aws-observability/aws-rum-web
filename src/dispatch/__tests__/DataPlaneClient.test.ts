@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';

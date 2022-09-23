@@ -176,7 +176,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT2_SCHEMA, {});
 
         // Assert
-        expect(await eventCache.getEventBatch()).toEqual(
+        expect(eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
         expect(eventCache.hasEvents()).toBeFalsy();
@@ -219,7 +219,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        expect(await eventCache.getEventBatch()).toEqual(
+        expect(eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
     });
@@ -248,7 +248,7 @@ describe('EventCache tests', () => {
         });
 
         // Assert
-        expect(await eventCache.getEventBatch()).toEqual(
+        expect(eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
     });

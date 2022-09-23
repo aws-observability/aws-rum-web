@@ -48,7 +48,6 @@ export const verifyIngestionWithRetry = async (
 ) => {
     while (true) {
         if (retryCount === 0) {
-            // tslint:disable-next-line:no-console
             console.log('Retry attempt exhausted.');
             return false;
         }
@@ -62,7 +61,6 @@ export const verifyIngestionWithRetry = async (
             return true;
         } catch (error) {
             retryCount -= 1;
-            // tslint:disable-next-line:no-console
             console.log(`${error.message} Waiting for next retry.`);
             await new Promise((r) => setTimeout(r, 60000));
         }

@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { CRED_KEY } from '../../utils/constants';
 import { Credentials } from '@aws-sdk/types';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';

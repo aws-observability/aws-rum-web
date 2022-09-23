@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../../test-utils/integ-test-utils';
 import { DOM_EVENT_TYPE } from '../../utils/constant';

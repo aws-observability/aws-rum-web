@@ -1,14 +1,14 @@
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { Credentials } from '@aws-sdk/types';
 
-const METHOD: string = 'POST';
-const CONTENT_TYPE: string = 'application/x-amz-json-1.1';
-const PROTOCOL: string = 'https:';
+const METHOD = 'POST';
+const CONTENT_TYPE = 'application/x-amz-json-1.1';
+const PROTOCOL = 'https:';
 
 // Targets
-const GET_ID_TARGET: string = 'AWSCognitoIdentityService.GetId';
-const GET_TOKEN_TARGET: string = 'AWSCognitoIdentityService.GetOpenIdToken';
-const GET_CREDENTIALS_TARGET: string =
+const GET_ID_TARGET = 'AWSCognitoIdentityService.GetId';
+const GET_TOKEN_TARGET = 'AWSCognitoIdentityService.GetOpenIdToken';
+const GET_CREDENTIALS_TARGET =
     'AWSCognitoIdentityService.GetCredentialsForIdentity';
 
 interface CognitoProviderParameters {

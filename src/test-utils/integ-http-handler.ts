@@ -9,6 +9,7 @@ import { BeaconHttpHandler } from '../dispatch/BeaconHttpHandler';
 /**
  * Returns data plane service client with a request handler that intercepts
  * requests/responses and prints them to an HTML table.
+ *
  * @param endpoint Service endpoint.
  * @param region  Service region.
  * @param credentials AWS credentials.

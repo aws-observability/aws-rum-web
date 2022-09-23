@@ -16,13 +16,13 @@ export class WebVitalsPlugin extends InternalPlugin {
         super(WEB_VITAL_EVENT_PLUGIN_ID);
     }
 
-    // tslint:disable-next-line:no-empty
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     enable(): void {}
 
-    // tslint:disable-next-line:no-empty
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     disable(): void {}
 
-    // tslint:disable-next-line:no-empty
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     configure(config: any): void {}
 
     getWebVitalData(webVitalData: Metric, eventType: string): void {

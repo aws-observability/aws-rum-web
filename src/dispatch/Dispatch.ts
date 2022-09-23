@@ -77,6 +77,7 @@ export class Dispatch {
     /**
      * Set the authentication token that will be used to authenticate with the
      * data plane service (AWS auth).
+     *
      * @param credentials A set of AWS credentials from the application's authflow.
      */
     public setAwsCredentials(
@@ -125,7 +126,7 @@ export class Dispatch {
     public dispatchFetchFailSilent = async (): Promise<{
         response: HttpResponse;
     } | void> => {
-        // tslint:disable-next-line:no-empty
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return this.dispatchFetch().catch(() => {});
     };
 
@@ -137,7 +138,7 @@ export class Dispatch {
     public dispatchBeaconFailSilent = async (): Promise<{
         response: HttpResponse;
     } | void> => {
-        // tslint:disable-next-line:no-empty
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return this.dispatchBeacon().catch(() => {});
     };
 
@@ -226,6 +227,7 @@ export class Dispatch {
 
     /**
      * The default method for creating data plane service clients.
+     *
      * @param endpoint Service endpoint.
      * @param region  Service region.
      * @param credentials AWS credentials.

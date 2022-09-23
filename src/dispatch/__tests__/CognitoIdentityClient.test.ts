@@ -5,10 +5,10 @@ import { CognitoIdentityClient } from '../CognitoIdentityClient';
 import { Credentials } from '@aws-sdk/types';
 import { getReadableStream } from '../../test-utils/test-utils';
 
-const mockCredentials: string =
+const mockCredentials =
     '{ "IdentityId": "a", "Credentials": { "AccessKeyId": "x", "SecretAccessKey": "y", "SessionToken": "z" } }';
-const mockToken: string = '{"IdentityId": "mockId", "Token": "mockToken"}';
-const mockIdCommand: string = '{"IdentityId": "mockId"}';
+const mockToken = '{"IdentityId": "mockId", "Token": "mockToken"}';
+const mockIdCommand = '{"IdentityId": "mockId"}';
 
 const fetchHandler = jest.fn();
 

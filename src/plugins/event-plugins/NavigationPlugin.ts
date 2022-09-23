@@ -38,6 +38,7 @@ export class NavigationPlugin extends InternalPlugin {
     /**
      * Use the loadEventEnd field from window.performance to check if the website
      * has loaded already.
+     *
      * @returns boolean
      */
     hasTheWindowLoadEventFired() {

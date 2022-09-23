@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { Orchestration } from '../Orchestration';
 import { Dispatch } from '../../dispatch/Dispatch';
 import { EventCache } from '../../event-cache/EventCache';
@@ -379,11 +378,9 @@ describe('Orchestration tests', () => {
         };
         orchestration.recordPageView(expected);
 
-        let actual;
-
         // Assert
         expect(recordPageView).toHaveBeenCalledTimes(1);
-        actual = recordPageView.mock.calls[0][0];
+        const actual = recordPageView.mock.calls[0][0];
 
         expect(actual).toEqual(expected);
     });

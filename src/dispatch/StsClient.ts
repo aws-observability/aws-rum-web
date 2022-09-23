@@ -1,11 +1,11 @@
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { CognitoIdentityClientConfig } from './CognitoIdentityClient';
 
-const METHOD: string = 'POST';
-const CONTENT_TYPE: string = 'application/x-www-form-urlencoded';
-const PROTOCOL: string = 'https:';
-const ACTION: string = 'AssumeRoleWithWebIdentity';
-const VERSION: string = '2011-06-15';
+const METHOD = 'POST';
+const CONTENT_TYPE = 'application/x-www-form-urlencoded';
+const PROTOCOL = 'https:';
+const ACTION = 'AssumeRoleWithWebIdentity';
+const VERSION = '2011-06-15';
 
 export interface STSSendRequest {
     RoleArn: string;

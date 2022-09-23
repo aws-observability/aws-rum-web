@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import {
     Attributes,
     NIL_UUID,
@@ -508,7 +507,6 @@ describe('SessionManager tests', () => {
         );
         const sessionManager = defaultSessionManager(config);
 
-        // tslint:disable:no-empty
         sessionManager.getSession();
         sessionManager.incrementSessionEventCount();
         const session = JSON.parse(atob(getCookie(SESSION_COOKIE_NAME)));

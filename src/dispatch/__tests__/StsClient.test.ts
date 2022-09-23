@@ -5,7 +5,7 @@ import { advanceTo } from 'jest-date-mock';
 import { getReadableStream } from '../../test-utils/test-utils';
 import { StsClient } from '../StsClient';
 
-const mockCredentials: string =
+const mockCredentials =
     '<AccessKeyId>x</AccessKeyId><SecretAccessKey>y</SecretAccessKey><SessionToken>z</SessionToken><Expiration>2020</Expiration>';
 
 const fetchHandler = jest.fn();

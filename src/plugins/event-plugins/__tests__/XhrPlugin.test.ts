@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import { XhrPlugin } from '../XhrPlugin';

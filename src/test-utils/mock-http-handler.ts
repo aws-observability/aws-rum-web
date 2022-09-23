@@ -5,6 +5,7 @@ import { logRequestToPage, logResponseToPage } from './http-handler-utils';
 
 /**
  * Returns data plane service client with a mocked request handler.
+ *
  * @param endpoint Service endpoint.
  * @param region  Service region.
  * @param credentials AWS credentials.

@@ -149,6 +149,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
 
     /**
      * Removes the current event from either requestBuffer or ongoingRequests set.
+     *
      * @param event
      */
     private endTracking = (e: Event) => {
