@@ -13,6 +13,7 @@ export class PluginManager {
 
     /**
      * Add an event plugin to PluginManager and initialize the plugin.
+     *
      * @param plugin The plugin which adheres to the RUM web client's plugin interface.
      */
     public addPlugin(plugin: Plugin): void {
@@ -32,10 +33,11 @@ export class PluginManager {
 
     /**
      * Update an event plugin
+     *
      * @param pluginId
      * @param updateWith The config to update the plugin with.
      */
-    public updatePlugin<O extends unknown>(pluginId: string, updateWith: O) {
+    public updatePlugin<O>(pluginId: string, updateWith: O) {
         const plugin = this.getPlugin(pluginId);
 
         plugin?.update?.(updateWith);
@@ -57,6 +59,7 @@ export class PluginManager {
 
     /**
      * Return if a plugin exists.
+     *
      * @param pluginId a unique identifier for the plugin
      */
     public hasPlugin(pluginId: string): boolean {
@@ -65,6 +68,7 @@ export class PluginManager {
 
     /**
      * Manually record data using a plugin.
+     *
      * @param pluginId The unique identifier for the plugin being configured.
      * @param data The data to be recorded by the plugin.
      */

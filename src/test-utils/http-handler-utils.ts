@@ -9,7 +9,7 @@ const setElementText = (name: string, text: string) => {
 };
 
 const headerBagToString = (headers: HeaderBag): string => {
-    let serial: string = '';
+    let serial = '';
     let i = 0;
     for (const key in headers) {
         if (headers.hasOwnProperty(key)) {

@@ -25,9 +25,9 @@ export type AwsRumClientInit = {
  * A utility for collecting telemetry from JavaScript applications.
  *
  * For example:
- *  - Pages visited (user workflow)
- *  - Page load time
- *  - DOM events
+ * - Pages visited (user workflow)
+ * - Page load time
+ * - DOM events
  */
 export class CommandQueue {
     private orchestration!: Orchestration;

@@ -194,6 +194,7 @@ export const resourceToUrlString = (resource: Request | URL | string) => {
  * Generate a globally unique trace ID.
  *
  * See https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html
+ *
  * @returns a trace id with the form '1-[unix epoch time in 8 hex digits]-[random in 24 hex digits]'
  */
 const generateTraceId = (): string => {
@@ -204,6 +205,7 @@ const generateTraceId = (): string => {
  * Generate a segment ID that is unique within a trace.
  *
  * See https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html
+ *
  * @returns a segment id, which is 16 random hex digits
  */
 const generateSegmentId = (): string => {
@@ -224,7 +226,7 @@ const guid = (): string => {
 
 const uint8ArrayToHexString = (bytes: Uint8Array): string => {
     let hexString = '';
-    // tslint:disable-next-line:prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < bytes.length; i++) {
         hexString += byteToHex[bytes[i]];
     }

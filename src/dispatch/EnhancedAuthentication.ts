@@ -110,7 +110,7 @@ export class EnhancedAuthentication {
     private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
         const credentialProvider: CredentialProvider = fromCognitoIdentityPool({
             client: this.cognitoIdentityClient,
-            identityPoolId: this.config.identityPoolId as string
+            identityPoolId: this.config.identityPoolId
         });
 
         return credentialProvider().then((credentials) => {

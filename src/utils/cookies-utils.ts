@@ -2,6 +2,7 @@ import { CookieAttributes } from '../orchestration/Orchestration';
 
 /**
  * Stores a cookie.
+ *
  * @param name The cookie's name.
  * @param value The cookie's value.
  * @param attributes The domain where the cookie will be stored.
@@ -31,6 +32,7 @@ export const storeCookie = (
 
 /**
  * Returns the current date + TTL
+ *
  * @param ttl seconds to live
  */
 export const getExpiryDate = (ttl: number): Date => {
@@ -39,6 +41,7 @@ export const getExpiryDate = (ttl: number): Date => {
 
 /**
  * Removes a cookie by setting its expiry in the past.
+ *
  * @param name The cookie's name.
  */
 export const removeCookie = (name: string, attributes: CookieAttributes) => {
@@ -53,6 +56,7 @@ export const removeCookie = (name: string, attributes: CookieAttributes) => {
 
 /**
  * Get a cookie with a given name
+ *
  * @param name The cookie's name.
  */
 export const getCookie = (name: string): string => {

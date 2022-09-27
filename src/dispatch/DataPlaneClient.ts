@@ -15,10 +15,10 @@ import {
     RumEvent
 } from './dataplane';
 
-const SERVICE: string = 'rum';
-const METHOD: string = 'POST';
-const CONTENT_TYPE_JSON: string = 'application/json';
-const CONTENT_TYPE_TEXT: string = 'text/plain;charset=UTF-8';
+const SERVICE = 'rum';
+const METHOD = 'POST';
+const CONTENT_TYPE_JSON = 'application/json';
+const CONTENT_TYPE_TEXT = 'text/plain;charset=UTF-8';
 
 const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
 

@@ -171,7 +171,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private handleXhrErrorEvent = (e: Event) => {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails: XhrDetails = this.xhrMap.get(xhr);
-        const errorName: string = 'XMLHttpRequest error';
+        const errorName = 'XMLHttpRequest error';
         const errorMessage: string = xhr.statusText
             ? xhr.status.toString() + ': ' + xhr.statusText
             : xhr.status.toString();
@@ -204,14 +204,14 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private handleXhrAbortEvent = (e: Event) => {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails: XhrDetails = this.xhrMap.get(xhr);
-        const errorName: string = 'XMLHttpRequest abort';
+        const errorName = 'XMLHttpRequest abort';
         this.handleXhrDetailsOnError(xhrDetails, errorName);
     };
 
     private handleXhrTimeoutEvent = (e: Event) => {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails: XhrDetails = this.xhrMap.get(xhr);
-        const errorName: string = 'XMLHttpRequest timeout';
+        const errorName = 'XMLHttpRequest timeout';
         this.handleXhrDetailsOnError(xhrDetails, errorName);
     };
 

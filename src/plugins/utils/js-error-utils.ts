@@ -8,6 +8,7 @@ interface Error {
     message?: string;
     name?: string;
     description?: string; // non-standard Microsoft property
+    // eslint-disable-next-line id-denylist
     number?: number; // non-standard Microsoft property
     fileName?: string; // non-standard Mozilla property
     lineNumber?: number; // non-standard Mozilla property

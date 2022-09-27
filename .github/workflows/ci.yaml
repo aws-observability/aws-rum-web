@@ -38,7 +38,7 @@ jobs:
               run: npx prettier --check .
 
             - name: Run Linter
-              run: npm run lint
+              run: npm run lint:errors
 
             - name: Run Unit Tests
               run: npm run test

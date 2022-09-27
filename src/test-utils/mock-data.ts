@@ -1,5 +1,4 @@
-// tslint:disable:max-classes-per-file
-
+/* eslint-disable max-classes-per-file */
 export const firstPaintEvent = {
     name: 'first-paint',
     duration: 0,

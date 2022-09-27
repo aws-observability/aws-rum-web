@@ -113,14 +113,14 @@ export class Authentication {
     private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
         return this.cognitoIdentityClient
             .getId({
-                IdentityPoolId: this.config.identityPoolId as string
+                IdentityPoolId: this.config.identityPoolId
             })
             .then((getIdResponse) =>
                 this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
             )
             .then((getOpenIdTokenResponse) =>
                 this.stsClient.assumeRoleWithWebIdentity({
-                    RoleArn: this.config.guestRoleArn as string,
+                    RoleArn: this.config.guestRoleArn,
                     RoleSessionName: 'cwr',
                     WebIdentityToken: getOpenIdTokenResponse.Token
                 })

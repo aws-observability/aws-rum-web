@@ -64,7 +64,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        const events: RumEvent[] = await eventCache.getEventBatch();
+        const events: RumEvent[] = eventCache.getEventBatch();
         events.forEach((event) => {
             expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
         });

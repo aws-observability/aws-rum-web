@@ -1,4 +1,4 @@
-declare var msCrypto:
+declare let msCrypto:
     | undefined
     | { getRandomValues: (holder: Uint8Array) => Uint8Array };
 

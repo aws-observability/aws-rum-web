@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { advanceTo } from 'jest-date-mock';
 import { Page, PageManager } from '../PageManager';
 import {
@@ -46,7 +45,6 @@ const timeoutConfig: Config = {
 };
 const pageManager = new PageManager(config, record);
 
-/* tslint:disable:no-string-literal */
 describe('VirtualPageLoadTimer tests', () => {
     let url;
 

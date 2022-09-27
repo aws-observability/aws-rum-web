@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { JsErrorPlugin } from '../JsErrorPlugin';
 import { context, getSession, record } from '../../../test-utils/test-utils';
 import { JS_ERROR_EVENT_TYPE } from '../../utils/constant';

@@ -5,7 +5,9 @@ import { advanceTo } from 'jest-date-mock';
 import { RetryHttpHandler } from '../RetryHttpHandler';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 
-const fetchHandler = jest.fn<Promise<{}>, []>(() => Promise.resolve({}));
+const fetchHandler = jest.fn<Promise<Record<string, unknown>>, []>(() =>
+    Promise.resolve({})
+);
 jest.mock('@aws-sdk/fetch-http-handler', () => ({
     FetchHttpHandler: jest
         .fn()

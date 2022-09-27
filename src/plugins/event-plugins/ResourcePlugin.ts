@@ -67,7 +67,7 @@ export class ResourcePlugin extends InternalPlugin {
     resourceEventListener = (event: Event): void => {
         const recordAll: PerformanceEntry[] = [];
         const sample: PerformanceEntry[] = [];
-        let eventCount: number = 0;
+        let eventCount = 0;
 
         const resourceObserver = new PerformanceObserver((list) => {
             list.getEntries()

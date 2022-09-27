@@ -1,4 +1,3 @@
-// tslint:disable:max-line-length
 import { FetchPlugin } from '../FetchPlugin';
 import {
     PartialHttpPluginConfig,

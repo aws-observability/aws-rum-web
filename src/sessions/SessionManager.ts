@@ -138,7 +138,7 @@ export class SessionManager {
     }
 
     private initializeUser() {
-        let userId: string = '';
+        let userId = '';
         this.userExpiry = new Date();
         this.userExpiry.setDate(
             this.userExpiry.getDate() + this.config.userIdRetentionDays
