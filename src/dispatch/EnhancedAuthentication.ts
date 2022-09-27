@@ -13,7 +13,7 @@ export class EnhancedAuthentication {
     private credentials: Credentials | undefined;
 
     constructor(config: Config) {
-        const region: string = config.identityPoolId.split(':')[0];
+        const region: string = config.identityPoolId!.split(':')[0];
         this.config = config;
         this.cognitoIdentityClient = new CognitoIdentityClient({
             fetchRequestHandler: new FetchHttpHandler(),
@@ -67,7 +67,7 @@ export class EnhancedAuthentication {
                 // The credentials have expired.
                 return reject();
             }
-            resolve(this.credentials);
+            resolve(this.credentials!);
         });
     };
 
@@ -80,7 +80,7 @@ export class EnhancedAuthentication {
         return new Promise<Credentials>((resolve, reject) => {
             let credentials;
             try {
-                credentials = JSON.parse(localStorage.getItem(CRED_KEY));
+                credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
             } catch (e) {
                 // Error decoding or parsing the cookie -- abort
                 reject();
@@ -110,7 +110,7 @@ export class EnhancedAuthentication {
     private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
         const credentialProvider: CredentialProvider = fromCognitoIdentityPool({
             client: this.cognitoIdentityClient,
-            identityPoolId: this.config.identityPoolId
+            identityPoolId: this.config.identityPoolId as string
         });
 
         return credentialProvider().then((credentials) => {

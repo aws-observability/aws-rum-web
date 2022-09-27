@@ -6,7 +6,7 @@ import {
 import { getRandomValues } from '../../utils/random';
 
 // All one-byte hex strings from 0x00 to 0xff.
-export const byteToHex = [];
+export const byteToHex: string[] = [];
 for (let i = 0; i < 256; i++) {
     byteToHex[i] = (i + 0x100).toString(16).substr(1);
 }
@@ -83,14 +83,14 @@ export const epochTime = () => {
 };
 
 export const createXRayTraceEventHttp = (
-    input: RequestInfo,
-    init: RequestInit,
+    input: RequestInfo | URL | string,
+    init: RequestInit | undefined,
     traced: boolean
 ): Http => {
     const http: Http = { request: {} };
-    http.request.method = init?.method ? init.method : 'GET';
-    http.request.traced = traced;
-    http.request.url = resourceToUrlString(input);
+    http.request!.method = init?.method ? init.method : 'GET';
+    http.request!.traced = traced;
+    http.request!.url = resourceToUrlString(input);
     return http;
 };
 
@@ -118,7 +118,7 @@ export const createXRayTraceEvent = (
 
 export const createXRaySubsegment = (
     name: string,
-    startTime,
+    startTime: number,
     http?: Http
 ): Subsegment => {
     const subsegment: Subsegment = {
@@ -160,7 +160,7 @@ export const addAmznTraceIdHeaderToInit = (
     if (!init.headers) {
         init.headers = {};
     }
-    init.headers[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
+    (init.headers as any)[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
         traceId,
         segmentId
     );

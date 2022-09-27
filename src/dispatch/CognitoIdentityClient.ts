@@ -54,7 +54,7 @@ export class CognitoIdentityClient {
                 response.body
                     .getReader()
                     .read()
-                    .then(({ value }) =>
+                    .then(({ value }: { value: number[] }) =>
                         JSON.parse(String.fromCharCode.apply(null, value))
                     )
             )
@@ -76,7 +76,7 @@ export class CognitoIdentityClient {
                 response.body
                     .getReader()
                     .read()
-                    .then(({ value }) =>
+                    .then(({ value }: { value: number[] }) =>
                         JSON.parse(String.fromCharCode.apply(null, value))
                     )
             )
@@ -100,7 +100,7 @@ export class CognitoIdentityClient {
                 return response.body
                     .getReader()
                     .read()
-                    .then(({ value }) => {
+                    .then(({ value }: { value: number[] }) => {
                         const { IdentityId, Credentials } = JSON.parse(
                             String.fromCharCode.apply(null, value)
                         );

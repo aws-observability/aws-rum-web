@@ -4,7 +4,7 @@ import { Session } from '../sessions/SessionManager';
 export type RecordEvent = (type: string, eventData: object) => void;
 export type RecordPageView = (pageId: string) => void;
 
-export type GetSession = () => Session;
+export type GetSession = () => Session | undefined;
 
 export type PluginContext = {
     applicationId: string;

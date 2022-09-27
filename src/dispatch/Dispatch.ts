@@ -98,7 +98,9 @@ export class Dispatch {
     /**
      * Send meta data and events to the AWS RUM data plane service via fetch.
      */
-    public dispatchFetch = async (): Promise<{ response: HttpResponse }> => {
+    public dispatchFetch = async (): Promise<
+        { response: HttpResponse } | undefined
+    > => {
         if (this.doRequest()) {
             return this.rum
                 .sendFetch(this.createRequest())
@@ -109,7 +111,9 @@ export class Dispatch {
     /**
      * Send meta data and events to the AWS RUM data plane service via beacon.
      */
-    public dispatchBeacon = async (): Promise<{ response: HttpResponse }> => {
+    public dispatchBeacon = async (): Promise<
+        { response: HttpResponse } | undefined
+    > => {
         if (this.doRequest()) {
             const request: PutRumEventsRequest = this.createRequest();
             return this.rum
@@ -208,7 +212,7 @@ export class Dispatch {
         return this.enabled && this.eventCache.hasEvents();
     }
 
-    private createRequest(): PutRumEventsRequest | undefined {
+    private createRequest(): PutRumEventsRequest {
         return {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),

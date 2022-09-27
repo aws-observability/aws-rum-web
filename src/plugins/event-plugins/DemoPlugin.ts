@@ -13,11 +13,13 @@ export const DEMO_PLUGIN_ID = 'demo';
 export class DemoPlugin implements Plugin {
     configuration: any;
     timerId: number | undefined;
-    private recordEvent: RecordEvent | undefined;
+    private recordEvent: RecordEvent;
 
     constructor() {
         this.configuration = {};
         this.timerId = undefined;
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        this.recordEvent = () => {};
     }
 
     getPluginId(): string {

@@ -17,11 +17,13 @@ export type Attributes = {
     parentPageId?: string;
     interaction?: number;
     pageTags?: string[];
+    [key: string]: string | number | string[] | undefined;
 };
 
 export type PageAttributes = {
     pageId: string;
     pageTags?: string[];
+    [key: string]: string[] | string | undefined;
 };
 
 /**
@@ -94,36 +96,39 @@ export class PageManager {
         }
 
         if (!this.page && this.resumed) {
-            this.createResumedPage(pageId);
+            this.createResumedPage(pageId, this.resumed);
         } else if (!this.page) {
             this.createLandingPage(pageId);
         } else if (this.page.pageId !== pageId) {
-            this.createNextPage(pageId);
+            this.createNextPage(this.page, pageId);
         } else {
             // The view has not changed.
             return;
         }
 
+        // this.page is guaranteed to have been initialized
+
         // Attributes will be added to all events as meta data
         this.collectAttributes(
+            this.page as Page,
             typeof payload === 'object' ? payload : undefined
         );
 
         // The SessionManager will update its cookie with the new page
-        this.recordPageViewEvent();
+        this.recordPageViewEvent(this.page as Page);
     }
 
-    private createResumedPage(pageId: string) {
+    private createResumedPage(pageId: string, resumed: Page) {
         this.page = {
             pageId,
-            parentPageId: this.resumed.pageId,
-            interaction: this.resumed.interaction + 1,
+            parentPageId: resumed.pageId,
+            interaction: resumed.interaction + 1,
             start: Date.now()
         };
         this.resumed = undefined;
     }
 
-    private createNextPage(pageId: string) {
+    private createNextPage(currentPage: Page, pageId: string) {
         let startTime = Date.now();
         const interactionTime = this.virtualPageLoadTimer.latestInteractionTime;
 
@@ -152,8 +157,8 @@ export class PageManager {
         }
         this.page = {
             pageId,
-            parentPageId: this.page.pageId,
-            interaction: this.page.interaction + 1,
+            parentPageId: currentPage.pageId,
+            interaction: currentPage.interaction + 1,
             start: startTime
         };
     }
@@ -166,48 +171,52 @@ export class PageManager {
         };
     }
 
-    private collectAttributes(customPageAttributes?: PageAttributes) {
+    private collectAttributes(
+        page: Page,
+        customPageAttributes?: PageAttributes
+    ) {
         this.attributes = {
             title: document.title,
-            pageId: this.page.pageId
+            pageId: page.pageId
         };
 
         if (this.recordInteraction) {
-            this.attributes.interaction = this.page.interaction;
-            if (this.page.parentPageId !== undefined) {
-                this.attributes.parentPageId = this.page.parentPageId;
+            this.attributes.interaction = page.interaction;
+            if (page.parentPageId !== undefined) {
+                this.attributes.parentPageId = page.parentPageId;
             }
         }
 
         if (customPageAttributes) {
             Object.keys(customPageAttributes).forEach((attribute) => {
-                this.attributes[attribute] = customPageAttributes[attribute];
+                (this.attributes as Attributes)[attribute] =
+                    customPageAttributes[attribute];
             });
         }
     }
 
-    private createPageViewEvent() {
+    private createPageViewEvent(page: Page) {
         const pageViewEvent: PageViewEvent = {
             version: '1.0.0',
-            pageId: this.page.pageId
+            pageId: page.pageId
         };
 
         if (this.recordInteraction) {
-            pageViewEvent.interaction = this.page.interaction;
+            pageViewEvent.interaction = page.interaction;
             pageViewEvent.pageInteractionId =
-                this.page.pageId + '-' + this.page.interaction;
+                page.pageId + '-' + page.interaction;
 
-            if (this.page.parentPageId !== undefined) {
+            if (page.parentPageId !== undefined) {
                 pageViewEvent.parentPageInteractionId =
-                    this.page.parentPageId + '-' + (this.page.interaction - 1);
+                    page.parentPageId + '-' + (page.interaction - 1);
             }
         }
 
         return pageViewEvent;
     }
 
-    private recordPageViewEvent() {
-        this.record(PAGE_VIEW_EVENT_TYPE, this.createPageViewEvent());
+    private recordPageViewEvent(page: Page) {
+        this.record(PAGE_VIEW_EVENT_TYPE, this.createPageViewEvent(page));
     }
 
     /**

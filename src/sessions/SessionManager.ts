@@ -60,13 +60,13 @@ export class SessionManager {
     private pageManager: PageManager;
 
     private appMonitorDetails: AppMonitorDetails;
-    private userExpiry: Date;
-    private sessionExpiry: Date;
+    private userExpiry!: Date;
+    private sessionExpiry!: Date;
     private userId!: string;
     private session: Session;
     private config: Config;
     private record: RecordSessionInitEvent;
-    private attributes: Attributes;
+    private attributes!: Attributes;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
@@ -190,8 +190,8 @@ export class SessionManager {
                 try {
                     this.session = JSON.parse(atob(cookie));
                     this.pageManager.resumeSession(
-                        this.session.page.pageId,
-                        this.session.page.interaction
+                        this.session.page!.pageId,
+                        this.session.page!.interaction
                     );
                 } catch (e) {
                     // Error decoding or parsing the cookie -- ignore

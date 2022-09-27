@@ -12,7 +12,7 @@ export class Authentication {
     private credentials: Credentials | undefined;
 
     constructor(config: Config) {
-        const region: string = config.identityPoolId.split(':')[0];
+        const region: string = config.identityPoolId!.split(':')[0];
         this.config = config;
         this.stsClient = new StsClient({
             fetchRequestHandler: new FetchHttpHandler(),
@@ -70,7 +70,7 @@ export class Authentication {
                 // The credentials have expired.
                 return reject();
             }
-            resolve(this.credentials);
+            resolve(this.credentials!);
         });
     };
 
@@ -83,7 +83,7 @@ export class Authentication {
         return new Promise<Credentials>((resolve, reject) => {
             let credentials;
             try {
-                credentials = JSON.parse(localStorage.getItem(CRED_KEY));
+                credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
             } catch (e) {
                 // Error retrieving, decoding or parsing the cred string -- abort
                 return reject();
@@ -113,14 +113,14 @@ export class Authentication {
     private AnonymousCognitoCredentialsProvider = async (): Promise<Credentials> => {
         return this.cognitoIdentityClient
             .getId({
-                IdentityPoolId: this.config.identityPoolId
+                IdentityPoolId: this.config.identityPoolId as string
             })
             .then((getIdResponse) =>
                 this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
             )
             .then((getOpenIdTokenResponse) =>
                 this.stsClient.assumeRoleWithWebIdentity({
-                    RoleArn: this.config.guestRoleArn,
+                    RoleArn: this.config.guestRoleArn as string,
                     RoleSessionName: 'cwr',
                     WebIdentityToken: getOpenIdTokenResponse.Token
                 })

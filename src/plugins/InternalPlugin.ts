@@ -7,7 +7,7 @@ export abstract class InternalPlugin<UpdateType = unknown>
     static idPrefix = RUM_AWS_PREFIX;
 
     protected enabled = true;
-    protected context?: PluginContext;
+    protected context!: PluginContext;
     private readonly pluginId: string;
 
     constructor(name: string) {

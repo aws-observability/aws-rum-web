@@ -39,7 +39,7 @@ export type DomEventPluginConfig = {
 };
 
 const defaultConfig: DomEventPluginConfig = {
-    interactionId: () => undefined,
+    interactionId: () => '',
     enableMutationObserver: false,
     events: []
 };
@@ -60,7 +60,7 @@ export class DomEventPlugin<
     enabled = false;
     private eventListenerMap: Map<TargetDomEvent, ElementEventListener[]>;
     private config: DomEventPluginConfig;
-    private observer: MutationObserver;
+    private observer: MutationObserver | undefined;
 
     constructor(config?: PartialDomEventPluginConfig) {
         super(DOM_EVENT_PLUGIN_ID);
@@ -163,7 +163,7 @@ export class DomEventPlugin<
         const elementEventListenerList: ElementEventListener[] = this.eventListenerMap.has(
             domEvent
         )
-            ? this.eventListenerMap.get(domEvent)
+            ? (this.eventListenerMap.get(domEvent) as ElementEventListener[])
             : [];
 
         // first add event listener to all elements identified by the CSS locator
