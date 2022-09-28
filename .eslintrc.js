@@ -100,6 +100,7 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-misused-new': 'error',
         '@typescript-eslint/no-namespace': 'error',
+        '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-parameter-properties': 'off',
         '@typescript-eslint/no-shadow': [
             'off',
@@ -128,6 +129,7 @@ module.exports = {
         '@typescript-eslint/require-await': 'warn',
         '@typescript-eslint/no-unsafe-member-access': 'warn',
         '@typescript-eslint/no-this-alias': 'warn',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'off',
         '@typescript-eslint/member-ordering': 'off',
         '@typescript-eslint/triple-slash-reference': [
             'error',

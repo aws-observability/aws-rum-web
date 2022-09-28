@@ -2,6 +2,20 @@ import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 
+export type CommandFunction = (payload?: any) => void;
+
+interface CommandFunctions {
+    setAwsCredentials: CommandFunction;
+    recordPageView: CommandFunction;
+    recordError: CommandFunction;
+    registerDomEvents: CommandFunction;
+    dispatch: CommandFunction;
+    dispatchBeacon: CommandFunction;
+    enable: CommandFunction;
+    disable: CommandFunction;
+    allowCookies: CommandFunction;
+}
+
 /**
  * An AWS RUM Client command.
  */
@@ -32,7 +46,7 @@ export type AwsRumClientInit = {
 export class CommandQueue {
     private orchestration!: Orchestration;
 
-    private commandHandlerMap = {
+    private commandHandlerMap: CommandFunctions = {
         setAwsCredentials: (
             payload: Credentials | CredentialProvider
         ): void => {
@@ -93,7 +107,9 @@ export class CommandQueue {
      * Add a command to the command queue.
      */
     public async push(command: Command) {
-        const commandHandler = this.commandHandlerMap[command.c];
+        const commandHandler = this.commandHandlerMap[
+            command.c as keyof CommandFunctions
+        ];
         if (commandHandler) {
             commandHandler(command.p);
         } else {
@@ -110,7 +126,7 @@ export class CommandQueue {
         );
 
         // Overwrite the global API to use CommandQueue
-        window[awsRum.n] = (c: string, p: any) => {
+        (window as any)[awsRum.n] = (c: string, p: any) => {
             this.push({ c, p });
         };
 

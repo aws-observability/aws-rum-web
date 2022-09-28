@@ -49,7 +49,7 @@ export class StsClient {
                 response.body
                     .getReader()
                     .read()
-                    .then(({ value }) => {
+                    .then(({ value }: { value: number[] }) => {
                         const xmlResponse = String.fromCharCode.apply(
                             null,
                             value

@@ -50,7 +50,7 @@ export class PageViewPlugin extends MonkeyPatched<
                 title: string,
                 url?: string | null
             ): void {
-                const retVal = original.apply(this, arguments);
+                const retVal = original.apply(this, arguments as any);
                 self.recordPageView();
                 return retVal;
             };
@@ -66,7 +66,7 @@ export class PageViewPlugin extends MonkeyPatched<
                 title: string,
                 url?: string | null
             ): void {
-                const retVal = original.apply(this, arguments);
+                const retVal = original.apply(this, arguments as any);
                 self.recordPageView();
                 return retVal;
             };

@@ -170,7 +170,7 @@ export class EventCache {
         }
     };
 
-    private canRecord = (session): boolean => {
+    private canRecord = (session: Session): boolean => {
         return (
             session.record &&
             (session.eventCount <= this.config.sessionEventLimit ||

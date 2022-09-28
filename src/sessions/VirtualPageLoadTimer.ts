@@ -23,21 +23,21 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             {
                 nodule: (XMLHttpRequest.prototype as unknown) as Patching,
                 name: 'send' as const,
-                wrapper: this.sendWrapper
+                wrapper: this.sendWrapper as any
             },
             {
                 nodule: (window as unknown) as Patching,
                 name: 'fetch' as const,
-                wrapper: this.fetchWrapper
+                wrapper: this.fetchWrapper as any
             }
         ];
     }
     /** Latest interaction time by user on the document */
     public latestInteractionTime: number;
     /** Unique ID of virtual page load periodic checker. */
-    private periodicCheckerId;
+    private periodicCheckerId: number | undefined;
     /** Unique ID of virtual page load timeout checker. */
-    private timeoutCheckerId;
+    private timeoutCheckerId: number | undefined;
     /** Observer to liten for DOM changes. */
     private domMutationObserver: MutationObserver;
     /** Set to hold outgoing XMLHttpRequests for current virtual page. */
@@ -94,14 +94,14 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         this.domMutationObserver.disconnect();
 
         // Initialize timer objects and start observing
-        this.periodicCheckerId = setInterval(
+        this.periodicCheckerId = (setInterval(
             this.checkLoadStatus,
             this.config.routeChangeComplete
-        );
-        this.timeoutCheckerId = setTimeout(
+        ) as unknown) as number;
+        this.timeoutCheckerId = (setTimeout(
             this.declareTimeout,
             this.config.routeChangeTimeout
-        );
+        ) as unknown) as number;
         // observing the add/delete of nodes
         this.domMutationObserver.observe(document, {
             subtree: true,
@@ -123,7 +123,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             return function (this: XMLHttpRequest): void {
                 self.recordXhr(this);
                 this.addEventListener('loadend', self.endTracking);
-                return original.apply(this, arguments);
+                return original.apply(this, arguments as any);
             };
         };
     };
@@ -162,12 +162,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     private fetch = (
         original: Fetch,
         thisArg: Fetch,
-        argsArray: IArguments,
-        input: RequestInfo,
-        init?: RequestInit
+        argsArray: IArguments
     ): Promise<Response> => {
         return original
-            .apply(thisArg, argsArray)
+            .apply(thisArg, argsArray as any)
             .catch((error) => {
                 throw error;
             })
@@ -182,11 +180,11 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         return (original: Fetch): Fetch => {
             return function (
                 this: Fetch,
-                input: RequestInfo,
+                input: RequestInfo | URL,
                 init?: RequestInit
             ): Promise<Response> {
                 self.fetchCounter += 1;
-                return self.fetch(original, this, arguments, input, init);
+                return self.fetch(original, this, arguments);
             };
         };
     };
@@ -210,7 +208,9 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             clearInterval(this.periodicCheckerId);
             clearTimeout(this.timeoutCheckerId);
             this.domMutationObserver.disconnect();
-            this.recordRouteChangeNavigationEvent(this.pageManager.getPage());
+            this.recordRouteChangeNavigationEvent(
+                this.pageManager.getPage() as Page
+            );
             this.periodicCheckerId = undefined;
             this.timeoutCheckerId = undefined;
             this.isPageLoaded = true;
@@ -229,10 +229,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     private resetInterval = () => {
         this.latestEndTime = Date.now();
         clearInterval(this.periodicCheckerId);
-        this.periodicCheckerId = setInterval(
+        this.periodicCheckerId = (setInterval(
             this.checkLoadStatus,
             this.config.routeChangeComplete
-        );
+        ) as unknown) as number;
     };
 
     private moveItemsFromBuffer = (item: XMLHttpRequest) => {

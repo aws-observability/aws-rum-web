@@ -88,9 +88,8 @@ export class FetchHttpHandler implements HttpHandler {
 
         const fetchRequest = new Request(url, requestOptions);
         const raceOfPromises = [
-            this.fetchFunction
-                .apply(window, [fetchRequest])
-                .then((response) => {
+            this.fetchFunction!.apply(window, [fetchRequest]).then(
+                (response) => {
                     const fetchHeaders: any = response.headers;
                     const transformedHeaders: HeaderBag = {};
 
@@ -118,7 +117,8 @@ export class FetchHttpHandler implements HttpHandler {
                             body: response.body
                         })
                     };
-                }),
+                }
+            ),
             requestTimeout(requestTimeoutInMs)
         ];
         if (abortSignal) {
