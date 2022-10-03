@@ -90,7 +90,7 @@
         "jest-mock-random": "^1.1.1",
         "jsdom": "^16.4.0",
         "json-schema-to-typescript": "^10.1.5",
-        "lint-staged": "^12.4.1",
+        "lint-staged": "^13.0.3",
         "lodash": "^4.17.20",
         "nightwatch": "^2.0.6",
         "node-fetch": "^2.6.1",
@@ -113,7 +113,7 @@
         "xhr-mock": "^2.5.1"
     },
     "dependencies": {
-        "@aws-crypto/sha256-js": "^1.1.0",
+        "@aws-crypto/sha256-js": "^2.0.2",
         "@aws-sdk/client-rum": "^3.76.0",
         "@aws-sdk/fetch-http-handler": "^3.36.0",
         "@aws-sdk/protocol-http": "^3.36.0",
