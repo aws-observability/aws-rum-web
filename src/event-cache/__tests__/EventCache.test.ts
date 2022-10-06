@@ -238,7 +238,7 @@ describe('EventCache tests', () => {
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
                 metadata:
-                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}',
+                    '{"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0"}',
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -267,7 +267,7 @@ describe('EventCache tests', () => {
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
                 metadata:
-                    '{"version":"1.0.0","customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}',
+                    '{"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0"}',
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
