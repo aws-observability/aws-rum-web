@@ -379,6 +379,7 @@ export class Orchestration {
 
     /**
      * Records a custom event.
+     *
      * @param type A unique name for the type of event being recorded.
      * @param eventData A JSON object containing the event's attributes.
      */

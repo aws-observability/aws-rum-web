@@ -11,6 +11,7 @@ interface CommandFunctions {
     recordPageView: CommandFunction;
     recordError: CommandFunction;
     registerDomEvents: CommandFunction;
+    recordEvent: CommandFunction;
     dispatch: CommandFunction;
     dispatchBeacon: CommandFunction;
     enable: CommandFunction;
