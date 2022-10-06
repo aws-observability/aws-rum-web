@@ -70,7 +70,7 @@ describe('EventCache tests', () => {
         });
     });
 
-    test('meta data contains attributes with overridden values from custom attributes', async () => {
+    test('meta data contains default attributes not overridden from custom attributes', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
@@ -90,11 +90,11 @@ describe('EventCache tests', () => {
 
         const eventCache: EventCache = Utils.createEventCache(config);
         const expectedMetaData = {
-            version: '2.0.0',
-            domain: 'overridden.console.aws.amazon.com',
-            browserLanguage: 'en-UK',
-            browserName: 'Chrome',
-            deviceType: 'Mac',
+            version: '1.0.0',
+            domain: 'us-east-1.console.aws.amazon.com',
+            browserLanguage: 'en-US',
+            browserName: 'WebKit',
+            deviceType: 'desktop',
             platformType: 'web',
             pageId: '/console/home'
         };
