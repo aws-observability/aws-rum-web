@@ -5,6 +5,7 @@ import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
 import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
 import { PluginManager } from '../../plugins/PluginManager';
 import { PageIdFormatEnum } from '../Orchestration';
+import { PageAttributes } from 'sessions/PageManager';
 
 global.fetch = jest.fn();
 
@@ -21,12 +22,14 @@ jest.mock('../../dispatch/Dispatch', () => ({
 const enableEventCache = jest.fn();
 const disableEventCache = jest.fn();
 const recordPageView = jest.fn();
+const addSessionAttributes = jest.fn();
 
 jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
-        recordPageView
+        recordPageView,
+        addSessionAttributes
     }))
 }));
 
@@ -144,6 +147,7 @@ describe('Orchestration tests', () => {
                 sameSite: 'Strict',
                 secure: true
             },
+            sessionAttributes: {},
             telemetries: [],
             disableAutoPageView: false,
             dispatchInterval: 5000,
@@ -381,6 +385,68 @@ describe('Orchestration tests', () => {
         // Assert
         expect(recordPageView).toHaveBeenCalledTimes(1);
         const actual = recordPageView.mock.calls[0][0];
+
+        expect(actual).toEqual(expected);
+    });
+
+    test('when the page is manually recorded with multiple custom page attributes then EventCache.recordPageView() is called', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+
+        const expected: PageAttributes = {
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            customPageAttributeString: 'customPageAttributeValue',
+            customPageAttributeNumber: 1,
+            customPageAttributeBoolean: true
+        };
+        orchestration.recordPageView(expected);
+
+        // Assert
+        expect(recordPageView).toHaveBeenCalledTimes(1);
+        const actual = recordPageView.mock.calls[0][0];
+
+        expect(actual).toEqual(expected);
+    });
+
+    test('when Orchestration.addSessionAttributes is called then EventCache.addSessionAttributes() is called', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+
+        const expected = {
+            customAttributeString: 'customAttributeValue',
+            customAttributeNumber: 1,
+            customAttributeBoolean: true
+        };
+        orchestration.addSessionAttributes(expected);
+
+        // Assert
+        expect(addSessionAttributes).toHaveBeenCalledTimes(1);
+        const actual = addSessionAttributes.mock.calls[0][0];
+
+        expect(actual).toEqual(expected);
+    });
+
+    test('when custom session attributes are initialized at setup then EventCache.addSessionAttributes() is called', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            sessionAttributes: {
+                customAttributeString: 'customAttributeValue',
+                customAttributeNumber: 1,
+                customAttributeBoolean: true
+            }
+        });
+
+        const expected = {
+            customAttributeString: 'customAttributeValue',
+            customAttributeNumber: 1,
+            customAttributeBoolean: true
+        };
+        orchestration.addSessionAttributes(expected);
+
+        // Assert
+        expect(addSessionAttributes).toHaveBeenCalledTimes(1);
+        const actual = addSessionAttributes.mock.calls[0][0];
 
         expect(actual).toEqual(expected);
     });

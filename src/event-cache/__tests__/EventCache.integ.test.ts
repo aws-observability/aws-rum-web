@@ -69,4 +69,44 @@ describe('EventCache tests', () => {
             expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
         });
     });
+
+    test('meta data contains attributes with overridden values from custom attributes', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                allowCookies: false,
+                sessionLengthSeconds: 0,
+                sessionAttributes: {
+                    version: '2.0.0',
+                    domain: 'overridden.console.aws.amazon.com',
+                    browserLanguage: 'en-UK',
+                    browserName: 'Chrome',
+                    deviceType: 'Mac'
+                }
+            }
+        };
+
+        const eventCache: EventCache = Utils.createEventCache(config);
+        const expectedMetaData = {
+            version: '2.0.0',
+            domain: 'overridden.console.aws.amazon.com',
+            browserLanguage: 'en-UK',
+            browserName: 'Chrome',
+            deviceType: 'Mac',
+            platformType: 'web',
+            pageId: '/console/home'
+        };
+
+        // Run
+        eventCache.recordPageView('/console/home');
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+
+        // Assert
+        const events: RumEvent[] = eventCache.getEventBatch();
+        events.forEach((event) => {
+            expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
+        });
+    });
 });

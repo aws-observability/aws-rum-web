@@ -65,6 +65,18 @@
         },
         "pageTags": { "type": "array", "items": { "type": "string" } }
     },
+    "patternProperties": {
+        "^(?!pageTags).{1,128}$": {
+            "maxLength": 256,
+            "type": ["string", "boolean", "number"]
+        },
+        "pageTags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
     "additionalProperties": false,
     "required": ["version", "domain"]
 }
