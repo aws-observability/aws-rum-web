@@ -86,7 +86,7 @@
         "jest": "^27.2.5",
         "jest-date-mock": "^1.0.8",
         "jest-environment-jsdom": "^27.2.5",
-        "jest-environment-jsdom-global": "^3.0.0",
+        "jest-environment-jsdom-global": "^4.0.0",
         "jest-mock-random": "^1.1.1",
         "jsdom": "^16.4.0",
         "json-schema-to-typescript": "^11.0.2",
