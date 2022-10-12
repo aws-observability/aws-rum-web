@@ -207,9 +207,9 @@ export class EventCache {
         // objects with their own attribute sets. Instead, we store session
         // attributes and page attributes together as 'meta data'.
         const metaData: MetaData = {
-            version: '1.0.0',
             ...this.sessionManager.getAttributes(),
-            ...this.pageManager.getAttributes()
+            ...this.pageManager.getAttributes(),
+            version: '1.0.0'
         };
 
         this.events.push({
