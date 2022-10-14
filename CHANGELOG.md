@@ -7,13 +7,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Add useBeacon config for visibilitychange dispatch behavior. ([#194](https://github.com/aws-observability/aws-rum-web/issues/194)) ([00ef55f](https://github.com/aws-observability/aws-rum-web/commit/00ef55fe9af8c1a23d1689035a413341de6bd80e))
 * Custom attributes ([#254](https://github.com/aws-observability/aws-rum-web/issues/254)) ([3712926](https://github.com/aws-observability/aws-rum-web/commit/371292638adcd788fd81f05baff66812fac2e9b2))
 
 
 ### Bug Fixes
 
-* Fix MonkeyPatch type arg. ([#222](https://github.com/aws-observability/aws-rum-web/issues/222)) ([3218294](https://github.com/aws-observability/aws-rum-web/commit/3218294f4e1bae98cfcaa44c39370407699e047c))
 
 ## [1.9.0](https://github.com/aws-observability/aws-rum-web/compare/v1.7.0...v1.9.0) (2022-10-04)
 
