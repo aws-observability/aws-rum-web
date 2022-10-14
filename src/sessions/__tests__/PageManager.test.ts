@@ -236,6 +236,80 @@ describe('PageManager tests', () => {
         );
     });
 
+    test('when the page is manually recorded with custom page attributes then custom page attributes are added to the page attributes', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        pageManager.recordPageView({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            pageAttributes: {
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
+        });
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            customPageAttributeString: 'customPageAttributeValue',
+            customPageAttributeNumber: 1,
+            customPageAttributeBoolean: true
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when the page is manually recorded with custom page attributes then pageId value at top level takes precendence', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        pageManager.recordPageView({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            pageAttributes: {
+                pageId: '/rum/home/override',
+                pageTags: 'testingOverride',
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
+        });
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            customPageAttributeString: 'customPageAttributeValue',
+            customPageAttributeNumber: 1,
+            customPageAttributeBoolean: true
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
     test('when there is no pageId difference then no pages are created', async () => {
         // Init
         const config: Config = {

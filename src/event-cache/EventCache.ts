@@ -152,6 +152,17 @@ export class EventCache {
     }
 
     /**
+     * Set custom session attributes to add them to all event metadata.
+     *
+     * @param payload object containing custom attribute data in the form of key, value pairs
+     */
+    public addSessionAttributes(sessionAttributes: {
+        [k: string]: string | number | boolean;
+    }): void {
+        this.sessionManager.addSessionAttributes(sessionAttributes);
+    }
+
+    /**
      * Add a session start event to the cache.
      */
     private recordSessionInitEvent = (
@@ -198,9 +209,9 @@ export class EventCache {
         // objects with their own attribute sets. Instead, we store session
         // attributes and page attributes together as 'meta data'.
         const metaData: MetaData = {
-            version: '1.0.0',
             ...this.sessionManager.getAttributes(),
-            ...this.pageManager.getAttributes()
+            ...this.pageManager.getAttributes(),
+            version: '1.0.0'
         };
 
         this.events.push({

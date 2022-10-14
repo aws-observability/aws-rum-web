@@ -14,12 +14,14 @@ const getSession = jest.fn(() => ({
 const getUserId = jest.fn(() => 'b');
 const getAttributes = jest.fn();
 const incrementSessionEventCount = jest.fn();
+const addSessionAttributes = jest.fn();
 jest.mock('../../sessions/SessionManager', () => ({
     SessionManager: jest.fn().mockImplementation(() => ({
         getSession,
         getUserId,
         getAttributes,
-        incrementSessionEventCount
+        incrementSessionEventCount,
+        addSessionAttributes
     }))
 }));
 
@@ -236,7 +238,7 @@ describe('EventCache tests', () => {
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
                 metadata:
-                    '{"version":"1.0.0","title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}',
+                    '{"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0"}',
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -251,6 +253,66 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch()).toEqual(
             expect.arrayContaining(expectedEvents)
         );
+    });
+
+    test('when page is recorded with custom page attributes, metadata records the custom page attributes', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.page_view_event';
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata:
+                    '{"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0"}',
+                details: '{"version":"1.0.0","pageId":"/rum/home"}'
+            }
+        ];
+
+        // Run
+        eventCache.recordPageView({
+            pageId: '/rum/home',
+            pageTags: ['pageGroup1'],
+            pageAttributes: {
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
+        });
+
+        // Assert
+        expect(eventCache.getEventBatch()).toEqual(
+            expect.arrayContaining(expectedEvents)
+        );
+    });
+
+    /**
+     * Test title truncated to meet lint requirements
+     * Full title: when EventCache.addSessionAttributes() is called then SessionManager.addSessionAttributes() is called
+     */
+    test('EventCache.addSessionAttributes() calls SessionManager.addSessionAttributes()', async () => {
+        // Init
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
+
+        const expected = {
+            customAttributeString: 'customAttributeValue',
+            customAttributeNumber: 1,
+            customAttributeBoolean: true
+        };
+
+        // Run
+        eventCache.addSessionAttributes(expected);
+
+        // Assert
+        expect(addSessionAttributes).toHaveBeenCalledTimes(1);
+        const actual = addSessionAttributes.mock.calls[0][0];
+
+        expect(actual).toEqual(expected);
     });
 
     test('when page matches both allowed and denied, recordEvent does not record the event', async () => {

@@ -665,4 +665,51 @@ describe('SessionManager tests', () => {
             sessionManager.getSession().sessionId
         );
     });
+
+    test('when custom session attributes are set at initialization then custom session attributes are added to the session attributes', async () => {
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{
+                sessionAttributes: {
+                    customAttributeString: 'customPageAttributeValue',
+                    customAttributeNumber: 1,
+                    customAttributeBoolean: true
+                }
+            }
+        });
+
+        const sessionAttributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(sessionAttributes.customAttributeString).toEqual(
+            'customPageAttributeValue'
+        );
+        expect(sessionAttributes.customAttributeNumber).toEqual(1);
+        expect(sessionAttributes.customAttributeBoolean).toEqual(true);
+    });
+
+    test('when custom session attributes are set at runtime then custom session attributes are added to the session attributes', async () => {
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG
+        });
+
+        const sessionAttributes = {
+            customAttributeString: 'customPageAttributeValue',
+            customAttributeNumber: 1,
+            customAttributeBoolean: true
+        };
+
+        sessionManager.addSessionAttributes(sessionAttributes);
+
+        const actualSessionAttributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(actualSessionAttributes.customAttributeString).toEqual(
+            'customPageAttributeValue'
+        );
+        expect(actualSessionAttributes.customAttributeNumber).toEqual(1);
+        expect(actualSessionAttributes.customAttributeBoolean).toEqual(true);
+    });
 });

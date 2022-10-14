@@ -6,6 +6,7 @@ export type CommandFunction = (payload?: any) => void;
 
 interface CommandFunctions {
     setAwsCredentials: CommandFunction;
+    addSessionAttributes: CommandFunction;
     recordPageView: CommandFunction;
     recordError: CommandFunction;
     registerDomEvents: CommandFunction;
@@ -51,6 +52,9 @@ export class CommandQueue {
             payload: Credentials | CredentialProvider
         ): void => {
             this.orchestration.setAwsCredentials(payload);
+        },
+        addSessionAttributes: (payload: { [k: string]: any }): void => {
+            this.orchestration.addSessionAttributes(payload);
         },
         recordPageView: (payload: any): void => {
             this.orchestration.recordPageView(payload);

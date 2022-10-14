@@ -1,3 +1,4 @@
+import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 import { Selector } from 'testcafe';
 import {
     STATUS_202,
@@ -14,6 +15,9 @@ import { SESSION_START_EVENT_TYPE } from '../SessionManager';
 
 const randomSessionClickButton: Selector = Selector('#randomSessionClick');
 const disallowCookiesClickButton: Selector = Selector('#disallowCookies');
+
+const addSessionAttributesButton: Selector = Selector(`#addSessionAttributes`);
+const recordPageViewButton: Selector = Selector(`#recordPageView`);
 
 const BROWSER_LANGUAGE = 'browserLanguage';
 const BROWSER_NAME = 'browserName';
@@ -103,4 +107,58 @@ test('UserAgentMetaDataPlugin records user agent metadata', async (t: TestContro
         .contains(PLATFORM_TYPE)
         .expect(RESPONSE_STATUS.textContent)
         .eql(STATUS_202.toString());
+});
+
+test('When custom attribute set at init, custom attribute recorded in event metadata', async (t: TestController) => {
+    await t.wait(300);
+
+    await t.click(randomSessionClickButton);
+
+    await t.wait(300);
+
+    await t
+        .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
+        .click(PAYLOAD)
+        .pressKey('ctrl+a delete')
+        .click(SUBMIT);
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === SESSION_START_EVENT_TYPE
+    );
+
+    const metaData = JSON.parse(events[0].metadata);
+
+    await t
+        .expect(metaData.customAttributeAtInit)
+        .eql('customAttributeAtInitValue');
+});
+
+test('When custom attribute set at runtime, custom attribute recorded in event metadata', async (t: TestController) => {
+    await t.wait(300);
+
+    await t.click(addSessionAttributesButton);
+
+    await t.click(recordPageViewButton);
+
+    await t.wait(300);
+
+    await t
+        .typeText(COMMAND, DISPATCH_COMMAND, { replace: true })
+        .click(PAYLOAD)
+        .pressKey('ctrl+a delete')
+        .click(SUBMIT);
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === PAGE_VIEW_EVENT_TYPE
+    );
+
+    const metaData = JSON.parse(events[events.length - 1].metadata);
+
+    await t
+        .expect(metaData.customPageAttributeAtRuntimeString)
+        .eql('stringCustomAttributeAtRunTimeValue')
+        .expect(metaData.customPageAttributeAtRuntimeNumber)
+        .eql(1)
+        .expect(metaData.customPageAttributeAtRuntimeBoolean)
+        .eql(true);
 });

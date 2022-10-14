@@ -71,10 +71,22 @@
                 cwr('recordPageView', '/page_view_two');
             }
 
-            function recordPageViewWithPageAttributes() {
+            function recordPageViewWithPageTagAttribute() {
                 cwr('recordPageView', {
                     pageId: '/page_view_two',
                     pageTags: ['pageGroup1']
+                });
+            }
+
+            function recordPageViewWithCustomPageAttributes() {
+                cwr('recordPageView', {
+                    pageId: '/page_view_two',
+                    pageTags: ['pageGroup1'],
+                    pageAttributes: {
+                        customPageAttributeString: 'customPageAttributeValue',
+                        customPageAttributeNumber: 1,
+                        customPageAttributeBoolean: true
+                    }
                 });
             }
 
@@ -153,10 +165,16 @@
             Record Page View
         </button>
         <button
-            id="recordPageViewWithPageAttributes"
-            onclick="recordPageViewWithPageAttributes()"
+            id="recordPageViewWithPageTagAttribute"
+            onclick="recordPageViewWithPageTagAttribute()"
         >
-            Record Page View with page attributes
+            Record Page View with page tag attribute
+        </button>
+        <button
+            id="recordPageViewWithCustomPageAttributes"
+            onclick="recordPageViewWithCustomPageAttributes()"
+        >
+            Record Page View with custom page attributes
         </button>
         <button id="doNotRecordPageView" onclick="doNotRecordPageView()">
             Do Not Record Page View
