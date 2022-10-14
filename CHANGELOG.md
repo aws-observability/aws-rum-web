@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](https://github.com/aws-observability/aws-rum-web/compare/v1.8.1...v1.10.0) (2022-10-14)
+
+
+### Features
+
+* Custom attributes ([#254](https://github.com/aws-observability/aws-rum-web/issues/254)) ([3712926](https://github.com/aws-observability/aws-rum-web/commit/371292638adcd788fd81f05baff66812fac2e9b2))
+
+
+### Bug Fixes
+
+
 ## [1.9.0](https://github.com/aws-observability/aws-rum-web/compare/v1.7.0...v1.9.0) (2022-10-04)
 
 
