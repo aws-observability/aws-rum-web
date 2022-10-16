@@ -10,9 +10,9 @@ loader(
         allowCookies: true,
         clientBuilder: showIntegRequestClientBuilder,
         dispatchInterval: 0,
-        endpoint: '[endpoint]',
+        endpoint: 'https://dataplane.rum.us-east-1.amazonaws.com',
         guestRoleArn: '[guestRoleArn]',
-        identityPoolId: '[identityPoolId]',
+        identityPoolId: 'a-b-c',
         sessionSampleRate: 1,
         telemetries: [
             'performance',

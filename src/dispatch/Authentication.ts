@@ -125,7 +125,7 @@ export class Authentication {
                     WebIdentityToken: getOpenIdTokenResponse.Token
                 })
             )
-            .then((credentials) => {
+            .then((credentials: Credentials) => {
                 this.credentials = credentials;
                 try {
                     localStorage.setItem(CRED_KEY, JSON.stringify(credentials));

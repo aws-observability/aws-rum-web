@@ -24,6 +24,13 @@ interface CognitoProviderParameters {
     client: CognitoIdentityClient;
 }
 
+interface CognitoCredentials {
+    AccessKeyId: string;
+    Expiration: number;
+    SecretAccessKey: string;
+    SessionToken: string;
+}
+
 export const fromCognitoIdentityPool = (
     params: CognitoProviderParameters
 ): (() => Promise<Credentials>) => {
@@ -58,8 +65,10 @@ export class CognitoIdentityClient {
                         JSON.parse(String.fromCharCode.apply(null, value))
                     )
             )
-            .catch(() => {
-                throw new Error('CWR: Failed to retrieve Cognito identity');
+            .catch((e) => {
+                throw new Error(
+                    `CWR: Failed to retrieve Cognito identity: ${e}`
+                );
             });
     };
 
@@ -80,8 +89,10 @@ export class CognitoIdentityClient {
                         JSON.parse(String.fromCharCode.apply(null, value))
                     )
             )
-            .catch(() => {
-                throw new Error('CWR: Failed to retrieve Cognito OpenId token');
+            .catch((e) => {
+                throw new Error(
+                    `CWR: Failed to retrieve Cognito OpenId token: ${e}`
+                );
             });
     };
 
@@ -103,7 +114,10 @@ export class CognitoIdentityClient {
                     .then(({ value }: { value: number[] }) => {
                         const { IdentityId, Credentials } = JSON.parse(
                             String.fromCharCode.apply(null, value)
-                        );
+                        ) as {
+                            IdentityId: string;
+                            Credentials: CognitoCredentials;
+                        };
 
                         const {
                             AccessKeyId,
@@ -119,11 +133,11 @@ export class CognitoIdentityClient {
                             sessionToken: SessionToken as string,
                             expiration: new Date(Expiration * 1000)
                         };
-                    });
+                    }) as Promise<Credentials>;
             })
-            .catch(() => {
+            .catch((e) => {
                 throw new Error(
-                    'CWR: Failed to retrieve credentials for Cognito identity'
+                    `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
                 );
             });
     };

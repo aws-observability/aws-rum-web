@@ -1,5 +1,6 @@
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { CognitoIdentityClientConfig } from './CognitoIdentityClient';
+import { Credentials } from '@aws-sdk/types';
 
 const METHOD = 'POST';
 const CONTENT_TYPE = 'application/x-www-form-urlencoded';
@@ -22,7 +23,9 @@ export class StsClient {
         this.fetchRequestHandler = config.fetchRequestHandler;
     }
 
-    public assumeRoleWithWebIdentity = async (request: STSSendRequest) => {
+    public assumeRoleWithWebIdentity = async (
+        request: STSSendRequest
+    ): Promise<Credentials> => {
         const requestObject = {
             ...request,
             Action: ACTION,
@@ -45,36 +48,39 @@ export class StsClient {
 
         return this.fetchRequestHandler
             .handle(STSRequest)
-            .then(({ response }) =>
-                response.body
-                    .getReader()
-                    .read()
-                    .then(({ value }: { value: number[] }) => {
-                        const xmlResponse = String.fromCharCode.apply(
-                            null,
-                            value
-                        );
+            .then(
+                ({ response }) =>
+                    response.body
+                        .getReader()
+                        .read()
+                        .then(({ value }: { value: number[] }) => {
+                            const xmlResponse = String.fromCharCode.apply(
+                                null,
+                                value
+                            );
 
-                        return {
-                            accessKeyId: xmlResponse
-                                .split('<AccessKeyId>')[1]
-                                .split('</AccessKeyId>')[0],
-                            secretAccessKey: xmlResponse
-                                .split('<SecretAccessKey>')[1]
-                                .split('</SecretAccessKey>')[0],
-                            sessionToken: xmlResponse
-                                .split('<SessionToken>')[1]
-                                .split('</SessionToken>')[0],
-                            expiration: new Date(
-                                xmlResponse
-                                    .split('<Expiration>')[1]
-                                    .split('</Expiration>')[0]
-                            )
-                        };
-                    })
+                            return {
+                                accessKeyId: xmlResponse
+                                    .split('<AccessKeyId>')[1]
+                                    .split('</AccessKeyId>')[0],
+                                secretAccessKey: xmlResponse
+                                    .split('<SecretAccessKey>')[1]
+                                    .split('</SecretAccessKey>')[0],
+                                sessionToken: xmlResponse
+                                    .split('<SessionToken>')[1]
+                                    .split('</SessionToken>')[0],
+                                expiration: new Date(
+                                    xmlResponse
+                                        .split('<Expiration>')[1]
+                                        .split('</Expiration>')[0]
+                                )
+                            } as Credentials;
+                        }) as Promise<Credentials>
             )
-            .catch(() => {
-                throw new Error('CWR: Failed to retrieve credentials from STS');
+            .catch((e) => {
+                throw new Error(
+                    `CWR: Failed to retrieve credentials from STS: ${e}`
+                );
             });
     };
 }
