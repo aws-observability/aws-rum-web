@@ -148,9 +148,12 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getId error, then an error is thrown', async () => {
-        const e: Error = new Error('There are no credentials');
+        const e = new Error('There are no credentials');
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve Cognito identity: ${e}`
+        );
         fetchHandler.mockImplementation(() => {
-            throw new Error('There are no credentials');
+            throw e;
         });
 
         // Init
@@ -164,6 +167,6 @@ describe('CognitoIdentityClient tests', () => {
             client.getId({
                 IdentityPoolId: 'my-fake-identity-pool-id'
             })
-        ).rejects.toEqual(e);
+        ).rejects.toEqual(expected);
     });
 });

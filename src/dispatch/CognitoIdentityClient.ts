@@ -52,24 +52,24 @@ export class CognitoIdentityClient {
     }
 
     public getId = async (request: { IdentityPoolId: string }) => {
-        const requestPayload = JSON.stringify(request);
-
-        const idRequest = this.getHttpRequest(GET_ID_TARGET, requestPayload);
-        return this.fetchRequestHandler
-            .handle(idRequest)
-            .then(({ response }) =>
-                response.body
-                    .getReader()
-                    .read()
-                    .then(({ value }: { value: number[] }) =>
-                        JSON.parse(String.fromCharCode.apply(null, value))
-                    )
-            )
-            .catch((e) => {
-                throw new Error(
-                    `CWR: Failed to retrieve Cognito identity: ${e}`
-                );
-            });
+        try {
+            const requestPayload = JSON.stringify(request);
+            const idRequest = this.getHttpRequest(
+                GET_ID_TARGET,
+                requestPayload
+            );
+            const { response } = await this.fetchRequestHandler.handle(
+                idRequest
+            );
+            const { value } = (await response.body.getReader().read()) as {
+                value: number[];
+            };
+            return JSON.parse(String.fromCharCode.apply(null, value)) as {
+                IdentityId: string;
+            };
+        } catch (e) {
+            throw new Error(`CWR: Failed to retrieve Cognito identity: ${e}`);
+        }
     };
 
     public getOpenIdToken = async (request: { IdentityId: string }) => {
