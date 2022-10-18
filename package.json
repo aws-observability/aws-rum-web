@@ -81,7 +81,7 @@
         "eslint-plugin-jsdoc": "^39.3.6",
         "eslint-plugin-prefer-arrow": "^1.2.3",
         "eslint-plugin-react": "^7.31.8",
-        "http-server": "^13.0.2",
+        "http-server": "^14.1.1",
         "husky": "^8.0.1",
         "jest": "^27.2.5",
         "jest-date-mock": "^1.0.8",
