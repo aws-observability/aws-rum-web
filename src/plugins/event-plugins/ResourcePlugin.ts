@@ -118,11 +118,15 @@ export class ResourcePlugin extends InternalPlugin {
     };
 
     recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
-        // Ignore monitoring beacons.
+        const pathRegex = /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
+        const entryUrl = new URL(entryData.name);
         if (
-            new URL(entryData.name).host ===
-            this.context.config.endpointUrl.host
+            entryUrl.host === this.context.config.endpointUrl.host &&
+            pathRegex.test(entryUrl.pathname)
         ) {
+            // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data
+            // plane), otherwise we end up in an infinite loop of recording
+            // PutRumEvents.
             return;
         }
 

@@ -3,8 +3,9 @@ import {
     performanceEvent,
     performanceEventNotLoaded,
     mockPerformanceObserver,
-    mockPerformanceObject,
-    MockPerformanceTiming
+    MockPerformanceTiming,
+    mockPerformanceObjectWith,
+    putRumEventsDocument
 } from '../../../test-utils/mock-data';
 import { NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
@@ -46,7 +47,7 @@ describe('NavigationPlugin tests', () => {
 
     test('When navigation timing level 2 API is not present then navigation timing level 1 API is recorded', async () => {
         jest.useFakeTimers();
-        mockPerformanceObject();
+        mockPerformanceObjectWith([putRumEventsDocument], [], []);
         mockPerformanceObserver();
 
         const plugin: NavigationPlugin = buildNavigationPlugin();
