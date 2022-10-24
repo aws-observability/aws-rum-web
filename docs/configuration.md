@@ -22,6 +22,7 @@ For example, the config object may look similar to the following:
 | --- | --- | --- | --- |
 | allowCookies | Boolean | `false` | Enable the web client to set and read two cookies: a session cookie named `cwr_s` and a user cookie named `cwr_u`.<br/><br/>`cwr_s` stores session data including an anonymous session ID (uuid v4) created by the web client. This allows CloudWatch RUM to compute sessionized metrics like errors per session.<br/><br/>`cwr_u` stores an anonymous user ID (uuid v4) created by the web client. This allows CloudWatch RUM to count return visitors.<br/><br/>`true`: the web client will use cookies<br/>`false`: the web client will not use cookies. |
 | cookieAttributes | [CookieAttributes](#cookieattributes) | `{ domain: window.location.hostname, path: '/', sameSite: 'Strict', secure: true } ` | Cookie attributes are applied to all cookies stored by the web client, including `cwr_s` and `cwr_u`. |
+| sessionAttributes | [MetadataAttributes](#metadataattributes) | `{ color: 'blue' }` | Session attributes will be added the metadata of all events in the session.|
 | disableAutoPageView | Boolean | `false` | When this field is `false`, the web client will automatically record page views.<br/><br/>By default, the web client records page views when (1) the page first loads and (2) the browser's [history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) is called. The page ID is `window.location.pathname`.<br/><br/>In some cases, the web client's instrumentation will not record the desired page ID. In this case, the web client's page view automation must be disabled using the `disableAutoPageView` configuration, and the application must be instrumented to record page views using the `recordPageView` command. |
 | enableRumClient | Boolean | `true` | When this field is `true`, the web client will record and dispatch RUM events. |
 | enableXRay | Boolean | `false` | When this field is `true` **and** the `http` telemetry is used, the web client will record X-Ray traces for HTTP requests.<br/><br/>See the [HTTP telemetry configuration](#http) for more information, including how to connect client-side and server-side traces. |
@@ -47,6 +48,25 @@ For example, the config object may look similar to the following:
 | sameSite | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | secure | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is true `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
+
+## MetadataAttributes
+You may add up to 10 custom attributes per event. Custom attributes are
+key/value pairs. Keys must be a String and contain alphanumeric characters, `_`,
+or `:`. Values may be any primitive type.
+
+The 10 attribute limit applies to the combined total of session attributes and page attributes. Any attributes that exceed this limit will be dropped. For example, 6 custom session attributes + 4 custom page attributes totals 10 custom attributes and falls within the limit. However, 6 custom attributes + 5 custom page attributes total 11 custom attributes and one of these custom attributes will be dropped.
+
+AWS reserves the namespace prefix `aws:` for its attributes. Do not create
+custom attributes with the `aws:` prefix, or they may be overwritten by future
+versions of the CloudWatch RUM web client.
+
+The RUM web client also records a set of [default
+attributes](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/meta-data.json).
+You cannot overwrite default attributes with custom attributes.
+
+| Field Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| [key] | String | N/A | An attribute which will be added to the metadata of all events in the session.<br/><br/>Keys must conform to the following regex: `^(?!pageTags)(?!aws:)[a-zA-Z0-9_:]{1,128}$`.<br/><br/>Values can have up to 256 characters and must be of type `string`, `number`, or `boolean`.|
 
 ## Telemetry Config Array
 
