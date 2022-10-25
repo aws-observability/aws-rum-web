@@ -24,9 +24,9 @@ const fetchRemoteConfig = async (remoteUrl: string): Promise<FileConfig> => {
                 'Content-Type': 'application/json'
             }
         });
-        return await response.json();
-    } catch (err) {
-        throw new Error(`CWR: Failed to load remote config: ${err}`);
+        return (await response.json()) as FileConfig;
+    } catch (e) {
+        throw new Error(`CWR: Failed to load remote config: ${e}`);
     }
 };
 

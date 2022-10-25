@@ -81,7 +81,7 @@ export class Authentication {
      */
     private AnonymousStorageCredentialsProvider = async (): Promise<Credentials> => {
         return new Promise<Credentials>((resolve, reject) => {
-            let credentials;
+            let credentials: Credentials;
             try {
                 credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
             } catch (e) {
@@ -91,8 +91,10 @@ export class Authentication {
             // The expiration property of Credentials has a date type. Because the date was serialized as a string,
             // we need to convert it back into a date, otherwise the AWS SDK signing middleware
             // (@aws-sdk/middleware-signing) will throw an exception and no credentials will be returned.
-            credentials.expiration = new Date(credentials.expiration);
-            this.credentials = credentials;
+            this.credentials = {
+                ...credentials,
+                expiration: new Date(credentials.expiration as Date)
+            };
             if (this.renewCredentials()) {
                 // The credentials have expired.
                 return reject();
@@ -125,7 +127,7 @@ export class Authentication {
                     WebIdentityToken: getOpenIdTokenResponse.Token
                 })
             )
-            .then((credentials) => {
+            .then((credentials: Credentials) => {
                 this.credentials = credentials;
                 try {
                     localStorage.setItem(CRED_KEY, JSON.stringify(credentials));

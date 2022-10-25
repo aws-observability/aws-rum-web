@@ -59,10 +59,13 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getCredentialsForIdentity error, then an error is thrown', async () => {
-        const e: Error = new Error('There are no credentials');
+        const e: Error = new Error('Something went wrong');
         fetchHandler.mockImplementation(() => {
-            throw new Error('There are no credentials');
+            throw e;
         });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
+        );
 
         // Init
         const client: CognitoIdentityClient = new CognitoIdentityClient({
@@ -73,7 +76,7 @@ describe('CognitoIdentityClient tests', () => {
         // Assert
         return expect(
             client.getCredentialsForIdentity('my-fake-identity-id')
-        ).rejects.toEqual(e);
+        ).rejects.toEqual(expected);
     });
 
     test('when getOpenIdToken is called, then token command is returned', async () => {
@@ -103,10 +106,13 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getOpenIdToken error, then an error is thrown', async () => {
-        const e: Error = new Error('There are no credentials');
+        const e: Error = new Error('Something went wrong');
         fetchHandler.mockImplementation(() => {
-            throw new Error('There are no credentials');
+            throw e;
         });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve Cognito OpenId token: ${e}`
+        );
 
         // Init
         const client: CognitoIdentityClient = new CognitoIdentityClient({
@@ -119,7 +125,7 @@ describe('CognitoIdentityClient tests', () => {
             client.getOpenIdToken({
                 IdentityId: 'my-fake-identity-id'
             })
-        ).rejects.toEqual(e);
+        ).rejects.toEqual(expected);
     });
 
     test('when getId is called, then token command is returned', async () => {
@@ -148,10 +154,13 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when getId error, then an error is thrown', async () => {
-        const e: Error = new Error('There are no credentials');
+        const e = new Error('Something went wrong');
         fetchHandler.mockImplementation(() => {
-            throw new Error('There are no credentials');
+            throw e;
         });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve Cognito identity: ${e}`
+        );
 
         // Init
         const client: CognitoIdentityClient = new CognitoIdentityClient({
@@ -164,6 +173,6 @@ describe('CognitoIdentityClient tests', () => {
             client.getId({
                 IdentityPoolId: 'my-fake-identity-pool-id'
             })
-        ).rejects.toEqual(e);
+        ).rejects.toEqual(expected);
     });
 });
