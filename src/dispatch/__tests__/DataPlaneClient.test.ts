@@ -33,8 +33,7 @@ const createDataPlaneClient = (
         beaconRequestHandler: new BeaconHttpHandler(),
         endpoint: config.endpoint,
         region: Utils.AWS_RUM_REGION,
-        credentials: Utils.createAwsCredentials(),
-        proxy: config.proxy
+        credentials: config.proxy ? undefined : Utils.createAwsCredentials()
     });
 };
 

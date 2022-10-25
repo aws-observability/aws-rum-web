@@ -161,6 +161,7 @@ describe('Orchestration tests', () => {
             pageIdFormat: PageIdFormatEnum.Path,
             pagesToExclude: [],
             pagesToInclude: [/.*/],
+            proxy: false,
             recordResourceUrl: true,
             retries: 2,
             routeChangeComplete: 100,

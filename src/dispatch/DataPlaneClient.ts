@@ -42,24 +42,25 @@ export declare type DataPlaneClientConfig = {
     beaconRequestHandler: HttpHandler;
     endpoint: URL;
     region: string;
-    credentials: CredentialProvider | Credentials;
-    proxy: boolean;
+    credentials: CredentialProvider | Credentials | undefined;
 };
 
 export class DataPlaneClient {
     private config: DataPlaneClientConfig;
-    private awsSigV4: SignatureV4;
+    private awsSigV4: SignatureV4 | undefined;
 
     constructor(config: DataPlaneClientConfig) {
         this.config = config;
-        this.awsSigV4 = new SignatureV4({
-            applyChecksum: true,
-            credentials: config.credentials,
-            region: config.region,
-            service: SERVICE,
-            uriEscapePath: true,
-            sha256: Sha256
-        });
+        if (config.credentials) {
+            this.awsSigV4 = new SignatureV4({
+                applyChecksum: true,
+                credentials: config.credentials,
+                region: config.region,
+                service: SERVICE,
+                uriEscapePath: true,
+                sha256: Sha256
+            });
+        }
     }
 
     public sendFetch = async (
@@ -70,7 +71,7 @@ export class DataPlaneClient {
             CONTENT_TYPE_JSON
         );
         let request: HttpRequest = new HttpRequest(options);
-        if (!this.config.proxy) {
+        if (this.awsSigV4) {
             request = (await this.awsSigV4.sign(request)) as HttpRequest;
         }
         const httpResponse: Promise<{
@@ -87,7 +88,7 @@ export class DataPlaneClient {
             CONTENT_TYPE_TEXT
         );
         let request: HttpRequest = new HttpRequest(options);
-        if (!this.config.proxy) {
+        if (this.awsSigV4) {
             request = (await this.awsSigV4.presign(
                 request,
                 REQUEST_PRESIGN_ARGS
@@ -118,16 +119,18 @@ export class DataPlaneClient {
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
             body: serializedRequest
         };
-        if (this.config.proxy) {
-            return options;
+        if (this.awsSigV4) {
+            return {
+                ...options,
+                headers: {
+                    ...options.headers,
+                    'X-Amz-Content-Sha256': await hashAndEncode(
+                        serializedRequest
+                    )
+                }
+            };
         }
-        return {
-            ...options,
-            headers: {
-                ...options.headers,
-                'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest)
-            }
-        };
+        return options;
     };
 }
 
