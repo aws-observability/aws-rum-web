@@ -60,10 +60,13 @@ describe('StsClient tests', () => {
     });
 
     test('when STS fails, error is thrown', async () => {
-        const e: Error = new Error('There are no STS credentials');
+        const e: Error = new Error('Something went wrong');
         fetchHandler.mockImplementation(() => {
             throw e;
         });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve credentials from STS: ${e}`
+        );
 
         // Init
         const client: StsClient = new StsClient({
@@ -78,6 +81,6 @@ describe('StsClient tests', () => {
                 RoleSessionName: 'mock-session-name',
                 WebIdentityToken: 'mock-web-identity-token'
             })
-        ).rejects.toEqual(e);
+        ).rejects.toEqual(expected);
     });
 });

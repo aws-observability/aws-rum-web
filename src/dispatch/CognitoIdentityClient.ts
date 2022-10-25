@@ -1,5 +1,6 @@
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { Credentials } from '@aws-sdk/types';
+import { responseToJson } from './utils';
 
 const METHOD = 'POST';
 const CONTENT_TYPE = 'application/x-amz-json-1.1';
@@ -29,6 +30,20 @@ interface CognitoCredentials {
     Expiration: number;
     SecretAccessKey: string;
     SessionToken: string;
+}
+
+interface OpenIdTokenResponse {
+    IdentityId: string;
+    Token: string;
+}
+
+interface CredentialsResponse {
+    IdentityId: string;
+    Credentials: CognitoCredentials;
+}
+
+interface GetIdResponse {
+    IdentityId: string;
 }
 
 export const fromCognitoIdentityPool = (
@@ -61,85 +76,62 @@ export class CognitoIdentityClient {
             const { response } = await this.fetchRequestHandler.handle(
                 idRequest
             );
-            const { value } = (await response.body.getReader().read()) as {
-                value: number[];
-            };
-            return JSON.parse(String.fromCharCode.apply(null, value)) as {
-                IdentityId: string;
-            };
+            return (await responseToJson(response)) as GetIdResponse;
         } catch (e) {
             throw new Error(`CWR: Failed to retrieve Cognito identity: ${e}`);
         }
     };
 
     public getOpenIdToken = async (request: { IdentityId: string }) => {
-        const requestPayload = JSON.stringify(request);
-        const tokenRequest = this.getHttpRequest(
-            GET_TOKEN_TARGET,
-            requestPayload
-        );
-
-        return this.fetchRequestHandler
-            .handle(tokenRequest)
-            .then(({ response }) =>
-                response.body
-                    .getReader()
-                    .read()
-                    .then(({ value }: { value: number[] }) =>
-                        JSON.parse(String.fromCharCode.apply(null, value))
-                    )
-            )
-            .catch((e) => {
-                throw new Error(
-                    `CWR: Failed to retrieve Cognito OpenId token: ${e}`
-                );
-            });
+        try {
+            const requestPayload = JSON.stringify(request);
+            const tokenRequest = this.getHttpRequest(
+                GET_TOKEN_TARGET,
+                requestPayload
+            );
+            const { response } = await this.fetchRequestHandler.handle(
+                tokenRequest
+            );
+            return (await responseToJson(response)) as OpenIdTokenResponse;
+        } catch (e) {
+            throw new Error(
+                `CWR: Failed to retrieve Cognito OpenId token: ${e}`
+            );
+        }
     };
 
     public getCredentialsForIdentity = async (
         identityId: string
     ): Promise<Credentials> => {
-        const requestPayload = JSON.stringify({ IdentityId: identityId });
-        const credentialRequest = this.getHttpRequest(
-            GET_CREDENTIALS_TARGET,
-            requestPayload
-        );
-
-        return this.fetchRequestHandler
-            .handle(credentialRequest)
-            .then(({ response }) => {
-                return response.body
-                    .getReader()
-                    .read()
-                    .then(({ value }: { value: number[] }) => {
-                        const { IdentityId, Credentials } = JSON.parse(
-                            String.fromCharCode.apply(null, value)
-                        ) as {
-                            IdentityId: string;
-                            Credentials: CognitoCredentials;
-                        };
-
-                        const {
-                            AccessKeyId,
-                            Expiration,
-                            SecretAccessKey,
-                            SessionToken
-                        } = Credentials;
-
-                        return {
-                            identityId: IdentityId as string,
-                            accessKeyId: AccessKeyId as string,
-                            secretAccessKey: SecretAccessKey as string,
-                            sessionToken: SessionToken as string,
-                            expiration: new Date(Expiration * 1000)
-                        };
-                    }) as Promise<Credentials>;
-            })
-            .catch((e) => {
-                throw new Error(
-                    `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
-                );
-            });
+        try {
+            const requestPayload = JSON.stringify({ IdentityId: identityId });
+            const credentialRequest = this.getHttpRequest(
+                GET_CREDENTIALS_TARGET,
+                requestPayload
+            );
+            const { response } = await this.fetchRequestHandler.handle(
+                credentialRequest
+            );
+            const { Credentials } = (await responseToJson(
+                response
+            )) as CredentialsResponse;
+            const {
+                AccessKeyId,
+                Expiration,
+                SecretAccessKey,
+                SessionToken
+            } = Credentials;
+            return {
+                accessKeyId: AccessKeyId as string,
+                secretAccessKey: SecretAccessKey as string,
+                sessionToken: SessionToken as string,
+                expiration: new Date(Expiration * 1000)
+            };
+        } catch (e) {
+            throw new Error(
+                `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
+            );
+        }
     };
 
     private getHttpRequest = (target: string, payload: string) =>
