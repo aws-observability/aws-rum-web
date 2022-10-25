@@ -76,6 +76,7 @@ export type PartialConfig = {
     pageIdFormat?: PageIdFormat;
     pagesToExclude?: RegExp[];
     pagesToInclude?: RegExp[];
+    proxy?: boolean;
     recordResourceUrl?: boolean;
     routeChangeComplete?: number;
     routeChangeTimeout?: number;
@@ -126,6 +127,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pageIdFormat: PageIdFormatEnum.Path,
         pagesToExclude: [],
         pagesToInclude: [/.*/],
+        proxy: false,
         recordResourceUrl: true,
         retries: 2,
         routeChangeComplete: 100,
@@ -175,6 +177,7 @@ export type Config = {
     pageIdFormat: PageIdFormat;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
+    proxy: boolean;
     recordResourceUrl: boolean;
     retries: number;
     routeChangeComplete: number;

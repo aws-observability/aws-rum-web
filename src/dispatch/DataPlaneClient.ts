@@ -43,6 +43,7 @@ export declare type DataPlaneClientConfig = {
     endpoint: URL;
     region: string;
     credentials: CredentialProvider | Credentials;
+    proxy: boolean;
 };
 
 export class DataPlaneClient {
@@ -64,60 +65,69 @@ export class DataPlaneClient {
     public sendFetch = async (
         putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
-        const serializedRequest: string = JSON.stringify(
-            serializeRequest(putRumEventsRequest)
+        const options = await this.getHttpRequestOptions(
+            putRumEventsRequest,
+            CONTENT_TYPE_JSON
         );
-        const path = this.config.endpoint.pathname.replace(/\/$/, '');
-        const request = new HttpRequest({
-            method: METHOD,
-            headers: {
-                'content-type': CONTENT_TYPE_JSON,
-                'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest),
-                host: this.config.endpoint.host
-            },
-            protocol: this.config.endpoint.protocol,
-            hostname: this.config.endpoint.hostname,
-            path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}/`,
-            body: serializedRequest
-        });
-
-        const signedRequest: HttpRequest = (await this.awsSigV4.sign(
-            request
-        )) as any;
+        let request: HttpRequest = new HttpRequest(options);
+        if (!this.config.proxy) {
+            request = (await this.awsSigV4.sign(request)) as HttpRequest;
+        }
         const httpResponse: Promise<{
             response: HttpResponse;
-        }> = this.config.fetchRequestHandler.handle(signedRequest);
+        }> = this.config.fetchRequestHandler.handle(request);
         return httpResponse;
     };
 
     public sendBeacon = async (
         putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
+        const options = await this.getHttpRequestOptions(
+            putRumEventsRequest,
+            CONTENT_TYPE_TEXT
+        );
+        let request: HttpRequest = new HttpRequest(options);
+        if (!this.config.proxy) {
+            request = (await this.awsSigV4.presign(
+                request,
+                REQUEST_PRESIGN_ARGS
+            )) as HttpRequest;
+        }
+        const httpResponse: Promise<{
+            response: HttpResponse;
+        }> = this.config.beaconRequestHandler.handle(request);
+        return httpResponse;
+    };
+
+    private getHttpRequestOptions = async (
+        putRumEventsRequest: PutRumEventsRequest,
+        contentType: string
+    ) => {
         const serializedRequest: string = JSON.stringify(
             serializeRequest(putRumEventsRequest)
         );
         const path = this.config.endpoint.pathname.replace(/\/$/, '');
-        const request = new HttpRequest({
+        const options = {
             method: METHOD,
+            protocol: this.config.endpoint.protocol,
             headers: {
-                'content-type': CONTENT_TYPE_TEXT,
-                'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest),
+                'content-type': contentType,
                 host: this.config.endpoint.host
             },
-            protocol: this.config.endpoint.protocol,
             hostname: this.config.endpoint.hostname,
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
             body: serializedRequest
-        });
-
-        const preSignedRequest: HttpRequest = (await this.awsSigV4.presign(
-            request,
-            REQUEST_PRESIGN_ARGS
-        )) as any;
-        const httpResponse: Promise<{
-            response: HttpResponse;
-        }> = this.config.beaconRequestHandler.handle(preSignedRequest);
-        return httpResponse;
+        };
+        if (this.config.proxy) {
+            return options;
+        }
+        return {
+            ...options,
+            headers: {
+                ...options.headers,
+                'X-Amz-Content-Sha256': await hashAndEncode(serializedRequest)
+            }
+        };
     };
 }
 

@@ -18,6 +18,26 @@ jest.mock('@aws-sdk/fetch-http-handler', () => ({
         .mockImplementation(() => ({ handle: fetchHandler }))
 }));
 
+interface Config {
+    proxy: boolean;
+    endpoint: URL;
+}
+
+const defaultConfig = { proxy: false, endpoint: Utils.AWS_RUM_ENDPOINT };
+
+const createDataPlaneClient = (
+    config: Config = defaultConfig
+): DataPlaneClient => {
+    return new DataPlaneClient({
+        fetchRequestHandler: new FetchHttpHandler(),
+        beaconRequestHandler: new BeaconHttpHandler(),
+        endpoint: config.endpoint,
+        region: Utils.AWS_RUM_REGION,
+        credentials: Utils.createAwsCredentials(),
+        proxy: config.proxy
+    });
+};
+
 describe('DataPlaneClient tests', () => {
     beforeEach(() => {
         advanceTo(0);
@@ -41,13 +61,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when sendFetch is used then fetch handler is used', async () => {
         // Init
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint: Utils.AWS_RUM_ENDPOINT,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
-        });
+        const client: DataPlaneClient = createDataPlaneClient();
 
         // Run
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
@@ -58,13 +72,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when sendFetch is used then request contains correct signature header', async () => {
         // Init
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint: Utils.AWS_RUM_ENDPOINT,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
-        });
+        const client: DataPlaneClient = createDataPlaneClient();
 
         // Run
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
@@ -77,19 +85,13 @@ describe('DataPlaneClient tests', () => {
             '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
         );
         expect(signedRequest.headers.authorization).toEqual(
-            'AWS4-HMAC-SHA256 Credential=abc123/19700101/us-west-2/rum/aws4_request, SignedHeaders=content-type;host;x-amz-content-sha256;x-amz-date, Signature=bf3acf587b119ab12f0f8a86bf12acf7c460eb037584feb0ab5574f297def947'
+            'AWS4-HMAC-SHA256 Credential=abc123/19700101/us-west-2/rum/aws4_request, SignedHeaders=content-type;host;x-amz-content-sha256;x-amz-date, Signature=3e368a15f5a97cf18cd90a6e629360bfe21a94b34b5f8a04e26815b6d2d4178a'
         );
     });
 
     test('when sendBeacon is used then beacon handler is used', async () => {
         // Init
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint: Utils.AWS_RUM_ENDPOINT,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
-        });
+        const client: DataPlaneClient = createDataPlaneClient();
 
         // Run
         await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
@@ -100,13 +102,7 @@ describe('DataPlaneClient tests', () => {
 
     test('when sendBeacon is used then request contains correct pre-signed url', async () => {
         // Init
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint: Utils.AWS_RUM_ENDPOINT,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
-        });
+        const client: DataPlaneClient = createDataPlaneClient();
 
         // Run
         await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
@@ -136,12 +132,9 @@ describe('DataPlaneClient tests', () => {
     test('when the endpoint contains a path then the fetch request url contains the path prefix', async () => {
         // Init
         const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint
         });
 
         // Run
@@ -152,19 +145,16 @@ describe('DataPlaneClient tests', () => {
             .calls[0] as any)[0];
         expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
-            `${endpoint.pathname}/appmonitors/application123/`
+            `${endpoint.pathname}/appmonitors/application123`
         );
     });
 
     test('when the endpoint path contains a trailing slash then the fetch request url drops the trailing slash', async () => {
         // Init
         const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod/'}`);
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint
         });
 
         // Run
@@ -175,22 +165,16 @@ describe('DataPlaneClient tests', () => {
             .calls[0] as any)[0];
         expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
-            `${endpoint.pathname.replace(
-                /\/$/,
-                ''
-            )}/appmonitors/application123/`
+            `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
         );
     });
 
     test('when the endpoint contains a path then the beacon request url contains the path prefix', async () => {
         // Init
         const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint
         });
 
         // Run
@@ -208,12 +192,9 @@ describe('DataPlaneClient tests', () => {
     test('when the endpoint path contains a trailing slash then the beacon request url drops the trailing slash', async () => {
         // Init
         const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod/'}`);
-        const client: DataPlaneClient = new DataPlaneClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint,
-            region: Utils.AWS_RUM_REGION,
-            credentials: Utils.createAwsCredentials()
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint
         });
 
         // Run
@@ -226,5 +207,47 @@ describe('DataPlaneClient tests', () => {
         expect(signedRequest.path).toEqual(
             `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
         );
+    });
+
+    test('when proxy is enabled then sendFetch does not sign the request', async () => {
+        // Init
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            proxy: true
+        });
+
+        // Run
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (fetchHandler.mock
+            .calls[0] as any)[0];
+        expect(signedRequest.headers['X-Amz-Content-Sha256']).toEqual(
+            undefined
+        );
+        expect(signedRequest.headers['x-amz-date']).toEqual(undefined);
+        expect(signedRequest.headers.authorization).toEqual(undefined);
+    });
+
+    test('when proxy is enabled then sendBeacon does not sign the request', async () => {
+        // Init
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            proxy: true
+        });
+
+        // Run
+        await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        // @ts-ignore
+        const signedRequest: HttpRequest = beaconHandler.mock.calls[0][0];
+        expect(signedRequest.query['X-Amz-Algorithm']).toEqual(undefined);
+        expect(signedRequest.query['X-Amz-Content-Sha256']).toEqual(undefined);
+        expect(signedRequest.query['X-Amz-Credential']).toEqual(undefined);
+        expect(signedRequest.query['X-Amz-Date']).toEqual(undefined);
+        expect(signedRequest.query['X-Amz-Expires']).toEqual(undefined);
+        expect(signedRequest.query['X-Amz-SignedHeaders']).toEqual(undefined);
+        expect(signedRequest.query['X-Amz-Signature']).toEqual(undefined);
     });
 });
