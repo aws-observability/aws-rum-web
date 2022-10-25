@@ -4,9 +4,12 @@ import {
     cssResourceEvent,
     performanceEvent,
     mockPerformanceObserver,
-    mockPerformanceObject,
     mockPerformanceObjectWithResources,
-    resourceEvent
+    resourceEvent,
+    mockPerformanceObjectWith,
+    putRumEventsDocument,
+    putRumEventsGammaDocument,
+    dataPlaneDocument
 } from '../../../test-utils/mock-data';
 import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
@@ -90,9 +93,9 @@ describe('ResourcePlugin tests', () => {
         ).toBeUndefined();
     });
 
-    test('when resource is from data plane endpoint then resource event is not recorded', async () => {
+    test('when resource is a PutRumEvents request then resource event is not recorded', async () => {
         // Setup
-        mockPerformanceObject();
+        mockPerformanceObjectWith([putRumEventsDocument], [], []);
         mockPerformanceObserver();
 
         const plugin: ResourcePlugin = buildResourcePlugin();
@@ -104,6 +107,38 @@ describe('ResourcePlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when resource is a PutRumEvents request with a path prefix then resource event is not recorded', async () => {
+        // Setup
+        mockPerformanceObjectWith([putRumEventsGammaDocument], [], []);
+        mockPerformanceObserver();
+
+        const plugin: ResourcePlugin = buildResourcePlugin();
+
+        // Run
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when resource is not a PutRumEvents request but has the same host then the resource event is recorded', async () => {
+        // Setup
+        mockPerformanceObjectWith([dataPlaneDocument], [], []);
+        mockPerformanceObserver();
+
+        const plugin: ResourcePlugin = buildResourcePlugin();
+
+        // Run
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalled();
     });
 
     test('when enabled then events are recorded', async () => {

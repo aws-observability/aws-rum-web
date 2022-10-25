@@ -140,32 +140,43 @@ export const resourceEvent2 = {
     fileType: 'image'
 };
 
-export const dataPlaneResourceEvent = {
-    connectEnd: 0,
-    connectStart: 0,
-    decodedBodySize: 0,
-    domainLookupEnd: 0,
-    domainLookupStart: 0,
-    duration: 438.39999999909196,
-    encodedBodySize: 0,
-    entryType: 'resource',
-    fetchStart: 357.59500000131084,
-    initiatorType: 'link',
-    name:
-        'https://dataplane.rum.us-west-2.amazonaws.com/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events',
-    nextHopProtocol: 'h2',
-    redirectEnd: 0,
-    redirectStart: 0,
-    requestStart: 0,
-    responseEnd: 795.9950000004028,
-    responseStart: 0,
-    secureConnectionStart: 0,
-    serverTiming: [],
-    startTime: 357.59500000131084,
-    transferSize: 0,
-    workerStart: 0,
-    fileType: 'document'
+export const createDocumentResource = (url: string) => {
+    return {
+        connectEnd: 0,
+        connectStart: 0,
+        decodedBodySize: 0,
+        domainLookupEnd: 0,
+        domainLookupStart: 0,
+        duration: 438.39999999909196,
+        encodedBodySize: 0,
+        entryType: 'resource',
+        fetchStart: 357.59500000131084,
+        initiatorType: 'link',
+        name: url,
+        nextHopProtocol: 'h2',
+        redirectEnd: 0,
+        redirectStart: 0,
+        requestStart: 0,
+        responseEnd: 795.9950000004028,
+        responseStart: 0,
+        secureConnectionStart: 0,
+        serverTiming: [],
+        startTime: 357.59500000131084,
+        transferSize: 0,
+        workerStart: 0,
+        fileType: 'document'
+    };
 };
+
+export const putRumEventsDocument = createDocumentResource(
+    'https://dataplane.rum.us-west-2.amazonaws.com/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events'
+);
+export const putRumEventsGammaDocument = createDocumentResource(
+    'https://dataplane.rum.us-west-2.amazonaws.com/gamma/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events'
+);
+export const dataPlaneDocument = createDocumentResource(
+    'https://dataplane.rum.us-west-2.amazonaws.com/user'
+);
 
 export const scriptResourceEvent = {
     connectEnd: 386.37999998172745,
@@ -368,15 +379,22 @@ export const performanceEventNotLoaded = {
     PerformanceObserver: MockPerformanceObserver
 };
 
-export const mockPerformanceObject = () => {
+export const mockPerformanceObjectWith = (
+    resource: any[],
+    paint: any[],
+    navigation: any[]
+) => {
     delete (window as any).performance;
     const performanceObject = {
         getEntriesByType: (entryType: string) => {
             if (entryType === 'resource') {
-                return [dataPlaneResourceEvent];
+                return resource;
             }
             if (entryType === 'paint') {
-                return [];
+                return paint;
+            }
+            if (entryType === 'navigation') {
+                return navigation;
             }
             return [];
         },
@@ -391,63 +409,22 @@ export const mockPerformanceObject = () => {
         value: performanceObject,
         writable: true
     });
+};
+
+export const mockPerformanceObjectWithDataPlaneResource = () => {
+    mockPerformanceObjectWith([putRumEventsDocument], [], []);
 };
 
 export const mockPerformanceObjectWithResources = () => {
-    delete (window as any).performance;
-    const performanceObject = {
-        getEntriesByType: (entryType: string) => {
-            if (entryType === 'resource') {
-                return [
-                    scriptResourceEvent,
-                    imageResourceEvent,
-                    cssResourceEvent
-                ];
-            }
-            if (entryType === 'paint') {
-                return [];
-            }
-            return [];
-        },
-        now: () => {
-            return Date.now();
-        },
-        timing: MockPerformanceTiming
-    };
-    Object.defineProperty(window, 'performance', {
-        configurable: true,
-        enumerable: true,
-        value: performanceObject,
-        writable: true
-    });
+    mockPerformanceObjectWith(
+        [scriptResourceEvent, imageResourceEvent, cssResourceEvent],
+        [],
+        []
+    );
 };
 
 export const mockPaintPerformanceObject = () => {
-    delete (window as any).performance;
-    const performanceObject = {
-        getEntriesByType: (entryType: string) => {
-            if (entryType === 'resource') {
-                return [resourceEvent];
-            }
-            if (entryType === 'paint') {
-                return [];
-            }
-            if (entryType === 'navigation') {
-                return [navigationEvent];
-            }
-            return [];
-        },
-        now: () => {
-            return Date.now();
-        },
-        timing: MockPerformanceTiming
-    };
-    Object.defineProperty(window, 'performance', {
-        configurable: true,
-        enumerable: true,
-        value: performanceObject,
-        writable: true
-    });
+    mockPerformanceObjectWith([resourceEvent], [], [navigationEvent]);
 };
 
 export class MockPaintPerformanceObserver {
