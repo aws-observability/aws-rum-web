@@ -68,7 +68,7 @@ describe('BeaconHttpHandler tests', () => {
         );
     });
 
-    test('when proxy is tue then sendBeacon omits the signature', async () => {
+    test('when proxy is true then sendBeacon omits the signature', async () => {
         // Init
         const client: DataPlaneClient = createDataPlaneClient({ proxy: true });
 
