@@ -118,10 +118,6 @@ export const isEachEventIngested = async (
             const eventId: string = JSON.parse(event).event_id;
             const flattenedMetadata = JSON.parse(event).metadata_values;
             ingestedEvents.set(eventId, flattenedMetadata);
-
-            // ingestedEvents.push()
-            // ingestedEvents.add();
-            // ingestedEventsMetadata.add()
         });
         if (data.NextToken) {
             input.NextToken = data.NextToken;
@@ -137,8 +133,9 @@ export const isEachEventIngested = async (
             throw new Error(`Event ${eventId} not ingested.`);
         }
 
-        // check for valid custom attributes
+        // validate custom attributes
         if (metadataAttributes) {
+            // check for valid custom attributes
             if (
                 !metadataAttributes?.every((flattenedAttribute) =>
                     ingestedEvents.get(eventId)?.includes(flattenedAttribute)
@@ -155,7 +152,7 @@ export const isEachEventIngested = async (
                 throw new Error(`Did not find expected metadata attribute(s).`);
             }
 
-            // check for invalid custom attributes
+            // check invalid custom attributes not ingested
             const invalidAttributes = ingestedEvents
                 .get(eventId)
                 ?.filter(function (attribute) {
