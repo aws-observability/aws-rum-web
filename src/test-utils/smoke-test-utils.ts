@@ -3,8 +3,34 @@ import {
     GetAppMonitorDataCommandInput
 } from '@aws-sdk/client-rum';
 
+const builtInAttributes = [
+    'version',
+    'browserLanguage',
+    'browserName',
+    'browserVersion',
+    'osName',
+    'osVersion',
+    'deviceType',
+    'platformType',
+    'pageUrl',
+    'url',
+    'pageId',
+    'parentPageId',
+    'interaction',
+    'referrerUrl',
+    'pageTitle',
+    'title',
+    'countryCode',
+    'subdivisionCode',
+    'domain',
+    'pageTags'
+];
+
 /** Returns filtered events by type */
-export const getEventsByType = (requestBody, eventType) => {
+export const getEventsByType = (
+    requestBody: { RumEvents: any[] },
+    eventType: string
+) => {
     return requestBody.RumEvents.filter((e) => e.type === eventType);
 };
 
@@ -44,7 +70,8 @@ export const verifyIngestionWithRetry = async (
     eventIds,
     timestamp,
     monitorName,
-    retryCount
+    retryCount,
+    metadataAttributes: string[] | undefined = undefined
 ) => {
     while (true) {
         if (retryCount === 0) {
@@ -56,7 +83,8 @@ export const verifyIngestionWithRetry = async (
                 rumClient,
                 eventIds,
                 timestamp,
-                monitorName
+                monitorName,
+                metadataAttributes
             );
             return true;
         } catch (error) {
@@ -72,9 +100,10 @@ export const isEachEventIngested = async (
     rumClient,
     eventIds,
     timestamp,
-    monitorName
+    monitorName,
+    metadataAttributes: string[] | undefined = undefined
 ) => {
-    const ingestedEvents = new Set();
+    const ingestedEvents: Map<string, string[]> = new Map();
     const input: GetAppMonitorDataCommandInput = {
         Name: monitorName,
         TimeRange: {
@@ -86,7 +115,13 @@ export const isEachEventIngested = async (
     while (true) {
         const data = await rumClient.send(command);
         data.Events.forEach((event) => {
-            ingestedEvents.add(JSON.parse(event).event_id);
+            const eventId: string = JSON.parse(event).event_id;
+            const flattenedMetadata = JSON.parse(event).metadata_values;
+            ingestedEvents.set(eventId, flattenedMetadata);
+
+            // ingestedEvents.push()
+            // ingestedEvents.add();
+            // ingestedEventsMetadata.add()
         });
         if (data.NextToken) {
             input.NextToken = data.NextToken;
@@ -100,6 +135,45 @@ export const isEachEventIngested = async (
     eventIds.forEach((eventId) => {
         if (!ingestedEvents.has(eventId)) {
             throw new Error(`Event ${eventId} not ingested.`);
+        }
+
+        // check for valid custom attributes
+        if (metadataAttributes) {
+            if (
+                !metadataAttributes?.every((flattenedAttribute) =>
+                    ingestedEvents.get(eventId)?.includes(flattenedAttribute)
+                )
+            ) {
+                console.log(
+                    `Expected attributes: ${JSON.stringify(metadataAttributes)}`
+                );
+                console.log(
+                    `Actual metadata: ${JSON.stringify(
+                        ingestedEvents.get(eventId)
+                    )}`
+                );
+                throw new Error(`Did not find expected metadata attribute(s).`);
+            }
+
+            // check for invalid custom attributes
+            const invalidAttributes = ingestedEvents
+                .get(eventId)
+                ?.filter(function (attribute) {
+                    const attributeKey = attribute.split('=', 2)[0];
+                    return (
+                        !builtInAttributes.includes(attributeKey) &&
+                        !metadataAttributes?.includes(attribute)
+                    );
+                });
+
+            if (invalidAttributes && invalidAttributes.length > 0) {
+                console.log(
+                    `Invalid custom attributes ingested: ${JSON.stringify(
+                        invalidAttributes
+                    )}`
+                );
+                throw new Error(`Invalid custom attributes ingested`);
+            }
         }
     });
 };
