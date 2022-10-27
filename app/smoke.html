@@ -33,24 +33,7 @@
                 endpoint: $ENDPOINT,
                 telemetries: ['performance', 'errors', 'http', 'interaction'],
                 allowCookies: true,
-                enableXRay: true,
-                sessionAttributes: {
-                    customAttributeKeyAtInit1: 'customAttributeValueAtInit1',
-                    customAttributeKeyAtInit2: 'customAttributeValueAtInit2',
-                    custom_attribute_key_at_init: 'customAttributeValueAtInit',
-                    'valid:customAttributeKeyAtInit':
-                        'customAttributeValueAtInit',
-
-                    // invalid custom attributes below should not be ingested
-                    'aws:invalidCustomAttributeKey':
-                        'invalidCustomAttributeValueAtInit',
-                    'invalid-custom-attribute-key':
-                        'invalidCustomAttributeValueAtInit',
-                    'invalid custom attribute key':
-                        'invalidCustomAttributeValueAtInit',
-                    'invalid.custom.attribute.key':
-                        'invalidCustomAttributeValueAtInit'
-                }
+                enableXRay: true
             });
         </script>
 
@@ -142,30 +125,7 @@
             }
 
             function recordPageView() {
-                cwr('recordPageView', {
-                    pageId: '/page_view_two',
-                    pageTags: ['pageGroup1'],
-                    pageAttributes: {
-                        customPageAttributeKeyAtRuntime1:
-                            'customPageAttributeValueAtRuntime1',
-                        customPageAttributeKeyAtRuntime2:
-                            'customPageAttributeValueAtRuntime2',
-                        custom_page_attribute_key_at_runtime:
-                            'customPageAttributeValueAtRuntime',
-                        'valid:customPageAttributeKeyAtRuntime':
-                            'customPageAttributeValueAtRuntime',
-
-                        // invalid custom attributes below should not be ingested
-                        'aws:invalidCustomPageAttributeKey':
-                            'invalidCustomPageAttributeValueAtRuntime',
-                        'invalid-custom-page-attribute-key':
-                            'invalidCustomPageAttributeValueAtRuntime',
-                        'invalid custom page attribute key':
-                            'invalidCustomPageAttributeValueAtRuntime',
-                        'invalid.custom.page.attribute.key':
-                            'invalidCustomPageAttributeValueAtRuntime'
-                    }
-                });
+                cwr('recordPageView', '/page_view_two');
             }
 
             function httpStatFetch500() {
@@ -306,10 +266,6 @@
         <button id="addSessionAttributes" onclick="addSessionAttributes()">
             Add Custom Attributes
         </button>
-        <button id="triggerPageView" onclick="recordPageView()">
-            Trigger Page View Event with Custom Attributes
-        </button>
-
         <hr />
     </body>
 </html>

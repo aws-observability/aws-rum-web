@@ -14,9 +14,6 @@ import {
     XRAY_TRACE_EVENT_TYPE
 } from '../plugins/utils/constant';
 import {
-    customAttributesAddedAtInit,
-    customAttributesAddedAtRuntime,
-    customPageAttributesAddedAtRuntime,
     getEventIds,
     getEventsByType,
     getUrl,
@@ -397,43 +394,7 @@ test('when xray event is sent then the event is ingested', async ({ page }) => {
     expect(isIngestionCompleted).toEqual(true);
 });
 
-test('when custom session attributes are added at init then valid custom attribute are in metadata of ingested event', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const registerDom = page.locator('[id=registerDomEvents]');
-    const triggerDom = page.locator('[id=triggerDom]');
-    await registerDom.click();
-    await triggerDom.click();
-
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const domEvent = getEventsByType(requestBody, DOM_EVENT_TYPE);
-    const eventIds = getEventIds(domEvent);
-
-    // Expect one dom event
-    expect(eventIds.length).toEqual(1);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds,
-        timestamp,
-        MONITOR_NAME,
-        5,
-        customAttributesAddedAtInit
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
-test('when custom session attributes are added at runtime then valid custom attribute are in metadata of ingested event', async ({
+test('when event with custom attributes is sent then the event is ingested', async ({
     page
 }) => {
     const timestamp = Date.now() - 30000;
@@ -441,45 +402,10 @@ test('when custom session attributes are added at runtime then valid custom attr
     // Open page
     await page.goto(TEST_URL);
     const addSessionAttributes = page.locator('[id=addSessionAttributes]');
-    const registerDom = page.locator('[id=registerDomEvents]');
-    const triggerDom = page.locator('[id=triggerDom]');
     await addSessionAttributes.click();
-    await registerDom.click();
-    await triggerDom.click();
 
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const domEvent = getEventsByType(requestBody, DOM_EVENT_TYPE);
-    const eventIds = getEventIds(domEvent);
-
-    // Expect one dom event
-    expect(eventIds.length).toEqual(1);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds,
-        timestamp,
-        MONITOR_NAME,
-        5,
-        [...customAttributesAddedAtInit, ...customAttributesAddedAtRuntime]
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
-test('when page view event with custom attributes is sent then the event with valid custom attributes is ingested', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const triggerPageView = page.locator('[id=triggerPageView]');
-    await triggerPageView.click();
+    const clearButton = page.locator('[id=pushStateOneToHistory]');
+    await clearButton.click();
 
     // Test will timeout if no successful dataplane request is found
     const response = await page.waitForResponse(async (response) =>
@@ -492,43 +418,7 @@ test('when page view event with custom attributes is sent then the event with va
     const pageViews = getEventsByType(requestBody, PAGE_VIEW_EVENT_TYPE);
     const eventIds = getEventIds(pageViews);
 
-    // One initial load, one manually recorded page view
-    expect(eventIds.length).toEqual(2);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds.slice(1), // ignore initial load
-        timestamp,
-        MONITOR_NAME,
-        5,
-        [...customAttributesAddedAtInit, ...customPageAttributesAddedAtRuntime]
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
-test('when invalid number of custom attributes are added then truncated event is ingested', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const addSessionAttributes = page.locator('[id=addSessionAttributes]');
-    const triggerPageView = page.locator('[id=triggerPageView]');
-    await addSessionAttributes.click();
-    await triggerPageView.click();
-
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const pageViews = getEventsByType(requestBody, PAGE_VIEW_EVENT_TYPE);
-    const eventIds = getEventIds(pageViews);
-
-    // One initial load, one manually recorded page view
+    // One initial load, one route change
     expect(eventIds.length).toEqual(2);
     const isIngestionCompleted = await verifyIngestionWithRetry(
         rumClient,
@@ -537,9 +427,10 @@ test('when invalid number of custom attributes are added then truncated event is
         MONITOR_NAME,
         5,
         [
-            ...customAttributesAddedAtInit,
-            ...customAttributesAddedAtRuntime,
-            ...customPageAttributesAddedAtRuntime.splice(0, 2)
+            'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
+            'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
+            'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
+            'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
         ]
     );
     expect(isIngestionCompleted).toEqual(true);

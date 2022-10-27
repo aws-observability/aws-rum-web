@@ -1,7 +1,9 @@
 import {
     GetAppMonitorDataCommand,
-    GetAppMonitorDataCommandInput
+    GetAppMonitorDataCommandInput,
+    RUMClient
 } from '@aws-sdk/client-rum';
+import { expect, Response } from '@playwright/test';
 
 const builtInAttributes = [
     'version',
@@ -26,27 +28,6 @@ const builtInAttributes = [
     'pageTags'
 ];
 
-export const customAttributesAddedAtInit = [
-    'customAttributeKeyAtInit1=customAttributeValueAtInit1',
-    'customAttributeKeyAtInit2=customAttributeValueAtInit2',
-    'custom_attribute_key_at_init=customAttributeValueAtInit',
-    'valid:customAttributeKeyAtInit=customAttributeValueAtInit'
-];
-
-export const customAttributesAddedAtRuntime = [
-    'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
-    'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
-    'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
-    'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
-];
-
-export const customPageAttributesAddedAtRuntime = [
-    'customPageAttributeKeyAtRuntime1=customPageAttributeValueAtRuntime1',
-    'customPageAttributeKeyAtRuntime2=customPageAttributeValueAtRuntime2',
-    'custom_page_attribute_key_at_runtime=customPageAttributeValueAtRuntime',
-    'valid:customPageAttributeKeyAtRuntime=customPageAttributeValueAtRuntime'
-];
-
 /** Returns filtered events by type */
 export const getEventsByType = (
     requestBody: { RumEvents: any[] },
@@ -56,12 +37,15 @@ export const getEventsByType = (
 };
 
 /** Returns an array of eventIds */
-export const getEventIds = (events) => {
+export const getEventIds = (events: any[]) => {
     return events.map((e) => e.id);
 };
 
 /** Returns the smoke test URL with the right version */
-export const getUrl = (testUrl, version) => {
+export const getUrl = (
+    testUrl: string | URL | undefined,
+    version: string | undefined
+) => {
     if (!testUrl) {
         return 'http://localhost:9000/smoke_local.html';
     }
@@ -76,7 +60,7 @@ export const getUrl = (testUrl, version) => {
 /**
  * Returns true if the request is a successful PutRumEvents request
  */
-export const isDataPlaneRequest = (response, targetUrl) => {
+export const isDataPlaneRequest = (response: Response, targetUrl: string) => {
     const request = response.request();
     return (
         request.method() === 'POST' &&
@@ -87,11 +71,11 @@ export const isDataPlaneRequest = (response, targetUrl) => {
 
 /** Returns true when all events were ingested */
 export const verifyIngestionWithRetry = async (
-    rumClient,
-    eventIds,
-    timestamp,
-    monitorName,
-    retryCount,
+    rumClient: RUMClient,
+    eventIds: any[],
+    timestamp: number,
+    monitorName: string | undefined,
+    retryCount: number,
     metadataAttributes: string[] | undefined = undefined
 ) => {
     while (true) {
@@ -100,14 +84,25 @@ export const verifyIngestionWithRetry = async (
             return false;
         }
         try {
-            await isEachEventIngested(
+            const actual: Map<string, string[]> = await getIngestedEvents(
                 rumClient,
-                eventIds,
                 timestamp,
-                monitorName,
-                metadataAttributes
+                monitorName
             );
-            return true;
+
+            return (
+                (await expectEvents(actual, eventIds)) &&
+                (await expectValidAttributes(
+                    actual,
+                    eventIds,
+                    metadataAttributes
+                )) &&
+                (await expectInvalidAttributes(
+                    actual,
+                    eventIds,
+                    metadataAttributes
+                ))
+            );
         } catch (error) {
             retryCount -= 1;
             console.log(`${error.message} Waiting for next retry.`);
@@ -116,13 +111,11 @@ export const verifyIngestionWithRetry = async (
     }
 };
 
-/** Returns true when every event is ingested */
-export const isEachEventIngested = async (
-    rumClient,
-    eventIds,
-    timestamp,
-    monitorName,
-    metadataAttributes: string[] | undefined = undefined
+/** Returns list of ingested events */
+export const getIngestedEvents = async (
+    rumClient: RUMClient,
+    timestamp: number,
+    monitorName: string | undefined
 ) => {
     const ingestedEvents: Map<string, string[]> = new Map();
     const input: GetAppMonitorDataCommandInput = {
@@ -135,7 +128,7 @@ export const isEachEventIngested = async (
     // Running tests in parallel require pagination logic, as several test cases have the same timestamp
     while (true) {
         const data = await rumClient.send(command);
-        data.Events.forEach((event) => {
+        data?.Events?.forEach((event) => {
             const eventId: string = JSON.parse(event).event_id;
             const flattenedMetadata = JSON.parse(event).metadata_values;
             ingestedEvents.set(eventId, flattenedMetadata);
@@ -148,32 +141,46 @@ export const isEachEventIngested = async (
             break;
         }
     }
+    return ingestedEvents;
+};
 
+/** Returns true when expected ingested event is found */
+export const expectEvents = async (
+    ingestedEvents: Map<string, string[]>,
+    eventIds: string[]
+) => {
     eventIds.forEach((eventId) => {
         if (!ingestedEvents.has(eventId)) {
             throw new Error(`Event ${eventId} not ingested.`);
         }
+    });
+    return true;
+};
 
-        // validate custom attributes
-        if (metadataAttributes) {
-            // check for valid custom attributes
-            if (
-                !metadataAttributes?.every((flattenedAttribute) =>
-                    ingestedEvents.get(eventId)?.includes(flattenedAttribute)
-                )
-            ) {
-                console.log(
-                    `Expected attributes: ${JSON.stringify(metadataAttributes)}`
-                );
-                console.log(
-                    `Retrieved metadata: ${JSON.stringify(
-                        ingestedEvents.get(eventId)
-                    )}`
-                );
-                throw new Error(`Did not find expected metadata attribute(s).`);
-            }
+/** Returns true when expected custom attributes are found */
+export const expectValidAttributes = async (
+    ingestedEvents: Map<string, string[]>,
+    eventIds: string[],
+    metadataAttributes: string[] | undefined = undefined
+) => {
+    if (metadataAttributes) {
+        eventIds.forEach((eventId) => {
+            expect(ingestedEvents.get(eventId)).toEqual(
+                expect.arrayContaining(metadataAttributes)
+            );
+        });
+    }
+    return true;
+};
 
-            // check invalid custom attributes not ingested
+/** Returns true when no invalid custom attributes are found */
+export const expectInvalidAttributes = async (
+    ingestedEvents: Map<string, string[]>,
+    eventIds: string[],
+    metadataAttributes: string[] | undefined = undefined
+) => {
+    if (metadataAttributes) {
+        eventIds.forEach((eventId) => {
             const invalidAttributes = ingestedEvents
                 .get(eventId)
                 ?.filter(function (attribute) {
@@ -184,19 +191,8 @@ export const isEachEventIngested = async (
                     );
                 });
 
-            if (invalidAttributes && invalidAttributes.length > 0) {
-                console.log(
-                    `Invalid custom attributes ingested: ${JSON.stringify(
-                        invalidAttributes
-                    )}`
-                );
-                console.log(
-                    `Retrieved metadata: ${JSON.stringify(
-                        ingestedEvents.get(eventId)
-                    )}`
-                );
-                throw new Error(`Invalid custom attributes ingested`);
-            }
-        }
-    });
+            expect(invalidAttributes).toEqual([]);
+        });
+    }
+    return true;
 };
