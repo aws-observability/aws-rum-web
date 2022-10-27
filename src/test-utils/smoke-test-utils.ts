@@ -84,24 +84,15 @@ export const verifyIngestionWithRetry = async (
             return false;
         }
         try {
-            const actual: Map<string, string[]> = await getIngestedEvents(
-                rumClient,
-                timestamp,
-                monitorName
-            );
+            const ingestedEvents: Map<
+                string,
+                string[]
+            > = await getIngestedEvents(rumClient, timestamp, monitorName);
 
-            return (
-                (await expectEvents(actual, eventIds)) &&
-                (await expectValidAttributes(
-                    actual,
-                    eventIds,
-                    metadataAttributes
-                )) &&
-                (await expectInvalidAttributes(
-                    actual,
-                    eventIds,
-                    metadataAttributes
-                ))
+            return await expectValidEvents(
+                ingestedEvents,
+                eventIds,
+                metadataAttributes
             );
         } catch (error) {
             retryCount -= 1;
@@ -144,6 +135,26 @@ export const getIngestedEvents = async (
     return ingestedEvents;
 };
 
+export const expectValidEvents = async (
+    ingestedEvents: Map<string, string[]>,
+    eventIds: string[],
+    metadataAttributes: string[] | undefined = undefined
+) => {
+    return (
+        (await expectEvents(ingestedEvents, eventIds)) &&
+        (await expectValidAttributes(
+            ingestedEvents,
+            eventIds,
+            metadataAttributes
+        )) &&
+        (await expectInvalidAttributes(
+            ingestedEvents,
+            eventIds,
+            metadataAttributes
+        ))
+    );
+};
+
 /** Returns true when expected ingested event is found */
 export const expectEvents = async (
     ingestedEvents: Map<string, string[]>,
@@ -163,12 +174,11 @@ export const expectValidAttributes = async (
     eventIds: string[],
     metadataAttributes: string[] | undefined = undefined
 ) => {
-    if (metadataAttributes) {
-        eventIds.forEach((eventId) => {
-            expect(ingestedEvents.get(eventId)).toEqual(
-                expect.arrayContaining(metadataAttributes)
-            );
-        });
+    if (metadataAttributes && eventIds.length > 0) {
+        const eventId = eventIds[0];
+        expect(ingestedEvents.get(eventId)).toEqual(
+            expect.arrayContaining(metadataAttributes)
+        );
     }
     return true;
 };
@@ -179,20 +189,19 @@ export const expectInvalidAttributes = async (
     eventIds: string[],
     metadataAttributes: string[] | undefined = undefined
 ) => {
-    if (metadataAttributes) {
-        eventIds.forEach((eventId) => {
-            const invalidAttributes = ingestedEvents
-                .get(eventId)
-                ?.filter(function (attribute) {
-                    const attributeKey = attribute.split('=', 2)[0];
-                    return (
-                        !builtInAttributes.includes(attributeKey) &&
-                        !metadataAttributes?.includes(attribute)
-                    );
-                });
+    if (metadataAttributes && eventIds.length > 0) {
+        const eventId = eventIds[0];
+        const eventsWithInvalidAttributes = ingestedEvents
+            .get(eventId)
+            ?.filter(function (attribute) {
+                const attributeKey = attribute.split('=', 2)[0];
+                return (
+                    !builtInAttributes.includes(attributeKey) &&
+                    !metadataAttributes?.includes(attribute)
+                );
+            });
 
-            expect(invalidAttributes).toEqual([]);
-        });
+        expect(eventsWithInvalidAttributes).toEqual([]);
     }
     return true;
 };
