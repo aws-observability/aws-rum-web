@@ -26,6 +26,27 @@ const builtInAttributes = [
     'pageTags'
 ];
 
+export const customAttributesAddedAtInit = [
+    'customAttributeKeyAtInit1=customAttributeValueAtInit1',
+    'customAttributeKeyAtInit2=customAttributeValueAtInit2',
+    'custom_attribute_key_at_init=customAttributeValueAtInit',
+    'valid:customAttributeKeyAtInit=customAttributeValueAtInit'
+];
+
+export const customAttributesAddedAtRuntime = [
+    'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
+    'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
+    'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
+    'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
+];
+
+export const customPageAttributesAddedAtRuntime = [
+    'customPageAttributeKeyAtRuntime1=customPageAttributeValueAtRuntime1',
+    'customPageAttributeKeyAtRuntime2=customPageAttributeValueAtRuntime2',
+    'custom_page_attribute_key_at_runtime=customPageAttributeValueAtRuntime',
+    'valid:customPageAttributeKeyAtRuntime=customPageAttributeValueAtRuntime'
+];
+
 /** Returns filtered events by type */
 export const getEventsByType = (
     requestBody: { RumEvents: any[] },
@@ -145,7 +166,7 @@ export const isEachEventIngested = async (
                     `Expected attributes: ${JSON.stringify(metadataAttributes)}`
                 );
                 console.log(
-                    `Actual metadata: ${JSON.stringify(
+                    `Retrieved metadata: ${JSON.stringify(
                         ingestedEvents.get(eventId)
                     )}`
                 );
@@ -167,6 +188,11 @@ export const isEachEventIngested = async (
                 console.log(
                     `Invalid custom attributes ingested: ${JSON.stringify(
                         invalidAttributes
+                    )}`
+                );
+                console.log(
+                    `Retrieved metadata: ${JSON.stringify(
+                        ingestedEvents.get(eventId)
                     )}`
                 );
                 throw new Error(`Invalid custom attributes ingested`);

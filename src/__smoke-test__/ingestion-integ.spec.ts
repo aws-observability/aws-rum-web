@@ -14,6 +14,9 @@ import {
     XRAY_TRACE_EVENT_TYPE
 } from '../plugins/utils/constant';
 import {
+    customAttributesAddedAtInit,
+    customAttributesAddedAtRuntime,
+    customPageAttributesAddedAtRuntime,
     getEventIds,
     getEventsByType,
     getUrl,
@@ -425,12 +428,7 @@ test('when custom session attributes are added at init then valid custom attribu
         timestamp,
         MONITOR_NAME,
         5,
-        [
-            'customAttributeKeyAtInit1=customAttributeValueAtInit1',
-            'customAttributeKeyAtInit2=customAttributeValueAtInit2',
-            'custom_attribute_key_at_init=customAttributeValueAtInit',
-            'valid:customAttributeKeyAtInit=customAttributeValueAtInit'
-        ]
+        customAttributesAddedAtInit
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -468,16 +466,7 @@ test('when custom session attributes are added at runtime then valid custom attr
         timestamp,
         MONITOR_NAME,
         5,
-        [
-            'customAttributeKeyAtInit1=customAttributeValueAtInit1',
-            'customAttributeKeyAtInit2=customAttributeValueAtInit2',
-            'custom_attribute_key_at_init=customAttributeValueAtInit',
-            'valid:customAttributeKeyAtInit=customAttributeValueAtInit',
-            'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
-            'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
-            'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
-            'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
-        ]
+        [...customAttributesAddedAtInit, ...customAttributesAddedAtRuntime]
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -511,16 +500,7 @@ test('when page view event with custom attributes is sent then the event with va
         timestamp,
         MONITOR_NAME,
         5,
-        [
-            'customAttributeKeyAtInit1=customAttributeValueAtInit1',
-            'customAttributeKeyAtInit2=customAttributeValueAtInit2',
-            'custom_attribute_key_at_init=customAttributeValueAtInit',
-            'valid:customAttributeKeyAtInit=customAttributeValueAtInit',
-            'customPageAttributeKeyAtRuntime1=customPageAttributeValueAtRuntime1',
-            'customPageAttributeKeyAtRuntime2=customPageAttributeValueAtRuntime2',
-            'custom_page_attribute_key_at_runtime=customPageAttributeValueAtRuntime',
-            'valid:customPageAttributeKeyAtRuntime=customPageAttributeValueAtRuntime'
-        ]
+        [...customAttributesAddedAtInit, ...customPageAttributesAddedAtRuntime]
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -557,16 +537,9 @@ test('when invalid number of custom attributes are added then truncated event is
         MONITOR_NAME,
         5,
         [
-            'customAttributeKeyAtInit1=customAttributeValueAtInit1',
-            'customAttributeKeyAtInit2=customAttributeValueAtInit2',
-            'custom_attribute_key_at_init=customAttributeValueAtInit',
-            'valid:customAttributeKeyAtInit=customAttributeValueAtInit',
-            'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
-            'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
-            'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
-            'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime',
-            'customPageAttributeKeyAtRuntime1=customPageAttributeValueAtRuntime1',
-            'customPageAttributeKeyAtRuntime2=customPageAttributeValueAtRuntime2'
+            ...customAttributesAddedAtInit,
+            ...customAttributesAddedAtRuntime,
+            ...customPageAttributesAddedAtRuntime.splice(0, 2)
         ]
     );
     expect(isIngestionCompleted).toEqual(true);
