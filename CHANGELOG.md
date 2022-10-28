@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/aws-observability/aws-rum-web/compare/v1.10.0...v1.11.0) (2022-10-28)
+
+
+### Features
+
+* Add config option to omit request signature. ([#273](https://github.com/aws-observability/aws-rum-web/issues/273)) ([49ae45c](https://github.com/aws-observability/aws-rum-web/commit/49ae45cc921340cbcf2fd66f8b5c1eaf0238370a))
+
+
+### Bug Fixes
+
+* Add cause to Cognito and STS error messages ([#272](https://github.com/aws-observability/aws-rum-web/issues/272)) ([00563f5](https://github.com/aws-observability/aws-rum-web/commit/00563f50d1387846c0564130b8207e4c47af3257))
+* Fix hyperlink to MetadataAttributes section ([#270](https://github.com/aws-observability/aws-rum-web/issues/270)) ([a6e4388](https://github.com/aws-observability/aws-rum-web/commit/a6e43881b29a1c5e565c7390214791ad7416d6ea))
+* Only ignore PutRumEvents requests on proxy endpoints. ([#266](https://github.com/aws-observability/aws-rum-web/issues/266)) ([74e6436](https://github.com/aws-observability/aws-rum-web/commit/74e64368471e5272b8635e5474d6bff20b220adb))
+
 ## [1.10.0](https://github.com/aws-observability/aws-rum-web/compare/v1.8.1...v1.10.0) (2022-10-14)
 
 
