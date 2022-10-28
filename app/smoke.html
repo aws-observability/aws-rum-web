@@ -171,6 +171,29 @@
                     { event: 'click', cssLocator: '[label="triggerDom"]' }
                 ]);
             }
+
+            function addSessionAttributes() {
+                cwr('addSessionAttributes', {
+                    customAttributeKeyAtRuntime1:
+                        'customAttributeValueAtRuntime1',
+                    customAttributeKeyAtRuntime2:
+                        'customAttributeValueAtRuntime2',
+                    custom_attribute_key_at_runtime:
+                        'customAttributeValueAtRuntime',
+                    'valid:customAttributeKeyAtRuntime':
+                        'customAttributeValueAtRuntime',
+
+                    // invalid custom attributes below should not be ingested
+                    'aws:invalidCustomAttributeKey':
+                        'invalidCustomAttributeValueAtRuntime',
+                    'invalid-custom-attribute-key':
+                        'invalidCustomAttributeValueAtRuntime',
+                    'invalid custom attribute key':
+                        'invalidCustomAttributeValueAtRuntime',
+                    'invalid.custom.attribute.key':
+                        'invalidCustomAttributeValueAtRuntime'
+                });
+            }
         </script>
 
         <style nonce="smokeTest">
@@ -239,6 +262,10 @@
         <button id="disable" onclick="disable()">Disable</button>
         <button id="enable" onclick="enable()">Enable</button>
         <button id="dummyButton">Dummy Button</button>
+        <hr />
+        <button id="addSessionAttributes" onclick="addSessionAttributes()">
+            Add Custom Attributes
+        </button>
         <hr />
     </body>
 </html>
