@@ -48,9 +48,7 @@ export class Dispatch {
         this.buildClient = config.clientBuilder || this.defaultClientBuilder;
         this.config = config;
         this.startDispatchTimer();
-        if (config.proxy) {
-            this.rum = this.buildClient(this.endpoint, this.region, undefined);
-        } else {
+        if (config.signing) {
             this.rum = {
                 sendFetch: (): Promise<{ response: HttpResponse }> => {
                     return Promise.reject(new Error(NO_CRED_MSG));
@@ -59,6 +57,8 @@ export class Dispatch {
                     return Promise.reject(new Error(NO_CRED_MSG));
                 }
             };
+        } else {
+            this.rum = this.buildClient(this.endpoint, this.region, undefined);
         }
     }
 

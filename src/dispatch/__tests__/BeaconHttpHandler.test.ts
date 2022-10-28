@@ -7,7 +7,7 @@ import { advanceTo } from 'jest-date-mock';
 const sendBeacon = jest.fn(() => true);
 
 const createDataPlaneClient = (
-    config: { proxy: boolean } = { proxy: false }
+    config: { signing: boolean } = { signing: true }
 ): DataPlaneClient => {
     const beaconHandler = new BeaconHttpHandler();
     return new DataPlaneClient({
@@ -15,7 +15,7 @@ const createDataPlaneClient = (
         beaconRequestHandler: beaconHandler,
         endpoint: Utils.AWS_RUM_ENDPOINT,
         region: Utils.AWS_RUM_REGION,
-        credentials: config.proxy ? undefined : Utils.createAwsCredentials()
+        credentials: config.signing ? Utils.createAwsCredentials() : undefined
     });
 };
 
@@ -68,9 +68,11 @@ describe('BeaconHttpHandler tests', () => {
         );
     });
 
-    test('when proxy is true then sendBeacon omits the signature', async () => {
+    test('when signing is false then sendBeacon omits the signature', async () => {
         // Init
-        const client: DataPlaneClient = createDataPlaneClient({ proxy: true });
+        const client: DataPlaneClient = createDataPlaneClient({
+            signing: false
+        });
 
         // Run
         const response: HttpResponse = (

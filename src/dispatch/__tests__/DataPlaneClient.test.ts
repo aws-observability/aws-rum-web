@@ -19,11 +19,11 @@ jest.mock('@aws-sdk/fetch-http-handler', () => ({
 }));
 
 interface Config {
-    proxy: boolean;
+    signing: boolean;
     endpoint: URL;
 }
 
-const defaultConfig = { proxy: false, endpoint: Utils.AWS_RUM_ENDPOINT };
+const defaultConfig = { signing: true, endpoint: Utils.AWS_RUM_ENDPOINT };
 
 const createDataPlaneClient = (
     config: Config = defaultConfig
@@ -33,7 +33,7 @@ const createDataPlaneClient = (
         beaconRequestHandler: new BeaconHttpHandler(),
         endpoint: config.endpoint,
         region: Utils.AWS_RUM_REGION,
-        credentials: config.proxy ? undefined : Utils.createAwsCredentials()
+        credentials: config.signing ? Utils.createAwsCredentials() : undefined
     });
 };
 
@@ -208,11 +208,11 @@ describe('DataPlaneClient tests', () => {
         );
     });
 
-    test('when proxy is enabled then sendFetch does not sign the request', async () => {
+    test('when signing is disabled then sendFetch does not sign the request', async () => {
         // Init
         const client: DataPlaneClient = createDataPlaneClient({
             ...defaultConfig,
-            proxy: true
+            signing: false
         });
 
         // Run
@@ -228,11 +228,11 @@ describe('DataPlaneClient tests', () => {
         expect(signedRequest.headers.authorization).toEqual(undefined);
     });
 
-    test('when proxy is enabled then sendBeacon does not sign the request', async () => {
+    test('when signing is disabled then sendBeacon does not sign the request', async () => {
         // Init
         const client: DataPlaneClient = createDataPlaneClient({
             ...defaultConfig,
-            proxy: true
+            signing: false
         });
 
         // Run
