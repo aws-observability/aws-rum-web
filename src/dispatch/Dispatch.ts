@@ -22,7 +22,7 @@ const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
 export type ClientBuilder = (
     endpoint: URL,
     region: string,
-    credentials: CredentialProvider | Credentials
+    credentials: CredentialProvider | Credentials | undefined
 ) => DataPlaneClient;
 
 export class Dispatch {
@@ -48,14 +48,18 @@ export class Dispatch {
         this.buildClient = config.clientBuilder || this.defaultClientBuilder;
         this.config = config;
         this.startDispatchTimer();
-        this.rum = {
-            sendFetch: (): Promise<{ response: HttpResponse }> => {
-                return Promise.reject(new Error(NO_CRED_MSG));
-            },
-            sendBeacon: (): Promise<{ response: HttpResponse }> => {
-                return Promise.reject(new Error(NO_CRED_MSG));
-            }
-        };
+        if (config.signing) {
+            this.rum = {
+                sendFetch: (): Promise<{ response: HttpResponse }> => {
+                    return Promise.reject(new Error(NO_CRED_MSG));
+                },
+                sendBeacon: (): Promise<{ response: HttpResponse }> => {
+                    return Promise.reject(new Error(NO_CRED_MSG));
+                }
+            };
+        } else {
+            this.rum = this.buildClient(this.endpoint, this.region, undefined);
+        }
     }
 
     /**

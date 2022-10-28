@@ -355,7 +355,7 @@ describe('Dispatch tests', () => {
             Utils.createDefaultEventCacheWithEvents(),
             {
                 ...DEFAULT_CONFIG,
-                ...{ dispatchInterval: 0 }
+                ...{ dispatchInterval: 0, signing: true }
             }
         );
 
@@ -448,5 +448,25 @@ describe('Dispatch tests', () => {
 
         // Assert
         await expect(dispatch.dispatchFetch()).resolves.toEqual(undefined);
+    });
+
+    test('when signing is disabled then credentials are not needed for dispatch', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, signing: false }
+            }
+        );
+
+        // Run
+        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+
+        // Assert
+        expect(DataPlaneClient).toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalledTimes(1);
     });
 });
