@@ -15,7 +15,7 @@ import {
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
 const TEST_URL = getUrl(process.env.URL, process.env.VERSION);
-const TARGET_URL = ENDPOINT + MONITOR_ID + '/';
+const TARGET_URL = ENDPOINT + MONITOR_ID;
 
 test('when web client calls PutRumEvents then the response code is 200', async ({
     page
