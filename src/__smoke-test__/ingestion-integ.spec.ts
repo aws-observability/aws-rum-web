@@ -27,7 +27,7 @@ const MONITOR_ID = process.env.MONITOR;
 const TEST_URL = getUrl(process.env.URL, process.env.VERSION);
 const MONITOR_NAME = process.env.NAME;
 const REGION = ENDPOINT.split('.')[2];
-const TARGET_URL = ENDPOINT + MONITOR_ID + '/';
+const TARGET_URL = ENDPOINT + MONITOR_ID;
 
 // Parse region from endpoint
 const rumClient = new RUMClient({ region: REGION });
