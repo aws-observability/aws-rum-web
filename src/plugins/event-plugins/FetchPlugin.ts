@@ -216,11 +216,16 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         input: RequestInfo | URL | string,
         init?: RequestInit
     ): HttpEvent => {
+        const request = input as Request;
         return {
             version: '1.0.0',
             request: {
                 url: resourceToUrlString(input),
-                method: init?.method ? init.method : 'GET'
+                method: init?.method
+                    ? init.method
+                    : request.method
+                    ? request.method
+                    : 'GET'
             }
         };
     };

@@ -105,6 +105,41 @@ describe('FetchPlugin tests', () => {
         });
     });
 
+    test('when fetch is called with a Request/RequestInfo then the plugin records the http request/response', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        const request: RequestInfo = {
+            url: URL,
+            method: 'POST'
+        } as RequestInfo;
+
+        // Run
+        await fetch(request);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'POST',
+                url: URL
+            },
+            response: {
+                status: 200,
+                statusText: 'OK'
+            }
+        });
+    });
+
     test('when fetch throws an error then the plugin adds the error to the http event', async () => {
         // Init
         global.fetch = mockFetchWithError;
