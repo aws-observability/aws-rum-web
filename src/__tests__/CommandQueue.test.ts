@@ -350,8 +350,8 @@ describe('CommandQueue tests', () => {
         await commandQueue.push({
             c: 'recordEvent',
             p: {
-                event_type: 'my_custom_event',
-                event_data: {
+                type: 'my_custom_event',
+                data: {
                     version: 1.0,
                     field1: { subfield1: 'subfield value' }
                 }

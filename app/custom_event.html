@@ -18,15 +18,15 @@
             // Record custom event directly using API
             function recordEvent() {
                 cwr('recordEvent', {
-                    event_type: 'custom_event_api',
-                    event_data: { customEventVersion: 255 }
+                    type: 'custom_event_api',
+                    data: { customEventVersion: 255 }
                 });
             }
 
             function recordEmptyEvent() {
                 cwr('recordEvent', {
-                    event_type: 'custom_event_api',
-                    event_data: {}
+                    type: 'custom_event_api',
+                    data: {}
                 });
             }
 

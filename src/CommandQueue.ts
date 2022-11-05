@@ -70,13 +70,10 @@ export class CommandQueue {
         recordEvent: (payload: any) => {
             if (
                 typeof payload === 'object' &&
-                typeof payload.event_type === 'string' &&
-                typeof payload.event_data === 'object'
+                typeof payload.type === 'string' &&
+                typeof payload.data === 'object'
             ) {
-                this.orchestration.recordEvent(
-                    payload.event_type,
-                    payload.event_data
-                );
+                this.orchestration.recordEvent(payload.type, payload.data);
             } else {
                 throw new Error('IncorrectParametersException');
             }
