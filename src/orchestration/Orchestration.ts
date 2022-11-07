@@ -231,7 +231,7 @@ export class Orchestration {
         }: PartialConfig = {}
     ) {
         if (typeof region === 'undefined') {
-            // Provide temporary backwards compatability if the region was not provided by the loader. This will be
+            // Provide temporary backwards compatibility if the region was not provided by the loader. This will be
             // removed when internal users have migrated to the new signature.
             region = 'us-west-2';
         }
@@ -307,14 +307,14 @@ export class Orchestration {
     }
 
     /**
-     * Force the cllient to immediately dispatch events to the collector.
+     * Force the client to immediately dispatch events to the collector.
      */
     public dispatch(): void {
         this.dispatchManager.dispatchFetch();
     }
 
     /**
-     * Force the cllient to immediately dispatch events to the collector using a beacon.
+     * Force the client to immediately dispatch events to the collector using a beacon.
      */
     public dispatchBeacon(): void {
         this.dispatchManager.dispatchBeacon();
