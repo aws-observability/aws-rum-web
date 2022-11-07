@@ -81,6 +81,29 @@ Verify the IAM role has the following permission:
 }
 ```
 
+### Missing authentication token
+
+Data sent to CloudWatch RUM **must be signed** with
+[SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+When RUM data is not signed, CloudWatch RUM will return the following exception in
+the `x-amzn-ErrorType` HTTP header.
+
+```
+MissingAuthenticationTokenException
+```
+Verify that signing is enabled.
+
+The configuration option [`signing`](configuration.md) controls whether or not
+the web client signs RUM data. Signing is
+enabled by default, so if this configuration option is not present, then signing
+is enabled.
+```
+const config: AwsRumConfig = {
+  // Sign RUM data with SigV4 -- required unless using a proxy
+  signing: true
+}
+```
+
 ---
 ## AWS token vending (Cognito or STS) fails
 
