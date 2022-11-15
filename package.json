@@ -60,6 +60,7 @@
         "prepare": "husky install"
     },
     "devDependencies": {
+        "@aws-sdk/client-rum": "^3.76.0",
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.6.3",
         "@playwright/test": "^1.21.1",
@@ -114,7 +115,6 @@
     },
     "dependencies": {
         "@aws-crypto/sha256-js": "^2.0.2",
-        "@aws-sdk/client-rum": "^3.76.0",
         "@aws-sdk/fetch-http-handler": "^3.36.0",
         "@aws-sdk/protocol-http": "^3.36.0",
         "@aws-sdk/signature-v4": "^3.36.0",

@@ -29,17 +29,17 @@ const mockCLSData = {
 
 jest.mock('web-vitals', () => {
     return {
-        getLCP: jest
+        onLCP: jest
             .fn()
             .mockImplementation((callback) =>
                 callback(mockLCPData, LCP_EVENT_TYPE)
             ),
-        getFID: jest
+        onFID: jest
             .fn()
             .mockImplementation((callback) =>
                 callback(mockFIDData, FID_EVENT_TYPE)
             ),
-        getCLS: jest
+        onCLS: jest
             .fn()
             .mockImplementation((callback) =>
                 callback(mockCLSData, CLS_EVENT_TYPE)
