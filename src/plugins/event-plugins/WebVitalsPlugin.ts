@@ -2,7 +2,7 @@ import { InternalPlugin } from '../InternalPlugin';
 import { LargestContentfulPaintEvent } from '../../events/largest-contentful-paint-event';
 import { FirstInputDelayEvent } from '../../events/first-input-delay-event';
 import { CumulativeLayoutShiftEvent } from '../../events/cumulative-layout-shift-event';
-import { getCLS, getFID, getLCP, Metric } from 'web-vitals';
+import { Metric, onCLS, onFID, onLCP } from 'web-vitals';
 import {
     LCP_EVENT_TYPE,
     FID_EVENT_TYPE,
@@ -37,8 +37,8 @@ export class WebVitalsPlugin extends InternalPlugin {
     }
 
     protected onload(): void {
-        getLCP((data) => this.getWebVitalData(data, LCP_EVENT_TYPE));
-        getFID((data) => this.getWebVitalData(data, FID_EVENT_TYPE));
-        getCLS((data) => this.getWebVitalData(data, CLS_EVENT_TYPE));
+        onLCP((data) => this.getWebVitalData(data, LCP_EVENT_TYPE));
+        onFID((data) => this.getWebVitalData(data, FID_EVENT_TYPE));
+        onCLS((data) => this.getWebVitalData(data, CLS_EVENT_TYPE));
     }
 }
