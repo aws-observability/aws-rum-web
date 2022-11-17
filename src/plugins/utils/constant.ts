@@ -14,8 +14,6 @@ export const CLS_EVENT_TYPE = `${RUM_AMZ_PREFIX}.cumulative_layout_shift_event`;
 // Page load event schemas
 export const PERFORMANCE_NAVIGATION_EVENT_TYPE = `${RUM_AMZ_PREFIX}.performance_navigation_event`;
 export const PERFORMANCE_RESOURCE_EVENT_TYPE = `${RUM_AMZ_PREFIX}.performance_resource_event`;
-export const PERFORMANCE_FIRST_PAINT_EVENT_TYPE = `${RUM_AMZ_PREFIX}.performance_first_paint_event`;
-export const PERFORMANCE_FIRST_CONTENTFUL_PAINT_EVENT_TYPE = `${RUM_AMZ_PREFIX}.performance_first_contentful_paint_event`;
 
 // DOM event schemas
 export const DOM_EVENT_TYPE = `${RUM_AMZ_PREFIX}.dom_event`;

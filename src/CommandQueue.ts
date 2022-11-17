@@ -1,4 +1,5 @@
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
+import { Plugin } from 'plugins/Plugin';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 
@@ -10,6 +11,7 @@ interface CommandFunctions {
     recordPageView: CommandFunction;
     recordError: CommandFunction;
     registerDomEvents: CommandFunction;
+    recordEvent: CommandFunction;
     dispatch: CommandFunction;
     dispatchBeacon: CommandFunction;
     enable: CommandFunction;
@@ -65,6 +67,17 @@ export class CommandQueue {
         registerDomEvents: (payload: any): void => {
             this.orchestration.registerDomEvents(payload);
         },
+        recordEvent: (payload: any) => {
+            if (
+                typeof payload === 'object' &&
+                typeof payload.type === 'string' &&
+                typeof payload.data === 'object'
+            ) {
+                this.orchestration.recordEvent(payload.type, payload.data);
+            } else {
+                throw new Error('IncorrectParametersException');
+            }
+        },
         dispatch: (): void => {
             this.orchestration.dispatch();
         },
@@ -102,7 +115,7 @@ export class CommandQueue {
             awsRum.c = config;
             this.initCwr(awsRum);
         } else {
-            // Ther is no remote config file -- initialize CWR immediately.
+            // There is no remote config file -- initialize CWR immediately.
             this.initCwr(awsRum);
         }
     }
