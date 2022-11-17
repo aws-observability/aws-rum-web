@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](https://github.com/aws-observability/aws-rum-web/compare/v1.11.0...v1.12.0) (2022-11-17)
+
+
+### Features
+
+* Add recordEvent API and expose Plugin to enable recording of custom events ([#188](https://github.com/aws-observability/aws-rum-web/issues/188)) ([3e16093](https://github.com/aws-observability/aws-rum-web/commit/3e16093ec11db86eb404888b83e0e947606a0976))
+
+
+### Bug Fixes
+
+* Populate http method from RequestInfo ([#280](https://github.com/aws-observability/aws-rum-web/issues/280)) ([eb96760](https://github.com/aws-observability/aws-rum-web/commit/eb967602080144094f0b206a3afb48d889480504))
+
 ## [1.11.0](https://github.com/aws-observability/aws-rum-web/compare/v1.10.0...v1.11.0) (2022-10-28)
 
 
