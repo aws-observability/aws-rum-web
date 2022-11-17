@@ -21,7 +21,7 @@ Ex) awsRum.recordEvent('your_event_type', {field1: 1, field2: 2, ..., fieldN: 'N
 ```
 
 ### `type`
-The `type` field refers to the *type* or *name* of your event. For example, CW RUM's `JsError` object's `event_type` is `com.amazon.rum.js_error_event`.
+The `type` field refers to the *type* or *name* of your event. For example, CW RUM's `JsError` object's `event_type` is `com.amazon.rum.js_error_event`. 
 
 
 ### `data`
@@ -102,7 +102,7 @@ If you wish to add your plugin during the initialization of the web client, add 
 }
 ```
 
-If you have a plugin that needs to be initialized and added later on, you may directly use the `addPlugin` API provided by the web client:
+If you have a plugin that needs to be added later on, you may directly use the `addPlugin` API provided by the web client:
 
 ```
 addPlugin(plugin: Plugin)
