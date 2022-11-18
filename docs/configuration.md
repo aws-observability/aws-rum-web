@@ -140,6 +140,50 @@ telemetries: [
 | --- | --- | --- | --- |
 | enableMutationObserver | Boolean | `false` | When `false`, the web client will record events on only DOM elements that existed when the `window.load` event was fired.<br/><br/>When `true`, the web client will record events on all DOM elements, including those added to the DOM after the `window.load` event was fired. The web client does this by using a [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) to listen for changes to the DOM. Using this feature does not typically have a perceptible impact on application performance, but may have a small impact when (1) the plugin is listening for an unusually large number DOM events (i.e., multiple thousands), or (2) the number and size of the DOM mutations are unusually large (i.e., multiple thousands). |
 | events | Array | `[]` | An array of target DOM events to record. Each DOM event is defined by an *event* and a *selector*. The event must be a [DOM event](https://www.w3schools.com/jsref/dom_obj_event.asp). The selector must be one of (1) `cssLocator`, (2) `elementId` or (3) `element`.<br/><br/>When two or more selectors are provided for a target DOM event, only one selector will be used. The selectors will be honored with the following precedence: (1) `cssLocator`, (2) `elementId` or (3) `element`. For example, if both `cssLocator` and `elementId` are provided, only the `cssLocator` selector will be used.<br/><br/>**Examples:**<br/>Record all elements identified by CSS selector `[label="label1"]`:<br/> `[{ event: 'click', cssLocator: '[label="label1"]' }]`<br/><br/>Record a single element with ID `mybutton`:<br/>`[{ event: 'click', elementId: 'mybutton' }]`<br/><br/>Record a complete clickstream<br/>`[{ event: 'click', element: document }]`. |
+| interactionId | Function | `() => undefined` | A function to generate a custom ID for the DOM event. <br/><br/>**Example:**<br/> Retrieve custom ID stored in the `data-rum-id` attribute of a DOM element. <br/> `(element) => element.target.getAttribute('data-rum-id')`|
+
+For example, the following code snippet identifies DOM events by the value of
+the attribute `data-rum-id` in the nearest ancestor of the event's target
+element. The snippet defines a function `getInteractionId` which reads the
+`data-rum-id` attribute, and passes this function as the value of the
+`interactionId` property in the `interaction` configuration.
+
+```typescript
+const getInteractionId = (event: Event): string => {
+    const eventPath = event.composedPath() as Element[];
+    for (const element of eventPath) {
+        if (element.hasAttribute && element.hasAttribute('data-rum-id')) {
+            return element.getAttribute('data-rum-id') as string;
+        }
+    }
+    return '';
+}
+
+const config: AwsRumConfig = {
+    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
+    identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
+    sessionSampleRate: 1,
+    telemetries: [
+        [
+            'interaction', {
+                events: [{ event: 'click', element: document }],
+                interactionId: getInteractionId
+            }
+        ]
+    ]
+};
+
+const APPLICATION_ID: string = '00000000-0000-0000-0000-000000000000';
+const APPLICATION_VERSION: string = '1.0.0';
+const APPLICATION_REGION: string = 'us-west-2';
+
+const awsRum: AwsRum = new AwsRum(
+    APPLICATION_ID,
+    APPLICATION_VERSION,
+    APPLICATION_REGION,
+    config
+);
+```
 
 ## Performance
 
