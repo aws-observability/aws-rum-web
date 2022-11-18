@@ -5,7 +5,8 @@ export interface Plugin<UpdateType = unknown> {
      * Load the plugin. The plugin should initialize itself and start recording events
      * for which it is configured.
      *
-     * @param context
+     * @param context Provides information about the app monitor and web client
+     * configuration.
      */
     load(context: PluginContext): void;
 
