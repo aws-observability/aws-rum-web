@@ -1,113 +1,113 @@
-# Using CloudWatch RUM Web Client to Record Custom Events
-CloudWatch RUM now allows users to record custom events. The `recordEvent` API will allow you to record custom events by passing in two inputs, `type` and `data`. 
-On the other hand, you can also implement a custom Plugin that can be designed and implemented to fit your use cases and applications and record custom events using your custom Plugin.
+# Usage Examples
 
-If you are seeking a simple option, we recommend you use the `recordEvent` API. On the other hand, if your use case is complex and requires customization, we recommend that you implement a custom Plugin.
+## Record custom events using `recordEvent`
 
------------------
-## Record events using the API
-If you are using **CDN** to install the web client:
+The CloudWatch RUM web client provides two ways to record custom events:
+1. **Call `recordEvent`**
+2. **Create a plugin**
+
+Call `recordEvent` directly from the application when the event occurs on a single page, and does not need to maintain state.
+
+**Embedded script** -- wrap the `type` and `data` arguments in an object.
 ```
-cwr('recordEvent', {type: string, data: object})
-
-Ex) cwr('recordEvent', {type: 'your_event_type', data: {field1: 1, field2: 2, ..., fieldN: 'N'}})
-```
-
-If you are using **NPM** to install the web client:
-```
-recordEvent(type: string, data: object)
-
-Ex) awsRum.recordEvent('your_event_type', {field1: 1, field2: 2, ..., fieldN: 'N'})
+cwr('recordEvent', {type: 'your_event_type', data: {field1: 1, field2: 2}})
 ```
 
-### `type`
-The `type` field refers to the *type* or *name* of your event. For example, CW RUM's `JsError` object's `event_type` is `com.amazon.rum.js_error_event`. 
+**JavaScript module** -- pass `type` and `data` to `recordEvent` as arguments.
+```
+awsRum.recordEvent('your_event_type', {field1: 1, field2: 2})
+```
 
+See [Executing Commands: Events](cdn_commands.md#Events).
 
-### `data`
-The `data` field contains the actual data you wish to record using the web client. `event_data` must be an object that consists of field and values.
+## Record custom events using a plugin
 
---------------
-## Record events using a customized plugin
-If your use cases are more complex and tightly coupled with your application, you may benefit from implementing your own plugin. You can implement CW RUM Web Client's Plugin interface to automatically capture application specific events and record the events and introduce complex logic to handle different use cases, similar to the built-in plugins RUM Web Client provides. 
+The CloudWatch RUM web client provides two ways to record custom events:
+1. **Call `recordEvent`**
+2. **Create a plugin**
 
-Example custom plugin to record on `scroll` events
+Create a plugin when the event being recorded can occur on multiple pages, or needs to maintain state. To record events using a plugin, you must:
+1. Create a plugin by implementing the
+[Plugin](https://github.com/aws-observability/aws-rum-web/blob/main/src/plugins/Plugin.ts)
+interface.
+2. Install the plugin by adding it to the web client configuration.
+
+**Step 1:** Create a plugin by implementing the
+[Plugin](https://github.com/aws-observability/aws-rum-web/blob/main/src/plugins/Plugin.ts) interface.
+
+For example, the following plugin records an event whenever the end-user scrolls.
 ```typescript
-class MyCustomPlugin implements Plugin {
-    // Initialize MyCustomPlugin
+class MyScrollEventPlugin implements Plugin {
     constructor() {
         this.enabled;
         this.context;
-        this.id = 'custom_event_plugin';
+        this.id = 'MyScrollEventPlugin';
     }
 
-    // Load MyCustomPlugin
-    load(context) {
+    load(context: PluginContext) {
         this.context = context;
         this.enable();
     }
 
-    // Turn on MyCustomPlugin
     enable() {
         this.enabled = true;
-        this.addEventHandler();
+        window.addEventListener('scroll', this.eventHandler);
     }
 
-    // Turn off MyCustomPlugin
     disable() {
         this.disabled = false;
-        this.removeEventHandler();
+        window.removeEventListender('scroll', this.eventHandler);
     }
 
-    // Return MyCustomPlugin Id
     getPluginId() {
         return this.id;
     }
 
-    // Record custom event
-    record(data) {
-        this.context.record('custom_scroll_event', data);
-    }
-
-    // EventHandler
     private eventHandler = (scrollEvent: Event) => {
-        this.record({timestamp: Date.now()})
-    }
-
-    // Attach an eventHandler to scroll event
-    private addEventHandler(): void {
-        window.addEventListener('scroll', this.eventHandler);
-    }
-
-    // Detach eventHandler from scroll event
-    private removeEventHandler(): void {
-        window.removeEventListender('scroll', this.eventHandler);
+        this.record({elementId: scrollEvent.target.id})
     }
 }
 ```
-This custom plugin will record an event with one field, `timestamp`, that holds the time at which a `scroll` event happened. You can refer to RUM Web Client's built-in plugins for more examples to help you implement your customized plugin.
 
-Once your plugin is initialized in your web app, you need to register the plugin with the Web Client's PluginManager.
-If you wish to add your plugin during the initialization of the web client, add your plugin into the web client's `eventPluginsToLoad` field:
+**Step 2:** Install the plugin.
+
+For example, the following code snippet instantiates `MyScrollEventPlugin` and
+installs it in the web client.
 
 ```typescript
-{
-    allowCookies: true,
-    endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
+import { AwsRum, AwsRumConfig } from 'aws-rum-web';
+
+try {
+  const myScrollEventPlugin: MyScrollEventPlugin = new MyScrollEventPlugin();
+
+  const config: AwsRumConfig = {
     guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
     identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
     sessionSampleRate: 1,
-    telemetries: ['errors', 'performance', 'http'],
-    eventPluginsToLoad: [myCustomPlugin]
+    telemetries: ['errors', 'performance'],
+    eventPluginsToLoad: [myScrollEventPlugin]
+  };
+
+  const APPLICATION_ID: string = '00000000-0000-0000-0000-000000000000';
+  const APPLICATION_VERSION: string = '1.0.0';
+  const APPLICATION_REGION: string = 'us-west-2';
+
+  const awsRum: AwsRum = new AwsRum(
+    APPLICATION_ID,
+    APPLICATION_VERSION,
+    APPLICATION_REGION,
+    config
+  );
+} catch (error) {
+  // Ignore errors thrown during CloudWatch RUM web client initialization
 }
 ```
 
-If you have a plugin that needs to be added later on, you may directly use the `addPlugin` API provided by the web client:
+Alternatively, you can install the plugin after initializing the web client by
+calling `addPlugin`. For example, the following code snippet instantiates 
+`MyScrollEventPlugin` and installs it in the web client.
 
+```typescript
+const myScrollEventPlugin: MyScrollEventPlugin = new MyScrollEventPlugin();
+awsRum.addplugin(myScrollEventPlugin);
 ```
-addPlugin(plugin: Plugin)
-
-Ex) awsRum.addPlugin(this.myCustomPlugin)
-```
-
-Once your plugin has been registered, you can now use your plugin to record events.
