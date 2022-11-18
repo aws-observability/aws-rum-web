@@ -89,6 +89,8 @@ You cannot overwrite default attributes with custom attributes.
 
 Note that the call signature differs depending on the installation method.
 
+App monitors must have custom events `ENABLED` to ingest custom events. You can edit the configuration of your app monitor via CLI or the RUM console.
+
 **Embedded script** -- wrap the `type` and `data` arguments in an object. For example:
 ```
 cwr('recordEvent', {type: 'your_event_type', data: {field1: 1, field2: 2}})
