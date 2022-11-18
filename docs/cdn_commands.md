@@ -87,9 +87,12 @@ You cannot overwrite default attributes with custom attributes.
 | type | String | This is a required field. | `'your_event_type'` | A unique identifier for the event type. Event types must conform to the following regex: `^[a-zA-Z0-9_.-]{1,256}$`. |
 | data | Object | This is a required field. | `{ field1: 1, field2: 2 }` | A JavaScript object. This object will be serialized as JSON and sent to CloudWatch RUM. |
 
+| :warning: WARNING          |
+|:---------------------------|
+| Custom events must be enabled for the CloudWatch RUM app monitor. You can edit the configuration of your app monitor via the RUM console or the `UpdatAppMonitor` API.|
+
 Note that the call signature differs depending on the installation method.
 
-App monitors must have custom events `ENABLED` to ingest custom events. You can edit the configuration of your app monitor via CLI or the RUM console.
 
 **Embedded script** -- wrap the `type` and `data` arguments in an object. For example:
 ```

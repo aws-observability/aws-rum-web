@@ -2,6 +2,10 @@
 
 ## Record custom events using `recordEvent`
 
+| :warning: WARNING          |
+|:---------------------------|
+| Custom events must be enabled for the CloudWatch RUM app monitor. You can edit the configuration of your app monitor via the RUM console or the `UpdatAppMonitor` API.|
+
 Call `recordEvent` directly from the application when the event occurs on a single page, and does not need to maintain state.
 
 **Embedded script (CDN) installations**
