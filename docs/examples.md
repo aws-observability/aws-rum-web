@@ -4,7 +4,10 @@
 
 > **:warning: Custom events must be enabled for the CloudWatch RUM app monitor.**
 >
-> You can edit the configuration of your app monitor via the RUM console or the `UpdatAppMonitor` API.
+> To send custom events to a CloudWatch RUM app monitor, you must first
+> configure your app monitor to accept custom events. See
+> [*Send custom events*](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html)
+> in the CloudWatch RUM user guide.
 
 Call `recordEvent` directly from the application when the event occurs on a single page, and does not need to maintain state.
 
@@ -21,6 +24,13 @@ awsRum.recordEvent('your_event_type', {field1: 1, field2: 2})
 See [Executing Commands: Events](cdn_commands.md#Events).
 
 ## Record custom events using a plugin
+
+> **:warning: Custom events must be enabled for the CloudWatch RUM app monitor.**
+>
+> To send custom events to a CloudWatch RUM app monitor, you must first
+> configure your app monitor to accept custom events. See
+> [*Send custom events*](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html)
+> in the CloudWatch RUM user guide.
 
 Create a plugin when the event being recorded can occur on multiple pages, or needs to maintain state. To record events using a plugin, you must:
 1. Create a plugin by implementing the

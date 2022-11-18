@@ -89,7 +89,10 @@ You cannot overwrite default attributes with custom attributes.
 
 > **:warning: Custom events must be enabled for the CloudWatch RUM app monitor.**
 >
-> You can edit the configuration of your app monitor via the RUM console or the `UpdatAppMonitor` API.
+> To send custom events to a CloudWatch RUM app monitor, you must first
+> configure your app monitor to accept custom events. See
+> [*Send custom events*](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html)
+> in the CloudWatch RUM user guide.
 
 Note that the call signature differs depending on the installation method.
 
