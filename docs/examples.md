@@ -2,7 +2,7 @@
 
 ## Record custom events using `recordEvent`
 
-> **:warning: Custom events must be enabled for the CloudWatch RUM app monitor.**
+> **:warning: The CloudWatch RUM app monitor must have custom events enabled.**
 >
 > To send custom events to a CloudWatch RUM app monitor, you must first
 > configure your app monitor to accept custom events. See
@@ -25,7 +25,7 @@ See [Executing Commands: Events](cdn_commands.md#Events).
 
 ## Record custom events using a plugin
 
-> **:warning: Custom events must be enabled for the CloudWatch RUM app monitor.**
+> **:warning: The CloudWatch RUM app monitor must have custom events enabled.**
 >
 > To send custom events to a CloudWatch RUM app monitor, you must first
 > configure your app monitor to accept custom events. See
