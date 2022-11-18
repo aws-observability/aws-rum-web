@@ -30,8 +30,10 @@ interface.
 For example, the following plugin records an event whenever the end-user scrolls.
 ```typescript
 class MyScrollEventPlugin implements Plugin {
+
+    protected context!: PluginContext;
+
     constructor() {
-        this.context;
         this.id = 'MyScrollEventPlugin';
     }
 
