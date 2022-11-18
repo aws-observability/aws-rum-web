@@ -93,7 +93,6 @@ You cannot overwrite default attributes with custom attributes.
 
 Note that the call signature differs depending on the installation method.
 
-
 **Embedded script** -- wrap the `type` and `data` arguments in an object. For example:
 ```
 cwr('recordEvent', {type: 'your_event_type', data: {field1: 1, field2: 2}})
