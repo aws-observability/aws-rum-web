@@ -13,7 +13,7 @@ concurrency:
 jobs:
     unit-test:
         name: Check Format and Run Unit Tests
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-20.04
         permissions: read-all
         steps:
             - name: Checkout AWS RUM Web Client Repository
@@ -52,7 +52,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [ubuntu-20.04, windows-latest]
 
         steps:
             - name: Checkout AWS RUM Web Client Repository
@@ -73,8 +73,8 @@ jobs:
 
             - run: npm ci
 
-            - name: Run Integ Tests on ubuntu-latest
-              if: matrix.os == 'ubuntu-latest'
+            - name: Run Integ Tests on ubuntu-20.04
+              if: matrix.os == 'ubuntu-20.04'
               run: |
                   npm run integ:headless
 
