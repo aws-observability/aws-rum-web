@@ -121,7 +121,7 @@
         "@babel/runtime": "^7.16.0",
         "shimmer": "^1.2.1",
         "ua-parser-js": "^0.7.23",
-        "uuid": "^8.3.2",
+        "uuid": "^9.0.0",
         "web-vitals": "^3.0.2"
     },
     "lint-staged": {
