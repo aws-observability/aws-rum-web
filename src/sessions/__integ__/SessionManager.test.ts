@@ -88,7 +88,7 @@ test('UserAgentMetaDataPlugin records user agent metadata', async (t: TestContro
         .pressKey('ctrl+a delete')
         .click(SUBMIT);
 
-    // expect http request body contains user agent matedata
+    // expect http request body contains user agent metadata
     // expect http response with mock status code 202
     await t
         .expect(REQUEST_BODY.textContent)
