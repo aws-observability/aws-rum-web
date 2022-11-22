@@ -10,11 +10,9 @@ fixture('Unsupported Browsers').page(
 );
 
 test('when a browser is not supported then the command function is a no-op', async (t: TestController) => {
-    if (t.browser.name === 'Internet Explorer') {
-        await t
-            .wait(300)
-            .click(viewCommandQueueFunction)
-            .expect(cwrFunction.textContent)
-            .contains('function(){}');
-    }
+    await t
+        .wait(300)
+        .click(viewCommandQueueFunction)
+        .expect(cwrFunction.textContent)
+        .contains('function(){}');
 });

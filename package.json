@@ -42,7 +42,6 @@
         "preinteg": "npm run build:dev",
         "integ": "testcafe --app \"http-server ./build/dev -s\"",
         "integ:browser": "npm run integ -- --config-file=./.testcafe.browser.js",
-        "integ:browser:ie": "npm run integ -- ie src/__integ__/unsupportedBrowser.test.ts",
         "integ:headless": "npm run integ -- --config-file=./.testcafe.headless.js",
         "preinteg:local:nightwatch": "http-server ./build/dev -s &",
         "integ:local:nightwatch": "nightwatch",

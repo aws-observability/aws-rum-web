@@ -82,4 +82,3 @@ jobs:
               if: matrix.os == 'windows-latest'
               run: |
                   npm run integ:browser
-                  npm run integ:browser:ie
