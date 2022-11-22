@@ -2,6 +2,9 @@
 <html>
     <head>
         <title>RUM Integ Test</title>
+        <script>
+            window.navigator.sendBeacon = undefined;
+        </script>
         <script src="./loader_js_error_event.js"></script>
         <link
             rel="icon"
