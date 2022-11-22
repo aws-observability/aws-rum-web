@@ -46,7 +46,7 @@ const TRANSFER_SIZE = 'transferSize';
 const COMPRESSION_RATIO = 'compressionRatio';
 const SAFARI = 'Safari';
 
-fixture('NagivationEvent Plugin').page(
+fixture('NavigationEvent Plugin').page(
     'http://localhost:8080/delayed_page.html'
 );
 
