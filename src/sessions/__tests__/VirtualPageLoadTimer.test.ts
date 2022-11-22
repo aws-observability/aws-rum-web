@@ -382,7 +382,7 @@ describe('VirtualPageLoadTimer tests', () => {
         // recordRoutChangeNavigationEvent is not invoked
         expect(record.mock.calls.length).toEqual(0);
 
-        // Virtual timing resoureces should not be initialized
+        // Virtual timing resources should not be initialized
         expect(virtualPageLoadTimer['timeoutCheckerId']).toEqual(undefined);
         expect(virtualPageLoadTimer['periodicCheckerId']).toEqual(undefined);
         expect(virtualPageLoadTimer['isPageLoaded']).toEqual(true);
