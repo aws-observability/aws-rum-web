@@ -42,7 +42,6 @@
         "preinteg": "npm run build:dev",
         "integ": "testcafe --app \"http-server ./build/dev -s\"",
         "integ:browser": "npm run integ -- --config-file=./.testcafe.browser.js",
-        "integ:browser:ie": "npm run integ -- ie src/__integ__/unsupportedBrowser.test.ts",
         "integ:headless": "npm run integ -- --config-file=./.testcafe.headless.js",
         "preinteg:local:nightwatch": "http-server ./build/dev -s &",
         "integ:local:nightwatch": "nightwatch",
@@ -62,7 +61,7 @@
     "devDependencies": {
         "@aws-sdk/client-rum": "^3.76.0",
         "@babel/plugin-transform-runtime": "^7.16.0",
-        "@babel/preset-env": "~7.6.3",
+        "@babel/preset-env": "~7.20.2",
         "@playwright/test": "^1.21.1",
         "@types/jest": "^27.0.2",
         "@types/shimmer": "^1.0.2",
@@ -122,7 +121,7 @@
         "@babel/runtime": "^7.16.0",
         "shimmer": "^1.2.1",
         "ua-parser-js": "^0.7.23",
-        "uuid": "^8.3.2",
+        "uuid": "^9.0.0",
         "web-vitals": "^3.0.2"
     },
     "lint-staged": {
