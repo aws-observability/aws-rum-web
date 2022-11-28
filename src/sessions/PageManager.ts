@@ -36,7 +36,7 @@ export type PageAttributes = {
  * The page manager keeps the state of the current page and interaction level.
  *
  * A page is a unique view (user interface) of the application. For 'multi page' applications (i.e., 'classic' web
- * applications that have multiple html files), the page changes when the user nagivates to a new web page. For
+ * applications that have multiple html files), the page changes when the user navigates to a new web page. For
  * 'single page' applications (i.e., 'ajax' web applications that have a single html file), the page changes when (1)
  * the popstate event emitted, or (2) the application indicates a new page has loaded using the RUM agent API.
  *
@@ -151,7 +151,7 @@ export class PageManager {
         //
         // We believe that case (1) has a high risk of skewing route change
         // timing metrics because (a) browser navigation is common and (b) there
-        // is no limit on when the lastest interaction may have occurred. To
+        // is no limit on when the latest interaction may have occurred. To
         // help mitigate this, if the route change is already longer than 1000ms,
         // then we do not bother timing the route change.
         //

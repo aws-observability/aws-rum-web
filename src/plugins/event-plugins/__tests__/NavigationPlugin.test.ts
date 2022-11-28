@@ -125,7 +125,7 @@ describe('NavigationPlugin tests', () => {
         // enables plugin by default
         const plugin: NavigationPlugin = buildNavigationPlugin();
 
-        // window by default has aleady loaded before the plugin
+        // window by default has already loaded before the plugin
         // so when we load the plugin now, it should still record event
         plugin.load(context);
         // Assert
