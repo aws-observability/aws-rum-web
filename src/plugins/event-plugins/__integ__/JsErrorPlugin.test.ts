@@ -43,11 +43,11 @@ test('when a TypeError is thrown then name and message are recorded', async (t: 
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === JS_ERROR_EVENT_TYPE
     );
-    const eventType = json.RumEvents[0].type;
-    const eventDetails = JSON.parse(json.RumEvents[0].details);
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
 
     await t
         .expect(eventType)
@@ -99,11 +99,11 @@ test('stack trace is recorded by default', async (t: TestController) => {
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === JS_ERROR_EVENT_TYPE
     );
-    const eventType = json.RumEvents[0].type;
-    const eventDetails = JSON.parse(json.RumEvents[0].details);
+    const eventType = events[0].type;
+    const eventDetails = JSON.parse(events[0].details);
 
     await t
         .expect(eventType)
@@ -198,9 +198,9 @@ test('when error invoked with record method then the plugin records the error', 
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
+        (e) => e.type === JS_ERROR_EVENT_TYPE
     );
 
-    await t.expect(json.RumEvents.length).eql(1);
+    await t.expect(events.length).eql(1);
 });

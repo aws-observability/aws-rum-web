@@ -15,7 +15,7 @@ export type JsErrorPluginConfig = {
 };
 
 const defaultConfig: JsErrorPluginConfig = {
-    stackTraceLength: 200,
+    stackTraceLength: 1000,
     ignore: () => false
 };
 
