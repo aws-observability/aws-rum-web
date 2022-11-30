@@ -268,7 +268,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession()).toBeTruthy();
     });
 
-    test('when cookies are disabled after being enabled and session not expired then getSession returns the existing session', async () => {
+    test('when cookies are disabled after being enabled then getSession returns the existing session', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
