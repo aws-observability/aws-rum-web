@@ -127,7 +127,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession().sessionId).toEqual(sessionId);
     });
 
-    test('when cookies are not allowed and existing session does not exist then getSession returns a new session', async () => {
+    test('when cookies are not allowed then getSession returns a new session', async () => {
         // Init
         const config = {
             ...DEFAULT_CONFIG,
