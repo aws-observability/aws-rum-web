@@ -99,7 +99,7 @@ telemetries: [
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| stackTraceLength | Number | `200` | The number of characters to record from a JavaScript error's stack trace (if available). |
+| stackTraceLength | Number | `1000` | The number of characters to record from a JavaScript error's stack trace (if available). |
 | ignore | Function | `() => false` | A function which accepts an [`ErrorEvent`](https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent) or a [`PromiseRejectionEvent`](https://developer.mozilla.org/en-US/docs/Web/API/PromiseRejectionEvent) and returns a value that coerces to true when the error should be ignored. By default, no errors are ignored. |
 
 For example, the following telemetry config array causes the web client to ignore all errors whose message begins with "Warning:".
@@ -130,7 +130,7 @@ telemetries: [
 | --- | --- | --- | --- |
 | urlsToInclude | RegExp[] | `[/.*/]` | A list of HTTP request (`XMLHttpRequest` or `fetch`) URLs. These requests will be recorded, unless explicitly excluded by `urlsToExclude`. |
 | urlsToExclude | RegExp[] | `[]` | A list of HTTP request (`XMLHttpRequest` or `fetch`) URLs. These requests will not be recorded. |
-| stackTraceLength | Number | `200 ` | The number of characters to record from a JavaScript error's stack trace (if available). |
+| stackTraceLength | Number | `1000 ` | The number of characters to record from a JavaScript error's stack trace (if available). |
 | recordAllRequests | boolean | `false` | By default, only HTTP failed requests (i.e., those with network errors or status codes which are not 2xx) are recorded. When this field is `true`, the http telemetry will record all requests, including those with successful 2xx status codes. <br/><br/>This field does **does not apply** to X-Ray traces, where all requests are recorded. |
 | addXRayTraceIdHeader | boolean | `false` | By default, the `X-Amzn-Trace-Id` header will not be added to the HTTP request. This means that the client-side trace and server-side trace will **not be linked** in X-Ray or the ServiceLens graph.<br/><br/> When this field is `true`, the `X-Amzn-Trace-Id` header will be added to HTTP requests (`XMLHttpRequest` or `fetch`). **Adding the header is dangerous and you must test your application before setting this field to `true` in a production environment.** The header could cause CORS to fail or invalidate the request's signature if the request is signed with sigv4.
 
