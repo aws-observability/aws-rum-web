@@ -105,15 +105,7 @@ export class SessionManager {
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (this.session.sessionId !== NIL_UUID && !this.useCookies()) {
-            // Cookie access has been revoked. Revert to nil session.
-            this.session = {
-                sessionId: NIL_UUID,
-                record: this.sample(),
-                eventCount: 0,
-                page: this.session.page
-            };
-        } else if (this.session.sessionId === NIL_UUID && this.useCookies()) {
+        if (this.session.sessionId === NIL_UUID) {
             // The session does not exist. Create a new one.
             this.createSession();
         } else if (

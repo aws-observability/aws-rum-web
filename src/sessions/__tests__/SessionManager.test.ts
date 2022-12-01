@@ -127,7 +127,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession().sessionId).toEqual(sessionId);
     });
 
-    test('when cookies are not allowed then getSession returns the nil session', async () => {
+    test('when cookies are not allowed then getSession returns a new session', async () => {
         // Init
         const config = {
             ...DEFAULT_CONFIG,
@@ -136,10 +136,22 @@ describe('SessionManager tests', () => {
         const sessionManager = defaultSessionManager(config);
 
         // Assert
-        expect(sessionManager.getSession().sessionId).toEqual(NIL_UUID);
+        expect(sessionManager.getSession().sessionId).not.toEqual(NIL_UUID);
     });
 
-    test('when cookies are enabled during runtime then getSession returns a new sessionId', async () => {
+    test('when cookies are  allowed and existing session does not exist then getSession returns a new session', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        // Assert
+        expect(sessionManager.getSession().sessionId).not.toEqual(NIL_UUID);
+    });
+
+    test('when cookies are enabled during runtime then getSession returns same sessionId', async () => {
         // Init
         const config = {
             ...DEFAULT_CONFIG,
@@ -152,11 +164,28 @@ describe('SessionManager tests', () => {
         const sessionB: Session = sessionManager.getSession();
 
         // Assert
-        expect(sessionA.sessionId).toEqual(NIL_UUID);
-        expect(sessionB.sessionId).not.toEqual(NIL_UUID);
+        expect(sessionA.sessionId).not.toEqual(NIL_UUID);
+        expect(sessionB.sessionId).toEqual(sessionA.sessionId);
     });
 
-    test('when cookies are disabled during runtime then getSession returns the nil session', async () => {
+    test('when cookies are disabled during runtime then getSession returns same sessionId', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        const sessionA: Session = sessionManager.getSession();
+        config.allowCookies = false;
+        const sessionB: Session = sessionManager.getSession();
+
+        // Assert
+        expect(sessionA.sessionId).not.toEqual(NIL_UUID);
+        expect(sessionB.sessionId).toEqual(sessionA.sessionId);
+    });
+
+    test('when cookies are disabled during runtime and session expires then getSession returns new session', async () => {
         // Init
         const config = {
             ...DEFAULT_CONFIG,
@@ -171,7 +200,25 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(sessionA.sessionId).not.toEqual(NIL_UUID);
-        expect(sessionB.sessionId).toEqual(NIL_UUID);
+        expect(sessionB.sessionId).not.toEqual(sessionA.sessionId);
+    });
+
+    test('when cookies are enabled during runtime and session expires then getSession returns new session', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ sessionLengthSeconds: 0, allowCookies: false }
+        };
+        const sessionManager = defaultSessionManager(config);
+
+        const sessionA = sessionManager.getSession();
+        config.allowCookies = true;
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        const sessionB = sessionManager.getSession();
+
+        // Assert
+        expect(sessionA.sessionId).not.toEqual(NIL_UUID);
+        expect(sessionB.sessionId).not.toEqual(sessionA.sessionId);
     });
 
     test('when sessionId cookie is corrupt then getSession returns a new sessionId', async () => {
@@ -221,7 +268,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession()).toBeTruthy();
     });
 
-    test('when cookies are disabled after being enabled then getSession returns the nil session', async () => {
+    test('when cookies are disabled after being enabled then getSession returns the existing session', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
@@ -245,7 +292,7 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(sessionId).toEqual(sessionA.sessionId);
-        expect(sessionB.sessionId).toEqual(NIL_UUID);
+        expect(sessionB.sessionId).toEqual(sessionA.sessionId);
     });
 
     // start
