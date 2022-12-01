@@ -6,13 +6,16 @@ module.exports = {
             tsconfig: 'tsconfig.unit.json'
         }
     },
-    testURL:
-        'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback',
+    testEnvironmentOptions: {
+        url:
+            'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback'
+    },
     moduleFileExtensions: ['js', 'json', 'node', 'ts'],
     testEnvironment: 'jest-environment-jsdom-global',
     testMatch: ['**/__tests__/**/*.js', '**/__tests__/**/*.ts'],
     transform: { '^.+\\.tsx?$': 'ts-jest' },
     reporters: ['default'],
+    setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
     coverageReporters: [
         'json',
         'json-summary',

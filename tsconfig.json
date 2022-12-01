@@ -8,5 +8,5 @@
         "strict": true,
         "target": "es5"
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "setup-jest.ts"]
 }
