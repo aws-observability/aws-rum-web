@@ -63,7 +63,7 @@
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.20.2",
         "@playwright/test": "^1.21.1",
-        "@types/jest": "^28.1.8",
+        "@types/jest": "^29.2.3",
         "@types/shimmer": "^1.0.2",
         "@types/ua-parser-js": "^0.7.35",
         "@types/uuid": "^8.3.0",
