@@ -15,7 +15,6 @@ module.exports = {
     testMatch: ['**/__tests__/**/*.js', '**/__tests__/**/*.ts'],
     transform: { '^.+\\.tsx?$': 'ts-jest' },
     reporters: ['default'],
-    setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
     coverageReporters: [
         'json',
         'json-summary',
