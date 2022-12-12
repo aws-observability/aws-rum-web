@@ -12,7 +12,9 @@
         "pageId": { "type": "string" },
         "pageInteractionId": { "type": "string" },
         "interaction": { "type": "number" },
-        "parentPageInteractionId": { "type": "string" }
+        "parentPageInteractionId": { "type": "string" },
+        "referrer": { "type": "string" },
+        "referrerDomain": { "type": "string" }
     },
     "additionalProperties": false,
     "required": ["pageId"]

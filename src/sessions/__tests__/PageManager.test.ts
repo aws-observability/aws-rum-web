@@ -11,7 +11,8 @@ const record = jest.fn();
 declare const jsdom: any;
 
 Object.defineProperty(document, 'referrer', {
-    value: 'https://console.aws.amazon.com'
+    value: 'https://console.aws.amazon.com',
+    configurable: true
 });
 Object.defineProperty(document, 'title', { value: 'Amazon AWS Console' });
 global.fetch = mockFetch;
@@ -486,4 +487,87 @@ describe('PageManager tests', () => {
         expect(startTiming).toBeCalledTimes(1);
         expect(pageManager.getPage().start).toEqual(2500);
     });
+});
+
+test('when complete referrer is available from the DOM', async () => {
+    // Init
+    const config: Config = {
+        ...DEFAULT_CONFIG,
+        allowCookies: true
+    };
+    const pageManager: PageManager = new PageManager(config, record);
+
+    Object.defineProperty(document, 'referrer', {
+        value: 'http://abc.com/consoles',
+        configurable: true
+    });
+
+    // Run
+    pageManager.recordPageView('/console/home');
+
+    // Assert
+    expect(pageManager.getPage()).toMatchObject({
+        referrer: 'http://abc.com/consoles',
+        referrerDomain: 'http://abc.com',
+        pageId: '/console/home'
+    });
+
+    window.removeEventListener(
+        'popstate',
+        (pageManager as any).popstateListener
+    );
+});
+
+test('when only domain level referrer is available from the DOM', async () => {
+    // Init
+    const config: Config = {
+        ...DEFAULT_CONFIG,
+        allowCookies: true
+    };
+    const pageManager: PageManager = new PageManager(config, record);
+
+    Object.defineProperty(document, 'referrer', {
+        value: 'http://abc.com',
+        configurable: true
+    });
+    // Run
+    pageManager.recordPageView('/console/home');
+
+    // Assert
+    expect(pageManager.getPage()).toMatchObject({
+        referrer: 'http://abc.com',
+        referrerDomain: 'http://abc.com',
+        pageId: '/console/home'
+    });
+
+    window.removeEventListener(
+        'popstate',
+        (pageManager as any).popstateListener
+    );
+});
+
+test('when referrer is not available from the DOM', async () => {
+    // Init
+    const config: Config = {
+        ...DEFAULT_CONFIG,
+        allowCookies: true
+    };
+    const pageManager: PageManager = new PageManager(config, record);
+
+    Object.defineProperty(document, 'referrer', {
+        value: '',
+        configurable: true
+    });
+    // Run
+    pageManager.recordPageView('/console/home');
+
+    // Assert
+    expect(pageManager.getPage()).toMatchObject({
+        pageId: '/console/home'
+    });
+
+    window.removeEventListener(
+        'popstate',
+        (pageManager as any).popstateListener
+    );
 });
