@@ -114,7 +114,7 @@ telemetries: [
                 return (
                     errorEvent &&
                     errorEvent.message &&
-                    errorEvent.message.test(/^Warning:/)
+                    /^Warning:/.test(errorEvent.message)
                 );
             }
         }
