@@ -159,7 +159,7 @@ describe('RetryHttpHandler tests', () => {
 
     test('when request fails then retry succeeds after backoff', async () => {
         // Init
-        jest.useFakeTimers('legacy');
+        jest.useFakeTimers({ legacyFakeTimers: true });
         const badStatus = { response: { statusCode: 500 } };
         const okStatus = { response: { statusCode: 200 } };
         fetchHandler
@@ -203,7 +203,7 @@ describe('RetryHttpHandler tests', () => {
 
     test('when request fails then retry waits for backoff', async () => {
         // Init
-        jest.useFakeTimers('legacy');
+        jest.useFakeTimers({ legacyFakeTimers: true });
         const badStatus = { response: { statusCode: 500 } };
         const okStatus = { response: { statusCode: 200 } };
         fetchHandler
