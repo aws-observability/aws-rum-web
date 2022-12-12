@@ -160,7 +160,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                 const clStr = response.headers.get('Content-Length');
                 const cl = clStr ? parseInt(clStr, 10) : NaN;
                 if (!isNaN(cl)) {
-                    xRayTraceEvent.subsegments![0].http!.response.content_length = cl;
+                    xRayTraceEvent.subsegments![0].http!.response.content_length =
+                        cl;
                 }
             }
 

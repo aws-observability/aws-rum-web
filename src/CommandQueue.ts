@@ -124,9 +124,8 @@ export class CommandQueue {
      * Add a command to the command queue.
      */
     public async push(command: Command) {
-        const commandHandler = this.commandHandlerMap[
-            command.c as keyof CommandFunctions
-        ];
+        const commandHandler =
+            this.commandHandlerMap[command.c as keyof CommandFunctions];
         if (commandHandler) {
             commandHandler(command.p);
         } else {

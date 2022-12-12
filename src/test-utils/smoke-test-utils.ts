@@ -84,10 +84,8 @@ export const verifyIngestionWithRetry = async (
             return false;
         }
         try {
-            const ingestedEvents: Map<
-                string,
-                string[]
-            > = await getIngestedEvents(rumClient, timestamp, monitorName);
+            const ingestedEvents: Map<string, string[]> =
+                await getIngestedEvents(rumClient, timestamp, monitorName);
 
             return await expectValidEvents(
                 ingestedEvents,

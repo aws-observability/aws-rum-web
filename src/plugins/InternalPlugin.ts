@@ -3,7 +3,8 @@ import { Plugin } from './Plugin';
 import { PluginContext } from './types';
 
 export abstract class InternalPlugin<UpdateType = unknown>
-    implements Plugin<UpdateType> {
+    implements Plugin<UpdateType>
+{
     static idPrefix = RUM_AWS_PREFIX;
 
     protected enabled = true;

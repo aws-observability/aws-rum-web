@@ -7,8 +7,7 @@ module.exports = {
         }
     },
     testEnvironmentOptions: {
-        url:
-            'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback'
+        url: 'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback'
     },
     moduleFileExtensions: ['js', 'json', 'node', 'ts'],
     testEnvironment: 'jest-environment-jsdom-global',
