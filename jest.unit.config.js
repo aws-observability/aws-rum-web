@@ -1,18 +1,20 @@
 module.exports = {
     collectCoverage: !!process.env.BRAZIL_PACKAGE_NAME,
     coveragePathIgnorePatterns: ['__tests__', '__integ__', '/node_modules/'],
-    globals: {
-        'ts-jest': {
-            tsconfig: 'tsconfig.unit.json'
-        }
-    },
     testEnvironmentOptions: {
         url: 'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback'
     },
     moduleFileExtensions: ['js', 'json', 'node', 'ts'],
     testEnvironment: 'jest-environment-jsdom-global',
     testMatch: ['**/__tests__/**/*.js', '**/__tests__/**/*.ts'],
-    transform: { '^.+\\.tsx?$': 'ts-jest' },
+    transform: {
+        '^.+\\.tsx?$': [
+            'ts-jest',
+            {
+                tsconfig: 'tsconfig.unit.json'
+            }
+        ]
+    },
     reporters: ['default'],
     coverageReporters: [
         'json',
