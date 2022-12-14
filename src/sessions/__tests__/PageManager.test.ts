@@ -489,7 +489,7 @@ describe('PageManager tests', () => {
     });
 });
 
-test('when complete referrer is available from the DOM', async () => {
+test('when complete referrer is available from the DOM then is recorded in page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -518,7 +518,7 @@ test('when complete referrer is available from the DOM', async () => {
     );
 });
 
-test('when only domain level referrer is available from the DOM', async () => {
+test('when only domain level referrer is available from the DOM then is recorded in page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -546,7 +546,7 @@ test('when only domain level referrer is available from the DOM', async () => {
     );
 });
 
-test('when referrer is not available from the DOM', async () => {
+test('when referrer from the DOM is not valid then it is not recorded in page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,

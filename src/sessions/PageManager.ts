@@ -131,10 +131,7 @@ export class PageManager {
             pageId,
             parentPageId: resumed.pageId,
             interaction: resumed.interaction + 1,
-            referrer:
-                document.referrer !== undefined && document.referrer !== ''
-                    ? document.referrer
-                    : null,
+            referrer: this.getReferrer(),
             referrerDomain: this.getDomainFromReferrer(),
             start: Date.now()
         };
@@ -172,10 +169,7 @@ export class PageManager {
             pageId,
             parentPageId: currentPage.pageId,
             interaction: currentPage.interaction + 1,
-            referrer:
-                document.referrer !== undefined && document.referrer !== ''
-                    ? document.referrer
-                    : null,
+            referrer: this.getReferrer(),
             referrerDomain: this.getDomainFromReferrer(),
             start: startTime
         };
@@ -185,10 +179,7 @@ export class PageManager {
         this.page = {
             pageId,
             interaction: 0,
-            referrer:
-                document.referrer !== undefined && document.referrer !== ''
-                    ? document.referrer
-                    : null,
+            referrer: this.getReferrer(),
             referrerDomain: this.getDomainFromReferrer(),
             start: Date.now()
         };
@@ -265,7 +256,7 @@ export class PageManager {
     Parses the domain from the referrer, if it is available
     */
     private getDomainFromReferrer() {
-        if (document.referrer !== undefined || document.referrer !== '') {
+        if (document.referrer !== undefined && document.referrer !== '') {
             const domainName = document.referrer.match(
                 '([A-Za-z]+://[^/]+)[/]?'
             );
@@ -273,6 +264,17 @@ export class PageManager {
             if (domainName) {
                 return domainName[1];
             }
+        } else {
+            return null;
+        }
+    }
+
+    /*
+    Get the referrer, if it can be read from the DOM
+    */
+    private getReferrer() {
+        if (document.referrer !== undefined && document.referrer !== '') {
+            return document.referrer;
         } else {
             return null;
         }
