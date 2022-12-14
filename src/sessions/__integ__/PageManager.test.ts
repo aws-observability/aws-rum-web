@@ -234,6 +234,6 @@ test('when referrer exists, then page view event details records it', async (t: 
 
     await t.expect(pages.length).eql(1).expect(pages[0]).contains({
         referrer: 'http://amazon.com/searchresults/1/',
-        referrerDomain: 'http://amazon.com'
+        referrerDomain: 'amazon.com'
     });
 });

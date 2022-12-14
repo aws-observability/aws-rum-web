@@ -508,7 +508,7 @@ test('when complete referrer is available from the DOM then is recorded in page 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
         referrer: 'http://abc.com/consoles',
-        referrerDomain: 'http://abc.com',
+        referrerDomain: 'abc.com',
         pageId: '/console/home'
     });
 
@@ -536,7 +536,7 @@ test('when only domain level referrer is available from the DOM then is recorded
     // Assert
     expect(pageManager.getPage()).toMatchObject({
         referrer: 'http://abc.com',
-        referrerDomain: 'http://abc.com',
+        referrerDomain: 'abc.com',
         pageId: '/console/home'
     });
 
@@ -546,7 +546,7 @@ test('when only domain level referrer is available from the DOM then is recorded
     );
 });
 
-test('when referrer from the DOM is not valid then it is not recorded in page view event', async () => {
+test('when referrer from the DOM is empty then it is recorded as empty in the page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -563,7 +563,9 @@ test('when referrer from the DOM is not valid then it is not recorded in page vi
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
-        pageId: '/console/home'
+        pageId: '/console/home',
+        referrer: '',
+        referrerDomain: ''
     });
 
     window.removeEventListener(
