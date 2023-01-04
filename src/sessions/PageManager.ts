@@ -8,8 +8,6 @@ export type Page = {
     pageId: string;
     interaction: number;
     parentPageId?: string;
-    referrer?: string | null;
-    referrerDomain?: string | null;
     start: number;
 };
 
@@ -19,6 +17,8 @@ export type Attributes = {
     parentPageId?: string;
     interaction?: number;
     pageTags?: string[];
+    referrer?: string;
+    referrerDomain?: string;
     // The value types of custom attributes are restricted to the types: string | number | boolean
     // However, given that pageTags is a string array, we need to include it as a valid type
     // Events will be verified by our service to validate attribute value types where
@@ -131,8 +131,6 @@ export class PageManager {
             pageId,
             parentPageId: resumed.pageId,
             interaction: resumed.interaction + 1,
-            referrer: document.referrer,
-            referrerDomain: this.getDomainFromReferrer(),
             start: Date.now()
         };
         this.resumed = undefined;
@@ -169,8 +167,6 @@ export class PageManager {
             pageId,
             parentPageId: currentPage.pageId,
             interaction: currentPage.interaction + 1,
-            referrer: document.referrer,
-            referrerDomain: this.getDomainFromReferrer(),
             start: startTime
         };
     }
@@ -179,8 +175,6 @@ export class PageManager {
         this.page = {
             pageId,
             interaction: 0,
-            referrer: document.referrer,
-            referrerDomain: this.getDomainFromReferrer(),
             start: Date.now()
         };
     }
@@ -198,6 +192,10 @@ export class PageManager {
             this.attributes.interaction = page.interaction;
             if (page.parentPageId !== undefined) {
                 this.attributes.parentPageId = page.parentPageId;
+            }
+            if (document.referrer !== undefined) {
+                this.attributes.referrer = document.referrer;
+                this.attributes.referrerDomain = this.getDomainFromReferrer();
             }
         }
 
@@ -227,14 +225,6 @@ export class PageManager {
             if (page.parentPageId !== undefined) {
                 pageViewEvent.parentPageInteractionId =
                     page.parentPageId + '-' + (page.interaction - 1);
-            }
-
-            if (page.referrer !== null) {
-                pageViewEvent.referrer = page.referrer;
-
-                if (page.referrerDomain !== null) {
-                    pageViewEvent.referrerDomain = page.referrerDomain;
-                }
             }
         }
 

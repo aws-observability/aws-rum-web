@@ -45,7 +45,10 @@
         "interaction": {
             "type": "number"
         },
-        "referrerUrl": {
+        "referrer": {
+            "type": "string"
+        },
+        "referrerDomain": {
             "type": "string"
         },
         "pageTitle": {

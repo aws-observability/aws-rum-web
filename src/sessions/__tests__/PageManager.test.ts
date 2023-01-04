@@ -489,7 +489,7 @@ describe('PageManager tests', () => {
     });
 });
 
-test('when complete referrer is available from the DOM then is recorded in page view event', async () => {
+test('when complete referrer is available from the DOM then is recorded in the metadata', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -507,9 +507,12 @@ test('when complete referrer is available from the DOM then is recorded in page 
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
-        referrer: 'http://abc.com/consoles',
-        referrerDomain: 'abc.com',
         pageId: '/console/home'
+    });
+
+    expect(pageManager.getAttributes()).toMatchObject({
+        referrer: 'http://abc.com/consoles',
+        referrerDomain: 'abc.com'
     });
 
     window.removeEventListener(
@@ -518,7 +521,7 @@ test('when complete referrer is available from the DOM then is recorded in page 
     );
 });
 
-test('when only domain level referrer is available from the DOM then is recorded in page view event', async () => {
+test('when only domain level referrer is available from the DOM then is recorded in the metadata', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -535,9 +538,12 @@ test('when only domain level referrer is available from the DOM then is recorded
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
-        referrer: 'http://abc.com',
-        referrerDomain: 'abc.com',
         pageId: '/console/home'
+    });
+
+    expect(pageManager.getAttributes()).toMatchObject({
+        referrer: 'http://abc.com',
+        referrerDomain: 'abc.com'
     });
 
     window.removeEventListener(
@@ -546,7 +552,7 @@ test('when only domain level referrer is available from the DOM then is recorded
     );
 });
 
-test('when referrer from the DOM is empty then it is recorded as empty in the page view event', async () => {
+test('when referrer from the DOM is empty then it is recorded as empty in the metadata', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -563,7 +569,10 @@ test('when referrer from the DOM is empty then it is recorded as empty in the pa
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
-        pageId: '/console/home',
+        pageId: '/console/home'
+    });
+
+    expect(pageManager.getAttributes()).toMatchObject({
         referrer: '',
         referrerDomain: ''
     });
