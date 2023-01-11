@@ -70,7 +70,7 @@ export class JsErrorPlugin extends InternalPlugin {
         }
     };
 
-    private recordJsErrorEvent(error: any) {
+    private recordJsErrorEvent(error: ErrorEvent) {
         this.context?.record(
             JS_ERROR_EVENT_TYPE,
             errorEventToJsErrorEvent(error, this.config.stackTraceLength)
