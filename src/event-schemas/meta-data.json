@@ -45,10 +45,10 @@
         "interaction": {
             "type": "number"
         },
-        "referrer": {
+        "aws:referrer": {
             "type": "string"
         },
-        "referrerDomain": {
+        "aws:referrerDomain": {
             "type": "string"
         },
         "pageTitle": {
