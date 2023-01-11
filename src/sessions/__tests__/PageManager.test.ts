@@ -511,8 +511,8 @@ test('when complete referrer is available from the DOM then is recorded in the m
     });
 
     expect(pageManager.getAttributes()).toMatchObject({
-        referrer: 'http://abc.com/consoles',
-        referrerDomain: 'abc.com'
+        'aws:referrer': 'http://abc.com/consoles',
+        'aws:referrerDomain': 'abc.com'
     });
 
     window.removeEventListener(
@@ -542,8 +542,8 @@ test('when only domain level referrer is available from the DOM then is recorded
     });
 
     expect(pageManager.getAttributes()).toMatchObject({
-        referrer: 'http://abc.com',
-        referrerDomain: 'abc.com'
+        'aws:referrer': 'http://abc.com',
+        'aws:referrerDomain': 'abc.com'
     });
 
     window.removeEventListener(
@@ -573,8 +573,8 @@ test('when referrer from the DOM is empty then it is recorded as empty in the me
     });
 
     expect(pageManager.getAttributes()).toMatchObject({
-        referrer: '',
-        referrerDomain: ''
+        'aws:referrer': '',
+        'aws:referrerDomain': ''
     });
 
     window.removeEventListener(

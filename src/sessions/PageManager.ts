@@ -17,8 +17,8 @@ export type Attributes = {
     parentPageId?: string;
     interaction?: number;
     pageTags?: string[];
-    referrer?: string;
-    referrerDomain?: string;
+    'aws:referrer'?: string;
+    'aws:referrerDomain'?: string;
     // The value types of custom attributes are restricted to the types: string | number | boolean
     // However, given that pageTags is a string array, we need to include it as a valid type
     // Events will be verified by our service to validate attribute value types where
@@ -194,8 +194,10 @@ export class PageManager {
                 this.attributes.parentPageId = page.parentPageId;
             }
             if (document.referrer !== undefined) {
-                this.attributes.referrer = document.referrer;
-                this.attributes.referrerDomain = this.getDomainFromReferrer();
+                this.attributes['aws:referrer'] = document.referrer;
+                this.attributes[
+                    'aws:referrerDomain'
+                ] = this.getDomainFromReferrer();
             }
         }
 

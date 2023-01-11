@@ -233,7 +233,7 @@ test('when referrer exists, then metadata records it', async (t: TestController)
     ).map((e) => JSON.parse(e.metadata));
 
     await t.expect(pages.length).eql(1).expect(pages[0]).contains({
-        referrer: 'http://amazon.com/searchresults/1/',
-        referrerDomain: 'amazon.com'
+        'aws:referrer': 'http://amazon.com/searchresults/1/',
+        'aws:referrerDomain': 'amazon.com'
     });
 });
