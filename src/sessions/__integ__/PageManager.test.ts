@@ -1,7 +1,6 @@
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../test-utils/integ-test-utils';
 import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
-import { create } from 'lodash';
 
 const recordPageView: Selector = Selector(`#recordPageView`);
 const recordPageViewWithPageTagAttribute: Selector = Selector(

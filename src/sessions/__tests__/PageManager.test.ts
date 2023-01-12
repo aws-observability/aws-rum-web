@@ -582,3 +582,34 @@ test('when referrer from the DOM is empty then it is recorded as empty in the me
         (pageManager as any).popstateListener
     );
 });
+
+test('when referrer is localhost then it is recorded  in the metadata', async () => {
+    // Init
+    const config: Config = {
+        ...DEFAULT_CONFIG,
+        allowCookies: true
+    };
+    const pageManager: PageManager = new PageManager(config, record);
+
+    Object.defineProperty(document, 'referrer', {
+        value: 'localhost',
+        configurable: true
+    });
+    // Run
+    pageManager.recordPageView('/console/home');
+
+    // Assert
+    expect(pageManager.getPage()).toMatchObject({
+        pageId: '/console/home'
+    });
+
+    expect(pageManager.getAttributes()).toMatchObject({
+        'aws:referrer': 'localhost',
+        'aws:referrerDomain': 'localhost'
+    });
+
+    window.removeEventListener(
+        'popstate',
+        (pageManager as any).popstateListener
+    );
+});
