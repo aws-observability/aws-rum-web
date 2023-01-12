@@ -196,11 +196,8 @@ export class SessionManager {
 
             if (cookie && atob) {
                 try {
-                    this.session = JSON.parse(atob(cookie));
-                    this.pageManager.resumeSession(
-                        this.session.page!.pageId,
-                        this.session.page!.interaction
-                    );
+                    this.session = JSON.parse(atob(cookie)) as Session;
+                    this.pageManager.resumeSession(this.session.page);
                 } catch (e) {
                     // Error decoding or parsing the cookie -- ignore
                 }

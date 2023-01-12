@@ -1,3 +1,4 @@
+import { Page } from './../PageManager';
 import { advanceTo } from 'jest-date-mock';
 import { PageManager } from '../PageManager';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
@@ -184,14 +185,18 @@ describe('PageManager tests', () => {
         );
     });
 
-    test('when session is resumed then interaction depth is resumed depth plus one', async () => {
+    test('when session is resumed  and page view has changed then interaction depth is resumed depth plus one', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
             allowCookies: true
         };
         const pageManager: PageManager = new PageManager(config, record);
-        pageManager.resumeSession('/console/home', 1);
+        pageManager.resumeSession({
+            pageId: '/console/home',
+            interaction: 1,
+            start: Date.now()
+        });
 
         // Run
         pageManager.recordPageView('/rum/home');
@@ -208,6 +213,32 @@ describe('PageManager tests', () => {
             (pageManager as any).popstateListener
         );
     });
+
+    test('when session is resumed and the page ID has not changed then interaction depth stays the same', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.resumeSession({
+            pageId: '/console/home',
+            interaction: 1,
+            start: Date.now()
+        });
+
+        // Run
+        pageManager.recordPageView('/console/home');
+
+        // Assert
+        expect(pageManager.getPage()?.interaction).toEqual(1);
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
     test('when the page is manually recorded with pageTag attribute then page attributes contains pageTag attribute data', async () => {
         // Init
         const pageManager: PageManager = new PageManager(
@@ -351,7 +382,11 @@ describe('PageManager tests', () => {
         const startTiming = jest.spyOn(helper, 'startTiming');
 
         // Run
-        pageManager.resumeSession('/console/home', 1);
+        pageManager.resumeSession({
+            pageId: '/console/home',
+            interaction: 1,
+            start: Date.now()
+        });
         pageManager.recordPageView('/rum/home');
 
         // page view event is recorded
@@ -455,7 +490,11 @@ describe('PageManager tests', () => {
         helper.latestInteractionTime = 500;
 
         // Run
-        pageManager.resumeSession('/console/home', 1);
+        pageManager.resumeSession({
+            pageId: '/console/home',
+            interaction: 1,
+            start: Date.now()
+        });
         pageManager.recordPageView('/console/home');
         pageManager.recordPageView('/rum/home');
 
@@ -479,13 +518,169 @@ describe('PageManager tests', () => {
         helper.latestInteractionTime = 2500;
 
         // Run
-        pageManager.resumeSession('/console/home', 1);
-        pageManager.recordPageView('/console/home');
-        pageManager.recordPageView('/rum/home');
+        pageManager.resumeSession({
+            pageId: '/landing',
+            interaction: 1,
+            start: Date.now()
+        });
+        pageManager.recordPageView('/about');
+        pageManager.recordPageView('/contact');
 
         // Should timing
         expect(startTiming).toBeCalledTimes(1);
         expect(pageManager.getPage().start).toEqual(2500);
+    });
+
+    test('when a page view event is depth 0 then parentPageInteractionId is not defined', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+
+        // Mocking Date.now
+        Date.now = jest.fn(() => 3000);
+
+        // Record page view
+        pageManager.recordPageView('/console/home');
+
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[0][1].timeOnParentPage).toBeUndefined();
+    });
+
+    test('when a page view event is above depth 0 then parentPageInteractionId is defined', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+
+        // Mocking Date.now
+        Date.now = jest.fn(() => 3000);
+
+        // Record page view
+        pageManager.recordPageView('/console/home');
+
+        // Mocking Date.now
+        Date.now = jest.fn(() => 3500);
+
+        // Record page view
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            pageId: '/console/home',
+            interaction: 0
+        });
+
+        // Subsequent event records the time on page
+        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            pageId: '/rum/home',
+            interaction: 1,
+            parentPageInteractionId: '/console/home-0',
+            timeOnParentPage: 500
+        });
+    });
+
+    test('when session resumes and page ID has changed then a page view event is recorded', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.resumeSession({
+            pageId: '/console/home',
+            interaction: 1,
+            start: 24000
+        });
+
+        // Mocking Date.now
+        Date.now = jest.fn(() => 30000);
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            parentPageId: '/console/home',
+            interaction: 2
+        });
+        expect(pageManager.getPage()?.start).toEqual(30000);
+
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            pageId: '/rum/home',
+            interaction: 2,
+            parentPageInteractionId: '/console/home-1',
+            timeOnParentPage: 6000
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when session resumes and page ID has not changed then page view event is not recorded', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        pageManager.resumeSession({
+            pageId: '/rum/home',
+            interaction: 1,
+            start: 4321
+        });
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(pageManager.getPage()?.start).toEqual(4321);
+        expect(pageManager.getPage()?.interaction).toEqual(1);
+        expect(pageManager.getPage()?.pageId).toEqual('/rum/home');
+
+        // No events therefore length = 0
+        expect(record.mock.calls).toHaveLength(0);
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when cookies are disabled then time on parent page is not included in event', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: false
+            },
+            record
+        );
+        // Mocking Date.now
+        Date.now = jest.fn(() => 3000);
+
+        // Record page view
+        pageManager.recordPageView('/console/home');
+
+        // Mocking Date.now
+        Date.now = jest.fn(() => 3500);
+
+        // Record page view
+        pageManager.recordPageView('/rum/home');
+
+        // Assert
+        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[1][1].timeOnParentPage).toBeUndefined();
     });
 });
 

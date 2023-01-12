@@ -13,6 +13,7 @@
         "pageInteractionId": { "type": "string" },
         "interaction": { "type": "number" },
         "parentPageInteractionId": { "type": "string" },
+        "timeOnParentPage": { "type": "number" },
         "referrer": { "type": "string" },
         "referrerDomain": { "type": "string" }
     },
