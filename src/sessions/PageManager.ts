@@ -259,6 +259,10 @@ export class PageManager {
         try {
             return new URL(document.referrer).hostname;
         } catch (e) {
+            if (document.referrer === 'localhost') {
+                // Handle special case for localhost
+                return 'localhost';
+            }
             return '';
         }
     }
