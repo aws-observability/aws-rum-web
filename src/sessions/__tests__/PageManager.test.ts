@@ -489,7 +489,7 @@ describe('PageManager tests', () => {
     });
 });
 
-test('when complete referrer is available from the DOM then is recorded in the metadata', async () => {
+test('when complete referrer is available from the DOM then is recorded in page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -507,12 +507,9 @@ test('when complete referrer is available from the DOM then is recorded in the m
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
+        referrer: 'http://abc.com/consoles',
+        referrerDomain: 'abc.com',
         pageId: '/console/home'
-    });
-
-    expect(pageManager.getAttributes()).toMatchObject({
-        'aws:referrer': 'http://abc.com/consoles',
-        'aws:referrerDomain': 'abc.com'
     });
 
     window.removeEventListener(
@@ -521,7 +518,7 @@ test('when complete referrer is available from the DOM then is recorded in the m
     );
 });
 
-test('when only domain level referrer is available from the DOM then is recorded in the metadata', async () => {
+test('when only domain level referrer is available from the DOM then is recorded in page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -538,12 +535,9 @@ test('when only domain level referrer is available from the DOM then is recorded
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
+        referrer: 'http://abc.com',
+        referrerDomain: 'abc.com',
         pageId: '/console/home'
-    });
-
-    expect(pageManager.getAttributes()).toMatchObject({
-        'aws:referrer': 'http://abc.com',
-        'aws:referrerDomain': 'abc.com'
     });
 
     window.removeEventListener(
@@ -552,7 +546,7 @@ test('when only domain level referrer is available from the DOM then is recorded
     );
 });
 
-test('when referrer from the DOM is empty then it is recorded as empty in the metadata', async () => {
+test('when referrer from the DOM is empty then it is recorded as empty in the page view event', async () => {
     // Init
     const config: Config = {
         ...DEFAULT_CONFIG,
@@ -569,43 +563,9 @@ test('when referrer from the DOM is empty then it is recorded as empty in the me
 
     // Assert
     expect(pageManager.getPage()).toMatchObject({
-        pageId: '/console/home'
-    });
-
-    expect(pageManager.getAttributes()).toMatchObject({
-        'aws:referrer': '',
-        'aws:referrerDomain': ''
-    });
-
-    window.removeEventListener(
-        'popstate',
-        (pageManager as any).popstateListener
-    );
-});
-
-test('when referrer is localhost then it is recorded  in the metadata', async () => {
-    // Init
-    const config: Config = {
-        ...DEFAULT_CONFIG,
-        allowCookies: true
-    };
-    const pageManager: PageManager = new PageManager(config, record);
-
-    Object.defineProperty(document, 'referrer', {
-        value: 'localhost',
-        configurable: true
-    });
-    // Run
-    pageManager.recordPageView('/console/home');
-
-    // Assert
-    expect(pageManager.getPage()).toMatchObject({
-        pageId: '/console/home'
-    });
-
-    expect(pageManager.getAttributes()).toMatchObject({
-        'aws:referrer': 'localhost',
-        'aws:referrerDomain': 'localhost'
+        pageId: '/console/home',
+        referrer: '',
+        referrerDomain: ''
     });
 
     window.removeEventListener(

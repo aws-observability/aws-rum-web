@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../../test-utils/integ-test-utils';
 import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
+import { create } from 'lodash';
 
 const recordPageView: Selector = Selector(`#recordPageView`);
 const recordPageViewWithPageTagAttribute: Selector = Selector(
@@ -208,7 +209,7 @@ test('when custom page attributes are set when manually recording page view even
         });
 });
 
-test('when referrer exists, then metadata records it', async (t: TestController) => {
+test('when referrer exists, then page view event details records it', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
 
@@ -229,10 +230,10 @@ test('when referrer exists, then metadata records it', async (t: TestController)
 
     const pages = requestBody.RumEvents.filter(
         (e) => e.type === PAGE_VIEW_EVENT_TYPE
-    ).map((e) => JSON.parse(e.metadata));
+    ).map((e) => JSON.parse(e.details));
 
     await t.expect(pages.length).eql(1).expect(pages[0]).contains({
-        'aws:referrer': 'http://amazon.com/searchresults/1/',
-        'aws:referrerDomain': 'amazon.com'
+        referrer: 'http://amazon.com/searchresults/1/',
+        referrerDomain: 'amazon.com'
     });
 });
