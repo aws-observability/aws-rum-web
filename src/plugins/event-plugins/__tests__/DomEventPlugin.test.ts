@@ -155,9 +155,8 @@ describe('DomEventPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
-            '[label="label1"]'
-        );
+        const elementList: NodeListOf<HTMLElement> =
+            document.querySelectorAll('[label="label1"]');
 
         elementList.forEach((value: HTMLElement) => {
             value.click();
@@ -378,9 +377,8 @@ describe('DomEventPlugin tests', () => {
         // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
         await new Promise((r) => setTimeout(r, 100));
 
-        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
-            '#button1'
-        );
+        const elementList: NodeListOf<HTMLElement> =
+            document.querySelectorAll('#button1');
 
         elementList.forEach((value: HTMLElement) => {
             value.click();
@@ -420,9 +418,8 @@ describe('DomEventPlugin tests', () => {
         // If we click too soon, the MutationObserver callback function will not have added the eventListener the plugin will not record the click.
         await new Promise((r) => setTimeout(r, 100));
 
-        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
-            '#button1'
-        );
+        const elementList: NodeListOf<HTMLElement> =
+            document.querySelectorAll('#button1');
 
         elementList.forEach((value: HTMLElement) => {
             value.click();
@@ -462,9 +459,8 @@ describe('DomEventPlugin tests', () => {
 
         plugin.disable();
 
-        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
-            '[label="label1"]'
-        );
+        const elementList: NodeListOf<HTMLElement> =
+            document.querySelectorAll('[label="label1"]');
 
         elementList.forEach((value: HTMLElement) => {
             value.click();
@@ -495,9 +491,8 @@ describe('DomEventPlugin tests', () => {
 
         plugin.disable();
 
-        const elementList: NodeListOf<HTMLElement> = document.querySelectorAll(
-            '[label="label1"]'
-        );
+        const elementList: NodeListOf<HTMLElement> =
+            document.querySelectorAll('[label="label1"]');
 
         elementList.forEach((value: HTMLElement) => {
             value.click();

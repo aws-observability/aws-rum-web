@@ -115,12 +115,8 @@ export class CognitoIdentityClient {
             const { Credentials } = (await responseToJson(
                 response
             )) as CredentialsResponse;
-            const {
-                AccessKeyId,
-                Expiration,
-                SecretAccessKey,
-                SessionToken
-            } = Credentials;
+            const { AccessKeyId, Expiration, SecretAccessKey, SessionToken } =
+                Credentials;
             return {
                 accessKeyId: AccessKeyId as string,
                 secretAccessKey: SecretAccessKey as string,

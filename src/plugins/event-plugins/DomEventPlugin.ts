@@ -160,11 +160,12 @@ export class DomEventPlugin<
         const eventListener = this.getEventListener(domEvent.cssLocator);
 
         const identifiedElementList = [];
-        const elementEventListenerList: ElementEventListener[] = this.eventListenerMap.has(
-            domEvent
-        )
-            ? (this.eventListenerMap.get(domEvent) as ElementEventListener[])
-            : [];
+        const elementEventListenerList: ElementEventListener[] =
+            this.eventListenerMap.has(domEvent)
+                ? (this.eventListenerMap.get(
+                      domEvent
+                  ) as ElementEventListener[])
+                : [];
 
         // first add event listener to all elements identified by the CSS locator
         if (domEvent.cssLocator) {

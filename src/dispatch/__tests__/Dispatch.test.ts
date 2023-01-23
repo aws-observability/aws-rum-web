@@ -429,7 +429,8 @@ describe('Dispatch tests', () => {
             };
         });
 
-        const eventCache: EventCache = Utils.createDefaultEventCacheWithEvents();
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
 
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,

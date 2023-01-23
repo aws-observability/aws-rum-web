@@ -77,8 +77,9 @@ describe('DataPlaneClient tests', () => {
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        const signedRequest: HttpRequest = (fetchHandler.mock
-            .calls[0] as any)[0];
+        const signedRequest: HttpRequest = (
+            fetchHandler.mock.calls[0] as any
+        )[0];
         expect(signedRequest.headers['x-amz-date']).toEqual('19700101T000000Z');
         expect(signedRequest.headers['X-Amz-Content-Sha256']).toEqual(
             '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
@@ -140,8 +141,9 @@ describe('DataPlaneClient tests', () => {
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        const signedRequest: HttpRequest = (fetchHandler.mock
-            .calls[0] as any)[0];
+        const signedRequest: HttpRequest = (
+            fetchHandler.mock.calls[0] as any
+        )[0];
         expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
             `${endpoint.pathname}/appmonitors/application123`
@@ -160,8 +162,9 @@ describe('DataPlaneClient tests', () => {
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        const signedRequest: HttpRequest = (fetchHandler.mock
-            .calls[0] as any)[0];
+        const signedRequest: HttpRequest = (
+            fetchHandler.mock.calls[0] as any
+        )[0];
         expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
             `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
@@ -180,8 +183,9 @@ describe('DataPlaneClient tests', () => {
         await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        const signedRequest: HttpRequest = (beaconHandler.mock
-            .calls[0] as any)[0];
+        const signedRequest: HttpRequest = (
+            beaconHandler.mock.calls[0] as any
+        )[0];
         expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
             `${endpoint.pathname}/appmonitors/application123`
@@ -200,8 +204,9 @@ describe('DataPlaneClient tests', () => {
         await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        const signedRequest: HttpRequest = (beaconHandler.mock
-            .calls[0] as any)[0];
+        const signedRequest: HttpRequest = (
+            beaconHandler.mock.calls[0] as any
+        )[0];
         expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
             `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
@@ -219,8 +224,9 @@ describe('DataPlaneClient tests', () => {
         await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
 
         // Assert
-        const signedRequest: HttpRequest = (fetchHandler.mock
-            .calls[0] as any)[0];
+        const signedRequest: HttpRequest = (
+            fetchHandler.mock.calls[0] as any
+        )[0];
         expect(signedRequest.headers['X-Amz-Content-Sha256']).toEqual(
             undefined
         );

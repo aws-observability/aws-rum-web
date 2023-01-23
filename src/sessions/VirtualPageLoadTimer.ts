@@ -21,12 +21,12 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     protected get patches() {
         return [
             {
-                nodule: (XMLHttpRequest.prototype as unknown) as Patching,
+                nodule: XMLHttpRequest.prototype as unknown as Patching,
                 name: 'send' as const,
                 wrapper: this.sendWrapper as any
             },
             {
-                nodule: (window as unknown) as Patching,
+                nodule: window as unknown as Patching,
                 name: 'fetch' as const,
                 wrapper: this.fetchWrapper as any
             }
@@ -94,14 +94,14 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         this.domMutationObserver.disconnect();
 
         // Initialize timer objects and start observing
-        this.periodicCheckerId = (setInterval(
+        this.periodicCheckerId = setInterval(
             this.checkLoadStatus,
             this.config.routeChangeComplete
-        ) as unknown) as number;
-        this.timeoutCheckerId = (setTimeout(
+        ) as unknown as number;
+        this.timeoutCheckerId = setTimeout(
             this.declareTimeout,
             this.config.routeChangeTimeout
-        ) as unknown) as number;
+        ) as unknown as number;
         // observing the add/delete of nodes
         this.domMutationObserver.observe(document, {
             subtree: true,
@@ -229,10 +229,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     private resetInterval = () => {
         this.latestEndTime = Date.now();
         clearInterval(this.periodicCheckerId);
-        this.periodicCheckerId = (setInterval(
+        this.periodicCheckerId = setInterval(
             this.checkLoadStatus,
             this.config.routeChangeComplete
-        ) as unknown) as number;
+        ) as unknown as number;
     };
 
     private moveItemsFromBuffer = (item: XMLHttpRequest) => {

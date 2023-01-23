@@ -30,8 +30,7 @@ export const navigationEvent = {
     initiatorType: 'navigation',
     loadEventEnd: 905.125000001135,
     loadEventStart: 904.4549999998708,
-    name:
-        'https://stackoverflow.com/questions/53224116/nodejs-performance-hooks-crash-when-calling-performance-getentriesbytype',
+    name: 'https://stackoverflow.com/questions/53224116/nodejs-performance-hooks-crash-when-calling-performance-getentriesbytype',
     nextHopProtocol: 'h2',
     redirectCount: 0,
     redirectEnd: 0,
@@ -67,8 +66,7 @@ export const navigationEventNotLoaded = {
     initiatorType: 'navigation',
     loadEventEnd: 0,
     loadEventStart: 0,
-    name:
-        'https://stackoverflow.com/questions/53224116/nodejs-performance-hooks-crash-when-calling-performance-getentriesbytype',
+    name: 'https://stackoverflow.com/questions/53224116/nodejs-performance-hooks-crash-when-calling-performance-getentriesbytype',
     nextHopProtocol: 'h2',
     redirectCount: 0,
     redirectEnd: 0,
@@ -98,8 +96,7 @@ export const resourceEvent = {
     entryType: 'resource',
     fetchStart: 357.59500000131084,
     initiatorType: 'script',
-    name:
-        'https://www.gravatar.com/avatar/47a91063fb01317639d57d5fc9c9d9c7?s=32&d=identicon&r=PG',
+    name: 'https://www.gravatar.com/avatar/47a91063fb01317639d57d5fc9c9d9c7?s=32&d=identicon&r=PG',
     nextHopProtocol: 'h2',
     redirectEnd: 0,
     redirectStart: 0,

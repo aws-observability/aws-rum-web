@@ -427,7 +427,8 @@ export class Orchestration {
         applicationId: string,
         applicationVersion: string
     ) {
-        const BUILTIN_PLUGINS: InternalPlugin[] = this.constructBuiltinPlugins();
+        const BUILTIN_PLUGINS: InternalPlugin[] =
+            this.constructBuiltinPlugins();
         const PLUGINS: Plugin[] = [
             ...BUILTIN_PLUGINS,
             ...this.config.eventPluginsToLoad

@@ -159,7 +159,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             const clStr = xhr.getResponseHeader('Content-Length');
             const cl = clStr ? parseInt(clStr, 10) : NaN;
             if (!isNaN(cl)) {
-                xhrDetails.trace!.subsegments![0].http!.response.content_length = cl;
+                xhrDetails.trace!.subsegments![0].http!.response.content_length =
+                    cl;
             }
             this.recordTraceEvent(xhrDetails.trace!);
             this.recordHttpEventWithResponse(xhrDetails, xhr);

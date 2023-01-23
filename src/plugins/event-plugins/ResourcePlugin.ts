@@ -118,7 +118,8 @@ export class ResourcePlugin extends InternalPlugin {
     };
 
     recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
-        const pathRegex = /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
+        const pathRegex =
+            /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
         const entryUrl = new URL(entryData.name);
         if (
             entryUrl.host === this.context.config.endpointUrl.host &&
