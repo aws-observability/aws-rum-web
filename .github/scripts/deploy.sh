@@ -3,7 +3,7 @@
 version=$(npm pkg get version | sed 's/"//g')
 bucket=$1
 
-echo ::set-output name=current-version::$version
+echo "current-version=$version" >> $GITHUB_OUTPUT
 
 aws s3api put-object --bucket $bucket --key "content/$version/cwr.js" --body build/assets/cwr.js --cache-control max-age=604800 --content-type "text/javascript"
 aws s3api put-object --bucket $bucket --key "content/$version/cwr.js.map" --body build/assets/cwr.js.map --cache-control max-age=604800
