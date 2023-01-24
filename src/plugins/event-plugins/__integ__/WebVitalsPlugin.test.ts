@@ -17,24 +17,6 @@ fixture('WebVitalEvent Plugin').page(
 // "FID is not reported if the user never interacts with the page."
 // It doesn't seem like TestCafe actions are registered as user interactions, so cannot test FID
 
-const removeUnwantedEvents = (json: any) => {
-    const newEventsList = [];
-    for (const event of json.RumEvents) {
-        if (/(dispatch)/.test(event.details)) {
-            // Skip
-        } else if (/(session_start_event)/.test(event.type)) {
-            // Skip
-        } else if (/(page_view_event)/.test(event.type)) {
-            // Skip
-        } else {
-            newEventsList.push(event);
-        }
-    }
-
-    json.RumEvents = newEventsList;
-    return json;
-};
-
 test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
@@ -53,21 +35,21 @@ test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const json = removeUnwantedEvents(
-        JSON.parse(await REQUEST_BODY.textContent)
+    const content = await REQUEST_BODY.textContent;
+
+    const lcpEvents = JSON.parse(content).RumEvents.filter(
+        (e) => e.type === LCP_EVENT_TYPE
     );
-    const eventType1 = json.RumEvents[0].type;
-    const eventDetails1 = JSON.parse(json.RumEvents[0].details);
-    const eventType2 = json.RumEvents[1].type;
-    const eventDetails2 = JSON.parse(json.RumEvents[1].details);
+    const lcpEventDetails = JSON.parse(lcpEvents[0].details);
+
+    const clsEvents = JSON.parse(content).RumEvents.filter(
+        (e) => e.type === CLS_EVENT_TYPE
+    );
+    const clsEventDetails = JSON.parse(clsEvents[0].details);
 
     await t
-        .expect(eventType1)
-        .eql(LCP_EVENT_TYPE)
-        .expect(eventDetails1.value)
+        .expect(lcpEventDetails.value)
         .typeOf('number')
-        .expect(eventType2)
-        .eql(CLS_EVENT_TYPE)
-        .expect(eventDetails2.value)
+        .expect(clsEventDetails.value)
         .typeOf('number');
 });
