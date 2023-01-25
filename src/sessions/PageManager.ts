@@ -229,13 +229,8 @@ export class PageManager {
                     page.parentPageId + '-' + (page.interaction - 1);
             }
 
-            if (page.referrer !== null) {
-                pageViewEvent.referrer = page.referrer;
-
-                if (page.referrerDomain !== null) {
-                    pageViewEvent.referrerDomain = page.referrerDomain;
-                }
-            }
+            pageViewEvent.referrer = document.referrer;
+            pageViewEvent.referrerDomain = this.getDomainFromReferrer();
         }
 
         return pageViewEvent;
@@ -259,11 +254,7 @@ export class PageManager {
         try {
             return new URL(document.referrer).hostname;
         } catch (e) {
-            if (document.referrer === 'localhost') {
-                // Handle special case for localhost
-                return 'localhost';
-            }
-            return '';
+            return document.referrer === 'localhost' ? document.referrer : '';
         }
     }
 }
