@@ -573,3 +573,31 @@ test('when referrer from the DOM is empty then it is recorded as empty in the pa
         (pageManager as any).popstateListener
     );
 });
+
+test('when referrer from the DOM is localhost then referrerDomain is also recorded as localhost', async () => {
+    // Init
+    const config: Config = {
+        ...DEFAULT_CONFIG,
+        allowCookies: true
+    };
+    const pageManager: PageManager = new PageManager(config, record);
+
+    Object.defineProperty(document, 'referrer', {
+        value: 'localhost',
+        configurable: true
+    });
+    // Run
+    pageManager.recordPageView('/console/home');
+
+    // Assert
+    expect(pageManager.getPage()).toMatchObject({
+        pageId: '/console/home',
+        referrer: 'localhost',
+        referrerDomain: 'localhost'
+    });
+
+    window.removeEventListener(
+        'popstate',
+        (pageManager as any).popstateListener
+    );
+});
