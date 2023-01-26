@@ -6,6 +6,7 @@ import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
 import { PluginManager } from '../../plugins/PluginManager';
 import { PageIdFormatEnum } from '../Orchestration';
 import { PageAttributes } from '../../sessions/PageManager';
+import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
 
 global.fetch = jest.fn();
 
@@ -142,6 +143,7 @@ describe('Orchestration tests', () => {
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             allowCookies: false,
             batchLimit: 100,
+            client: INSTALL_MODULE,
             cookieAttributes: {
                 unique: false,
                 domain: window.location.hostname,
@@ -480,5 +482,19 @@ describe('Orchestration tests', () => {
         expect(recordEvent).toHaveBeenCalledTimes(1);
         const actual = recordEvent.mock.calls[0][1];
         expect(actual).toEqual(expected);
+    });
+
+    test('when initialized from CommandQueue then set client to installed by script', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            client: INSTALL_SCRIPT
+        });
+
+        // Assert
+        expect(EventCache).toHaveBeenCalledTimes(1);
+        expect((EventCache as any).mock.calls[0][1]).toHaveProperty(
+            'client',
+            INSTALL_SCRIPT
+        );
     });
 });

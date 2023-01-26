@@ -1,3 +1,4 @@
+import { INSTALL_SCRIPT } from '../utils/constants';
 import { PartialConfig } from '../orchestration/Orchestration';
 
 const IDENTITY_POOL_ID = 'us-west-2:a-b-c-d-e';
@@ -44,6 +45,7 @@ export const mockPartialOtaConfigFile = {
 };
 
 export const mockPartialOtaConfigObject: PartialConfig = {
+    client: INSTALL_SCRIPT,
     endpoint: ENDPOINT,
     identityPoolId: IDENTITY_POOL_ID,
     guestRoleArn: GUEST_ROLE_ARN,
