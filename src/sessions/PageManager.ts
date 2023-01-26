@@ -8,6 +8,8 @@ export type Page = {
     pageId: string;
     interaction: number;
     parentPageId?: string;
+    referrer?: string | null;
+    referrerDomain?: string | null;
     start: number;
 };
 
@@ -129,6 +131,8 @@ export class PageManager {
             pageId,
             parentPageId: resumed.pageId,
             interaction: resumed.interaction + 1,
+            referrer: document.referrer,
+            referrerDomain: this.getDomainFromReferrer(),
             start: Date.now()
         };
         this.resumed = undefined;
@@ -165,6 +169,8 @@ export class PageManager {
             pageId,
             parentPageId: currentPage.pageId,
             interaction: currentPage.interaction + 1,
+            referrer: document.referrer,
+            referrerDomain: this.getDomainFromReferrer(),
             start: startTime
         };
     }
@@ -173,6 +179,8 @@ export class PageManager {
         this.page = {
             pageId,
             interaction: 0,
+            referrer: document.referrer,
+            referrerDomain: this.getDomainFromReferrer(),
             start: Date.now()
         };
     }
@@ -220,6 +228,9 @@ export class PageManager {
                 pageViewEvent.parentPageInteractionId =
                     page.parentPageId + '-' + (page.interaction - 1);
             }
+
+            pageViewEvent.referrer = document.referrer;
+            pageViewEvent.referrerDomain = this.getDomainFromReferrer();
         }
 
         return pageViewEvent;
@@ -234,5 +245,16 @@ export class PageManager {
      */
     private useCookies() {
         return navigator.cookieEnabled && this.config.allowCookies;
+    }
+
+    /*
+    Parses the domain from the referrer, if it is available
+    */
+    private getDomainFromReferrer() {
+        try {
+            return new URL(document.referrer).hostname;
+        } catch (e) {
+            return document.referrer === 'localhost' ? document.referrer : '';
+        }
     }
 }

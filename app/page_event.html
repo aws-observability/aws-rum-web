@@ -71,6 +71,12 @@
                 cwr('recordPageView', '/page_view_two');
             }
 
+            function createReferrer() {
+                Object.defineProperty(document, 'referrer', {
+                    value: 'http://amazon.com/searchresults/1/'
+                });
+            }
+
             function recordPageViewWithPageTagAttribute() {
                 cwr('recordPageView', {
                     pageId: '/page_view_two',
@@ -178,6 +184,9 @@
         </button>
         <button id="doNotRecordPageView" onclick="doNotRecordPageView()">
             Do Not Record Page View
+        </button>
+        <button id="createReferrer" onclick="createReferrer()">
+            Create Referrer
         </button>
         <hr />
         <span id="request"></span>
