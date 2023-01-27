@@ -40,6 +40,10 @@ For example, the config object may look similar to the following:
 | sessionSampleRate | Number | `1` | The proportion of sessions that will be recorded by the web client, specified as a unit interval (a number greater than or equal to 0 and less than or equal to 1). When this field is `0`, no sessions will be recorded. When this field is `1`, all sessions will be recorded. |
 | signing | Boolean | true | When this field is `true`, the web client signs [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html) using [SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).<br/><br/>When this field is `false`, the web client does not sign [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html).<br/><br/>Set this field to `false` only when sending RUM data to CloudWatch RUM through an unauthenticated proxy. This field **must be `true`** when sending RUM data directly to CloudWatch RUM. |
 | telemetries | [Telemetry Config Array](#telemetry-config-array) | `[]` | See [Telemetry Config Array](#telemetry-config-array) |
+| batchLimit | Number | `100` | The maximum number of events that will be sent in one batch of RUM events. |
+| dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are cached before automatically dispatched at this set interval.|
+| eventCacheSize | Number | `200` | The maximum number of events the cache can contain before dropping events. |
+| sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 
 ## CookieAttributes
 
