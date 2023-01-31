@@ -27,18 +27,8 @@ test('when page is re-loaded with cookies enabled, session start is not dispatch
         .click(clear)
         .eval(() => location.reload());
 
-    await t
-        .wait(300)
-        .click(dispatch)
-        .expect(REQUEST_BODY.textContent)
-        .contains('BatchId');
-
-    const jsonB = JSON.parse(await REQUEST_BODY.textContent);
-    const sessionStartEventsB = jsonB.RumEvents.filter(
-        (e) => e.type === SESSION_START_EVENT_TYPE
-    );
-
-    await t.expect(sessionStartEventsB.length).eql(0);
+    // No new events should be recorded, thus no request body
+    await t.wait(300).click(dispatch).expect(REQUEST_BODY.textContent).eql('');
 });
 
 test('when page is loaded with cookies enabled, session start includes meta data', async (t: TestController) => {
