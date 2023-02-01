@@ -1,5 +1,6 @@
 import { CredentialProvider, Credentials } from '@aws-sdk/types';
 import { Plugin } from 'plugins/Plugin';
+import { INSTALL_SCRIPT } from './utils/constants';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 
@@ -134,6 +135,12 @@ export class CommandQueue {
     }
 
     private initCwr(awsRum: AwsRumClientInit) {
+        if (awsRum.c) {
+            awsRum.c.client = INSTALL_SCRIPT;
+        } else {
+            awsRum.c = { client: INSTALL_SCRIPT };
+        }
+
         this.orchestration = new Orchestration(
             awsRum.i,
             awsRum.v,

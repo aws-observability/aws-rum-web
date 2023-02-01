@@ -4,6 +4,7 @@ import * as Utils from '../../test-utils/test-utils';
 import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
+import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
 
 global.fetch = mockFetch;
 const getSession = jest.fn(() => ({
@@ -24,6 +25,12 @@ jest.mock('../../sessions/SessionManager', () => ({
         addSessionAttributes
     }))
 }));
+
+jest.mock('../../../version.json', () => ({
+    version: '2.0.0' // WEB_CLIENT_VERSION
+}));
+
+const WEB_CLIENT_VERSION = '2.0.0';
 
 describe('EventCache tests', () => {
     beforeAll(() => {
@@ -90,14 +97,14 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata: '{"version":"1.0.0"}',
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{}'
             },
             {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT2_SCHEMA,
-                metadata: '{"version":"1.0.0"}',
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{}'
             }
         ];
@@ -168,7 +175,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT2_SCHEMA,
-                metadata: '{"version":"1.0.0"}',
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{}'
             }
         ];
@@ -212,7 +219,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata: '{"version":"1.0.0"}',
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{}'
             }
         ];
@@ -237,8 +244,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata:
-                    '{"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0"}',
+                metadata: `{"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -266,8 +272,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata:
-                    '{"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0"}',
+                metadata: `{"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ];
@@ -331,6 +336,78 @@ describe('EventCache tests', () => {
 
         // Assert
         expect(eventCache.hasEvents()).toBeFalsy();
+    });
+
+    test('recordEvent appends web client version to metadata ', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+
+        // Assert
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('is web client installed using script, append installation method set as script to metadata', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const eventCache: EventCache = new EventCache(
+            Utils.APP_MONITOR_DETAILS,
+            {
+                ...DEFAULT_CONFIG,
+                client: INSTALL_SCRIPT
+            }
+        );
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_SCRIPT}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+
+        // Assert
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('is web client installed using module, append installation method set as module to metadata', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+
+        // Assert
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
     });
 
     test('when session.record is false then event is not recorded', async () => {

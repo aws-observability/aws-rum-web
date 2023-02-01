@@ -25,4 +25,22 @@ then
     aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr.js.map" --body build/assets/cwr.js.map --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$patchUpdate/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$patchUpdate/LICENSE" --body LICENSE --cache-control max-age=7200
+
+    # update versions.csv file
+    fileName="versions.csv"
+
+    # if file not found, returns NoSuchKey error
+    aws s3api get-object --bucket $bucket --key "content/$fileName" $fileName 
+
+    versionsFileDir="./$fileName";
+    scriptVersion="arw-script,$version"
+    moduleVersion="arw-module,$version"
+
+    echo $scriptVersion >> $versionsFileDir
+    echo $moduleVersion >> $versionsFileDir
+
+    updatedVersions=$(<$versionsFileDir)
+    echo "$updatedVersions" | aws s3 cp - s3://$bucket/content/versions.csv
+
+    rm -f $versionsFileDir
 fi

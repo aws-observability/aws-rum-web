@@ -23,6 +23,7 @@ import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
+import { INSTALL_MODULE } from '../utils/constants';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -61,6 +62,7 @@ export type PartialCookieAttributes = {
 export type PartialConfig = {
     allowCookies?: boolean;
     batchLimit?: number;
+    client?: string;
     clientBuilder?: ClientBuilder;
     cookieAttributes?: PartialCookieAttributes;
     disableAutoPageView?: boolean;
@@ -114,6 +116,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
     return {
         allowCookies: false,
         batchLimit: 100,
+        client: INSTALL_MODULE,
         cookieAttributes,
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
@@ -152,6 +155,7 @@ export type CookieAttributes = {
 export type Config = {
     allowCookies: boolean;
     batchLimit: number;
+    client: string;
     clientBuilder?: ClientBuilder;
     cookieAttributes: CookieAttributes;
     sessionAttributes: { [k: string]: string | number | boolean };

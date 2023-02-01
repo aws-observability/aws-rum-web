@@ -9,5 +9,10 @@
         {
             "name": "spec"
         }
-    ]
+    ],
+    "compilerOptions": {
+        "typescript": {
+            "configPath": "./tsconfig.testcafe.json"
+        }
+    }
 }

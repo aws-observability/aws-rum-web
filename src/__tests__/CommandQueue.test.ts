@@ -9,6 +9,7 @@ import {
 } from '../test-utils/mock-remote-config';
 import { Response } from 'node-fetch';
 import * as RemoteConfig from '../remote-config/remote-config';
+import { INSTALL_SCRIPT } from '../utils/constants';
 
 const mockFetch = jest.fn();
 
@@ -340,7 +341,7 @@ describe('CommandQueue tests', () => {
             'application_id',
             '1.0',
             'us-west-2',
-            undefined
+            { client: INSTALL_SCRIPT }
         ]);
     });
 
@@ -413,5 +414,19 @@ describe('CommandQueue tests', () => {
                 p: 'not object'
             })
         ).rejects.toEqual(new Error('IncorrectParametersException'));
+    });
+
+    test('when Orchestration is initialized then indicate installation method was script', async () => {
+        const commandQueue: CommandQueue = getCommandQueue();
+        await commandQueue.init({ ...initArgsWithAppName });
+        expect(Orchestration).toHaveBeenCalled();
+        expect((Orchestration as any).mock.calls[0]).toEqual([
+            'application_id',
+            '1.0',
+            'us-west-2',
+            {
+                client: INSTALL_SCRIPT
+            }
+        ]);
     });
 });

@@ -4,6 +4,13 @@ import * as Utils from '../../test-utils/test-utils';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
+import { INSTALL_MODULE } from '../../utils/constants';
+
+jest.mock('../../../version.json', () => ({
+    version: '2.0.0' // WEB_CLIENT_VERSION
+}));
+
+const WEB_CLIENT_VERSION = '2.0.0';
 
 global.fetch = mockFetch;
 describe('EventCache tests', () => {
@@ -51,6 +58,8 @@ describe('EventCache tests', () => {
         const eventCache: EventCache = Utils.createEventCache(config);
         const expectedMetaData = {
             version: '1.0.0',
+            'aws:client': INSTALL_MODULE,
+            'aws:clientVersion': WEB_CLIENT_VERSION,
             domain: 'us-east-1.console.aws.amazon.com',
             browserLanguage: 'en-US',
             browserName: 'WebKit',
@@ -91,6 +100,8 @@ describe('EventCache tests', () => {
         const eventCache: EventCache = Utils.createEventCache(config);
         const expectedMetaData = {
             version: '1.0.0',
+            'aws:client': INSTALL_MODULE,
+            'aws:clientVersion': WEB_CLIENT_VERSION,
             domain: 'us-east-1.console.aws.amazon.com',
             browserLanguage: 'en-US',
             browserName: 'WebKit',

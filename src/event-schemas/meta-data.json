@@ -63,7 +63,13 @@
         "domain": {
             "type": "string"
         },
-        "pageTags": { "type": "array", "items": { "type": "string" } }
+        "pageTags": { "type": "array", "items": { "type": "string" } },
+        "aws:client": {
+            "type": "string"
+        },
+        "aws:clientVersion": {
+            "type": "string"
+        }
     },
     "patternProperties": {
         "^(?!pageTags).{1,128}$": {

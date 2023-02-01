@@ -50,6 +50,11 @@ jobs:
                   chmod u+x .github/scripts/deploy.sh
                   .github/scripts/deploy.sh ${{ secrets.BUCKET }}
 
+            - name: Validate versions.csv file
+              run: |
+                  chmod u+x .github/scripts/validate_versions.sh
+                  .github/scripts/validate_versions.sh ${{ secrets.BUCKET }}
+
             - name: Fetch AWS Credentials for Smoke Test
               run: |
                   export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
