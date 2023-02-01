@@ -48,10 +48,11 @@ export class PageManager {
     private config: Config;
     private record: RecordEvent;
     private page: Page | undefined;
-    private resumed: Page | undefined;
+    private resumed: boolean;
     private attributes: Attributes | undefined;
     private virtualPageLoadTimer: VirtualPageLoadTimer;
     private TIMEOUT = 1000;
+    private timeOnParentPage: number | undefined;
 
     /**
      * A flag which keeps track of whether or not cookies have been enabled.
@@ -65,7 +66,7 @@ export class PageManager {
         this.config = config;
         this.record = record;
         this.page = undefined;
-        this.resumed = undefined;
+        this.resumed = false;
         this.recordInteraction = false;
         this.virtualPageLoadTimer = new VirtualPageLoadTimer(
             this,
@@ -82,13 +83,12 @@ export class PageManager {
         return this.attributes;
     }
 
-    public resumeSession(pageId: string, interaction: number) {
+    public resumeSession(page: Page | undefined) {
         this.recordInteraction = true;
-        this.resumed = {
-            pageId,
-            interaction,
-            start: 0
-        };
+        if (page) {
+            this.page = page;
+            this.resumed = true;
+        }
     }
 
     public recordPageView(payload: string | PageAttributes) {
@@ -103,9 +103,7 @@ export class PageManager {
             this.recordInteraction = true;
         }
 
-        if (!this.page && this.resumed) {
-            this.createResumedPage(pageId, this.resumed);
-        } else if (!this.page) {
+        if (!this.page) {
             this.createLandingPage(pageId);
         } else if (this.page.pageId !== pageId) {
             this.createNextPage(this.page, pageId);
@@ -124,18 +122,6 @@ export class PageManager {
 
         // The SessionManager will update its cookie with the new page
         this.recordPageViewEvent(this.page as Page);
-    }
-
-    private createResumedPage(pageId: string, resumed: Page) {
-        this.page = {
-            pageId,
-            parentPageId: resumed.pageId,
-            interaction: resumed.interaction + 1,
-            referrer: document.referrer,
-            referrerDomain: this.getDomainFromReferrer(),
-            start: Date.now()
-        };
-        this.resumed = undefined;
     }
 
     private createNextPage(currentPage: Page, pageId: string) {
@@ -161,10 +147,14 @@ export class PageManager {
         //
         // We do not believe that case (2) has a high risk of skewing route
         // change timing, and therefore ignore case (2).
-        if (startTime - interactionTime <= this.TIMEOUT) {
+        if (!this.resumed && startTime - interactionTime <= this.TIMEOUT) {
             startTime = interactionTime;
             this.virtualPageLoadTimer.startTiming();
         }
+
+        this.timeOnParentPage = startTime - currentPage.start;
+        this.resumed = false;
+
         this.page = {
             pageId,
             parentPageId: currentPage.pageId,
@@ -227,6 +217,7 @@ export class PageManager {
             if (page.parentPageId !== undefined) {
                 pageViewEvent.parentPageInteractionId =
                     page.parentPageId + '-' + (page.interaction - 1);
+                pageViewEvent.timeOnParentPage = this.timeOnParentPage;
             }
 
             pageViewEvent.referrer = document.referrer;

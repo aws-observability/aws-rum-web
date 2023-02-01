@@ -12,6 +12,9 @@ const recordPageViewWithCustomPageAttributes: Selector = Selector(
 const dispatch: Selector = Selector(`#dispatch`);
 const clear: Selector = Selector(`#clearRequestResponse`);
 const doNotRecordPageView = Selector(`#doNotRecordPageView`);
+const pushStateOne = '#pushStateOneToHistory';
+const pushStateTwo = '#pushStateTwoToHistory';
+const back = '#back';
 const createReferrer: Selector = Selector(`#createReferrer`);
 
 fixture('PageViewEventPlugin').page('http://localhost:8080/page_event.html');
@@ -206,6 +209,35 @@ test('when custom page attributes are set when manually recording page view even
             customPageAttributeNumber: 1,
             customPageAttributeBoolean: true
         });
+});
+
+test('when previous page views occur, time spent is recorded in the subsequent page view event', async (t: TestController) => {
+    // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
+    // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
+
+    await t
+        .wait(300)
+        .click(pushStateOne)
+        .click(pushStateTwo)
+        .click(back)
+        .click(back)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const requestBody = JSON.parse(await REQUEST_BODY.textContent);
+
+    const pages = requestBody.RumEvents.filter(
+        (e) => e.type === PAGE_VIEW_EVENT_TYPE
+    ).map((e) => JSON.parse(e.details));
+
+    await t
+        .expect(pages[0]['timeOnParentPage'])
+        .typeOf('undefined')
+        .expect(pages[1]['timeOnParentPage'])
+        .gte(0)
+        .expect(pages[2]['timeOnParentPage'])
+        .gte(0);
 });
 
 test('when referrer exists, then page view event details records it', async (t: TestController) => {
