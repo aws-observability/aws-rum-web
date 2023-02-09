@@ -7,11 +7,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Create a session ID when cookies are disabled ([#314](https://github.com/aws-observability/aws-rum-web/issues/314)) ([6943587](https://github.com/aws-observability/aws-rum-web/commit/6943587259b8d7623742656199dc26b26b5bcd5d))
-* Increase stack trace length ([#313](https://github.com/aws-observability/aws-rum-web/issues/313)) ([28e34c5](https://github.com/aws-observability/aws-rum-web/commit/28e34c5ad541e1fc1e0b12c1a937289df5911791))
-* referrer ([#327](https://github.com/aws-observability/aws-rum-web/issues/327)) ([a414c92](https://github.com/aws-observability/aws-rum-web/commit/a414c9265b37f9eafe7ae6475fe71357beadbcfc))
-* webclient version and installation method ([#321](https://github.com/aws-observability/aws-rum-web/issues/321)) ([97c543a](https://github.com/aws-observability/aws-rum-web/commit/97c543a13d845bb4c2683c2b6b85ac97237fa410))
-* Time Spent On Page ([#341](https://github.com/aws-observability/aws-rum-web/pull/341))([d1c3b17](https://github.com/aws-observability/aws-rum-web/commit/d1c3b176db0d070faa44cd547c42ed907167d51b))
+* Create a session ID when cookies are disabled, in order to link all events in a single page together([#314](https://github.com/aws-observability/aws-rum-web/issues/314)) ([6943587](https://github.com/aws-observability/aws-rum-web/commit/6943587259b8d7623742656199dc26b26b5bcd5d))
+* Increase default stack trace length from 200 to 1000([#313](https://github.com/aws-observability/aws-rum-web/issues/313)) ([28e34c5](https://github.com/aws-observability/aws-rum-web/commit/28e34c5ad541e1fc1e0b12c1a937289df5911791))
+* Record referrer and referrer's domain in the event details of a page-view-event ([#327](https://github.com/aws-observability/aws-rum-web/issues/327)) ([a414c92](https://github.com/aws-observability/aws-rum-web/commit/a414c9265b37f9eafe7ae6475fe71357beadbcfc))
+* Record the webclient version and web client installation method in event metadata([#321](https://github.com/aws-observability/aws-rum-web/issues/321)) ([97c543a](https://github.com/aws-observability/aws-rum-web/commit/97c543a13d845bb4c2683c2b6b85ac97237fa410))
+* Record time spent on a page in the event details of a page-view-event ( ([#341](https://github.com/aws-observability/aws-rum-web/pull/341))([d1c3b17](https://github.com/aws-observability/aws-rum-web/commit/d1c3b176db0d070faa44cd547c42ed907167d51b))
 
 ### Bug Fixes
 
