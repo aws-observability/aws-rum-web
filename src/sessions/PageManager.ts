@@ -50,7 +50,7 @@ export class PageManager {
     private page: Page | undefined;
     private resumed: boolean;
     private attributes: Attributes | undefined;
-    private virtualPageLoadTimer: VirtualPageLoadTimer;
+    private virtualPageLoadTimer?: VirtualPageLoadTimer;
     private TIMEOUT = 1000;
     private timeOnParentPage: number | undefined;
 
@@ -68,11 +68,13 @@ export class PageManager {
         this.page = undefined;
         this.resumed = false;
         this.recordInteraction = false;
-        this.virtualPageLoadTimer = new VirtualPageLoadTimer(
-            this,
-            config,
-            record
-        );
+        if (config.enableRouteChangeTiming) {
+            this.virtualPageLoadTimer = new VirtualPageLoadTimer(
+                this,
+                config,
+                record
+            );
+        }
     }
 
     public getPage(): Page | undefined {
@@ -126,30 +128,34 @@ export class PageManager {
 
     private createNextPage(currentPage: Page, pageId: string) {
         let startTime = Date.now();
-        const interactionTime = this.virtualPageLoadTimer.latestInteractionTime;
 
-        // The latest interaction time (latest) is not guaranteed to be the
-        // interaction that triggered the route change (actual). There are two
-        // cases to consider:
-        //
-        // 1. Latest is older than actual. This can happen if the user navigates
-        // with the browser back/forward button, or if the interaction is not a
-        // click/keyup event.
-        //
-        // 2. Latest is newer than actual. This can happen if the user clicks or
-        // types in the time between actual and when recordPageView is called.
-        //
-        // We believe that case (1) has a high risk of skewing route change
-        // timing metrics because (a) browser navigation is common and (b) there
-        // is no limit on when the latest interaction may have occurred. To
-        // help mitigate this, if the route change is already longer than 1000ms,
-        // then we do not bother timing the route change.
-        //
-        // We do not believe that case (2) has a high risk of skewing route
-        // change timing, and therefore ignore case (2).
-        if (!this.resumed && startTime - interactionTime <= this.TIMEOUT) {
-            startTime = interactionTime;
-            this.virtualPageLoadTimer.startTiming();
+        if (this.virtualPageLoadTimer) {
+            const interactionTime =
+                this.virtualPageLoadTimer.latestInteractionTime;
+
+            // The latest interaction time (latest) is not guaranteed to be the
+            // interaction that triggered the route change (actual). There are two
+            // cases to consider:
+            //
+            // 1. Latest is older than actual. This can happen if the user navigates
+            // with the browser back/forward button, or if the interaction is not a
+            // click/keyup event.
+            //
+            // 2. Latest is newer than actual. This can happen if the user clicks or
+            // types in the time between actual and when recordPageView is called.
+            //
+            // We believe that case (1) has a high risk of skewing route change
+            // timing metrics because (a) browser navigation is common and (b) there
+            // is no limit on when the latest interaction may have occurred. To
+            // help mitigate this, if the route change is already longer than 1000ms,
+            // then we do not bother timing the route change.
+            //
+            // We do not believe that case (2) has a high risk of skewing route
+            // change timing, and therefore ignore case (2).
+            if (!this.resumed && startTime - interactionTime <= this.TIMEOUT) {
+                startTime = interactionTime;
+                this.virtualPageLoadTimer.startTiming();
+            }
         }
 
         this.timeOnParentPage = startTime - currentPage.start;
