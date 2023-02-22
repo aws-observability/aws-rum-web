@@ -29,7 +29,7 @@
         "build:dist:es": "tsc --project ./tsconfig.es.json",
         "build:dist:cjs": "tsc --project ./tsconfig.cjs.json",
         "build:assets": "npm-run-all -p build:dist:* build:webpack:prod",
-        "build": "npm-run-all -s build:schemas build:version build:assets",
+        "build": "npm-run-all -s build:schemas build:assets",
         "build:dev": "npm-run-all -s build build:webpack:dev",
         "build:version": "bash update-version.sh",
         "release": "npm run build",
