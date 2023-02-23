@@ -21,8 +21,8 @@ For example, the config object may look similar to the following:
 | Field Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | allowCookies | Boolean | `false` | Enable the web client to set and read two cookies: a session cookie named `cwr_s` and a user cookie named `cwr_u`.<br/><br/>`cwr_s` stores session data including an anonymous session ID (uuid v4) created by the web client. This allows CloudWatch RUM to compute sessionized metrics like errors per session.<br/><br/>`cwr_u` stores an anonymous user ID (uuid v4) created by the web client. This allows CloudWatch RUM to count return visitors.<br/><br/>`true`: the web client will use cookies<br/>`false`: the web client will not use cookies. |
-| cookieAttributes | [CookieAttributes](#cookieattributes) | `{ domain: window.location.hostname, path: '/', sameSite: 'Strict', secure: true } ` | Cookie attributes are applied to all cookies stored by the web client, including `cwr_s` and `cwr_u`. |
-| sessionAttributes | [MetadataAttributes](#metadataattributes) | `{ color: 'blue' }` | Session attributes will be added the metadata of all events in the session.|
+| cookieAttributes | [CookieAttributes](#cookieattributes) | `{ domain: window.location.hostname, path: '/', sameSite: 'Strict', secure: true, unique: false } ` | Cookie attributes are applied to all cookies stored by the web client, including `cwr_s` and `cwr_u`. |
+| sessionAttributes | [MetadataAttributes](#metadataattributes) | `{}` | Session attributes will be added the metadata of all events in the session.|
 | disableAutoPageView | Boolean | `false` | When this field is `false`, the web client will automatically record page views.<br/><br/>By default, the web client records page views when (1) the page first loads and (2) the browser's [history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) is called. The page ID is `window.location.pathname`.<br/><br/>In some cases, the web client's instrumentation will not record the desired page ID. In this case, the web client's page view automation must be disabled using the `disableAutoPageView` configuration, and the application must be instrumented to record page views using the `recordPageView` command. |
 | enableRumClient | Boolean | `true` | When this field is `true`, the web client will record and dispatch RUM events. |
 | enableXRay | Boolean | `false` | When this field is `true` **and** the `http` telemetry is used, the web client will record X-Ray traces for HTTP requests.<br/><br/>See the [HTTP telemetry configuration](#http) for more information, including how to connect client-side and server-side traces. |
@@ -36,10 +36,14 @@ For example, the config object may look similar to the following:
 | recordResourceUrl | Boolean | `true` | When this field is `false`, the web client will not record the URLs of resources downloaded by your application.<br/><br/> Some types of resources (e.g., profile images) may be referenced by URLs which contain PII. If this applies to your application, you must set this field to `false` to comply with CloudWatch RUM's shared responsibility model. |
 | routeChangeComplete | Number | `100` | The interval (in milliseconds) for which when no HTTP or DOM activity has been observed, an active route change is marked as complete. Note that `routeChangeComplete` must be strictly less than `routeChangeTimeout`. |
 | routeChangeTimeout | Number | `10000` | The maximum time (in milliseconds) a route change may take. If a route change does not complete before the timeout, no timing data is recorded for the route change. If your application's route changes may take longer than the default timeout (i.e., more than 10 second), you should increase the value of the timeout. |
-| sessionEventLimit | Number | `200` | The maximum number of events to record during a single session. |
+| sessionEventLimit | Number | `200` | The maximum number of events to record during a single session. If set to `0`, the limit is removed and all events in the session will be recorded. |
 | sessionSampleRate | Number | `1` | The proportion of sessions that will be recorded by the web client, specified as a unit interval (a number greater than or equal to 0 and less than or equal to 1). When this field is `0`, no sessions will be recorded. When this field is `1`, all sessions will be recorded. |
 | signing | Boolean | true | When this field is `true`, the web client signs [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html) using [SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).<br/><br/>When this field is `false`, the web client does not sign [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html).<br/><br/>Set this field to `false` only when sending RUM data to CloudWatch RUM through an unauthenticated proxy. This field **must be `true`** when sending RUM data directly to CloudWatch RUM. |
 | telemetries | [Telemetry Config Array](#telemetry-config-array) | `[]` | See [Telemetry Config Array](#telemetry-config-array) |
+| batchLimit | Number | `100` | The maximum number of events that will be sent in one batch of RUM events. |
+| dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are first cached and then automatically dispatched at this set interval.|
+| eventCacheSize | Number | `200` | The maximum number of events the cache can contain before dropping events. |
+| sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 
 ## CookieAttributes
 
@@ -49,7 +53,7 @@ For example, the config object may look similar to the following:
 | path | String | `/` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | sameSite | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | secure | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
-| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is true `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
+| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
 
 ## MetadataAttributes
 You may add up to 10 custom attributes per event. Custom attributes are
