@@ -25,7 +25,9 @@ const builtInAttributes = [
     'countryCode',
     'subdivisionCode',
     'domain',
-    'pageTags'
+    'pageTags',
+    'aws:client',
+    'aws:clientVersion'
 ];
 
 /** Returns filtered events by type */
