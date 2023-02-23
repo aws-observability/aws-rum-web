@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/aws-observability/aws-rum-web/compare/v1.12.0...v1.13.0) (2023-02-23)
+
+
+### Features
+
+* Create a session ID when cookies are disabled, in order to link all events in a single page together([#314](https://github.com/aws-observability/aws-rum-web/issues/314)) ([6943587](https://github.com/aws-observability/aws-rum-web/commit/6943587259b8d7623742656199dc26b26b5bcd5d))
+* Increase default stack trace length from 200 to 1000([#313](https://github.com/aws-observability/aws-rum-web/issues/313)) ([28e34c5](https://github.com/aws-observability/aws-rum-web/commit/28e34c5ad541e1fc1e0b12c1a937289df5911791))
+* Record referrer and referrer's domain in the event details of a page-view-event ([#327](https://github.com/aws-observability/aws-rum-web/issues/327)) ([a414c92](https://github.com/aws-observability/aws-rum-web/commit/a414c9265b37f9eafe7ae6475fe71357beadbcfc))
+* Record the webclient version and web client installation method in event metadata([#321](https://github.com/aws-observability/aws-rum-web/issues/321)) ([97c543a](https://github.com/aws-observability/aws-rum-web/commit/97c543a13d845bb4c2683c2b6b85ac97237fa410))
+* Record time spent on a page in the event details of a page-view-event ( ([#341](https://github.com/aws-observability/aws-rum-web/pull/341))([d1c3b17](https://github.com/aws-observability/aws-rum-web/commit/d1c3b176db0d070faa44cd547c42ed907167d51b))
+
+### Bug Fixes
+
+* Add type to recordJsErrorEvent parameter ([#339](https://github.com/aws-observability/aws-rum-web/issues/339)) ([2ee6ffa](https://github.com/aws-observability/aws-rum-web/commit/2ee6ffa115f448e5f43b18b6af6f58750c35e544))
+
+
 ## [1.12.0](https://github.com/aws-observability/aws-rum-web/compare/v1.11.0...v1.12.0) (2022-11-17)
 
 

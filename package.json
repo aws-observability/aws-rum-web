@@ -1,6 +1,6 @@
 {
     "name": "aws-rum-web",
-    "version": "1.12.0",
+    "version": "1.13.0",
     "sideEffects": false,
     "description": "The Amazon CloudWatch RUM web client.",
     "license": "Apache-2.0",
