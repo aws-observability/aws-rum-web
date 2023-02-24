@@ -40,9 +40,6 @@ jobs:
             - name: Run Linter
               run: npm run lint:errors
 
-            - name: Update version.json
-              run: npm run build:version
-
             - name: Run Unit Tests
               run: npm run test
 
