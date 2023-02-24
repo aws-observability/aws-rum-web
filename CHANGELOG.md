@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.1](https://github.com/aws-observability/aws-rum-web/compare/v1.13.0...v1.13.1) (2022-02-24)
+
+
+### Bug Fixes
+
+* Update version during release workflow only ([#359](https://github.com/aws-observability/aws-rum-web/pull/359)) ([f6b7bd7](https://github.com/aws-observability/aws-rum-web/commit/f6b7bd744ec9e8413b93a2069c40b815e4ddc9ab))
+
+* Transpile @aws-sdk to ES5 to gracefully close browsers at end of life ([#363](https://github.com/aws-observability/aws-rum-web/pull/363)) ([f63150d](https://github.com/aws-observability/aws-rum-web/commit/f63150df6ed6a9d8a877ccfe8e160c5a8d9873ec))
+
 ## [1.13.0](https://github.com/aws-observability/aws-rum-web/compare/v1.12.0...v1.13.0) (2023-02-23)
 
 
