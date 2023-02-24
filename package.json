@@ -62,6 +62,7 @@
     },
     "devDependencies": {
         "@aws-sdk/client-rum": "^3.76.0",
+        "@babel/plugin-transform-modules-commonjs": "^7.21.2",
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.20.2",
         "@playwright/test": "^1.21.1",
@@ -83,8 +84,8 @@
         "eslint-plugin-jsdoc": "^39.3.6",
         "eslint-plugin-prefer-arrow": "^1.2.3",
         "eslint-plugin-react": "^7.31.8",
-        "http-server": "^14.1.1",
         "generate-json-webpack-plugin": "^2.0.0",
+        "http-server": "^14.1.1",
         "husky": "^8.0.1",
         "jest": "^29.3.1",
         "jest-date-mock": "^1.0.8",
@@ -145,6 +146,7 @@
         ]
     },
     "browserslist": [
-        "defaults"
+        "defaults",
+        "ie 11"
     ]
 }
