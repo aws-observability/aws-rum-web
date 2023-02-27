@@ -67,6 +67,7 @@ export type PartialConfig = {
     cookieAttributes?: PartialCookieAttributes;
     disableAutoPageView?: boolean;
     dispatchInterval?: number;
+    enableRouteChangeTiming?: boolean;
     enableRumClient?: boolean;
     enableXRay?: boolean;
     endpoint?: string;
@@ -120,6 +121,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         cookieAttributes,
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
+        enableRouteChangeTiming: true,
         enableRumClient: true,
         enableXRay: false,
         endpoint: DEFAULT_ENDPOINT,
@@ -161,6 +163,7 @@ export type Config = {
     sessionAttributes: { [k: string]: string | number | boolean };
     disableAutoPageView: boolean;
     dispatchInterval: number;
+    enableRouteChangeTiming: boolean;
     enableRumClient: boolean;
     enableXRay: boolean;
     endpoint: string;

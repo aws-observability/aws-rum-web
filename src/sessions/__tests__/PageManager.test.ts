@@ -681,118 +681,169 @@ describe('PageManager tests', () => {
         // Assert
         expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
         expect(record.mock.calls[1][1].timeOnParentPage).toBeUndefined();
-    });
-});
 
-test('when complete referrer is available from the DOM then is recorded in page view event', async () => {
-    // Init
-    const config: Config = {
-        ...DEFAULT_CONFIG,
-        allowCookies: true
-    };
-    const pageManager: PageManager = new PageManager(config, record);
-
-    Object.defineProperty(document, 'referrer', {
-        value: 'http://abc.com/consoles',
-        configurable: true
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
     });
 
-    // Run
-    pageManager.recordPageView('/console/home');
+    test('when complete referrer is available from the DOM then is recorded in page view event', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
 
-    // Assert
-    expect(pageManager.getPage()).toMatchObject({
-        referrer: 'http://abc.com/consoles',
-        referrerDomain: 'abc.com',
-        pageId: '/console/home'
+        Object.defineProperty(document, 'referrer', {
+            value: 'http://abc.com/consoles',
+            configurable: true
+        });
+
+        // Run
+        pageManager.recordPageView('/console/home');
+
+        // Assert
+        expect(pageManager.getPage()).toMatchObject({
+            referrer: 'http://abc.com/consoles',
+            referrerDomain: 'abc.com',
+            pageId: '/console/home'
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
     });
 
-    window.removeEventListener(
-        'popstate',
-        (pageManager as any).popstateListener
-    );
-});
+    test('when only domain level referrer is available from the DOM then is recorded in page view event', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
 
-test('when only domain level referrer is available from the DOM then is recorded in page view event', async () => {
-    // Init
-    const config: Config = {
-        ...DEFAULT_CONFIG,
-        allowCookies: true
-    };
-    const pageManager: PageManager = new PageManager(config, record);
+        Object.defineProperty(document, 'referrer', {
+            value: 'http://abc.com',
+            configurable: true
+        });
+        // Run
+        pageManager.recordPageView('/console/home');
 
-    Object.defineProperty(document, 'referrer', {
-        value: 'http://abc.com',
-        configurable: true
-    });
-    // Run
-    pageManager.recordPageView('/console/home');
+        // Assert
+        expect(pageManager.getPage()).toMatchObject({
+            referrer: 'http://abc.com',
+            referrerDomain: 'abc.com',
+            pageId: '/console/home'
+        });
 
-    // Assert
-    expect(pageManager.getPage()).toMatchObject({
-        referrer: 'http://abc.com',
-        referrerDomain: 'abc.com',
-        pageId: '/console/home'
-    });
-
-    window.removeEventListener(
-        'popstate',
-        (pageManager as any).popstateListener
-    );
-});
-
-test('when referrer from the DOM is empty then it is recorded as empty in the page view event', async () => {
-    // Init
-    const config: Config = {
-        ...DEFAULT_CONFIG,
-        allowCookies: true
-    };
-    const pageManager: PageManager = new PageManager(config, record);
-
-    Object.defineProperty(document, 'referrer', {
-        value: '',
-        configurable: true
-    });
-    // Run
-    pageManager.recordPageView('/console/home');
-
-    // Assert
-    expect(pageManager.getPage()).toMatchObject({
-        pageId: '/console/home',
-        referrer: '',
-        referrerDomain: ''
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
     });
 
-    window.removeEventListener(
-        'popstate',
-        (pageManager as any).popstateListener
-    );
-});
+    test('when referrer from the DOM is empty then it is recorded as empty in the page view event', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
 
-test('when referrer from the DOM is localhost then referrerDomain is also recorded as localhost', async () => {
-    // Init
-    const config: Config = {
-        ...DEFAULT_CONFIG,
-        allowCookies: true
-    };
-    const pageManager: PageManager = new PageManager(config, record);
+        Object.defineProperty(document, 'referrer', {
+            value: '',
+            configurable: true
+        });
+        // Run
+        pageManager.recordPageView('/console/home');
 
-    Object.defineProperty(document, 'referrer', {
-        value: 'localhost',
-        configurable: true
+        // Assert
+        expect(pageManager.getPage()).toMatchObject({
+            pageId: '/console/home',
+            referrer: '',
+            referrerDomain: ''
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
     });
-    // Run
-    pageManager.recordPageView('/console/home');
 
-    // Assert
-    expect(pageManager.getPage()).toMatchObject({
-        pageId: '/console/home',
-        referrer: 'localhost',
-        referrerDomain: 'localhost'
+    test('when referrer from the DOM is localhost then referrerDomain is also recorded as localhost', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+
+        Object.defineProperty(document, 'referrer', {
+            value: 'localhost',
+            configurable: true
+        });
+        // Run
+        pageManager.recordPageView('/console/home');
+
+        // Assert
+        expect(pageManager.getPage()).toMatchObject({
+            pageId: '/console/home',
+            referrer: 'localhost',
+            referrerDomain: 'localhost'
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
     });
 
-    window.removeEventListener(
-        'popstate',
-        (pageManager as any).popstateListener
-    );
+    test('when enableRouteChangeTiming is false then VirtualPageLoadTimer is not initialized', async () => {
+        // Init
+        const config: Config = {
+            ...DEFAULT_CONFIG,
+            enableRouteChangeTiming: false
+        };
+        const pageManager: PageManager = new PageManager(config, record);
+        const helper = pageManager['virtualPageLoadTimer'];
+
+        // Assert
+        expect(helper).toBeUndefined();
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when VirtualPageLoadTimer is not initialized then recordPageView records a page view event.', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true,
+                enableRouteChangeTiming: false
+            },
+            record
+        );
+
+        // Run
+        pageManager.recordPageView('/console/home');
+        pageManager.recordPageView('/console/about');
+
+        // Assert
+        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            pageId: '/console/about',
+            interaction: 1
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
 });

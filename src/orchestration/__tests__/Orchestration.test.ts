@@ -155,6 +155,7 @@ describe('Orchestration tests', () => {
             telemetries: [],
             disableAutoPageView: false,
             dispatchInterval: 5000,
+            enableRouteChangeTiming: true,
             enableXRay: false,
             endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
             endpointUrl: new URL(
