@@ -120,6 +120,7 @@
         "@aws-crypto/sha256-js": "^2.0.2",
         "@aws-sdk/fetch-http-handler": "^3.36.0",
         "@aws-sdk/protocol-http": "^3.36.0",
+        "@aws-sdk/querystring-builder": "^3.36.0",
         "@aws-sdk/signature-v4": "^3.36.0",
         "@aws-sdk/util-hex-encoding": "^3.36.0",
         "@babel/runtime": "^7.16.0",
