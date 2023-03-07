@@ -39,12 +39,6 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-node-
 
-            - name: Update Version
-              id: update-version
-              run: |
-                  chmod u+x .github/scripts/update-version.sh
-                  .github/scripts/update-version.sh
-
             - name: Build Release
               run: |
                   npm ci

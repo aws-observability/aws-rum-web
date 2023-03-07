@@ -6,9 +6,7 @@
         "module": "esnext",
         "moduleResolution": "node",
         "strict": true,
-        "target": "es5",
-        "resolveJsonModule": true,
-        "allowSyntheticDefaultImports": true
+        "target": "es5"
     },
     "include": ["src/**/*"]
 }
