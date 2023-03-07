@@ -8,9 +8,7 @@
         "noEmit": true,
         "strict": false,
         "target": "es2018",
-        "types": ["node", "jest", "@testing-library/jest-dom"],
-        "resolveJsonModule": true,
-        "allowSyntheticDefaultImports": true
+        "types": ["node", "jest", "@testing-library/jest-dom"]
     },
     "include": ["types", "**/__tests__/**/*.ts", "**/__mocks__/**/*.ts"]
 }
