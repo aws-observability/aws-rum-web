@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.3](https://github.com/aws-observability/aws-rum-web/compare/v1.13.2...v1.13.3) (2023-03-07)
+
+
+### Bug Fixes
+
+* Update entry point in package.json ([#377](https://github.com/aws-observability/aws-rum-web/issues/377)) ([#379](https://github.com/aws-observability/aws-rum-web/issues/379)) ([5d87e46](https://github.com/aws-observability/aws-rum-web/commit/5d87e46bc7452398f6288e4d1880059c77e35f92))
 
 ### [1.13.2](https://github.com/aws-observability/aws-rum-web/compare/v1.13.1...v1.13.2) (2022-02-25)
 
