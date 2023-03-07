@@ -5,8 +5,8 @@
     "description": "The Amazon CloudWatch RUM web client.",
     "license": "Apache-2.0",
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
-    "main": "dist/cjs/index.js",
-    "module": "dist/es/index.js",
+    "main": "dist/cjs/src/index.js",
+    "module": "dist/es/src/index.js",
     "files": [
         "dist/",
         "CHANGELOG.md",
