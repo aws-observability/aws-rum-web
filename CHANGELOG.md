@@ -7,16 +7,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Create a session ID when cookies are disabled ([#314](https://github.com/aws-observability/aws-rum-web/issues/314)) ([6943587](https://github.com/aws-observability/aws-rum-web/commit/6943587259b8d7623742656199dc26b26b5bcd5d))
-* Increase stack trace length ([#313](https://github.com/aws-observability/aws-rum-web/issues/313)) ([28e34c5](https://github.com/aws-observability/aws-rum-web/commit/28e34c5ad541e1fc1e0b12c1a937289df5911791))
-* referrer ([#327](https://github.com/aws-observability/aws-rum-web/issues/327)) ([a414c92](https://github.com/aws-observability/aws-rum-web/commit/a414c9265b37f9eafe7ae6475fe71357beadbcfc))
-* webclient version and installation method ([#321](https://github.com/aws-observability/aws-rum-web/issues/321)) ([97c543a](https://github.com/aws-observability/aws-rum-web/commit/97c543a13d845bb4c2683c2b6b85ac97237fa410))
-
 
 ### Bug Fixes
 
 * Add @aws-sdk/querystring-builder as a dependency. ([#370](https://github.com/aws-observability/aws-rum-web/issues/370)) ([42662eb](https://github.com/aws-observability/aws-rum-web/commit/42662eb98695c027c3eef3ec6547527240486ac5))
-* Add type to recordJsErrorEvent parameter ([#339](https://github.com/aws-observability/aws-rum-web/issues/339)) ([2ee6ffa](https://github.com/aws-observability/aws-rum-web/commit/2ee6ffa115f448e5f43b18b6af6f58750c35e544))
 * Export PageAttributes type. ([#369](https://github.com/aws-observability/aws-rum-web/issues/369)) ([4b78dc1](https://github.com/aws-observability/aws-rum-web/commit/4b78dc14799151422bee07f6263c1aaa098354f6))
 * Transpile [@aws-sdk](https://github.com/aws-sdk) to ES5. ([#363](https://github.com/aws-observability/aws-rum-web/issues/363)) ([f63150d](https://github.com/aws-observability/aws-rum-web/commit/f63150df6ed6a9d8a877ccfe8e160c5a8d9873ec))
 * Update entry point in package.json ([#377](https://github.com/aws-observability/aws-rum-web/issues/377)) ([7877e86](https://github.com/aws-observability/aws-rum-web/commit/7877e86ae4fd2f74cac8d603a59272eec015a852))
