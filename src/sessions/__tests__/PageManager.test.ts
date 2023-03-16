@@ -233,6 +233,54 @@ describe('PageManager tests', () => {
         // Assert
         expect(pageManager.getPage()?.interaction).toEqual(1);
 
+        // Assert
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/console/home',
+            interaction: 1
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when session resumes and page is manually recorded with custom page attributes then custom page attributes are restored', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        pageManager.resumeSession({
+            pageId: '/console/home',
+            interaction: 1,
+            start: Date.now()
+        });
+
+        pageManager.recordPageView({
+            pageId: '/console/home',
+            pageTags: ['pageGroup1'],
+            pageAttributes: {
+                customPageAttributeString: 'customPageAttributeValue',
+                customPageAttributeNumber: 1,
+                customPageAttributeBoolean: true
+            }
+        });
+
+        // Assert
+        expect(record.mock.calls).toHaveLength(0); // No event emitted, but attributes restored in PageManager state
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/console/home',
+            pageTags: ['pageGroup1'],
+            customPageAttributeString: 'customPageAttributeValue',
+            customPageAttributeNumber: 1,
+            customPageAttributeBoolean: true
+        });
+
         window.removeEventListener(
             'popstate',
             (pageManager as any).popstateListener
