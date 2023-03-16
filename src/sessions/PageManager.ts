@@ -107,14 +107,14 @@ export class PageManager {
             this.createLandingPage(pageId);
         } else if (this.page.pageId !== pageId) {
             this.createNextPage(this.page, pageId);
+        } else if (this.resumed) {
+            // Update attributes state in PageManager for event metadata
+            this.collectAttributes(
+                this.page as Page,
+                typeof payload === 'object' ? payload : undefined
+            );
+            return;
         } else {
-            // If its a resumed or reloaded page, update attributes state in PageManager for event metadata
-            if (this.resumed) {
-                this.collectAttributes(
-                    this.page as Page,
-                    typeof payload === 'object' ? payload : undefined
-                );
-            }
             // The view has not changed.
             return;
         }
