@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.5]((https://github.com/aws-observability/aws-rum-web/compare/v1.13.4...v1.13.5)) (2023-03-17)
+
+### Bug Fixes
+
+
+* Handle missing pageId in metadata when page is resumed ([#388](https://github.com/aws-observability/aws-rum-web/issues/388)) ([49678a6](https://github.com/aws-observability/aws-rum-web/commit/49678a6812cca9af3105a10b693e413d4b7da166))
+
+
 ### [1.13.4](https://github.com/aws-observability/aws-rum-web/compare/v1.13.2...v1.13.4) (2023-03-07)
 
 
