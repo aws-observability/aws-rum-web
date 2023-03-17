@@ -1,0 +1,51 @@
+name: AWS RUM CDN Release
+
+on:
+    workflow_dispatch:
+
+jobs:
+    publish_to_cdn:
+        name: Publish New Release
+        runs-on: ubuntu-latest
+        environment: cdn-prod-release
+        permissions: write-all
+        steps:
+            - name: Checkout AWS RUM Web Client Repository
+              uses: actions/checkout@v3
+
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '16.x'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Fetch AWS Credentials for Deployment
+              run: |
+                  export AWS_ROLE_ARN=${{ secrets.ROLE }}
+                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+                  export AWS_DEFAULT_REGION=us-east-1
+
+                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+
+            - name: Cache NPM modules
+              uses: actions/cache@v3
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
+            - name: Build Release
+              run: |
+                  npm ci
+                  npm run release
+
+            - name: Publish to CloudWatch RUM CDN
+              id: publish-cdn
+              run: |
+                  chmod u+x .github/scripts/deploy.sh
+                  .github/scripts/deploy.sh ${{ secrets.BUCKET }}

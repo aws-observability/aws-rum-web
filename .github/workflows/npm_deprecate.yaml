@@ -1,0 +1,29 @@
+name: Deprecate NPM Version
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Deprecating version'
+                required: true
+            message:
+                description: 'Deprecation reason'
+                required: true
+                type: string
+
+jobs:
+    deprecate_version:
+        name: Deprecate version
+        runs-on: ubuntu-latest
+        environment: cdn-prod-release
+        permissions: write-all
+        steps:
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '16.x'
+                  registry-url: 'https://registry.npmjs.org'
+            - name: Deprecate Version
+              run: npm deprecate aws-rum-web@${{ github.event.inputs.version }} ${{ github.event.inputs.message }}
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
