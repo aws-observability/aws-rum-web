@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.6]((https://github.com/aws-observability/aws-rum-web/compare/v1.13.5...v1.13.6)) (2023-03-17)
+
+### Bug Fixes
+
+* Hardcode web client version to v1.13.6 ([183cfb](https://github.com/aws-observability/aws-rum-web/commit/183cfb2b3433b95947adbf680c66b3ad4c7b0e23))
+
+
 ### [1.13.5]((https://github.com/aws-observability/aws-rum-web/compare/v1.13.4...v1.13.5)) (2023-03-17)
 
 ### Bug Fixes
