@@ -49,7 +49,7 @@ jobs:
               run: |
                   chmod u+x .github/scripts/deploy.sh
                   .github/scripts/deploy.sh ${{ secrets.BUCKET }}
-                  
+
             - name: Fetch AWS Credentials for Smoke Test
               run: |
                   export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
