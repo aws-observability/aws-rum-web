@@ -14,7 +14,11 @@ import {
 // Environment variables set through CLI command
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
-const TEST_URL = getUrl(process.env.URL, process.env.VERSION);
+const TEST_URL = getUrl(
+    process.env.URL,
+    process.env.VERSION,
+    process.env.INSTALL_METHOD
+);
 const TARGET_URL = ENDPOINT + MONITOR_ID;
 
 test('when web client calls PutRumEvents then the response code is 200', async ({

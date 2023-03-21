@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src *; script-src client.rum.us-east-1.amazonaws.com 'nonce-smokeTest'; style-src 'nonce-smokeTest';"
+        /> -->
+        <title>RUM Smoke Test</title>
+        <script>
+            (function (n, i, v, r, s, c, x, z) {
+                x = window.AwsRumClient = {
+                    q: [],
+                    n: n,
+                    i: i,
+                    v: v,
+                    r: r,
+                    c: c
+                };
+                window[n] = function (c, p) {
+                    x.q.push({ c: c, p: p });
+                };
+                z = document.createElement('script');
+                z.async = true;
+                z.src = s;
+                document.head.insertBefore(
+                    z,
+                    document.getElementsByTagName('script')[0]
+                );
+            })('cwr', $MONITOR_ID, '1.0.0', $REGION, $CDN, {
+                sessionSampleRate: 1,
+                guestRoleArn: $GUEST_ARN,
+                identityPoolId: $IDENTITY_POOL,
+                endpoint: $ENDPOINT,
+                telemetries: ['performance', 'errors', 'http', 'interaction'],
+                allowCookies: true,
+                enableXRay: true
+            });
+        </script>
+
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+
+        <script nonce="smokeTest">
+            function dispatch() {
+                cwr('dispatch');
+            }
+
+            function clearRequestResponse() {
+                document.getElementById('request_url').innerText = '';
+                document.getElementById('request_header').innerText = '';
+                document.getElementById('request_body').innerText = '';
+
+                document.getElementById('response_status').innerText = '';
+                document.getElementById('response_header').innerText = '';
+                document.getElementById('response_body').innerText = '';
+            }
+
+            // Specific to JavaScript error plugin
+            function triggerTypeError() {
+                undefined.foo();
+            }
+
+            function throwErrorString() {
+                throw 'thrown string';
+            }
+
+            function recordCaughtError() {
+                cwr('recordError', new Error('My error message'));
+            }
+
+            function disable() {
+                cwr('disable');
+            }
+
+            function enable() {
+                cwr('enable');
+            }
+
+            // //////////////////////////
+
+            function pushStateOneToHistory() {
+                window.history.pushState(
+                    { state: 'one' },
+                    'Page One',
+                    '/page_view_one?search=foo#hash1'
+                );
+            }
+            function pushStateTwoToHistory() {
+                window.history.pushState(
+                    { state: 'two' },
+                    'Page Two',
+                    '/page_view_two?search=bar#hash2'
+                );
+            }
+
+            function replaceState() {
+                window.history.replaceState(
+                    { state: 'one' },
+                    'Page Ten',
+                    '/page_view_Ten?search=bar#asdf'
+                );
+            }
+
+            function defaultState() {
+                window.history.replaceState(
+                    { state: 'one' },
+                    'Page Ten',
+                    '/page_event.html'
+                );
+            }
+
+            function back() {
+                window.history.back();
+            }
+
+            function forward() {
+                window.history.forward();
+            }
+
+            function go(number) {
+                window.history.go(number);
+            }
+
+            function recordPageView() {
+                cwr('recordPageView', '/page_view_two');
+            }
+
+            function httpStatFetch500() {
+                fetch('https://httpstat.us/500');
+            }
+
+            function httpStatFetch200() {
+                fetch('https://httpstat.us/200');
+            }
+
+            function httpStatXhr500() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/500', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+
+            function httpStatXhr200() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/200', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+
+            function dispatchCLS() {
+                Object.defineProperty(document, 'visibilityState', {
+                    value: 'hidden',
+                    writable: true
+                });
+                Object.defineProperty(document, 'hidden', {
+                    value: true,
+                    writable: true
+                });
+                document.dispatchEvent(new Event('visibilitychange'));
+            }
+
+            function registerDomEvents() {
+                cwr('registerDomEvents', [
+                    { event: 'click', cssLocator: '[label="triggerDom"]' }
+                ]);
+            }
+
+            function addSessionAttributes() {
+                cwr('addSessionAttributes', {
+                    customAttributeKeyAtRuntime1:
+                        'customAttributeValueAtRuntime1',
+                    customAttributeKeyAtRuntime2:
+                        'customAttributeValueAtRuntime2',
+                    custom_attribute_key_at_runtime:
+                        'customAttributeValueAtRuntime',
+                    'valid:customAttributeKeyAtRuntime':
+                        'customAttributeValueAtRuntime',
+
+                    // invalid custom attributes below should not be ingested
+                    'aws:invalidCustomAttributeKey':
+                        'invalidCustomAttributeValueAtRuntime',
+                    'invalid-custom-attribute-key':
+                        'invalidCustomAttributeValueAtRuntime',
+                    'invalid custom attribute key':
+                        'invalidCustomAttributeValueAtRuntime',
+                    'invalid.custom.attribute.key':
+                        'invalidCustomAttributeValueAtRuntime'
+                });
+            }
+        </script>
+
+        <style nonce="smokeTest">
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <p id="welcome">This application is used for RUM smoke testing.</p>
+        <hr />
+        <button id="pushStateOneToHistory" onclick="pushStateOneToHistory()">
+            Push State One to History
+        </button>
+        <button id="pushStateTwoToHistory" onclick="pushStateTwoToHistory()">
+            Push State Two to History
+        </button>
+        <button id="replaceState" onclick="replaceState()">
+            Replace current state in History
+        </button>
+        <button id="replaceDefault" onclick="defaultState()">
+            Return to default
+        </button>
+        <button id="back" onclick="back()">Back</button>
+        <button id="forward" onclick="forward()">Forward</button>
+        <button id="go-back" onclick="go(-2)">Go (back two pages)</button>
+        <button id="go-forward" onclick="go(2)">Go (forward two pages)</button>
+        <hr />
+        <button id="triggerTypeError" onclick="triggerTypeError()">
+            Trigger TypeError
+        </button>
+        <button id="throwErrorString" onclick="throwErrorString()">
+            Throw error string
+        </button>
+        <button id="recordCaughtError" onclick="recordCaughtError()">
+            Record caught error
+        </button>
+        <hr />
+        <button id="httpStatFetch200" onclick="httpStatFetch200()">
+            httpstat fetch 200
+        </button>
+        <button id="httpStatFetch500" onclick="httpStatFetch500()">
+            httpstat fetch 500
+        </button>
+        <button id="httpStatXhr200" onclick="httpStatXhr200()">
+            httpstat xhr 200
+        </button>
+        <button id="httpStatXhr500" onclick="httpStatXhr500()">
+            httpstat xhr 500
+        </button>
+        <button id="dispatchCLS" onclick="dispatchCLS()">dispatch CLS</button>
+        <button id="registerDomEvents" onclick="registerDomEvents()">
+            Update DOM Plugin
+        </button>
+        <button id="triggerDom" label="triggerDom">Trigger DOM Event</button>
+        <hr />
+        <button id="disable" onclick="disable()">Disable</button>
+        <button id="enable" onclick="enable()">Enable</button>
+        <button id="dummyButton">Dummy Button</button>
+        <hr />
+        <button id="addSessionAttributes" onclick="addSessionAttributes()">
+            Add Custom Attributes
+        </button>
+        <hr />
+    </body>
+</html>
