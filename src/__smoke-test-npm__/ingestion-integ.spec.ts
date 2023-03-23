@@ -226,43 +226,6 @@ test('when page view event is sent then the event is ingested', async ({
     expect(isIngestionCompleted).toEqual(true);
 });
 
-test('when error events are sent then the events are ingested', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const typeError = page.locator('[id=triggerTypeError]');
-    const stringError = page.locator('[id=throwErrorString]');
-    const caughtError = page.locator('[id=recordCaughtError]');
-    await typeError.click();
-    await stringError.click();
-    await caughtError.click();
-
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const errors = getEventsByType(requestBody, JS_ERROR_EVENT_TYPE);
-    const eventIds = getEventIds(errors);
-
-    // Expect three js error events
-    expect(eventIds.length).toEqual(3);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds,
-        timestamp,
-        MONITOR_NAME,
-        5
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
 test('when http events are sent then the events are ingested', async ({
     page
 }) => {

@@ -20,9 +20,6 @@
         />
 
         <script nonce="smokeTest">
-            function dispatch() {
-                cwr('dispatch');
-            }
 
             function clearRequestResponse() {
                 document.getElementById('request_url').innerText = '';
@@ -43,11 +40,7 @@
                 throw 'thrown string';
             }
 
-            function recordCaughtError() {
-                cwr('recordError', new Error('My error message'));
-            }
-
-            // //////////////////////////
+            ////////////////////////////
 
             function pushStateOneToHistory() {
                 window.history.pushState(
@@ -92,10 +85,6 @@
                 window.history.go(number);
             }
 
-            function recordPageView() {
-                cwr('recordPageView', '/page_view_two');
-            }
-
             function httpStatFetch500() {
                 fetch('https://httpstat.us/500');
             }
@@ -134,36 +123,7 @@
                 document.dispatchEvent(new Event('visibilitychange'));
             }
 
-            function registerDomEvents() {
-                cwr('registerDomEvents', [
-                    { event: 'click', cssLocator: '[label="triggerDom"]' }
-                ]);
-            }
-
-            function addSessionAttributes() {
-                cwr('addSessionAttributes', {
-                    customAttributeKeyAtRuntime1:
-                        'customAttributeValueAtRuntime1',
-                    customAttributeKeyAtRuntime2:
-                        'customAttributeValueAtRuntime2',
-                    custom_attribute_key_at_runtime:
-                        'customAttributeValueAtRuntime',
-                    'valid:customAttributeKeyAtRuntime':
-                        'customAttributeValueAtRuntime',
-
-                    // invalid custom attributes below should not be ingested
-                    'aws:invalidCustomAttributeKey':
-                        'invalidCustomAttributeValueAtRuntime',
-                    'invalid-custom-attribute-key':
-                        'invalidCustomAttributeValueAtRuntime',
-                    'invalid custom attribute key':
-                        'invalidCustomAttributeValueAtRuntime',
-                    'invalid.custom.attribute.key':
-                        'invalidCustomAttributeValueAtRuntime'
-                });
-            }
-
-         
+        
            
         </script>
 
@@ -208,9 +168,6 @@
         <button id="throwErrorString" onclick="throwErrorString()">
             Throw error string
         </button>
-        <button id="recordCaughtError" onclick="recordCaughtError()">
-            Record caught error
-        </button>
         <hr />
         <button id="httpStatFetch200" onclick="httpStatFetch200()">
             httpstat fetch 200
@@ -225,18 +182,12 @@
             httpstat xhr 500
         </button>
         <button id="dispatchCLS" onclick="dispatchCLS()">dispatch CLS</button>
-        <button id="registerDomEvents" >
-            Update DOM Plugin
-        </button>
         <button id="triggerDom" label="triggerDom">Trigger DOM Event</button>
         <hr />
         <button id="disable" onclick="disable()">Disable</button>
         <button id="enable" onclick="enable()">Enable</button>
         <button id="dummyButton">Dummy Button</button>
         <hr />
-        <button id="addSessionAttributes">
-            Add Custom Attributes
-        </button>
         <hr />
     </body>
 </html>
