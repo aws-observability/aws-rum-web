@@ -34,7 +34,7 @@ body:
     - type: dropdown
       id: web-app-pages
       attributes:
-          label: Is your web application a single page application (SPA) or multi page application (MPA?
+          label: Is your web application a single page application (SPA) or multi page application (MPA)?
           multiple: false
           options:
               - SPA
