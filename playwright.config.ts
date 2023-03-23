@@ -2,9 +2,8 @@
 // @ts-check
 const { devices } = require('@playwright/test');
 
-let config;
 if (process.env.INSTALL_METHOD === 'CDN') {
-    config = {
+    var config = {
         forbidOnly: !!process.env.CI,
         reporter: 'list',
         workers: process.env.CI ? 4 : undefined,
@@ -22,7 +21,7 @@ if (process.env.INSTALL_METHOD === 'CDN') {
         ]
     };
 } else {
-    config = {
+    var config = {
         forbidOnly: !!process.env.CI,
         reporter: 'list',
         workers: process.env.CI ? 4 : undefined,
