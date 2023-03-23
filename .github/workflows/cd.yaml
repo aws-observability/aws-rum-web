@@ -115,7 +115,7 @@ jobs:
                   INSTALL_METHOD: 'NPM-ES'
               run: npm run smoke:headless
               timeout-minutes: 10
-            
+
             - name: Fetch AWS Credentials for Smoke Test
               run: |
                   export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
@@ -139,7 +139,7 @@ jobs:
               run: npm run smoke:headless
               timeout-minutes: 10
               if: always()
-            
+
             - name: Fetch AWS Credentials for Smoke Test
               run: |
                   export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
