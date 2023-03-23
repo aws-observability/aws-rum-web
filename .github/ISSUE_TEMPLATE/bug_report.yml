@@ -4,17 +4,6 @@ title: '[Bug]: '
 labels: ['bug-report']
 
 body:
-    - type: checkboxes
-      attributes:
-          label: Is there an existing issue for this?
-          description: Please search to see if an issue already exists for the bug you encountered, and that it hasn't been fixed in a recent build/commit.
-          options:
-              - label: I have searched the existing issues and checked the recent builds/commits
-                required: true
-    - type: markdown
-      attributes:
-          value: |
-              *Please fill out this form with as much information as possible*
     - type: textarea
       id: version
       attributes:
@@ -55,32 +44,9 @@ body:
       validations:
           required: true
     - type: textarea
-      id: what-did
+      id: bug-details
       attributes:
-          label: What happened?
-          description: Tell us what happened in a very clear and simple way
+          label: Please describe the issue/bug
+          description: Please provide as much detail as possible. Include details on how we can reproduce the bug.
       validations:
           required: true
-    - type: textarea
-      id: steps
-      attributes:
-          label: Steps to reproduce the problem
-          description: Please provide us with precise step by step information on how to reproduce the bug
-          value: |
-              1. Go to ....
-              2. Click ....
-              3. ...
-      validations:
-          required: true
-    - type: textarea
-      id: what-should
-      attributes:
-          label: What should have happened?
-          description: Tell what you think the normal behavior should be
-      validations:
-          required: true
-    - type: textarea
-      id: misc
-      attributes:
-          label: Additional information
-          description: Please provide us with any additional relevant info or context.
