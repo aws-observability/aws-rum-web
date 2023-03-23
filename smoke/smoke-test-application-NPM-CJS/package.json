@@ -10,8 +10,7 @@
         "build": "webpack --config webpack/webpack.dev.js",
         "release": "npm run build",
         "server": "webpack-dev-server --config webpack/webpack.dev.js",
-        "clean": "rm -rf build && rm -rf dist && rm -rf node_modules",
-        "lint": ""
+        "clean": "rm -rf build && rm -rf dist && rm -rf node_modules"
     },
     "devDependencies": {
         "@babel/core": "7.16.0",
@@ -41,10 +40,6 @@
         "aws-rum-web": "^1.12.0",
         "buffer": "^6.0.3",
         "html-webpack-plugin": "^5.5.0"
-    },
-    "lint-staged": {
-        "*.{ts}": "npm run lint",
-        "*.{js,ts,json,html,yml,md}": "npx prettier --check"
     },
     "browserslist": [
         "defaults"
