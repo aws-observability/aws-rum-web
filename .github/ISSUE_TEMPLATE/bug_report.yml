@@ -1,0 +1,78 @@
+name: Bug Report
+description: Report a bug/issue
+title: '[Bug]: '
+labels: ['bug-report']
+
+body:
+    - type: checkboxes
+      attributes:
+          label: Is there an existing issue for this?
+          description: Please search to see if an issue already exists for the bug you encountered, and that it hasn't been fixed in a recent build/commit.
+          options:
+              - label: I have searched the existing issues and checked the recent builds/commits
+                required: true
+    - type: markdown
+      attributes:
+          value: |
+              *Please fill out this form with as much information as possible*
+    - type: textarea
+      id: version
+      attributes:
+          label: Which web client version did you detect this bug?
+          value: |
+              v1.13.3
+      validations:
+          required: true
+    - type: textarea
+      id: build
+      attributes:
+          label: What build system and module are you using?
+          value: |
+              Next.js 13 framework with CommonJS (CJS) on the server and ECMASript (ES) in the browser
+      validations:
+          required: true
+    - type: textarea
+      id: config
+      attributes:
+          label: Please provide your web client configurations
+          value: |
+              {
+                allowCookies: true,
+                endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
+                guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
+                identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
+                sessionSampleRate: 1,
+                telemetries: ['errors', 'performance', 'http']
+              }
+      validations:
+          required: true
+    - type: textarea
+      id: what-did
+      attributes:
+          label: What happened?
+          description: Tell us what happened in a very clear and simple way
+      validations:
+          required: true
+    - type: textarea
+      id: steps
+      attributes:
+          label: Steps to reproduce the problem
+          description: Please provide us with precise step by step information on how to reproduce the bug
+          value: |
+              1. Go to ....
+              2. Click ....
+              3. ...
+      validations:
+          required: true
+    - type: textarea
+      id: what-should
+      attributes:
+          label: What should have happened?
+          description: Tell what you think the normal behavior should be
+      validations:
+          required: true
+    - type: textarea
+      id: misc
+      attributes:
+          label: Additional information
+          description: Please provide us with any additional relevant info or context.

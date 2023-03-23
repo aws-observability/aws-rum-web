@@ -1,0 +1,19 @@
+name: General inquiry
+description: Start a discussion not related to a bug or feature request
+title: '[General Inquiry]: '
+labels: ['question']
+
+body:
+    - type: checkboxes
+      attributes:
+          label: Is this regarding a bug or a feature request?
+          options:
+              - label: This is not regarding a bug or a feature request
+                required: true
+    - type: textarea
+      id: general-inquiry
+      attributes:
+          label: What is your general inquiry?
+          description: Please fill out this form with as much information as possible
+      validations:
+          required: true
