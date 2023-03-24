@@ -42,7 +42,7 @@ body:
                 telemetries: ['errors', 'performance', 'http']
               }
       validations:
-          required: true
+          required: false
     - type: textarea
       id: bug-details
       attributes:
