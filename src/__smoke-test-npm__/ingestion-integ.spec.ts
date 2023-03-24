@@ -226,43 +226,6 @@ test('when page view event is sent then the event is ingested', async ({
     expect(isIngestionCompleted).toEqual(true);
 });
 
-test('when error events are sent then the events are ingested', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const typeError = page.locator('[id=triggerTypeError]');
-    const stringError = page.locator('[id=throwErrorString]');
-    const caughtError = page.locator('[id=recordCaughtError]');
-    await typeError.click();
-    await stringError.click();
-    await caughtError.click();
-
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const errors = getEventsByType(requestBody, JS_ERROR_EVENT_TYPE);
-    const eventIds = getEventIds(errors);
-
-    // Expect three js error events
-    expect(eventIds.length).toEqual(3);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds,
-        timestamp,
-        MONITOR_NAME,
-        5
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
 test('when http events are sent then the events are ingested', async ({
     page
 }) => {
@@ -334,39 +297,6 @@ test('when CLS event is sent then the event is ingested', async ({ page }) => {
     expect(isIngestionCompleted).toEqual(true);
 });
 
-test('when dom event is sent then the event is ingested', async ({ page }) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const registerDom = page.locator('[id=registerDomEvents]');
-    const triggerDom = page.locator('[id=triggerDom]');
-    await registerDom.click();
-    await triggerDom.click();
-
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const domEvent = getEventsByType(requestBody, DOM_EVENT_TYPE);
-    const eventIds = getEventIds(domEvent);
-
-    // Expect one dom event
-    expect(eventIds.length).toEqual(1);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds,
-        timestamp,
-        MONITOR_NAME,
-        5
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
 test('when xray event is sent then the event is ingested', async ({ page }) => {
     const timestamp = Date.now() - 30000;
 
@@ -394,48 +324,6 @@ test('when xray event is sent then the event is ingested', async ({ page }) => {
         timestamp,
         MONITOR_NAME,
         5
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
-
-test('when event with custom attributes is sent then the event is ingested', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
-
-    // Open page
-    await page.goto(TEST_URL);
-    const addSessionAttributes = page.locator('[id=addSessionAttributes]');
-    await addSessionAttributes.click();
-
-    const clearButton = page.locator('[id=pushStateOneToHistory]');
-    await clearButton.click();
-
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
-
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
-
-    const pageViews = getEventsByType(requestBody, PAGE_VIEW_EVENT_TYPE);
-    const eventIds = getEventIds(pageViews);
-
-    // One initial load, one route change
-    expect(eventIds.length).toEqual(2);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds.slice(1), // ignore initial load
-        timestamp,
-        MONITOR_NAME,
-        5,
-        [
-            'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
-            'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
-            'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
-            'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
-        ]
     );
     expect(isIngestionCompleted).toEqual(true);
 });

@@ -1,0 +1,34 @@
+{
+    "name": "smoke-test-application-NPM-ES",
+    "version": "1.0.0",
+    "type": "commonjs",
+    "scripts": {
+        "build": "webpack --config webpack/webpack.dev.js",
+        "release": "npm run build",
+        "server": "webpack-dev-server --config webpack/webpack.dev.js",
+        "clean": "rm -rf build && rm -rf dist && rm -rf node_modules"
+    },
+    "devDependencies": {
+        "@babel/core": "7.16.0",
+        "@babel/plugin-transform-runtime": "^7.16.0",
+        "@babel/preset-env": "~7.6.3",
+        "@webpack-cli/serve": "^1.6.0",
+        "babel-loader": "~8.0.6",
+        "case-sensitive-paths-webpack-plugin": "^2.1.2",
+        "copy-webpack-plugin": "^6.3.2",
+        "ts-loader": "^9.2.6",
+        "typescript": "^4.4.3",
+        "webpack": "^5.58.1",
+        "webpack-dev-middleware": "^5.2.1",
+        "webpack-dev-server": "^4.3.1"
+    },
+    "dependencies": {
+        "@babel/runtime": "^7.16.0",
+        "aws-rum-web": "^1.13.6",
+        "buffer": "^6.0.3",
+        "html-webpack-plugin": "^5.5.0"
+    },
+    "browserslist": [
+        "defaults"
+    ]
+}

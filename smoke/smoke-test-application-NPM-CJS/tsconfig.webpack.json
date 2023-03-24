@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "module": "es2020",
+        "outDir": "./dist/webpack"
+    },
+    "extends": "./tsconfig"
+}

@@ -46,14 +46,23 @@ export const getEventIds = (events: any[]) => {
 /** Returns the smoke test URL with the right version */
 export const getUrl = (
     testUrl: string | URL | undefined,
-    version: string | undefined
+    version: string | undefined,
+    install_method: string | undefined
 ) => {
     if (!testUrl) {
         return 'http://localhost:9000/smoke_local.html';
     }
     const url = new URL(testUrl);
     if (url.pathname === '/') {
-        return url + `smoke-${version}.html`;
+        if (install_method === 'CDN') {
+            return url + `smoke-${version}.html`;
+        } else if (install_method === 'NPM-ES') {
+            return url + `npm/es/${version}/smoke.html`;
+        } else if (install_method === 'NPM-CJS') {
+            return url + `npm/cjs/${version}/smoke.html`;
+        } else {
+            return url.toString();
+        }
     } else {
         return url.toString();
     }
