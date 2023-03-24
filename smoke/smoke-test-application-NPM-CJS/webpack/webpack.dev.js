@@ -1,11 +1,26 @@
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const common = require("./webpack.common");
-const { merge } = require("webpack-merge");
 const path = require("path");
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 
-module.exports = merge(common, {
+const babelLoaderOptions = {
+  presets: [["@babel/preset-env", {}]],
+  plugins: [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        absoluteRuntime: false,
+        corejs: false,
+        helpers: true,
+        regenerator: true,
+      },
+    ],
+  ],
+};
+
+module.exports = {
   mode: "development",
   devtool: "inline-source-map",
+  target: ["web", "es5"],
   entry: {
     loader_npm_rum_tmp: "./src/loader-npm-rum-tmp.ts",
   },
@@ -13,6 +28,12 @@ module.exports = merge(common, {
     extensions: [".ts", ".js", ".json"],
     mainFields: ["main", "module", "browser"],
   },
+  plugins: [
+    new CopyWebpackPlugin({
+      patterns: [{ from: "app" }],
+    }),
+    new CaseSensitivePathsPlugin(),
+  ],
   output: {
     path: path.join(__dirname, "../build/dev"),
     filename: "[name].js",
@@ -24,9 +45,32 @@ module.exports = merge(common, {
     https: false,
     hot: true,
   },
-  plugins: [
-    new CopyWebpackPlugin({
-      patterns: [{ from: "app" }],
-    }),
-  ],
-});
+  module: {
+    rules: [
+      {
+        test: [/\.js$/],
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: babelLoaderOptions,
+        },
+      },
+      {
+        test: [/\.ts$/],
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "babel-loader",
+            options: babelLoaderOptions,
+          },
+          {
+            loader: "ts-loader",
+            options: {
+              configFile: "tsconfig.webpack.json",
+            },
+          },
+        ],
+      },
+    ],
+  },
+};

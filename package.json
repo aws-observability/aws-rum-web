@@ -56,7 +56,6 @@
         "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
         "smoke:local:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version npx playwright test --config=playwright.local.config.ts",
         "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version npx playwright test --config=playwright.local.config.ts --headed",
-        "smoke": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version npx playwright test --config=playwright.config.ts --headed",
         "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version INSTALL_METHOD=$INSTALL_METHOD npx playwright test --config=playwright.config.ts",
         "prepare": "husky install"
     },
