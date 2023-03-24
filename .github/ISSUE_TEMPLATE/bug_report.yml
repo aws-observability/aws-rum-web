@@ -7,7 +7,7 @@ body:
     - type: textarea
       id: version
       attributes:
-          label: Which web client version did you detect this bug?
+          label: Which web client version did you detect this bug with?
           value: |
               v1.13.3
       validations:
