@@ -8,6 +8,6 @@ body:
       id: general-inquiry
       attributes:
           label: What is your general inquiry?
-          description: Please provide as much detail as possible
+          description: Please provide as much detail as possible.
       validations:
           required: true
