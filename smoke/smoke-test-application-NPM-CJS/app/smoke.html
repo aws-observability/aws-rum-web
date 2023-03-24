@@ -6,12 +6,8 @@
             content="default-src *; script-src client.rum.us-east-1.amazonaws.com 'nonce-smokeTest'; style-src 'nonce-smokeTest';"
         /> -->
         <title>RUM Smoke Test</title>
-       
-
 
         <script type="text/javascript" src="./loader_npm_rum_tmp.js"></script>
-
-        
 
         <link
             rel="icon"
@@ -20,7 +16,6 @@
         />
 
         <script nonce="smokeTest">
-
             function clearRequestResponse() {
                 document.getElementById('request_url').innerText = '';
                 document.getElementById('request_header').innerText = '';
@@ -122,9 +117,6 @@
                 });
                 document.dispatchEvent(new Event('visibilitychange'));
             }
-
-        
-           
         </script>
 
         <style nonce="smokeTest">

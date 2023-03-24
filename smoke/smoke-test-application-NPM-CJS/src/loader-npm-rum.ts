@@ -1,5 +1,5 @@
 // @ts-nocheck
-const { AwsRum, AwsRumConfig } = require("aws-rum-web");
+const { AwsRum, AwsRumConfig } = require('aws-rum-web');
 
 let awsRum;
 
@@ -27,4 +27,4 @@ try {
 } catch (error) {
     // Ignore errors thrown during CloudWatch RUM web client initialization
     console.log(error);
-}  
+}
