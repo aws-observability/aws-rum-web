@@ -6,9 +6,10 @@ var config = {
     forbidOnly: !!process.env.CI,
     reporter: 'list',
     workers: process.env.CI ? 4 : undefined,
-    testDir: process.env.INSTALL_METHOD === 'CDN' ?
-        'src/__smoke-test__' :
-        'src/__smoke-test-npm__',
+    testDir:
+        process.env.INSTALL_METHOD === 'CDN'
+            ? 'src/__smoke-test__'
+            : 'src/__smoke-test-npm__',
     retries: process.env.CI ? 2 : 2,
     timeout: 300000,
     use: {
