@@ -17,7 +17,7 @@ body:
       attributes:
           label: What environment (build systems, module system, and framework) did you detect this bug with?
           value: |
-              Next.js 13 framework with CommonJS (CJS) on the server and ECMASript (ES) in the browser
+              TypeScript v5.0.2, Webpack v4.46.0, ECMAScript modules (ESM) and React v18.2.0
       validations:
           required: true
     - type: dropdown
