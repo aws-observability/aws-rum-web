@@ -1,0 +1,52 @@
+name: Bug Report
+description: Report a bug/issue
+title: '[Bug]: '
+labels: ['bug-report']
+
+body:
+    - type: textarea
+      id: version
+      attributes:
+          label: Which web client version did you detect this bug with?
+          value: |
+              v1.13.3
+      validations:
+          required: true
+    - type: textarea
+      id: build
+      attributes:
+          label: What environment (build systems, module system, and framework) did you detect this bug with?
+          value: |
+              TypeScript v5.0.2, Webpack v4.46.0, ECMAScript modules (ESM) and React v18.2.0
+      validations:
+          required: true
+    - type: dropdown
+      id: web-app-pages
+      attributes:
+          label: Is your web application a single page application (SPA) or multi page application (MPA)?
+          multiple: false
+          options:
+              - SPA
+              - MPA
+    - type: textarea
+      id: config
+      attributes:
+          label: Please provide your web client configuration
+          value: |
+              {
+                allowCookies: true,
+                endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
+                guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
+                identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
+                sessionSampleRate: 1,
+                telemetries: ['errors', 'performance', 'http']
+              }
+      validations:
+          required: false
+    - type: textarea
+      id: bug-details
+      attributes:
+          label: Please describe the bug/issue
+          description: Provide as much detail as possible. Include details on how to reproduce the bug.
+      validations:
+          required: true
