@@ -25,6 +25,6 @@ try {
         config
     );
 } catch (error) {
-    // Ignore errors thrown during CloudWatch RUM web client initialization
     console.log(error);
+    throw error;
 }
