@@ -47,6 +47,6 @@ body:
       id: bug-details
       attributes:
           label: Please describe the bug/issue
-          description: Please provide as much detail as possible. Include details on how we can reproduce the bug.
+          description: Provide as much detail as possible. Include details on how to reproduce the bug.
       validations:
           required: true
