@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.7](https://github.com/aws-observability/aws-rum-web/compare/v1.13.6...v1.13.7) (2023-04-11)
+
+
+### Bug Fixes
+
+* Add @aws-sdk/querystring-builder as a dependency. ([#370](https://github.com/aws-observability/aws-rum-web/issues/370)) ([9e7ffdc](https://github.com/aws-observability/aws-rum-web/commit/9e7ffdcd39d09d3dc5cef6867a59252b1f419e2a))
+
 ### [1.13.6]((https://github.com/aws-observability/aws-rum-web/compare/v1.13.5...v1.13.6)) (2023-03-17)
 
 ### Bug Fixes
