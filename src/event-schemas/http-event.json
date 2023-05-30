@@ -55,6 +55,11 @@
                 }
             },
             "additionalProperties": false
+        },
+        "performance": {
+            "startTime": "number",
+            "duration": "number",
+            "additionalProperties": false
         }
     },
     "additionalProperties": false,
