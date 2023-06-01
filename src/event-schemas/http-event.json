@@ -56,10 +56,11 @@
             },
             "additionalProperties": false
         },
-        "performance": {
-            "startTime": "number",
-            "duration": "number",
-            "additionalProperties": false
+        "startTime": {
+            "type": "number"
+        },
+        "duration": {
+            "type": "number"
         }
     },
     "additionalProperties": false,
