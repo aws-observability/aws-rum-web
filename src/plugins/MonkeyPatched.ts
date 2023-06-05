@@ -15,8 +15,17 @@ export abstract class MonkeyPatched<
     Nodule extends object,
     FieldName extends keyof Nodule
 > extends InternalPlugin {
-    public enable = this.patch.bind(this, true);
-    public disable = this.patch.bind(this, false);
+    constructor(pluginId: string) {
+        super(pluginId);
+    }
+
+    enable() {
+        this.patch(true);
+    }
+
+    disable() {
+        this.patch(false);
+    }
 
     protected enabled = false;
 

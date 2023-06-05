@@ -3,7 +3,7 @@ import {
     Subsegment,
     XRayTraceEvent
 } from '../../events/xray-trace-event';
-import { MonkeyPatched } from '../MonkeyPatched';
+
 import {
     PartialHttpPluginConfig,
     defaultConfig,
@@ -27,6 +27,7 @@ import {
     isErrorPrimitive
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
+import { HttpPlugin, HttpInitiatorType } from '../HttpPlugin';
 
 type Fetch = typeof fetch;
 
@@ -50,11 +51,11 @@ export const FETCH_PLUGIN_ID = 'fetch';
  * The fetch API is monkey patched using shimmer so all calls to fetch are intercepted. Only calls to URLs which are
  * on the allowlist and are not on the denylist are traced and recorded.
  */
-export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
+export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
     private readonly config: HttpPluginConfig;
 
     constructor(config?: PartialHttpPluginConfig) {
-        super(FETCH_PLUGIN_ID);
+        super(FETCH_PLUGIN_ID, HttpInitiatorType.fetch);
         this.config = { ...defaultConfig, ...config };
     }
 
