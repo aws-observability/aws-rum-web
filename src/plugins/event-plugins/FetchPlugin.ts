@@ -268,6 +268,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
     ): Promise<Response> => {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
+        const startTime = Date.now();
 
         if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray as any);
@@ -281,11 +282,13 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
             .apply(thisArg, argsArray as any)
             .then((response: Response) => {
                 this.endTrace(trace, response, undefined);
+                this.fillLatencyManually(httpEvent, startTime);
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
             .catch((error: Error) => {
                 this.endTrace(trace, undefined, error);
+                this.fillLatencyManually(httpEvent, startTime);
                 this.recordHttpEventWithError(httpEvent, error);
                 throw error;
             });

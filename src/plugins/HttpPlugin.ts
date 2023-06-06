@@ -1,3 +1,4 @@
+import { HttpEvent } from 'events/http-event';
 import { MonkeyPatched } from './MonkeyPatched';
 
 export enum HttpInitiatorType {
@@ -52,5 +53,10 @@ export abstract class HttpPlugin<
     disable() {
         super.disable();
         this.unsubscribe();
+    }
+
+    protected fillLatencyManually(httpEvent: HttpEvent, startTime: number) {
+        httpEvent.startTime = startTime;
+        httpEvent.duration = Date.now() - startTime;
     }
 }
