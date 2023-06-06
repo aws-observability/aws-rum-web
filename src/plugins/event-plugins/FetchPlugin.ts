@@ -55,7 +55,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
     private readonly config: HttpPluginConfig;
 
     constructor(config?: PartialHttpPluginConfig) {
-        super(FETCH_PLUGIN_ID, HttpInitiatorType.fetch);
+        super(FETCH_PLUGIN_ID, HttpInitiatorType.FETCH);
         this.config = { ...defaultConfig, ...config };
     }
 

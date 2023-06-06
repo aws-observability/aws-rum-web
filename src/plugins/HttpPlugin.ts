@@ -2,8 +2,8 @@ import { HttpEvent } from 'events/http-event';
 import { MonkeyPatched } from './MonkeyPatched';
 
 export enum HttpInitiatorType {
-    fetch = 'fetch',
-    xhr = 'xmlhttprequest'
+    FETCH = 'fetch',
+    XHR = 'xmlhttprequest'
 }
 
 export abstract class HttpPlugin<
