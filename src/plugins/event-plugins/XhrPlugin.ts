@@ -278,7 +278,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                 response: { status: xhr.status, statusText: xhr.statusText }
             };
             this.fillHttpEventWithLatencyManually(httpEvent, xhrDetails);
-            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+            this.recordIfPerformanceAPINotSupported(httpEvent);
         }
     }
 
@@ -298,7 +298,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        this.recordIfPerformanceAPINotSupported(httpEvent);
     }
 
     private recordTraceEvent(trace: XRayTraceEvent) {

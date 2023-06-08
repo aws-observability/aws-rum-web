@@ -242,7 +242,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 status: response.status,
                 statusText: response.statusText
             };
-            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+            this.recordIfPerformanceAPINotSupported(httpEvent);
         }
     };
 
@@ -257,7 +257,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        this.recordIfPerformanceAPINotSupported(httpEvent);
     };
 
     private fillLatencyManually(httpEvent: HttpEvent) {
