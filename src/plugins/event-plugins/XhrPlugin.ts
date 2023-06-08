@@ -4,7 +4,6 @@ import { MonkeyPatch } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
     defaultConfig,
-    epochTime,
     createXRayTraceEvent,
     getAmznTraceIdHeaderValue,
     X_AMZN_TRACE_ID,
@@ -17,7 +16,7 @@ import {
     is5xx
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
-import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
+import { XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 import { HttpInitiatorType, HttpPlugin } from '../HttpPlugin';
 
@@ -128,16 +127,6 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
     private fillXhrDetailsWithEndTime(xhrDetails: XhrDetails) {
         if (!xhrDetails.endTime) {
             xhrDetails.endTime = Date.now();
-        }
-    }
-
-    private fillHttpEventWithLatencyManually(
-        httpEvent: HttpEvent,
-        xhrDetails: XhrDetails
-    ) {
-        if (xhrDetails.endTime) {
-            httpEvent.startTime = xhrDetails.startTime;
-            httpEvent.duration = xhrDetails.endTime - xhrDetails.startTime;
         }
     }
 
@@ -275,9 +264,10 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             const httpEvent: HttpEvent = {
                 version: '1.0.0',
                 request: { method: xhrDetails.method, url: xhrDetails.url },
-                response: { status: xhr.status, statusText: xhr.statusText }
+                response: { status: xhr.status, statusText: xhr.statusText },
+                startTime: xhrDetails.startTime,
+                duration: xhrDetails.endTime! - xhrDetails.startTime
             };
-            this.fillHttpEventWithLatencyManually(httpEvent, xhrDetails);
             this.recordIfPerformanceAPINotSupported(httpEvent);
         }
     }
@@ -288,9 +278,11 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
     ) {
         const httpEvent: HttpEvent = {
             version: '1.0.0',
-            request: { method: xhrDetails.method, url: xhrDetails.url }
+            request: { method: xhrDetails.method, url: xhrDetails.url },
+            startTime: xhrDetails.startTime,
+            duration: xhrDetails.endTime! - xhrDetails.startTime
         };
-        this.fillHttpEventWithLatencyManually(httpEvent, xhrDetails);
+
         httpEvent.error = errorEventToJsErrorEvent(
             {
                 type: 'error',

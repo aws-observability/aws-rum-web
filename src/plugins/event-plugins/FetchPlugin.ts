@@ -229,7 +229,8 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                     ? request.method
                     : 'GET'
             },
-            startTime: Date.now()
+            startTime: Date.now(),
+            duration: -1
         };
     };
 
@@ -260,7 +261,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
         this.recordIfPerformanceAPINotSupported(httpEvent);
     };
 
-    private fillLatencyManually(httpEvent: HttpEvent) {
+    private fillDurationManually(httpEvent: HttpEvent) {
         if (httpEvent.startTime) {
             httpEvent.duration = Date.now() - httpEvent.startTime;
         }
@@ -300,14 +301,14 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
         return original
             .apply(thisArg, argsArray as any)
             .then((response: Response) => {
-                this.fillLatencyManually(httpEvent);
+                this.fillDurationManually(httpEvent);
                 const endEpochTime = this.getEpochEndTime(httpEvent);
                 this.endTrace(trace, response, undefined, endEpochTime);
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
             .catch((error: Error) => {
-                this.fillLatencyManually(httpEvent);
+                this.fillDurationManually(httpEvent);
                 const endEpochTime = this.getEpochEndTime(httpEvent);
                 this.endTrace(trace, undefined, error, endEpochTime);
                 this.recordHttpEventWithError(httpEvent, error);
