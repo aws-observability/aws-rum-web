@@ -84,17 +84,17 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
     private beginTrace = (
         input: RequestInfo | URL | string,
         init: RequestInit | undefined,
-        argsArray: IArguments
+        argsArray: IArguments,
+        epochStartTime: number
     ): XRayTraceEvent => {
-        const startTime = epochTime();
         const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime
+            epochStartTime
         );
         const subsegment: Subsegment = createXRaySubsegment(
             requestInfoToHostname(input),
-            startTime,
+            epochStartTime,
             http
         );
         xRayTraceEvent.subsegments!.push(subsegment);
@@ -135,12 +135,12 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
     private endTrace = (
         xRayTraceEvent: XRayTraceEvent | undefined,
         response: Response | undefined,
-        error: Error | string | number | boolean | undefined
+        error: Error | string | number | boolean | undefined,
+        endEpochTime: number
     ) => {
         if (xRayTraceEvent) {
-            const endTime = epochTime();
-            xRayTraceEvent.subsegments![0].end_time = endTime;
-            xRayTraceEvent.end_time = endTime;
+            xRayTraceEvent.subsegments![0].end_time = endEpochTime;
+            xRayTraceEvent.end_time = endEpochTime;
 
             if (response) {
                 xRayTraceEvent.subsegments![0].http!.response = {
@@ -228,7 +228,8 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                     : request.method
                     ? request.method
                     : 'GET'
-            }
+            },
+            startTime: Date.now()
         };
     };
 
@@ -259,6 +260,20 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     };
 
+    private fillLatencyManually(httpEvent: HttpEvent) {
+        if (httpEvent.startTime) {
+            httpEvent.duration = Date.now() - httpEvent.startTime;
+        }
+    }
+
+    private getEpochEndTime(httpEvent: HttpEvent) {
+        const { startTime, duration } = httpEvent;
+        if (startTime && duration) {
+            return (startTime + duration) / 1000;
+        }
+        return epochTime();
+    }
+
     private fetch = (
         original: Fetch,
         thisArg: Fetch,
@@ -268,27 +283,33 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
     ): Promise<Response> => {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
-        const startTime = Date.now();
 
         if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray as any);
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            trace = this.beginTrace(input, init, argsArray);
+            trace = this.beginTrace(
+                input,
+                init,
+                argsArray,
+                httpEvent.startTime! / 1000
+            );
         }
 
         return original
             .apply(thisArg, argsArray as any)
             .then((response: Response) => {
-                this.endTrace(trace, response, undefined);
-                this.fillLatencyManually(httpEvent, startTime);
+                this.fillLatencyManually(httpEvent);
+                const endEpochTime = this.getEpochEndTime(httpEvent);
+                this.endTrace(trace, response, undefined, endEpochTime);
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
             .catch((error: Error) => {
-                this.endTrace(trace, undefined, error);
-                this.fillLatencyManually(httpEvent, startTime);
+                this.fillLatencyManually(httpEvent);
+                const endEpochTime = this.getEpochEndTime(httpEvent);
+                this.endTrace(trace, undefined, error, endEpochTime);
                 this.recordHttpEventWithError(httpEvent, error);
                 throw error;
             });

@@ -131,7 +131,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         }
     }
 
-    private fillHttpEventLatencyWithXhrDetails(
+    private fillHttpEventWithLatencyManually(
         httpEvent: HttpEvent,
         xhrDetails: XhrDetails
     ) {
@@ -277,7 +277,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                 request: { method: xhrDetails.method, url: xhrDetails.url },
                 response: { status: xhr.status, statusText: xhr.statusText }
             };
-            this.fillHttpEventLatencyWithXhrDetails(httpEvent, xhrDetails);
+            this.fillHttpEventWithLatencyManually(httpEvent, xhrDetails);
             this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
     }
@@ -290,7 +290,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url }
         };
-        this.fillHttpEventLatencyWithXhrDetails(httpEvent, xhrDetails);
+        this.fillHttpEventWithLatencyManually(httpEvent, xhrDetails);
         httpEvent.error = errorEventToJsErrorEvent(
             {
                 type: 'error',
@@ -341,9 +341,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                         'timeout',
                         self.handleXhrTimeoutEvent
                     );
-
                     self.initializeTrace(xhrDetails);
-
                     if (
                         self.isTracingEnabled() &&
                         self.addXRayTraceIdHeader() &&

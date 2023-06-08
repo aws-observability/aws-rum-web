@@ -1,3 +1,4 @@
+import { HttpEvent } from 'events/http-event';
 import {
     Http,
     Subsegment,
