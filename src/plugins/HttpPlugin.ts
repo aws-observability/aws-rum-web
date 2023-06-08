@@ -11,9 +11,10 @@ export abstract class HttpPlugin<
     Nodule extends object,
     FieldName extends keyof Nodule
 > extends MonkeyPatched<Nodule, FieldName> {
-    protected observer!: PerformanceObserver;
+    protected observer?: PerformanceObserver;
     readonly initiatorType: string;
-    private eventCache: HttpEvent[] = [];
+    private cache: HttpEvent[] = [];
+    readonly cacheCapacity = 250;
 
     constructor(pluginId: string, httpInitatorType: HttpInitiatorType) {
         super(pluginId);
@@ -38,13 +39,14 @@ export abstract class HttpPlugin<
                     if (prtEntry.initiatorType !== this.initiatorType) {
                         return;
                     }
+
                     const httpEvent = this.pullEvent(prtEntry.name);
                     if (httpEvent) {
-                        httpEvent.startTime = prtEntry.startTime;
                         httpEvent.duration = prtEntry.duration;
+                        this.context.record(HTTP_EVENT_TYPE, httpEvent);
                     } else {
                         console.log(
-                            this.eventCache.length,
+                            this.cache.length,
                             'todo: handle cache miss',
                             prtEntry
                         );
@@ -62,16 +64,25 @@ export abstract class HttpPlugin<
         this.observer?.observe({ type: 'resource', buffered: true });
     }
 
+    /* http event cache handlers */
+
+    private get cacheIsFull() {
+        return this.cache.length >= this.cacheCapacity;
+    }
+
     protected cacheEvent(httpEvent: HttpEvent) {
-        this.eventCache.push(httpEvent);
+        if (this.cacheIsFull) {
+            return;
+        }
+        this.cache.push(httpEvent);
     }
 
     private pullEvent(url: string) {
-        const eventCache = this.eventCache;
-        for (let i = 0; i < eventCache.length; i++) {
-            const event = eventCache[i];
+        const cache = this.cache;
+        for (let i = 0; i < cache.length; i++) {
+            const event = cache[i];
             if (event.request.url === url) {
-                eventCache.splice(i, 1);
+                cache.splice(i, 1);
                 return event;
             }
         }
