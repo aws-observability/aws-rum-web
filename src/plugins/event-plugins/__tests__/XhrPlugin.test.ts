@@ -62,7 +62,7 @@ describe('XhrPlugin tests', () => {
         });
     });
 
-    test('when XHR is called then the plugin records a trace', async () => {
+    test('when trace is enabled then the plugin records a trace', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -116,7 +116,7 @@ describe('XhrPlugin tests', () => {
         });
     });
 
-    test('when plugin is disabled then the plugin does not record any events', async () => {
+    test('when plugin is disabled then the plugin does not record anything', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
@@ -533,7 +533,7 @@ describe('XhrPlugin tests', () => {
         );
     });
 
-    test('when session is not being recorded then the plugin does not record a trace', async () => {
+    test('when session is not being recorded then the plugin does not record anything', async () => {
         // Init
         const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
             sessionId: 'abc123',
@@ -571,13 +571,10 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).not.toHaveBeenCalledWith(
-            XRAY_TRACE_EVENT_TYPE,
-            expect.anything()
-        );
+        expect(record).not.toHaveBeenCalled();
     });
 
-    test('when getSession returns undefined then the plugin does not record a trace', async () => {
+    test('when getSession returns undefined then the plugin does not record anything', async () => {
         // Init
         const getSession: jest.MockedFunction<GetSession> = jest.fn();
         const context: PluginContext = {
@@ -612,10 +609,10 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(1);
+        expect(record).not.toHaveBeenCalled();
     });
 
-    test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
+    test('when recordAllRequests is TRUE then the plugin records a request with status OK', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
@@ -643,7 +640,7 @@ describe('XhrPlugin tests', () => {
         expect(record).toHaveBeenCalled();
     });
 
-    test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
+    test('when recordAllRequests is FALSE then the plugin does NOT record a request with status OK', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],

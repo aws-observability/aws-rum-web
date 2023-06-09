@@ -395,7 +395,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when plugin is disabled then the plugin does not record a trace', async () => {
+    test('when plugin is disabled then the plugin does not record anything', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -529,7 +529,7 @@ describe('FetchPlugin tests', () => {
         );
     });
 
-    test('when session is not being recorded then the plugin does not record a trace', async () => {
+    test('when session is not being recorded then the plugin does not record anything', async () => {
         const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
             sessionId: 'abc123',
             record: false,
@@ -557,13 +557,10 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(record).not.toHaveBeenCalledWith(
-            XRAY_TRACE_EVENT_TYPE,
-            expect.anything()
-        );
+        expect(record).not.toHaveBeenCalled();
     });
 
-    test('when getSession returns undefined then the plugin does not record a trace', async () => {
+    test('when getSession returns undefined then the plugin does not record anything', async () => {
         const getSession: jest.MockedFunction<GetSession> = jest.fn(
             () => undefined
         );
@@ -589,10 +586,7 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(record).not.toHaveBeenCalledWith(
-            XRAY_TRACE_EVENT_TYPE,
-            expect.anything()
-        );
+        expect(record).not.toHaveBeenCalled();
     });
 
     test('the plugin records a stack trace by default', async () => {
