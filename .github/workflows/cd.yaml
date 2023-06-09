@@ -101,7 +101,9 @@ jobs:
                   ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
                   NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
                   INSTALL_METHOD: 'NPM-ES'
-              run: npm run smoke:headless
+              run: |
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+                  npm run smoke:headless
               timeout-minutes: 10
 
             - name: Run Smoke Test (NPM CJS)
@@ -111,7 +113,9 @@ jobs:
                   ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
                   NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
                   INSTALL_METHOD: 'NPM-CJS'
-              run: npm run smoke:headless
+              run: |
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+                  npm run smoke:headless
               timeout-minutes: 10
 
             - name: Run Gamma Smoke Test (CDN GAMMA)
@@ -121,7 +125,9 @@ jobs:
                   ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
                   NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
                   INSTALL_METHOD: 'CDN'
-              run: npm run smoke:headless
+              run: |
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+                  npm run smoke:headless
 
             - name: Fetch AWS Credentials for Prod Deployment
               run: |
