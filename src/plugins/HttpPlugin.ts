@@ -9,36 +9,32 @@ export enum HttpInitiatorType {
     XHR = 'xmlhttprequest'
 }
 
+/** A plugin that updates HttpEvents and XrayTraceEvents with timestamps from the Performance API if supported by the browser.*/
 export abstract class HttpPlugin<
     Nodule extends object,
     FieldName extends keyof Nodule
 > extends MonkeyPatched<Nodule, FieldName> {
-    protected observer?: PerformanceObserver;
-    readonly initiatorType: string;
+    private performanceObserver?: PerformanceObserver;
     private httpEventCache = new Queue<HttpEvent>(250);
     private traceEventCache = new Queue<XRayTraceEvent>(250);
 
-    constructor(pluginId: string, httpInitatorType: HttpInitiatorType) {
+    constructor(pluginId: string, private initatorType: HttpInitiatorType) {
         super(pluginId);
-        this.initiatorType = httpInitatorType;
-        this.initObserver();
+        this.initPerformanceObserver();
     }
 
     protected get supportsPerformanceAPI() {
         return !!(
-            window.performance &&
-            window.PerformanceObserver &&
-            window.PerformanceEntry &&
-            window.PerformanceResourceTiming
+            window.PerformanceObserver && window.PerformanceResourceTiming
         );
     }
 
-    private initObserver() {
+    private initPerformanceObserver() {
         if (this.supportsPerformanceAPI) {
-            this.observer = new PerformanceObserver((list) => {
+            this.performanceObserver = new PerformanceObserver((list) => {
                 list.getEntries().forEach((entry) => {
                     const prtEntry = entry as PerformanceResourceTiming;
-                    if (prtEntry.initiatorType !== this.initiatorType) {
+                    if (prtEntry.initiatorType !== this.initatorType) {
                         return;
                     }
 
@@ -66,11 +62,11 @@ export abstract class HttpPlugin<
     }
 
     private unsubscribe() {
-        this.observer?.disconnect();
+        this.performanceObserver?.disconnect();
     }
 
     private subscribe() {
-        this.observer?.observe({ type: 'resource', buffered: true });
+        this.performanceObserver?.observe({ type: 'resource', buffered: true });
     }
 
     enable() {
@@ -83,7 +79,8 @@ export abstract class HttpPlugin<
         this.unsubscribe();
     }
 
-    protected handleHttpEvent(httpEvent: HttpEvent) {
+    /** Caches the http event for Perfomance API to update later if supported by browser, or records immediately */
+    protected handoffHttpEventToPerformanceAPI(httpEvent: HttpEvent) {
         if (this.supportsPerformanceAPI) {
             this.httpEventCache.add(httpEvent);
         } else {
@@ -91,7 +88,8 @@ export abstract class HttpPlugin<
         }
     }
 
-    protected handleTraceEvent(traceEvent: XRayTraceEvent) {
+    /** Caches the trace event for Perfomance API to update later if supported by browser, or records immediately */
+    protected handoffTraceEventToPerformanceAPI(traceEvent: XRayTraceEvent) {
         if (this.supportsPerformanceAPI) {
             this.traceEventCache.add(traceEvent);
         } else {

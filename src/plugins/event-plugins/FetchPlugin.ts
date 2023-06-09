@@ -7,7 +7,6 @@ import {
 import {
     PartialHttpPluginConfig,
     defaultConfig,
-    epochTime,
     createXRayTraceEvent,
     addAmznTraceIdHeaderToInit,
     HttpPluginConfig,
@@ -135,11 +134,11 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
         xRayTraceEvent: XRayTraceEvent | undefined,
         response: Response | undefined,
         error: Error | string | number | boolean | undefined,
-        endEpochTime: number
+        endTimeSeconds: number
     ) => {
         if (xRayTraceEvent) {
-            xRayTraceEvent.subsegments![0].end_time = endEpochTime;
-            xRayTraceEvent.end_time = endEpochTime;
+            xRayTraceEvent.subsegments![0].end_time = endTimeSeconds;
+            xRayTraceEvent.end_time = endTimeSeconds;
 
             if (response) {
                 xRayTraceEvent.subsegments![0].http!.response = {
@@ -185,7 +184,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 }
             }
 
-            this.handleTraceEvent(xRayTraceEvent);
+            this.handoffTraceEventToPerformanceAPI(xRayTraceEvent);
         }
     };
 
@@ -229,7 +228,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                     : 'GET'
             },
             startTime: Date.now(),
-            duration: -1
+            duration: -1 // impossible default value, must be overwritten
         };
     };
 
@@ -242,7 +241,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 status: response.status,
                 statusText: response.statusText
             };
-            this.handleHttpEvent(httpEvent);
+            this.handoffHttpEventToPerformanceAPI(httpEvent);
         }
     };
 
@@ -257,21 +256,14 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.handleHttpEvent(httpEvent);
+        this.handoffHttpEventToPerformanceAPI(httpEvent);
     };
 
-    private fillDurationManually(httpEvent: HttpEvent) {
-        if (httpEvent.startTime) {
-            httpEvent.duration = Date.now() - httpEvent.startTime;
-        }
-    }
-
-    private getEpochEndTime(httpEvent: HttpEvent) {
-        const { startTime, duration } = httpEvent;
-        if (startTime && duration) {
-            return (startTime + duration) / 1000;
-        }
-        return epochTime();
+    /** Manually updates the http duration and returns the epoch time in seconds */
+    private updateDurationManually(httpEvent: HttpEvent): number {
+        const endTime = Date.now();
+        httpEvent.duration = endTime - httpEvent.startTime;
+        return endTime / 1000;
     }
 
     private fetch = (
@@ -300,16 +292,14 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
         return original
             .apply(thisArg, argsArray as any)
             .then((response: Response) => {
-                this.fillDurationManually(httpEvent);
-                const endEpochTime = this.getEpochEndTime(httpEvent);
-                this.endTrace(trace, response, undefined, endEpochTime);
+                const endTimeSeconds = this.updateDurationManually(httpEvent);
+                this.endTrace(trace, response, undefined, endTimeSeconds);
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
             .catch((error: Error) => {
-                this.fillDurationManually(httpEvent);
-                const endEpochTime = this.getEpochEndTime(httpEvent);
-                this.endTrace(trace, undefined, error, endEpochTime);
+                const endTimeSeconds = this.updateDurationManually(httpEvent);
+                this.endTrace(trace, undefined, error, endTimeSeconds);
                 this.recordHttpEventWithError(httpEvent, error);
                 throw error;
             });

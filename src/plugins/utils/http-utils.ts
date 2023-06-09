@@ -1,4 +1,3 @@
-import { HttpEvent } from 'events/http-event';
 import {
     Http,
     Subsegment,
@@ -97,7 +96,7 @@ export const createXRayTraceEventHttp = (
 
 export const createXRayTraceEvent = (
     name: string,
-    startTime: number,
+    startTimeSeconds: number,
     http?: Http
 ): XRayTraceEvent => {
     const traceEvent: XRayTraceEvent = {
@@ -105,7 +104,7 @@ export const createXRayTraceEvent = (
         name,
         origin: 'AWS::RUM::AppMonitor',
         id: generateSegmentId(),
-        start_time: startTime,
+        start_time: startTimeSeconds,
         trace_id: generateTraceId(),
         end_time: undefined,
         subsegments: [],
@@ -119,13 +118,13 @@ export const createXRayTraceEvent = (
 
 export const createXRaySubsegment = (
     name: string,
-    startTime: number,
+    startTimeSeconds: number,
     http?: Http
 ): Subsegment => {
     const subsegment: Subsegment = {
         id: generateSegmentId(),
         name,
-        start_time: startTime,
+        start_time: startTimeSeconds,
         end_time: undefined,
         in_progress: false,
         namespace: name.endsWith('amazonaws.com') ? 'aws' : 'remote'

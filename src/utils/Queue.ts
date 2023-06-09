@@ -1,5 +1,11 @@
+/** array implmementation of queue
+ *
+ * only implements methods that are needed elsewhere
+ */
 export class Queue<T> {
     private list: T[] = [];
+    constructor(readonly capacity: number) {}
+
     get size() {
         return this.list.length;
     }
@@ -7,8 +13,6 @@ export class Queue<T> {
     get isFull() {
         return this.size === this.capacity;
     }
-
-    constructor(readonly capacity: number) {}
 
     add(val: T) {
         if (this.isFull) {

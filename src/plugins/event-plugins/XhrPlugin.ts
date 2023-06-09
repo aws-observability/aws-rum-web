@@ -16,7 +16,6 @@ import {
     is5xx
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
-import { XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 import { HttpInitiatorType, HttpPlugin } from '../HttpPlugin';
 
@@ -124,10 +123,12 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         ];
     }
 
-    private fillXhrDetailsWithEndTime(xhrDetails: XhrDetails) {
+    /** Updates endTime and returns endTime in seconds */
+    private fillEndTimeIfEmpty(xhrDetails: XhrDetails) {
         if (!xhrDetails.endTime) {
             xhrDetails.endTime = Date.now();
         }
+        return xhrDetails.endTime / 1000;
     }
 
     private addXRayTraceIdHeader = () => {
@@ -146,10 +147,9 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails: XhrDetails = this.xhrMap.get(xhr) as XhrDetails;
         if (xhrDetails) {
-            this.fillXhrDetailsWithEndTime(xhrDetails);
-            const endEpochTime = xhrDetails.endTime! / 1000;
-            xhrDetails.trace!.end_time = endEpochTime;
-            xhrDetails.trace!.subsegments![0].end_time = endEpochTime;
+            const endTimeSeconds = this.fillEndTimeIfEmpty(xhrDetails);
+            xhrDetails.trace!.end_time = endTimeSeconds;
+            xhrDetails.trace!.subsegments![0].end_time = endTimeSeconds;
             xhrDetails.trace!.subsegments![0].http!.response = {
                 status: xhr.status
             };
@@ -184,15 +184,14 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             ? xhr.status.toString() + ': ' + xhr.statusText
             : xhr.status.toString();
         if (xhrDetails) {
-            this.fillXhrDetailsWithEndTime(xhrDetails);
-            const endEpochTime = xhrDetails.endTime! / 1000;
+            const endTimeSeconds = this.fillEndTimeIfEmpty(xhrDetails);
             // Guidance from X-Ray documentation:
             // > Record errors in segments when your application returns an
             // > error to the user, and in subsegments when a downstream call
             // > returns an error.
             xhrDetails.trace!.fault = true;
-            xhrDetails.trace!.end_time = endEpochTime;
-            xhrDetails.trace!.subsegments![0].end_time = endEpochTime;
+            xhrDetails.trace!.end_time = endTimeSeconds;
+            xhrDetails.trace!.subsegments![0].end_time = endTimeSeconds;
             xhrDetails.trace!.subsegments![0].fault = true;
             xhrDetails.trace!.subsegments![0].cause = {
                 exceptions: [
@@ -214,7 +213,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails = this.xhrMap.get(xhr);
         if (xhrDetails) {
-            this.fillXhrDetailsWithEndTime(xhrDetails);
+            this.fillEndTimeIfEmpty(xhrDetails);
             const errorName = 'XMLHttpRequest abort';
             this.handleXhrDetailsOnError(xhrDetails, errorName);
         }
@@ -224,7 +223,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails = this.xhrMap.get(xhr);
         if (xhrDetails) {
-            this.fillXhrDetailsWithEndTime(xhrDetails);
+            this.fillEndTimeIfEmpty(xhrDetails);
             const errorName = 'XMLHttpRequest timeout';
             this.handleXhrDetailsOnError(xhrDetails, errorName);
         }
@@ -235,10 +234,9 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         errorName: string
     ) {
         if (xhrDetails) {
-            this.fillXhrDetailsWithEndTime(xhrDetails);
-            const endEpochTime = xhrDetails.endTime! / 1000;
-            xhrDetails.trace!.end_time = endEpochTime;
-            xhrDetails.trace!.subsegments![0].end_time = endEpochTime;
+            const endTimeSeconds = this.fillEndTimeIfEmpty(xhrDetails);
+            xhrDetails.trace!.end_time = endTimeSeconds;
+            xhrDetails.trace!.subsegments![0].end_time = endTimeSeconds;
             xhrDetails.trace!.subsegments![0].error = true;
             xhrDetails.trace!.subsegments![0].cause = {
                 exceptions: [
@@ -268,7 +266,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                 startTime: xhrDetails.startTime,
                 duration: xhrDetails.endTime! - xhrDetails.startTime
             };
-            this.handleHttpEvent(httpEvent);
+            this.handoffHttpEventToPerformanceAPI(httpEvent);
         }
     }
 
@@ -290,25 +288,25 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.handleHttpEvent(httpEvent);
+        this.handoffHttpEventToPerformanceAPI(httpEvent);
     }
 
     private recordTraceEvent(traceEvent: XRayTraceEvent) {
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            this.handleTraceEvent(traceEvent);
+            this.handoffTraceEventToPerformanceAPI(traceEvent);
         }
     }
 
     private initializeTrace = (xhrDetails: XhrDetails) => {
-        const startTime = xhrDetails.startTime / 1000;
+        const startTimeSeconds = xhrDetails.startTime / 1000;
         xhrDetails.trace = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime
+            startTimeSeconds
         );
         xhrDetails.trace.subsegments!.push(
             createXRaySubsegment(
                 requestInfoToHostname(xhrDetails.url),
-                startTime,
+                startTimeSeconds,
                 {
                     request: {
                         method: xhrDetails.method,
