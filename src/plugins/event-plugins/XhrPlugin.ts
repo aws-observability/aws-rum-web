@@ -322,30 +322,40 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const self = this;
         return (original: any) => {
             return function (this: XMLHttpRequest): void {
-                const xhrDetails = self.xhrMap.get(this);
-                if (xhrDetails) {
-                    this.addEventListener('load', self.handleXhrLoadEvent);
-                    this.addEventListener('error', self.handleXhrErrorEvent);
-                    this.addEventListener('abort', self.handleXhrAbortEvent);
-                    this.addEventListener(
-                        'timeout',
-                        self.handleXhrTimeoutEvent
-                    );
-                    self.initializeTrace(xhrDetails);
-                    if (
-                        self.isTracingEnabled() &&
-                        self.addXRayTraceIdHeader() &&
-                        self.isSessionRecorded()
-                    ) {
-                        this.setRequestHeader(
-                            X_AMZN_TRACE_ID,
-                            getAmznTraceIdHeaderValue(
-                                xhrDetails.trace!.trace_id,
-                                xhrDetails.trace!.subsegments![0].id
-                            )
+                if (self.isSessionRecorded()) {
+                    const xhrDetails = self.xhrMap.get(this);
+                    if (xhrDetails) {
+                        this.addEventListener('load', self.handleXhrLoadEvent);
+                        this.addEventListener(
+                            'error',
+                            self.handleXhrErrorEvent
                         );
+                        this.addEventListener(
+                            'abort',
+                            self.handleXhrAbortEvent
+                        );
+                        this.addEventListener(
+                            'timeout',
+                            self.handleXhrTimeoutEvent
+                        );
+
+                        self.initializeTrace(xhrDetails);
+
+                        if (
+                            self.isTracingEnabled() &&
+                            self.addXRayTraceIdHeader()
+                        ) {
+                            this.setRequestHeader(
+                                X_AMZN_TRACE_ID,
+                                getAmznTraceIdHeaderValue(
+                                    xhrDetails.trace!.trace_id,
+                                    xhrDetails.trace!.subsegments![0].id
+                                )
+                            );
+                        }
                     }
                 }
+
                 return original.apply(this, arguments);
             };
         };
