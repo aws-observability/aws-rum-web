@@ -123,7 +123,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
         ];
     }
 
-    /** Updates endTime and returns endTime in seconds */
+    /** Updates endTime if empty and returns it in seconds */
     private fillEndTimeIfEmpty(xhrDetails: XhrDetails) {
         if (!xhrDetails.endTime) {
             xhrDetails.endTime = Date.now();

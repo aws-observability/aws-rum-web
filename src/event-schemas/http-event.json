@@ -57,10 +57,12 @@
             "additionalProperties": false
         },
         "startTime": {
-            "type": "number"
+            "type": "number",
+            "description": "Epoch timestamp (ms) immediately before the HTTP request begins"
         },
         "duration": {
-            "type": "number"
+            "type": "number",
+            "description": "Duration (ms) from startTime to end of response"
         }
     },
     "additionalProperties": false,

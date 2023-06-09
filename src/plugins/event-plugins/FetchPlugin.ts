@@ -83,16 +83,16 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
         input: RequestInfo | URL | string,
         init: RequestInit | undefined,
         argsArray: IArguments,
-        epochStartTime: number
+        startTimeSeconds: number
     ): XRayTraceEvent => {
         const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
-            epochStartTime
+            startTimeSeconds
         );
         const subsegment: Subsegment = createXRaySubsegment(
             requestInfoToHostname(input),
-            epochStartTime,
+            startTimeSeconds,
             http
         );
         xRayTraceEvent.subsegments!.push(subsegment);
@@ -285,7 +285,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 input,
                 init,
                 argsArray,
-                httpEvent.startTime! / 1000
+                httpEvent.startTime / 1000
             );
         }
 
