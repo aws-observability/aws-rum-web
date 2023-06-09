@@ -21,7 +21,6 @@ import {
     is4xx,
     is5xx
 } from '../utils/http-utils';
-import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
     errorEventToJsErrorEvent,
     isErrorPrimitive
@@ -186,7 +185,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 }
             }
 
-            this.context.record(XRAY_TRACE_EVENT_TYPE, xRayTraceEvent);
+            this.handleTraceEvent(xRayTraceEvent);
         }
     };
 
@@ -243,7 +242,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 status: response.status,
                 statusText: response.statusText
             };
-            this.recordIfPerformanceAPINotSupported(httpEvent);
+            this.handleHttpEvent(httpEvent);
         }
     };
 
@@ -258,7 +257,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.recordIfPerformanceAPINotSupported(httpEvent);
+        this.handleHttpEvent(httpEvent);
     };
 
     private fillDurationManually(httpEvent: HttpEvent) {

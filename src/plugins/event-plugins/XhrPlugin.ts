@@ -268,7 +268,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                 startTime: xhrDetails.startTime,
                 duration: xhrDetails.endTime! - xhrDetails.startTime
             };
-            this.recordIfPerformanceAPINotSupported(httpEvent);
+            this.handleHttpEvent(httpEvent);
         }
     }
 
@@ -290,12 +290,12 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.recordIfPerformanceAPINotSupported(httpEvent);
+        this.handleHttpEvent(httpEvent);
     }
 
-    private recordTraceEvent(trace: XRayTraceEvent) {
+    private recordTraceEvent(traceEvent: XRayTraceEvent) {
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            this.context.record(XRAY_TRACE_EVENT_TYPE, trace);
+            this.handleTraceEvent(traceEvent);
         }
     }
 

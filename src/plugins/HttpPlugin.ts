@@ -1,6 +1,8 @@
 import { MonkeyPatched } from './MonkeyPatched';
 import { HttpEvent } from 'events/http-event';
-import { HTTP_EVENT_TYPE } from './utils/constant';
+import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from './utils/constant';
+import { Queue } from '../utils/Queue';
+import { XRayTraceEvent } from 'events/xray-trace-event';
 
 export enum HttpInitiatorType {
     FETCH = 'fetch',
@@ -13,8 +15,8 @@ export abstract class HttpPlugin<
 > extends MonkeyPatched<Nodule, FieldName> {
     protected observer?: PerformanceObserver;
     readonly initiatorType: string;
-    private cache: HttpEvent[] = [];
-    readonly cacheCapacity = 250;
+    private httpEventCache = new Queue<HttpEvent>(250);
+    private traceEventCache = new Queue<XRayTraceEvent>(250);
 
     constructor(pluginId: string, httpInitatorType: HttpInitiatorType) {
         super(pluginId);
@@ -40,16 +42,23 @@ export abstract class HttpPlugin<
                         return;
                     }
 
-                    const httpEvent = this.pullEvent(prtEntry.name);
+                    const httpEvent = this.httpEventCache.findFirstMatchAndPull(
+                        (httpEvent) => httpEvent.request.url === prtEntry.name
+                    );
                     if (httpEvent) {
                         httpEvent.duration = prtEntry.duration;
                         this.context.record(HTTP_EVENT_TYPE, httpEvent);
-                    } else {
-                        console.log(
-                            this.cache.length,
-                            'todo: handle cache miss',
-                            prtEntry
+                    }
+
+                    const traceEvent =
+                        this.traceEventCache.findFirstMatchAndPull(
+                            (traceEvent) =>
+                                traceEvent.http?.request?.url === prtEntry.name
                         );
+                    if (traceEvent) {
+                        traceEvent.end_time =
+                            (prtEntry.startTime + prtEntry.duration) / 1000;
+                        this.context.record(XRAY_TRACE_EVENT_TYPE, traceEvent);
                     }
                 });
             });
@@ -64,30 +73,6 @@ export abstract class HttpPlugin<
         this.observer?.observe({ type: 'resource', buffered: true });
     }
 
-    /* http event cache handlers */
-
-    private get cacheIsFull() {
-        return this.cache.length >= this.cacheCapacity;
-    }
-
-    protected cacheEvent(httpEvent: HttpEvent) {
-        if (this.cacheIsFull) {
-            return;
-        }
-        this.cache.push(httpEvent);
-    }
-
-    private pullEvent(url: string) {
-        const cache = this.cache;
-        for (let i = 0; i < cache.length; i++) {
-            const event = cache[i];
-            if (event.request.url === url) {
-                cache.splice(i, 1);
-                return event;
-            }
-        }
-    }
-
     enable() {
         super.enable();
         this.subscribe();
@@ -98,11 +83,19 @@ export abstract class HttpPlugin<
         this.unsubscribe();
     }
 
-    protected recordIfPerformanceAPINotSupported(httpEvent: HttpEvent) {
+    protected handleHttpEvent(httpEvent: HttpEvent) {
         if (this.supportsPerformanceAPI) {
-            this.cacheEvent(httpEvent);
+            this.httpEventCache.add(httpEvent);
         } else {
-            this.context.record(HTTP_EVENT_TYPE, httpEvent as object);
+            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        }
+    }
+
+    protected handleTraceEvent(traceEvent: XRayTraceEvent) {
+        if (this.supportsPerformanceAPI) {
+            this.traceEventCache.add(traceEvent);
+        } else {
+            this.context.record(XRAY_TRACE_EVENT_TYPE, traceEvent);
         }
     }
 }
