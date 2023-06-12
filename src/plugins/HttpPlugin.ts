@@ -79,21 +79,19 @@ export abstract class HttpPlugin<
         this.unsubscribe();
     }
 
-    /** Caches the http event for Perfomance API to update later if supported by browser, or records immediately */
-    protected handoffHttpEventToPerformanceAPI(httpEvent: HttpEvent) {
+    /** Caches an http or trace event for Perfomance API to update later if supported by browser */
+    protected cacheEventForPerformanceObserver(
+        type: string,
+        eventData: HttpEvent | XRayTraceEvent
+    ) {
         if (this.supportsPerformanceAPI) {
-            this.httpEventCache.add(httpEvent);
+            if (type === HTTP_EVENT_TYPE) {
+                this.httpEventCache.add(eventData as HttpEvent);
+            } else if (type === XRAY_TRACE_EVENT_TYPE) {
+                this.traceEventCache.add(eventData as XRayTraceEvent);
+            }
         } else {
-            this.context.record(HTTP_EVENT_TYPE, httpEvent);
-        }
-    }
-
-    /** Caches the trace event for Perfomance API to update later if supported by browser, or records immediately */
-    protected handoffTraceEventToPerformanceAPI(traceEvent: XRayTraceEvent) {
-        if (this.supportsPerformanceAPI) {
-            this.traceEventCache.add(traceEvent);
-        } else {
-            this.context.record(XRAY_TRACE_EVENT_TYPE, traceEvent);
+            this.context.record(type, eventData);
         }
     }
 }

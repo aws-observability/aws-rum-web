@@ -18,6 +18,7 @@ import {
 import { XhrError } from '../../errors/XhrError';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 import { HttpInitiatorType, HttpPlugin } from '../HttpPlugin';
+import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 
 type XhrDetails = {
     method: string;
@@ -266,7 +267,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                 startTime: xhrDetails.startTime,
                 duration: xhrDetails.endTime! - xhrDetails.startTime
             };
-            this.handoffHttpEventToPerformanceAPI(httpEvent);
+            this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
         }
     }
 
@@ -288,12 +289,15 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.handoffHttpEventToPerformanceAPI(httpEvent);
+        this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
     }
 
     private recordTraceEvent(traceEvent: XRayTraceEvent) {
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            this.handoffTraceEventToPerformanceAPI(traceEvent);
+            this.cacheEventForPerformanceObserver(
+                XRAY_TRACE_EVENT_TYPE,
+                traceEvent
+            );
         }
     }
 

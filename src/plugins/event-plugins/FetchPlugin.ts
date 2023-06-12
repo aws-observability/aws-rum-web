@@ -26,6 +26,7 @@ import {
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
 import { HttpPlugin, HttpInitiatorType } from '../HttpPlugin';
+import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 
 type Fetch = typeof fetch;
 
@@ -184,7 +185,10 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 }
             }
 
-            this.handoffTraceEventToPerformanceAPI(xRayTraceEvent);
+            this.cacheEventForPerformanceObserver(
+                XRAY_TRACE_EVENT_TYPE,
+                xRayTraceEvent
+            );
         }
     };
 
@@ -241,7 +245,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 status: response.status,
                 statusText: response.statusText
             };
-            this.handoffHttpEventToPerformanceAPI(httpEvent);
+            this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
         }
     };
 
@@ -256,10 +260,10 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.handoffHttpEventToPerformanceAPI(httpEvent);
+        this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
     };
 
-    /** Manually updates the http duration and returns the epoch time in seconds */
+    /** Manually updates the http duration and returns the end time in seconds */
     private updateDurationManually(httpEvent: HttpEvent): number {
         const endTime = Date.now();
         httpEvent.duration = endTime - httpEvent.startTime;
