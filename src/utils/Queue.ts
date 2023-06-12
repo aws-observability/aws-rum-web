@@ -1,27 +1,29 @@
-/** array implmementation of queue
- *
- * only implements methods that are needed elsewhere
- */
+/** array implmementation of queue */
 export class Queue<T> {
     private list: T[] = [];
     constructor(readonly capacity: number) {}
 
-    get size() {
+    get length() {
         return this.list.length;
     }
 
     get isFull() {
-        return this.size === this.capacity;
+        return this.length === this.capacity;
     }
 
-    add(val: T) {
+    add(val: T): boolean {
         if (this.isFull) {
-            return;
+            return false;
         }
         this.list.push(val);
+        return true;
     }
 
-    findFirstMatchAndPull(match: (val: T) => boolean) {
+    pull(): T | undefined {
+        return this.list.shift();
+    }
+
+    findFirstMatchAndPull(match: (val: T) => boolean): T | undefined {
         const list = this.list;
         for (let i = 0; i < list.length; i++) {
             const val = list[i];

@@ -9,7 +9,7 @@ export enum HttpInitiatorType {
     XHR = 'xmlhttprequest'
 }
 
-/** A plugin that updates HttpEvents and XrayTraceEvents with timestamps from the Performance API if supported by the browser.*/
+/** A plugin that updates HttpEvents and XrayTraceEvents with latency from the Performance API if supported. */
 export abstract class HttpPlugin<
     Nodule extends object,
     FieldName extends keyof Nodule
@@ -23,7 +23,7 @@ export abstract class HttpPlugin<
         this.initPerformanceObserver();
     }
 
-    protected get supportsPerformanceAPI() {
+    public get supportsPerformanceAPI() {
         return !!(
             window.PerformanceObserver && window.PerformanceResourceTiming
         );
@@ -79,19 +79,27 @@ export abstract class HttpPlugin<
         this.unsubscribe();
     }
 
-    /** Caches an http or trace event for Perfomance API to update later if supported by browser */
+    /** Caches an http or trace event for Perfomance API to update after the PerformanceResourcinTiming entry is created
+     * If PRT is unavailable or the cache is full, then the event is recorded immediately
+     */
     protected cacheEventForPerformanceObserver(
-        type: string,
+        eventType: string,
         eventData: HttpEvent | XRayTraceEvent
     ) {
+        let wasCached = false;
         if (this.supportsPerformanceAPI) {
-            if (type === HTTP_EVENT_TYPE) {
-                this.httpEventCache.add(eventData as HttpEvent);
-            } else if (type === XRAY_TRACE_EVENT_TYPE) {
-                this.traceEventCache.add(eventData as XRayTraceEvent);
+            if (eventType === HTTP_EVENT_TYPE) {
+                wasCached = this.httpEventCache.add(eventData as HttpEvent);
+            } else if (eventType === XRAY_TRACE_EVENT_TYPE) {
+                wasCached = this.traceEventCache.add(
+                    eventData as XRayTraceEvent
+                );
             }
-        } else {
-            this.context.record(type, eventData);
+        }
+
+        // PRT is not supported or the cache is full
+        if (!wasCached) {
+            this.context.record(eventType, eventData);
         }
     }
 }
