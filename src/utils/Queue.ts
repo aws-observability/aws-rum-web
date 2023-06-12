@@ -1,4 +1,4 @@
-/** array implmementation of queue */
+/** array implementation of queue */
 export class Queue<T> {
     private list: T[] = [];
     constructor(readonly capacity: number) {}
@@ -11,6 +11,7 @@ export class Queue<T> {
         return this.length === this.capacity;
     }
 
+    /** adds value to queue if there is room and returns if anything was queued */
     add(val: T): boolean {
         if (this.isFull) {
             return false;
@@ -19,7 +20,7 @@ export class Queue<T> {
         return true;
     }
 
-    pull(): T | undefined {
+    pull() {
         return this.list.shift();
     }
 

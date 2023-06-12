@@ -9,7 +9,7 @@ export enum HttpInitiatorType {
     XHR = 'xmlhttprequest'
 }
 
-/** A plugin that updates HttpEvents and XrayTraceEvents with latency from the Performance API if supported. */
+/** Updates latency in HTTP and XrayTrace events with the Performance API if supported by the browser */
 export abstract class HttpPlugin<
     Nodule extends object,
     FieldName extends keyof Nodule
@@ -79,9 +79,7 @@ export abstract class HttpPlugin<
         this.unsubscribe();
     }
 
-    /** Caches an http or trace event for Perfomance API to update after the PerformanceResourcinTiming entry is created
-     * If PRT is unavailable or the cache is full, then the event is recorded immediately
-     */
+    /** Caches an http or trace event for the PerformanceObserver. Records immediately if PRT is unsupported or cache is full */
     protected cacheEventForPerformanceObserver(
         eventType: string,
         eventData: HttpEvent | XRayTraceEvent
@@ -97,7 +95,6 @@ export abstract class HttpPlugin<
             }
         }
 
-        // PRT is not supported or the cache is full
         if (!wasCached) {
             this.context.record(eventType, eventData);
         }
