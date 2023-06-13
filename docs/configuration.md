@@ -138,6 +138,26 @@ telemetries: [
 | recordAllRequests | boolean | `false` | By default, only HTTP failed requests (i.e., those with network errors or status codes which are not 2xx) are recorded. When this field is `true`, the http telemetry will record all requests, including those with successful 2xx status codes. <br/><br/>This field does **does not apply** to X-Ray traces, where all requests are recorded. |
 | addXRayTraceIdHeader | boolean | `false` | By default, the `X-Amzn-Trace-Id` header will not be added to the HTTP request. This means that the client-side trace and server-side trace will **not be linked** in X-Ray or the ServiceLens graph.<br/><br/> When this field is `true`, the `X-Amzn-Trace-Id` header will be added to HTTP requests (`XMLHttpRequest` or `fetch`). **Adding the header is dangerous and you must test your application before setting this field to `true` in a production environment.** The header could cause CORS to fail or invalidate the request's signature if the request is signed with sigv4.
 
+## Resource
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| ignore | Function(PerformanceResourceTiming) : boolean | `() => false` | A function which accepts a [`PerformanceResourceTiming`](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) and returns a boolean that determines if the resource timing entry should be ignored. By default, no resources are ignored. |
+
+```javascript
+telemetries: [
+    [
+        'resource',
+        {
+            // example: ignore all resource events from mozilla
+            ignore: (entry) => {
+                const url = new Url(entry.name)
+                return url.hostname === 'developer.mozilla.org';
+            }
+        }
+    ],
+]
+```
+
 ## Interaction
 
 | Name | Type | Default | Description |
