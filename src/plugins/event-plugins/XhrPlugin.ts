@@ -1,6 +1,6 @@
 import { XRayTraceEvent } from '../../events/xray-trace-event';
 import { HttpEvent } from '../../events/http-event';
-import { MonkeyPatch } from '../MonkeyPatched';
+import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
     defaultConfig,
@@ -17,7 +17,6 @@ import {
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
-import { HttpInitiatorType, HttpPlugin } from '../HttpPlugin';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 
 type XhrDetails = {
@@ -95,12 +94,12 @@ export const XHR_PLUGIN_ID = 'xhr';
  * - https://xhr.spec.whatwg.org/#event-handlers.
  * - https://xhr.spec.whatwg.org/#events
  */
-export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
+export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private config: HttpPluginConfig;
     private xhrMap: Map<XMLHttpRequest, XhrDetails>;
 
     constructor(config?: PartialHttpPluginConfig) {
-        super(XHR_PLUGIN_ID, HttpInitiatorType.XHR);
+        super(XHR_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
         this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();
     }
@@ -267,7 +266,7 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
                 startTime: xhrDetails.startTime,
                 duration: xhrDetails.endTime! - xhrDetails.startTime
             };
-            this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
+            this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
     }
 
@@ -289,15 +288,12 @@ export class XhrPlugin extends HttpPlugin<XMLHttpRequest, 'send' | 'open'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
+        this.context.record(HTTP_EVENT_TYPE, httpEvent);
     }
 
     private recordTraceEvent(traceEvent: XRayTraceEvent) {
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            this.cacheEventForPerformanceObserver(
-                XRAY_TRACE_EVENT_TYPE,
-                traceEvent
-            );
+            this.context.record(XRAY_TRACE_EVENT_TYPE, traceEvent);
         }
     }
 

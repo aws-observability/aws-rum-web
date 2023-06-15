@@ -25,8 +25,8 @@ import {
     isErrorPrimitive
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
-import { HttpPlugin, HttpInitiatorType } from '../HttpPlugin';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
+import { MonkeyPatched } from '../MonkeyPatched';
 
 type Fetch = typeof fetch;
 
@@ -50,11 +50,11 @@ export const FETCH_PLUGIN_ID = 'fetch';
  * The fetch API is monkey patched using shimmer so all calls to fetch are intercepted. Only calls to URLs which are
  * on the allowlist and are not on the denylist are traced and recorded.
  */
-export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
+export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private readonly config: HttpPluginConfig;
 
     constructor(config?: PartialHttpPluginConfig) {
-        super(FETCH_PLUGIN_ID, HttpInitiatorType.FETCH);
+        super(FETCH_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
     }
 
@@ -185,10 +185,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 }
             }
 
-            this.cacheEventForPerformanceObserver(
-                XRAY_TRACE_EVENT_TYPE,
-                xRayTraceEvent
-            );
+            this.context.record(XRAY_TRACE_EVENT_TYPE, xRayTraceEvent);
         }
     };
 
@@ -245,7 +242,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
                 status: response.status,
                 statusText: response.statusText
             };
-            this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
+            this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
     };
 
@@ -260,7 +257,7 @@ export class FetchPlugin extends HttpPlugin<Window, 'fetch'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.cacheEventForPerformanceObserver(HTTP_EVENT_TYPE, httpEvent);
+        this.context.record(HTTP_EVENT_TYPE, httpEvent);
     };
 
     /** Manually updates the http duration and returns the end time in seconds */
