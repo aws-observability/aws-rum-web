@@ -21,6 +21,7 @@ import {
 import { GetSession, PluginContext } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { HttpEvent } from '../../../events/http-event';
+import { XRayTraceEvent } from 'events/xray-trace-event';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
@@ -903,5 +904,64 @@ describe('FetchPlugin tests', () => {
                 statusText: 'OK'
             }
         });
+    });
+
+    test('http events should contain non negative startTime and duration', async () => {
+        const now = Date.now;
+        Date.now = () => 100000;
+        const plugin = new FetchPlugin();
+
+        plugin.load(xRayOffContext);
+        await fetch(URL);
+        plugin.disable();
+
+        expect(record).toHaveBeenCalledTimes(1);
+        const eventType = record.mock.calls[0][0];
+        const httpEvent = record.mock.calls[0][1] as HttpEvent;
+        expect(eventType).toEqual(HTTP_EVENT_TYPE);
+        expect(httpEvent.startTime).toBeGreaterThan(0);
+        expect(httpEvent.duration).toBeGreaterThanOrEqual(0);
+
+        Date.now = now;
+    });
+
+    test('trace events should contain non negative start_time and end_time', async () => {
+        const now = Date.now;
+        Date.now = () => 100000;
+        const plugin = new FetchPlugin();
+
+        plugin.load(xRayOnContext);
+        await fetch(URL);
+        plugin.disable();
+
+        expect(record).toHaveBeenCalledTimes(2);
+        const eventType = record.mock.calls[0][0];
+        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
+        expect(eventType).toEqual(XRAY_TRACE_EVENT_TYPE);
+        expect(traceEvent.start_time).toBeGreaterThan(0);
+        expect(traceEvent.end_time).toBeGreaterThanOrEqual(0);
+
+        Date.now = now;
+    });
+
+    test('http and trace events should share timestamps', async () => {
+        const now = Date.now;
+        Date.now = () => 100000;
+        const plugin = new FetchPlugin();
+
+        plugin.load(xRayOnContext);
+        await fetch(URL);
+        plugin.disable();
+
+        expect(record).toHaveBeenCalledTimes(2);
+        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
+        const httpEvent = record.mock.calls[1][1] as HttpEvent;
+
+        expect(traceEvent.start_time).toEqual(httpEvent.startTime / 1000);
+        expect(traceEvent.end_time).toEqual(
+            (httpEvent.duration + httpEvent.startTime) / 1000
+        );
+
+        Date.now = now;
     });
 });
