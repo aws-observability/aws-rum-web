@@ -1,4 +1,3 @@
-/* eslint max-classes-per-file: "off" */
 import { EventCache } from '../event-cache/EventCache';
 import { Credentials } from '@aws-sdk/types';
 import {
@@ -212,38 +211,6 @@ export const mockFetchWithErrorObjectAndStack = jest.fn(
             stack: 'stack trace'
         })
 );
-
-export interface MockPerformanceEntry {
-    name: string;
-    duration: number;
-    startTime: number;
-}
-
-export interface MockPerformanceResourceTiming extends MockPerformanceEntry {
-    initiatorType: string;
-}
-
-export class MockPerformanceEntryList extends Array<MockPerformanceEntry> {
-    getEntries() {
-        return this;
-    }
-}
-
-export class MockPerformanceObserver {
-    readonly entries = new MockPerformanceEntryList();
-    constructor(public callback: (list: MockPerformanceEntryList) => void) {
-        this.callback = jest.fn(callback);
-    }
-
-    publishMockEvent(entry: MockPerformanceResourceTiming) {
-        this.entries.push(entry);
-        this.callback(this.entries);
-    }
-
-    reset() {
-        this.entries.length = 0;
-    }
-}
 
 export function mockNow() {
     const original = Date.now;
