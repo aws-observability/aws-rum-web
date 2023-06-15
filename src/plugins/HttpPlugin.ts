@@ -42,6 +42,8 @@ export abstract class HttpPlugin<
                         (httpEvent) => httpEvent.request.url === prtEntry.name
                     );
                     if (httpEvent) {
+                        httpEvent.startTime =
+                            performance.timeOrigin + httpEvent.startTime;
                         httpEvent.duration = prtEntry.duration;
                         this.context.record(HTTP_EVENT_TYPE, httpEvent);
                     }
@@ -52,8 +54,11 @@ export abstract class HttpPlugin<
                                 traceEvent.http?.request?.url === prtEntry.name
                         );
                     if (traceEvent) {
+                        traceEvent.start_time =
+                            (performance.timeOrigin + prtEntry.startTime) /
+                            1000;
                         traceEvent.end_time =
-                            (prtEntry.startTime + prtEntry.duration) / 1000;
+                            (traceEvent.start_time + prtEntry.duration) / 1000;
                         this.context.record(XRAY_TRACE_EVENT_TYPE, traceEvent);
                     }
                 });
