@@ -141,7 +141,7 @@ telemetries: [
 ## Resource
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| ignore | Function(PerformanceResourceTiming) : boolean | `() => false` | A function which accepts a [`PerformanceResourceTiming`](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) and returns a boolean that determines if the resource timing entry should be ignored. By default, no resources are ignored. |
+| ignore | Function(event: ResourceEvent) : boolean | `() => false` | A function which accepts a ResourceEvent and returns a boolean that determines if the [resource event](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) should be ignored. By default, no resources are ignored. |
 
 ```javascript
 telemetries: [
@@ -149,8 +149,8 @@ telemetries: [
         'resource',
         {
             // example: ignore all resource events from mozilla
-            ignore: (entry) => {
-                const url = new Url(entry.name)
+            ignoreEvent: (event: ResourceEvent) => {
+                const url = new Url(event.name)
                 return url.hostname === 'developer.mozilla.org';
             }
         }
