@@ -244,3 +244,16 @@ export class MockPerformanceObserver {
         this.entries.length = 0;
     }
 }
+
+export function mockNow() {
+    const original = Date.now;
+    let time = 10000;
+    Date.now = () => {
+        const now = time;
+        time += 100;
+        return now;
+    };
+    return function resetNow() {
+        Date.now = original;
+    };
+}

@@ -5,7 +5,8 @@ import {
     xRayOffContext,
     xRayOnContext,
     record,
-    recordPageView
+    recordPageView,
+    mockNow
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
 import { GetSession, PluginContext } from '../../types';
@@ -824,8 +825,7 @@ describe('XhrPlugin tests', () => {
     });
 
     test('http events should contain non-negative startTime and duration', async () => {
-        const now = Date.now;
-        Date.now = () => 100000;
+        const resetNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOffContext);
 
@@ -842,15 +842,14 @@ describe('XhrPlugin tests', () => {
         const eventType = record.mock.calls[0][0];
         const httpEvent = record.mock.calls[0][1] as HttpEvent;
         expect(eventType).toEqual(HTTP_EVENT_TYPE);
-        expect(httpEvent.startTime).toBeGreaterThan(0);
+        expect(httpEvent.startTime).toBeGreaterThanOrEqual(0);
         expect(httpEvent.duration).toBeGreaterThanOrEqual(0);
 
-        Date.now = now;
+        resetNow();
     });
 
     test('trace events should contain non negative start_time and end_time', async () => {
-        const now = Date.now;
-        Date.now = () => 100000;
+        const resetNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOnContext);
 
@@ -867,15 +866,14 @@ describe('XhrPlugin tests', () => {
         const eventType = record.mock.calls[0][0];
         const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
         expect(eventType).toEqual(XRAY_TRACE_EVENT_TYPE);
-        expect(traceEvent.start_time).toBeGreaterThan(0);
+        expect(traceEvent.start_time).toBeGreaterThanOrEqual(0);
         expect(traceEvent.end_time).toBeGreaterThanOrEqual(0);
 
-        Date.now = now;
+        resetNow();
     });
 
     test('http and trace events should share timestamps', async () => {
-        const now = Date.now;
-        Date.now = () => 100000;
+        const resetNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOnContext);
 
@@ -897,6 +895,6 @@ describe('XhrPlugin tests', () => {
             (httpEvent.duration + httpEvent.startTime) / 1000
         );
 
-        Date.now = now;
+        resetNow();
     });
 });
