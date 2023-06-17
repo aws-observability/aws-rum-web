@@ -268,14 +268,11 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
 
-        if (
-            !this.isSessionRecorded() ||
-            !isUrlAllowed(resourceToUrlString(input), this.config)
-        ) {
+        if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray as any);
         }
 
-        if (this.isTracingEnabled()) {
+        if (this.isTracingEnabled() && this.isSessionRecorded()) {
             trace = this.beginTrace(input, init, argsArray);
         }
 
