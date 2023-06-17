@@ -65,7 +65,7 @@ describe('XhrPlugin tests', () => {
         });
     });
 
-    test('when trace is enabled then the plugin records a trace', async () => {
+    test('when XHR is called then the plugin records a trace', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -119,7 +119,7 @@ describe('XhrPlugin tests', () => {
         });
     });
 
-    test('when plugin is disabled then the plugin does not record anything', async () => {
+    test('when plugin is disabled then the plugin does not record any events', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
@@ -574,7 +574,10 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalledWith(
+            XRAY_TRACE_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
@@ -612,7 +615,7 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).not.toHaveBeenCalled();
+        expect(record).toHaveBeenCalledTimes(1);
     });
 
     test('when recordAllRequests is true then the plugin records a request with status OK', async () => {
