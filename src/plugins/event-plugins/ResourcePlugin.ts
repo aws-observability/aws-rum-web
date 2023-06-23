@@ -16,14 +16,14 @@ export type PartialResourcePluginConfig = {
     eventLimit?: number;
     recordAllTypes?: ResourceType[];
     sampleTypes?: ResourceType[];
-    ignoreEvent?: (event: ResourceEvent) => boolean;
+    ignore?: (event: ResourceEvent) => boolean;
 };
 
 export type ResourcePluginConfig = {
     eventLimit: number;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
-    ignoreEvent: (event: ResourceEvent) => boolean;
+    ignore: (event: ResourceEvent) => boolean;
 };
 
 export const defaultConfig = {
@@ -35,7 +35,7 @@ export const defaultConfig = {
         ResourceType.FONT,
         ResourceType.OTHER
     ],
-    ignoreEvent: () => false
+    ignore: () => false
 };
 
 /**
@@ -147,7 +147,7 @@ export class ResourcePlugin extends InternalPlugin {
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-            if (!this.config.ignoreEvent(eventData)) {
+            if (!this.config.ignore(eventData)) {
                 this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
             }
         }

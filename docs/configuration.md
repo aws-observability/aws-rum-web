@@ -149,7 +149,7 @@ telemetries: [
         'resource',
         {
             // example: ignore all resource events from mozilla
-            ignoreEvent: (event: ResourceEvent) => {
+            ignore: (event: ResourceEvent) => {
                 const url = new Url(event.name)
                 return url.hostname === 'developer.mozilla.org';
             }

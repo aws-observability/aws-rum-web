@@ -253,7 +253,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
         const plugin = new ResourcePlugin({
-            ignoreEvent: (event) => event.fileType === 'image'
+            ignore: (event) => event.fileType === 'image'
         });
 
         // Run
