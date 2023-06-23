@@ -248,7 +248,7 @@ describe('ResourcePlugin tests', () => {
         );
     });
 
-    test('resource plugin ignores resources based on a custom condition', async () => {
+    test('when ignore() is customized then specific events are not recorded', async () => {
         // Setup
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
