@@ -194,17 +194,25 @@ const awsRum: AwsRum = new AwsRum(
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | eventLimit | Number | `10` | The maximum number of resources to record load timing. <br/><br/>There may be many similar resources on a page (e.g., images) and recording all resources may add expense without adding value. The web client records all HTML files and JavaScript files, while recording a sample of stylesheets, images and fonts. Increasing the event limit increases the maximum number of sampled resources. |
-| ignore | Function(event: PerformanceEntry) : any | `() => false` | A function which accepts a [PerformanceEntry](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEntry) and returns a value that coerces to true when a [Resource](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) or [Navigation](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/navigation-event.json) event should be ignored. By default, no events are ignored. |
+| ignore | Function(event: PerformanceEntry) : any | `() => false` | A function which accepts a [PerformanceEntry](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEntry) and returns a value that coerces to true when it the entry should be ignored.<br/><br/>Performance entries may either be recorded as a [Resource](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) or [Navigation](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/navigation-event.json) event. `entry` may be type cast to [PerformanceResourceTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) when observing resource or navigation events. `entry` may also be type cast to [PerformanceNavigationTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming), but only during navigation events. By default, no events are ignored. |
 
 ```javascript
 telemetries: [
     [
         'performance',
         {
-            // example: ignore all resource events from mozilla
-            ignore: (event: PerformanceEntry) => {
-                const url = new Url(event.name)
-                return url.hostname === 'developer.mozilla.org';
+            ignore: (entry: PerformanceEntry) => {
+                // ignore navigation reloads
+                if (entry.entryType === 'navigation') {
+                    const navigationTiming = entry as PerformanceNavigationTiming;
+                    return navigationTiming.type === 'reload';
+                }
+                // ignore resources from mozilla
+                if (entry.entryType === 'resource') {
+                    const url = new Url(event.name)
+                    return url.hostname === 'developer.mozilla.org';
+                }
+                
             }
         }
     ],
