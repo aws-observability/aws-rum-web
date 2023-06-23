@@ -26,7 +26,7 @@ export type ResourcePluginConfig = {
     ignore: (event: PerformanceEntry) => any;
 };
 
-export const defaultConfig = {
+export const defaultResourcePluginConfig = {
     eventLimit: 10,
     recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
     sampleTypes: [
@@ -46,7 +46,7 @@ export class ResourcePlugin extends InternalPlugin {
 
     constructor(config?: PartialResourcePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
-        this.config = { ...defaultConfig, ...config };
+        this.config = { ...defaultResourcePluginConfig, ...config };
     }
 
     enable(): void {

@@ -7,14 +7,28 @@ export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 const NAVIGATION = 'navigation';
 const LOAD = 'load';
 
+export type PartialNavigationPluginConfig = {
+    ignore?: (event: PerformanceEntry) => any;
+};
+
+export type NavigationPluginConfig = {
+    ignore: (event: PerformanceEntry) => any;
+};
+
+export const defaultNavigationPluginConfig = {
+    ignore: () => false
+};
+
 /**
  * This plugin records performance timing events generated during every page load/re-load activity.
  * Paint, resource and performance event types make sense only if all or none are included.
  * For RUM, these event types are inter-dependent. So they are recorded under one plugin.
  */
 export class NavigationPlugin extends InternalPlugin {
-    constructor() {
+    private config: NavigationPluginConfig;
+    constructor(config?: PartialNavigationPluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
+        this.config = { ...defaultNavigationPluginConfig, ...config };
     }
 
     enable(): void {
@@ -71,11 +85,10 @@ export class NavigationPlugin extends InternalPlugin {
         } else {
             const navigationObserver = new PerformanceObserver((list) => {
                 list.getEntries().forEach((event) => {
-                    if (event.entryType === NAVIGATION) {
-                        this.performanceNavigationEventHandlerTimingLevel2(
-                            event
-                        );
+                    if (event.entryType !== NAVIGATION) {
+                        return;
                     }
+                    this.performanceNavigationEventHandlerTimingLevel2(event);
                 });
             });
             navigationObserver.observe({
@@ -185,6 +198,10 @@ export class NavigationPlugin extends InternalPlugin {
      * W3C specification: https://www.w3.org/TR/navigation-timing-2/#bib-navigation-timing
      */
     performanceNavigationEventHandlerTimingLevel2 = (entryData: any): void => {
+        if (this.config.ignore(entryData as PerformanceNavigationTiming)) {
+            return;
+        }
+
         const eventDataNavigationTimingLevel2: NavigationEvent = {
             version: '1.0.0',
             initiatorType: entryData.initiatorType,

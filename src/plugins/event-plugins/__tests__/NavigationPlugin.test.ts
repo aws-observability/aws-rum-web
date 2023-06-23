@@ -7,12 +7,15 @@ import {
     mockPerformanceObjectWith,
     putRumEventsDocument
 } from '../../../test-utils/mock-data';
-import { NavigationPlugin } from '../NavigationPlugin';
+import {
+    NavigationPlugin,
+    PartialNavigationPluginConfig
+} from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
 
-const buildNavigationPlugin = () => {
-    return new NavigationPlugin();
+const buildNavigationPlugin = (config?: PartialNavigationPluginConfig) => {
+    return new NavigationPlugin(config);
 };
 
 describe('NavigationPlugin tests', () => {
@@ -104,6 +107,20 @@ describe('NavigationPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
+    });
+    test('when ignore is customized then specific level 2 events are ignored', async () => {
+        // enables plugin by default
+        const plugin: NavigationPlugin = buildNavigationPlugin({
+            ignore: (event) =>
+                (event as PerformanceNavigationTiming).type === 'navigate'
+        });
+
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
     });
 
     test('when window.load fires after plugin loads then navigation timing is recorded', async () => {
