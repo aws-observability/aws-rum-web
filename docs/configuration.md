@@ -138,26 +138,6 @@ telemetries: [
 | recordAllRequests | boolean | `false` | By default, only HTTP failed requests (i.e., those with network errors or status codes which are not 2xx) are recorded. When this field is `true`, the http telemetry will record all requests, including those with successful 2xx status codes. <br/><br/>This field does **does not apply** to X-Ray traces, where all requests are recorded. |
 | addXRayTraceIdHeader | boolean | `false` | By default, the `X-Amzn-Trace-Id` header will not be added to the HTTP request. This means that the client-side trace and server-side trace will **not be linked** in X-Ray or the ServiceLens graph.<br/><br/> When this field is `true`, the `X-Amzn-Trace-Id` header will be added to HTTP requests (`XMLHttpRequest` or `fetch`). **Adding the header is dangerous and you must test your application before setting this field to `true` in a production environment.** The header could cause CORS to fail or invalidate the request's signature if the request is signed with sigv4.
 
-## Resource
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| ignore | Function(event: ResourceEvent) : any | `() => false` | A function which accepts a [ResourceEvent](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) and returns a value that coerces to true when the event should be ignored. By default, no resources are ignored. |
-
-```javascript
-telemetries: [
-    [
-        'resource',
-        {
-            // example: ignore all resource events from mozilla
-            ignore: (event: ResourceEvent) => {
-                const url = new Url(event.name)
-                return url.hostname === 'developer.mozilla.org';
-            }
-        }
-    ],
-]
-```
-
 ## Interaction
 
 | Name | Type | Default | Description |
@@ -214,3 +194,19 @@ const awsRum: AwsRum = new AwsRum(
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | eventLimit | Number | `10` | The maximum number of resources to record load timing. <br/><br/>There may be many similar resources on a page (e.g., images) and recording all resources may add expense without adding value. The web client records all HTML files and JavaScript files, while recording a sample of stylesheets, images and fonts. Increasing the event limit increases the maximum number of sampled resources. |
+| ignore | Function(event: PerformanceEntry) : any | `() => false` | A function which accepts a [PerformanceEntry](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEntry) and returns a value that coerces to true when a [Resource](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) or [Navigation](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/navigation-event.json) event should be ignored. By default, no events are ignored. |
+
+```javascript
+telemetries: [
+    [
+        'performance',
+        {
+            // example: ignore all resource events from mozilla
+            ignore: (event: PerformanceEntry) => {
+                const url = new Url(event.name)
+                return url.hostname === 'developer.mozilla.org';
+            }
+        }
+    ],
+]
+```
