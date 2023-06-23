@@ -141,7 +141,7 @@ telemetries: [
 ## Resource
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| ignore | Function(event: ResourceEvent) : boolean | `() => false` | A function which accepts a ResourceEvent and returns a boolean that determines if the [resource event](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) should be ignored. By default, no resources are ignored. |
+| ignore | Function(event: ResourceEvent) : any | `() => false` | A function which accepts a [ResourceEvent](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/resource-event.json) and returns a value that coerces to true when the event should be ignored. By default, no resources are ignored. |
 
 ```javascript
 telemetries: [

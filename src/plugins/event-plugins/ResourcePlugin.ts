@@ -16,14 +16,14 @@ export type PartialResourcePluginConfig = {
     eventLimit?: number;
     recordAllTypes?: ResourceType[];
     sampleTypes?: ResourceType[];
-    ignore?: (event: ResourceEvent) => boolean;
+    ignore?: (event: ResourceEvent) => any;
 };
 
 export type ResourcePluginConfig = {
     eventLimit: number;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
-    ignore: (event: ResourceEvent) => boolean;
+    ignore: (event: ResourceEvent) => any;
 };
 
 export const defaultConfig = {
