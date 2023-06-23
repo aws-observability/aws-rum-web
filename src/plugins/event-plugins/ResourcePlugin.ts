@@ -16,14 +16,14 @@ export type PartialResourcePluginConfig = {
     eventLimit?: number;
     recordAllTypes?: ResourceType[];
     sampleTypes?: ResourceType[];
-    ignore?: (event: ResourceEvent) => any;
+    ignore?: (event: PerformanceEntry) => any;
 };
 
 export type ResourcePluginConfig = {
     eventLimit: number;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
-    ignore: (event: ResourceEvent) => any;
+    ignore: (event: PerformanceEntry) => any;
 };
 
 export const defaultConfig = {
@@ -76,6 +76,9 @@ export class ResourcePlugin extends InternalPlugin {
             list.getEntries()
                 .filter((e) => e.entryType === RESOURCE)
                 .forEach((event) => {
+                    if (this.config.ignore(event)) {
+                        return;
+                    }
                     // Out of n resource events, x events are recorded using Observer API
                     const type: ResourceType = getResourceFileType(event.name);
                     if (this.config.recordAllTypes.includes(type)) {
@@ -94,6 +97,9 @@ export class ResourcePlugin extends InternalPlugin {
         const events = performance.getEntriesByType(RESOURCE);
         if (events !== undefined && events.length > 0) {
             events.forEach((event) => {
+                if (this.config.ignore(event)) {
+                    return;
+                }
                 const type: ResourceType = getResourceFileType(event.name);
                 if (this.config.recordAllTypes.includes(type)) {
                     recordAll.push(event);
@@ -147,9 +153,7 @@ export class ResourcePlugin extends InternalPlugin {
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-            if (!this.config.ignore(eventData)) {
-                this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
-            }
+            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }
     };
 

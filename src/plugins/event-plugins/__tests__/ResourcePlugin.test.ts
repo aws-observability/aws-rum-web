@@ -11,7 +11,7 @@ import {
     putRumEventsGammaDocument,
     dataPlaneDocument
 } from '../../../test-utils/mock-data';
-import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
+import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom, resetMockRandom } from 'jest-mock-random';
 import {
     context,
@@ -23,6 +23,7 @@ import {
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext } from '../../types';
+import { getResourceFileType } from '../../../utils/common-utils';
 
 describe('ResourcePlugin tests', () => {
     beforeEach(() => {
@@ -253,7 +254,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
         const plugin = new ResourcePlugin({
-            ignore: (event) => event.fileType === 'image'
+            ignore: (entry) => getResourceFileType(entry.name) === 'image'
         });
 
         // Run
