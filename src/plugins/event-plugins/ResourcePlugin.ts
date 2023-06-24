@@ -126,22 +126,20 @@ export class ResourcePlugin extends InternalPlugin {
         }
     };
 
-    private isPutRumEventCall(eventData: PerformanceResourceTiming) {
+    recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
         const pathRegex =
             /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-        const entryUrl = new URL(eventData.name);
-        const hasSameHost =
-            entryUrl.host === this.context.config.endpointUrl.host;
-        return hasSameHost && pathRegex.test(entryUrl.pathname);
-    }
-
-    recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
-        // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data
-        // plane), otherwise we end up in an infinite loop of recording
-        // PutRumEvents.
-        if (this.isPutRumEventCall(entryData)) {
+        const entryUrl = new URL(entryData.name);
+        if (
+            entryUrl.host === this.context.config.endpointUrl.host &&
+            pathRegex.test(entryUrl.pathname)
+        ) {
+            // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data
+            // plane), otherwise we end up in an infinite loop of recording
+            // PutRumEvents.
             return;
         }
+
         if (this.context?.record) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',

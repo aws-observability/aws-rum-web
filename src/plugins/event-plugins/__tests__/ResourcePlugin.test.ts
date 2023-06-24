@@ -11,8 +11,8 @@ import {
     putRumEventsGammaDocument,
     dataPlaneDocument
 } from '../../../test-utils/mock-data';
-import { ResourcePlugin } from '../ResourcePlugin';
-import { mockRandom, resetMockRandom } from 'jest-mock-random';
+import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
+import { mockRandom } from 'jest-mock-random';
 import {
     context,
     DEFAULT_CONFIG,
@@ -25,6 +25,10 @@ import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext } from '../../types';
 import { getResourceFileType } from '../../../utils/common-utils';
 
+const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
+    return new ResourcePlugin(config);
+};
+
 describe('ResourcePlugin tests', () => {
     beforeEach(() => {
         (window as any).performance = performanceEvent.performance();
@@ -35,14 +39,13 @@ describe('ResourcePlugin tests', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
-        resetMockRandom();
     });
 
     test('When resource event is present then event is recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
 
-        const plugin = new ResourcePlugin();
+        const plugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -75,7 +78,7 @@ describe('ResourcePlugin tests', () => {
             recordPageView,
             getSession
         };
-        const plugin: ResourcePlugin = new ResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -96,7 +99,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWith([putRumEventsDocument], [], []);
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = new ResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -112,7 +115,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWith([putRumEventsGammaDocument], [], []);
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = new ResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -128,7 +131,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWith([dataPlaneDocument], [], []);
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = new ResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -141,7 +144,7 @@ describe('ResourcePlugin tests', () => {
 
     test('when enabled then events are recorded', async () => {
         // Setup
-        const plugin: ResourcePlugin = new ResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -156,7 +159,7 @@ describe('ResourcePlugin tests', () => {
 
     test('when disabled then no events are recorded', async () => {
         // Setup
-        const plugin: ResourcePlugin = new ResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -253,8 +256,9 @@ describe('ResourcePlugin tests', () => {
         // Setup
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
-        const plugin = new ResourcePlugin({
-            ignore: (entry) => getResourceFileType(entry.name) === 'image'
+        const plugin = buildResourcePlugin({
+            ignore: (entry: PerformanceEntry) =>
+                getResourceFileType(entry.name) === 'image'
         });
 
         // Run
