@@ -6,6 +6,7 @@ import {
 } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
+import { defaultPerformanceIgnore } from '../utils/performance-utils';
 
 export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
@@ -35,7 +36,7 @@ export const defaultResourcePluginConfig = {
         ResourceType.FONT,
         ResourceType.OTHER
     ],
-    ignore: () => false
+    ignore: defaultPerformanceIgnore
 };
 
 /**

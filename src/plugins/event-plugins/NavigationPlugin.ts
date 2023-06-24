@@ -1,6 +1,7 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
+import { defaultPerformanceIgnore } from '../utils/performance-utils';
 
 export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 
@@ -16,7 +17,7 @@ export type NavigationPluginConfig = {
 };
 
 export const defaultNavigationPluginConfig = {
-    ignore: () => false
+    ignore: defaultPerformanceIgnore
 };
 
 /**
