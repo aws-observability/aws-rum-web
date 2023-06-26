@@ -227,6 +227,7 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        const tmp = record.mock.calls[0][1];
         expect(record.mock.calls[0][1]).toMatchObject({
             name: 'sample.rum.aws.amazon.com',
             id: '0000000000000000',

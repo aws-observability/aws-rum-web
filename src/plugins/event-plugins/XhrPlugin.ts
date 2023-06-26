@@ -355,7 +355,6 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                         }
                     }
                 }
-
                 return original.apply(this, arguments);
             };
         };

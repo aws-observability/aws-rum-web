@@ -23,7 +23,6 @@ export abstract class InternalPlugin<UpdateType = unknown>
         this.context = context;
         this.onload?.();
     }
-
     record?<D>(data: D): void;
     update?(updateWith: UpdateType): void;
 
