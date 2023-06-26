@@ -1,7 +1,7 @@
-import { defaultPerformanceIgnore } from '../../utils/performance-utils';
+import { defaultPerformanceIgnore } from '../performance-utils';
 import { mockPerformanceEntry } from '../../../test-utils/mock-data';
 
-describe('Performance', () => {
+describe('performance-utils', () => {
     describe('defaultPerformanceIgnore', () => {
         it('when entry has a non-http URL schema then entry is ignored', () => {
             const mockEntry = mockPerformanceEntry();
