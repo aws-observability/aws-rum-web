@@ -948,9 +948,9 @@ describe('FetchPlugin tests', () => {
         const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
         const httpEvent = record.mock.calls[1][1] as HttpEvent;
 
-        expect(traceEvent.start_time).toEqual(httpEvent.startTime / 1000);
+        expect(traceEvent.start_time).toEqual(httpEvent.startTime! / 1000);
         expect(traceEvent.end_time).toEqual(
-            (httpEvent.duration + httpEvent.startTime) / 1000
+            (httpEvent.duration! + httpEvent.startTime!) / 1000
         );
 
         resetNow();

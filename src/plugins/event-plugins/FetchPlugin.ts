@@ -263,7 +263,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     /** Manually updates the http duration and returns the end time in seconds */
     private updateDurationManually(httpEvent: HttpEvent): number {
         const endTime = Date.now();
-        httpEvent.duration = endTime - httpEvent.startTime;
+        httpEvent.duration = endTime - httpEvent.startTime!;
         return endTime / 1000;
     }
 
@@ -285,7 +285,12 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         }
 
         if (this.isTracingEnabled()) {
-            trace = this.beginTrace(input, init, argsArray);
+            trace = this.beginTrace(
+                input,
+                init,
+                argsArray,
+                httpEvent.startTime! / 1000
+            );
         }
 
         return original
