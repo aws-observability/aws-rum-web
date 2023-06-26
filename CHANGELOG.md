@@ -2,32 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.14.0](https://github.com/aws-observability/aws-rum-web/compare/v1.12.0...v1.14.0) (2023-06-19)
-
-
-### Features
-
-* Create a session ID when cookies are disabled ([#314](https://github.com/aws-observability/aws-rum-web/issues/314)) ([6943587](https://github.com/aws-observability/aws-rum-web/commit/6943587259b8d7623742656199dc26b26b5bcd5d))
-* enable track all HTTP events by default ([0ac5832](https://github.com/aws-observability/aws-rum-web/commit/0ac583218353202f8a6605e3c0ca6747fcdc023b))
-* Increase stack trace length ([#313](https://github.com/aws-observability/aws-rum-web/issues/313)) ([28e34c5](https://github.com/aws-observability/aws-rum-web/commit/28e34c5ad541e1fc1e0b12c1a937289df5911791))
-* referrer ([#327](https://github.com/aws-observability/aws-rum-web/issues/327)) ([a414c92](https://github.com/aws-observability/aws-rum-web/commit/a414c9265b37f9eafe7ae6475fe71357beadbcfc))
-* webclient version and installation method ([#321](https://github.com/aws-observability/aws-rum-web/issues/321)) ([97c543a](https://github.com/aws-observability/aws-rum-web/commit/97c543a13d845bb4c2683c2b6b85ac97237fa410))
-
-
-### Bug Fixes
-
-* Add @aws-sdk/querystring-builder as a dependency. ([#370](https://github.com/aws-observability/aws-rum-web/issues/370)) ([42662eb](https://github.com/aws-observability/aws-rum-web/commit/42662eb98695c027c3eef3ec6547527240486ac5))
-* Add type to recordJsErrorEvent parameter ([#339](https://github.com/aws-observability/aws-rum-web/issues/339)) ([2ee6ffa](https://github.com/aws-observability/aws-rum-web/commit/2ee6ffa115f448e5f43b18b6af6f58750c35e544))
-* Export PageAttributes type. ([#369](https://github.com/aws-observability/aws-rum-web/issues/369)) ([4b78dc1](https://github.com/aws-observability/aws-rum-web/commit/4b78dc14799151422bee07f6263c1aaa098354f6))
-* FetchPlugin unit tests do not assume all record() calls are traces ([961c0ae](https://github.com/aws-observability/aws-rum-web/commit/961c0ae0b586bd03b325475242af72921f749500))
-* Handle missing pageId in metadata when page is resumed ([#388](https://github.com/aws-observability/aws-rum-web/issues/388)) ([f81bcf2](https://github.com/aws-observability/aws-rum-web/commit/f81bcf24e8094a65fe2b99e6bbe65196ec2ea595))
-* Hardcode webclient version ([#381](https://github.com/aws-observability/aws-rum-web/issues/381)) ([bc1c15f](https://github.com/aws-observability/aws-rum-web/commit/bc1c15ff7c6cc85a3d5843ba343e194b88449921))
-* if session is not recorded, then Fetch and Xhr do not record anything ([ae86bc3](https://github.com/aws-observability/aws-rum-web/commit/ae86bc3916071a53a31637a0269114a8f08e748d))
-* Transpile [@aws-sdk](https://github.com/aws-sdk) to ES5. ([#363](https://github.com/aws-observability/aws-rum-web/issues/363)) ([f63150d](https://github.com/aws-observability/aws-rum-web/commit/f63150df6ed6a9d8a877ccfe8e160c5a8d9873ec))
-* Update entry point in package.json ([#377](https://github.com/aws-observability/aws-rum-web/issues/377)) ([7877e86](https://github.com/aws-observability/aws-rum-web/commit/7877e86ae4fd2f74cac8d603a59272eec015a852))
-* Update version during release workflow only ([#359](https://github.com/aws-observability/aws-rum-web/issues/359)) ([f6b7bd7](https://github.com/aws-observability/aws-rum-web/commit/f6b7bd744ec9e8413b93a2069c40b815e4ddc9ab))
-* XhrPlugin unit tests do not assume all record() calls are traces ([e8ef1d1](https://github.com/aws-observability/aws-rum-web/commit/e8ef1d13c6900e0d7f1e4a05cf6a99d7865729b2))
-
 ## [1.13.0](https://github.com/aws-observability/aws-rum-web/compare/v1.12.0...v1.13.0) (2023-02-23)
 
 
