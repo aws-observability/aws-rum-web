@@ -26,7 +26,7 @@ import { PluginContext } from '../../types';
 import { getResourceFileType } from '../../../utils/common-utils';
 
 const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
-    return new ResourcePlugin(config);
+    return buildResourcePlugin(config);
 };
 
 describe('ResourcePlugin tests', () => {
@@ -45,7 +45,7 @@ describe('ResourcePlugin tests', () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
 
-        const plugin = buildResourcePlugin();
+        const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
@@ -176,7 +176,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = new ResourcePlugin({ eventLimit: 1 });
+        const plugin: ResourcePlugin = buildResourcePlugin()({ eventLimit: 1 });
 
         // Run
         plugin.load(context);
@@ -194,7 +194,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObserver();
 
         // Run
-        const plugin: ResourcePlugin = new ResourcePlugin({ eventLimit: 1 });
+        const plugin: ResourcePlugin = buildResourcePlugin()({ eventLimit: 1 });
 
         plugin.load(context);
         window.dispatchEvent(new Event('load'));
@@ -217,7 +217,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = new ResourcePlugin({ eventLimit: 3 });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
 
         // Run
         plugin.load(context);
