@@ -86,10 +86,11 @@ export class NavigationPlugin extends InternalPlugin {
         } else {
             const navigationObserver = new PerformanceObserver((list) => {
                 list.getEntries().forEach((event) => {
-                    if (event.entryType !== NAVIGATION) {
-                        return;
+                    if (event.entryType === NAVIGATION) {
+                        this.performanceNavigationEventHandlerTimingLevel2(
+                            event
+                        );
                     }
-                    this.performanceNavigationEventHandlerTimingLevel2(event);
                 });
             });
             navigationObserver.observe({
