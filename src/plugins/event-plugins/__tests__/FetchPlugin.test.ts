@@ -900,7 +900,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('http events should contain non negative startTime and duration', async () => {
+    test('when http events are recorded then they contain non negative startTime and duration', async () => {
         const resetNow = mockNow();
         const plugin = new FetchPlugin();
 
@@ -918,7 +918,7 @@ describe('FetchPlugin tests', () => {
         resetNow();
     });
 
-    test('trace events should contain non negative start_time and end_time', async () => {
+    test('when trace events are recorded then they contain non negative start_time and end_time', async () => {
         const resetNow = mockNow();
         const plugin = new FetchPlugin();
 
@@ -936,7 +936,7 @@ describe('FetchPlugin tests', () => {
         resetNow();
     });
 
-    test('http and trace events should share timestamps', async () => {
+    test('when http and trace events are recorded then they should share the same timestamps', async () => {
         const resetNow = mockNow();
         const plugin = new FetchPlugin();
 

@@ -536,7 +536,7 @@ describe('XhrPlugin tests', () => {
         );
     });
 
-    test('when session is not being recorded then the plugin does not record anything', async () => {
+    test('when session is not being recorded then the plugin does not record a trace', async () => {
         // Init
         const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
             sessionId: 'abc123',
@@ -577,7 +577,7 @@ describe('XhrPlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
-    test('when getSession returns undefined then the plugin does not record anything', async () => {
+    test('when getSession returns undefined then the plugin does not record a trace', async () => {
         // Init
         const getSession: jest.MockedFunction<GetSession> = jest.fn();
         const context: PluginContext = {
@@ -615,7 +615,7 @@ describe('XhrPlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
-    test('when recordAllRequests is TRUE then the plugin records a request with status OK', async () => {
+    test('when recordAllRequests is true then the plugin records a request with status OK', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
@@ -643,7 +643,7 @@ describe('XhrPlugin tests', () => {
         expect(record).toHaveBeenCalled();
     });
 
-    test('when recordAllRequests is FALSE then the plugin does NOT record a request with status OK', async () => {
+    test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
@@ -821,7 +821,7 @@ describe('XhrPlugin tests', () => {
         });
     });
 
-    test('http events should contain non-negative startTime and duration', async () => {
+    test('when http events are recorded then they contain non negative startTime and duration', async () => {
         const resetNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOffContext);
@@ -845,7 +845,7 @@ describe('XhrPlugin tests', () => {
         resetNow();
     });
 
-    test('trace events should contain non negative start_time and end_time', async () => {
+    test('when trace events are recorded then they contain non negative start_time and end_time', async () => {
         const resetNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOnContext);
@@ -869,7 +869,7 @@ describe('XhrPlugin tests', () => {
         resetNow();
     });
 
-    test('http and trace events should share timestamps', async () => {
+    test('when http and trace events are recorded then they should share the same timestamps', async () => {
         const resetNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOnContext);
@@ -887,9 +887,9 @@ describe('XhrPlugin tests', () => {
         const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
         const httpEvent = record.mock.calls[1][1] as HttpEvent;
 
-        expect(traceEvent.start_time).toEqual(httpEvent.startTime / 1000);
+        expect(traceEvent.start_time).toEqual(httpEvent.startTime! / 1000);
         expect(traceEvent.end_time).toEqual(
-            (httpEvent.duration + httpEvent.startTime) / 1000
+            (httpEvent.duration! + httpEvent.startTime!) / 1000
         );
 
         resetNow();
