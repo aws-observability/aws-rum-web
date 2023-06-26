@@ -229,7 +229,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                     : 'GET'
             },
             startTime: Date.now(),
-            duration: -1 // impossible default value, must be overwritten
+            duration: 0
         };
     };
 

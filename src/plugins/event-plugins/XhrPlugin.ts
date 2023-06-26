@@ -16,8 +16,8 @@ import {
     is5xx
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
-import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
+import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
 
 type XhrDetails = {
     method: string;
