@@ -176,7 +176,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = buildResourcePlugin()({ eventLimit: 1 });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
         // Run
         plugin.load(context);
@@ -194,7 +194,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObserver();
 
         // Run
-        const plugin: ResourcePlugin = buildResourcePlugin()({ eventLimit: 1 });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
         plugin.load(context);
         window.dispatchEvent(new Event('load'));
