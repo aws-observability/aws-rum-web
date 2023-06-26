@@ -1,23 +1,23 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
-import { defaultPerformanceIgnore } from '../utils/performance-utils';
+import {
+    PartialPerformancePluginConfig,
+    PerformancePluginConfig,
+    defaultPerformancePluginConfig
+} from '../utils/performance-utils';
 
 export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 
 const NAVIGATION = 'navigation';
 const LOAD = 'load';
 
-export type PartialNavigationPluginConfig = {
-    ignore?: (event: PerformanceEntry) => any;
-};
+export type PartialNavigationPluginConfig = PartialPerformancePluginConfig;
 
-export type NavigationPluginConfig = {
-    ignore: (event: PerformanceEntry) => any;
-};
+export type NavigationPluginConfig = PerformancePluginConfig;
 
 export const defaultNavigationPluginConfig = {
-    ignore: defaultPerformanceIgnore
+    ...defaultPerformancePluginConfig
 };
 
 /**

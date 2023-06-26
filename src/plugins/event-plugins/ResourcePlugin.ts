@@ -6,7 +6,11 @@ import {
 } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
-import { defaultPerformanceIgnore } from '../utils/performance-utils';
+import {
+    defaultPerformancePluginConfig,
+    PartialPerformancePluginConfig,
+    PerformancePluginConfig
+} from '../utils/performance-utils';
 
 export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
@@ -14,21 +18,16 @@ const RESOURCE = 'resource';
 const LOAD = 'load';
 
 export type PartialResourcePluginConfig = {
-    eventLimit?: number;
     recordAllTypes?: ResourceType[];
     sampleTypes?: ResourceType[];
-    ignore?: (event: PerformanceEntry) => any;
-};
+} & PartialPerformancePluginConfig;
 
 export type ResourcePluginConfig = {
-    eventLimit: number;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
-    ignore: (event: PerformanceEntry) => any;
-};
+} & PerformancePluginConfig;
 
 export const defaultResourcePluginConfig = {
-    eventLimit: 10,
     recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
     sampleTypes: [
         ResourceType.STYLESHEET,
@@ -36,7 +35,7 @@ export const defaultResourcePluginConfig = {
         ResourceType.FONT,
         ResourceType.OTHER
     ],
-    ignore: defaultPerformanceIgnore
+    ...defaultPerformancePluginConfig
 };
 
 /**
