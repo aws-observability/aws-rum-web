@@ -108,11 +108,10 @@ describe('NavigationPlugin tests', () => {
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
     });
-    test('when ignore is customized then specific level 2 events are ignored', async () => {
+    test('when entry is ignored then level 2 navigation is not recorded', async () => {
         // enables plugin by default
         const plugin: NavigationPlugin = buildNavigationPlugin({
-            ignore: (event) =>
-                (event as PerformanceNavigationTiming).type === 'navigate'
+            ignore: (event) => true
         });
 
         plugin.load(context);

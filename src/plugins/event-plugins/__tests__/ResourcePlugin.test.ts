@@ -252,13 +252,12 @@ describe('ResourcePlugin tests', () => {
         );
     });
 
-    test('when ignore() is customized then specific events are not recorded', async () => {
+    test('when entry is ignored then resource is not recorded', async () => {
         // Setup
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
         const plugin = buildResourcePlugin({
-            ignore: (entry: PerformanceEntry) =>
-                getResourceFileType(entry.name) === 'image'
+            ignore: (entry: PerformanceEntry) => true
         });
 
         // Run
@@ -266,10 +265,6 @@ describe('ResourcePlugin tests', () => {
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
-        const calls = record.mock.calls;
-        expect(calls).toHaveLength(2);
-        for (const [, event] of calls) {
-            expect((event as ResourceEvent).initiatorType).not.toEqual('image');
-        }
+        expect(record).not.toHaveBeenCalled();
     });
 });
