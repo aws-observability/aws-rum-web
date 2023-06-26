@@ -1,5 +1,5 @@
 export const defaultPerformanceIgnore = (entry: PerformanceEntry) =>
-    entry.name.startsWith('chrome-extension');
+    entry.entryType === 'resource' && !/^https?:/.test(entry.name);
 
 export type PartialPerformancePluginConfig = {
     ignore?: (event: PerformanceEntry) => any;
