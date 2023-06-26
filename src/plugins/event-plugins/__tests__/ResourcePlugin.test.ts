@@ -26,7 +26,7 @@ import { PluginContext } from '../../types';
 import { getResourceFileType } from '../../../utils/common-utils';
 
 const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
-    return buildResourcePlugin(config);
+    return new ResourcePlugin(config);
 };
 
 describe('ResourcePlugin tests', () => {
