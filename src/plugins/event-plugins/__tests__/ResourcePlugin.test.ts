@@ -23,7 +23,6 @@ import {
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext } from '../../types';
-import { getResourceFileType } from '../../../utils/common-utils';
 
 const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
     return new ResourcePlugin(config);
