@@ -308,6 +308,22 @@ export const mockPerformanceEntry = (partialEntry?: any): PerformanceEntry => ({
     ...partialEntry
 });
 
+export const mockPerformanceResourceTiming = (
+    partialEntry?: any
+): PerformanceResourceTiming => ({
+    ...mockPerformanceEntry(),
+    ...partialEntry,
+    entryType: 'resource'
+});
+
+export const mockPerformanceNavigationTiming = (
+    partialEntry?: any
+): PerformanceNavigationTiming => ({
+    ...mockPerformanceEntry(),
+    ...partialEntry,
+    entryType: 'navigation'
+});
+
 export class MockEmptyPerformanceObserver {
     constructor(cb: any) {
         (this as any).observe = (options: ObserveInterface) => {
