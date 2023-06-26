@@ -88,7 +88,7 @@ export class NavigationPlugin extends InternalPlugin {
                 list.getEntries().forEach((event) => {
                     if (event.entryType === NAVIGATION) {
                         this.performanceNavigationEventHandlerTimingLevel2(
-                            event
+                            event as PerformanceNavigationTiming
                         );
                     }
                 });
@@ -199,15 +199,24 @@ export class NavigationPlugin extends InternalPlugin {
     /**
      * W3C specification: https://www.w3.org/TR/navigation-timing-2/#bib-navigation-timing
      */
-    performanceNavigationEventHandlerTimingLevel2 = (entryData: any): void => {
-        if (this.config.ignore(entryData as PerformanceNavigationTiming)) {
+    performanceNavigationEventHandlerTimingLevel2 = (
+        entryData: PerformanceNavigationTiming
+    ): void => {
+        if (this.config.ignore(entryData)) {
             return;
         }
 
         const eventDataNavigationTimingLevel2: NavigationEvent = {
             version: '1.0.0',
-            initiatorType: entryData.initiatorType,
-            navigationType: entryData.type,
+            initiatorType: entryData.initiatorType as
+                | 'navigation'
+                | 'route_change',
+            navigationType: entryData.type as
+                | 'back_forward'
+                | 'navigate'
+                | 'reload'
+                | 'reserved'
+                | undefined,
             startTime: entryData.startTime,
             unloadEventStart: entryData.unloadEventStart,
             promptForUnload:
