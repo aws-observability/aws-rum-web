@@ -54,10 +54,8 @@ export class ResourcePlugin extends InternalPlugin {
         const resourceObserver = new PerformanceObserver((list) => {
             list.getEntries()
                 .filter((e) => e.entryType === RESOURCE)
+                .filter((e) => !this.config.ignore(e))
                 .forEach((event) => {
-                    if (this.config.ignore(event)) {
-                        return;
-                    }
                     // Out of n resource events, x events are recorded using Observer API
                     const type: ResourceType = getResourceFileType(event.name);
                     if (this.config.recordAllTypes.includes(type)) {
@@ -75,17 +73,16 @@ export class ResourcePlugin extends InternalPlugin {
         // Note: IE11 browser does not support Performance Observer API. Handle the failure gracefully
         const events = performance.getEntriesByType(RESOURCE);
         if (events !== undefined && events.length > 0) {
-            events.forEach((event) => {
-                if (this.config.ignore(event)) {
-                    return;
-                }
-                const type: ResourceType = getResourceFileType(event.name);
-                if (this.config.recordAllTypes.includes(type)) {
-                    recordAll.push(event);
-                } else if (this.config.sampleTypes.includes(type)) {
-                    sample.push(event);
-                }
-            });
+            events
+                .filter((e) => !this.config.ignore(e))
+                .forEach((event) => {
+                    const type: ResourceType = getResourceFileType(event.name);
+                    if (this.config.recordAllTypes.includes(type)) {
+                        recordAll.push(event);
+                    } else if (this.config.sampleTypes.includes(type)) {
+                        sample.push(event);
+                    }
+                });
         }
 
         // Record events for resources in recordAllTypes

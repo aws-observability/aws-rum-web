@@ -77,13 +77,14 @@ export class NavigationPlugin extends InternalPlugin {
             this.performanceNavigationEventHandlerTimingLevel1();
         } else {
             const navigationObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((event) => {
-                    if (event.entryType === NAVIGATION) {
+                list.getEntries()
+                    .filter((e) => e.entryType === NAVIGATION)
+                    .filter((e) => !this.config.ignore(e))
+                    .forEach((event) => {
                         this.performanceNavigationEventHandlerTimingLevel2(
                             event as PerformanceNavigationTiming
                         );
-                    }
-                });
+                    });
             });
             navigationObserver.observe({
                 entryTypes: [NAVIGATION]
@@ -194,10 +195,6 @@ export class NavigationPlugin extends InternalPlugin {
     performanceNavigationEventHandlerTimingLevel2 = (
         entryData: PerformanceNavigationTiming
     ): void => {
-        if (this.config.ignore(entryData)) {
-            return;
-        }
-
         const eventDataNavigationTimingLevel2: NavigationEvent = {
             version: '1.0.0',
             initiatorType: entryData.initiatorType as
@@ -282,10 +279,14 @@ export class NavigationPlugin extends InternalPlugin {
     protected onload(): void {
         if (this.enabled) {
             if (this.hasTheWindowLoadEventFired()) {
-                const navData = window.performance.getEntriesByType(
-                    NAVIGATION
-                )[0] as PerformanceNavigationTiming;
-                this.performanceNavigationEventHandlerTimingLevel2(navData);
+                window.performance
+                    .getEntriesByType(NAVIGATION)
+                    .filter((e) => !this.config.ignore(e))
+                    .forEach((event) =>
+                        this.performanceNavigationEventHandlerTimingLevel2(
+                            event
+                        )
+                    );
             } else {
                 window.addEventListener(LOAD, this.eventListener);
             }
