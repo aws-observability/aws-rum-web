@@ -300,30 +300,6 @@ export const MockPerformanceTiming: PerformanceTiming = {
     toJSON: () => ({})
 };
 
-export const mockPerformanceEntry = (partialEntry?: any): PerformanceEntry => ({
-    name: 'localhost',
-    entryType: 'resource',
-    duration: 10,
-    startTime: 0,
-    ...partialEntry
-});
-
-export const mockPerformanceResourceTiming = (
-    partialEntry?: any
-): PerformanceResourceTiming => ({
-    ...mockPerformanceEntry(),
-    ...partialEntry,
-    entryType: 'resource'
-});
-
-export const mockPerformanceNavigationTiming = (
-    partialEntry?: any
-): PerformanceNavigationTiming => ({
-    ...mockPerformanceEntry(),
-    ...partialEntry,
-    entryType: 'navigation'
-});
-
 export class MockEmptyPerformanceObserver {
     constructor(cb: any) {
         (this as any).observe = (options: ObserveInterface) => {
