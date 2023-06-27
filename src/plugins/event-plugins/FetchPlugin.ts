@@ -228,8 +228,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                     ? request.method
                     : 'GET'
             },
-            startTime: Date.now(),
-            duration: 0
+            startTime: Date.now()
         };
     };
 
