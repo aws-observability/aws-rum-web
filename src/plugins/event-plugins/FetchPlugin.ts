@@ -215,7 +215,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
 
     private createHttpEvent = (
         input: RequestInfo | URL | string,
-        init?: RequestInit
+        init?: RequestInit,
+        startTimeMs?: number
     ): HttpEvent => {
         const request = input as Request;
         return {
@@ -228,7 +229,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                     ? request.method
                     : 'GET'
             },
-            startTime: Date.now()
+            startTime: startTimeMs
         };
     };
 
@@ -273,7 +274,12 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         input: RequestInfo | URL | string,
         init?: RequestInit
     ): Promise<Response> => {
-        const httpEvent: HttpEvent = this.createHttpEvent(input, init);
+        const startTimeMs = Date.now();
+        const httpEvent: HttpEvent = this.createHttpEvent(
+            input,
+            init,
+            startTimeMs
+        );
         let trace: XRayTraceEvent | undefined;
 
         if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
@@ -281,12 +287,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            trace = this.beginTrace(
-                input,
-                init,
-                argsArray,
-                httpEvent.startTime! / 1000
-            );
+            trace = this.beginTrace(input, init, argsArray, startTimeMs / 1000);
         }
 
         return original

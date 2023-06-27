@@ -24,8 +24,8 @@ type XhrDetails = {
     url: string;
     async: boolean;
     trace?: XRayTraceEvent;
-    startTime: number;
-    endTime?: number;
+    startTimeMs: number;
+    endTimeMs?: number;
 };
 
 /**
@@ -125,10 +125,10 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
 
     /** Updates endTime if empty and returns it in seconds */
     private fillEndTimeIfEmpty(xhrDetails: XhrDetails) {
-        if (!xhrDetails.endTime) {
-            xhrDetails.endTime = Date.now();
+        if (!xhrDetails.endTimeMs) {
+            xhrDetails.endTimeMs = Date.now();
         }
-        return xhrDetails.endTime / 1000;
+        return xhrDetails.endTimeMs / 1000;
     }
 
     private addXRayTraceIdHeader = () => {
@@ -263,8 +263,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 version: '1.0.0',
                 request: { method: xhrDetails.method, url: xhrDetails.url },
                 response: { status: xhr.status, statusText: xhr.statusText },
-                startTime: xhrDetails.startTime,
-                duration: xhrDetails.endTime! - xhrDetails.startTime
+                startTime: xhrDetails.startTimeMs,
+                duration: xhrDetails.endTimeMs! - xhrDetails.startTimeMs
             };
             this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
@@ -277,8 +277,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const httpEvent: HttpEvent = {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url },
-            startTime: xhrDetails.startTime,
-            duration: xhrDetails.endTime! - xhrDetails.startTime
+            startTime: xhrDetails.startTimeMs,
+            duration: xhrDetails.endTimeMs! - xhrDetails.startTimeMs
         };
 
         httpEvent.error = errorEventToJsErrorEvent(
@@ -298,7 +298,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     }
 
     private initializeTrace = (xhrDetails: XhrDetails) => {
-        const startTimeSeconds = xhrDetails.startTime / 1000;
+        const startTimeSeconds = xhrDetails.startTimeMs / 1000;
         xhrDetails.trace = createXRayTraceEvent(
             this.config.logicalServiceName,
             startTimeSeconds
@@ -362,9 +362,9 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 url: string,
                 async: boolean
             ): void {
-                const startTime = Date.now();
+                const startTimeMs = Date.now();
                 if (isUrlAllowed(url, self.config)) {
-                    self.xhrMap.set(this, { url, method, async, startTime });
+                    self.xhrMap.set(this, { url, method, async, startTimeMs });
                 }
                 return original.apply(this, arguments);
             };
