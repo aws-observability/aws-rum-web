@@ -1,17 +1,30 @@
-export const defaultPerformanceIgnore = (entry: PerformanceEntry) =>
+import { ResourceType } from '../../utils/common-utils';
+
+export const defaultIgnore = (entry: PerformanceEntry) =>
     entry.entryType === 'resource' && !/^https?:/.test(entry.name);
 
 export type PartialPerformancePluginConfig = {
-    ignore?: (event: PerformanceEntry) => any;
     eventLimit?: number;
+    ignore?: (event: PerformanceEntry) => any;
+    recordAllTypes?: ResourceType[];
+    sampleTypes?: ResourceType[];
 };
 
 export type PerformancePluginConfig = {
-    ignore: (event: PerformanceEntry) => any;
     eventLimit: number;
+    ignore: (event: PerformanceEntry) => any;
+    recordAllTypes: ResourceType[];
+    sampleTypes: ResourceType[];
 };
 
 export const defaultPerformancePluginConfig = {
-    ignore: defaultPerformanceIgnore,
-    eventLimit: 10
+    eventLimit: 10,
+    ignore: defaultIgnore,
+    recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
+    sampleTypes: [
+        ResourceType.STYLESHEET,
+        ResourceType.IMAGE,
+        ResourceType.FONT,
+        ResourceType.OTHER
+    ]
 };

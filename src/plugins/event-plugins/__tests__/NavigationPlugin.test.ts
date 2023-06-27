@@ -7,14 +7,12 @@ import {
     mockPerformanceObjectWith,
     putRumEventsDocument
 } from '../../../test-utils/mock-data';
-import {
-    NavigationPlugin,
-    PartialNavigationPluginConfig
-} from '../NavigationPlugin';
+import { NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
+import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
-const buildNavigationPlugin = (config?: PartialNavigationPluginConfig) => {
+const buildNavigationPlugin = (config?: PartialPerformancePluginConfig) => {
     return new NavigationPlugin(config);
 };
 

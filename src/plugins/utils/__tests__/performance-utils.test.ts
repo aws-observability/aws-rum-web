@@ -1,4 +1,4 @@
-import { defaultPerformanceIgnore } from '../performance-utils';
+import { defaultIgnore } from '../performance-utils';
 import {
     mockPerformanceEntry,
     mockPerformanceNavigationTiming,
@@ -12,7 +12,7 @@ describe('performance-utils', () => {
                 name: 'chrome-extension://localhost',
                 entryType: 'resource'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(true);
         });
         test('when resource entry is PerformanceEntry and has http URL schema then entry is not ignored', () => {
@@ -20,7 +20,7 @@ describe('performance-utils', () => {
                 name: 'http://localhost',
                 entryType: 'resource'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
         test('when resource entry is PerformanceEntry and has https URL schema then entry is not ignored', () => {
@@ -28,7 +28,7 @@ describe('performance-utils', () => {
                 name: 'https://localhost',
                 entryType: 'resource'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
 
@@ -36,7 +36,7 @@ describe('performance-utils', () => {
             const mockEntry = mockPerformanceResourceTiming({
                 name: 'chrome-extension://localhost'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(true);
         });
 
@@ -44,7 +44,7 @@ describe('performance-utils', () => {
             const mockEntry = mockPerformanceResourceTiming({
                 name: 'http://localhost'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
 
@@ -52,7 +52,7 @@ describe('performance-utils', () => {
             const mockEntry = mockPerformanceResourceTiming({
                 name: 'https://localhost'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
 
@@ -60,7 +60,7 @@ describe('performance-utils', () => {
             const mockEntry = mockPerformanceNavigationTiming({
                 name: 'chrome-extension://localhost'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
 
@@ -68,7 +68,7 @@ describe('performance-utils', () => {
             const mockEntry = mockPerformanceNavigationTiming({
                 name: 'http://localhost'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
 
@@ -76,7 +76,7 @@ describe('performance-utils', () => {
             const mockEntry = mockPerformanceNavigationTiming({
                 name: 'https://localhost'
             });
-            const result = defaultPerformanceIgnore(mockEntry);
+            const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
     });

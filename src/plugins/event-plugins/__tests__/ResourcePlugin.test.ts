@@ -11,7 +11,7 @@ import {
     putRumEventsGammaDocument,
     dataPlaneDocument
 } from '../../../test-utils/mock-data';
-import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
+import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import {
     context,
@@ -23,8 +23,9 @@ import {
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext } from '../../types';
+import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
-const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
+const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
     return new ResourcePlugin(config);
 };
 

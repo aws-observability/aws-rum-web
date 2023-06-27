@@ -17,36 +17,15 @@ export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 const RESOURCE = 'resource';
 const LOAD = 'load';
 
-export type PartialResourcePluginConfig = {
-    recordAllTypes?: ResourceType[];
-    sampleTypes?: ResourceType[];
-} & PartialPerformancePluginConfig;
-
-export type ResourcePluginConfig = {
-    recordAllTypes: ResourceType[];
-    sampleTypes: ResourceType[];
-} & PerformancePluginConfig;
-
-export const defaultResourcePluginConfig = {
-    recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
-    sampleTypes: [
-        ResourceType.STYLESHEET,
-        ResourceType.IMAGE,
-        ResourceType.FONT,
-        ResourceType.OTHER
-    ],
-    ...defaultPerformancePluginConfig
-};
-
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
 export class ResourcePlugin extends InternalPlugin {
-    private config: ResourcePluginConfig;
+    private config: PerformancePluginConfig;
 
-    constructor(config?: PartialResourcePluginConfig) {
+    constructor(config?: PartialPerformancePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
-        this.config = { ...defaultResourcePluginConfig, ...config };
+        this.config = { ...defaultPerformancePluginConfig, ...config };
     }
 
     enable(): void {

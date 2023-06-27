@@ -12,24 +12,16 @@ export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 const NAVIGATION = 'navigation';
 const LOAD = 'load';
 
-export type PartialNavigationPluginConfig = PartialPerformancePluginConfig;
-
-export type NavigationPluginConfig = PerformancePluginConfig;
-
-export const defaultNavigationPluginConfig = {
-    ...defaultPerformancePluginConfig
-};
-
 /**
  * This plugin records performance timing events generated during every page load/re-load activity.
  * Paint, resource and performance event types make sense only if all or none are included.
  * For RUM, these event types are inter-dependent. So they are recorded under one plugin.
  */
 export class NavigationPlugin extends InternalPlugin {
-    private config: NavigationPluginConfig;
-    constructor(config?: PartialNavigationPluginConfig) {
+    private config: PerformancePluginConfig;
+    constructor(config?: PartialPerformancePluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
-        this.config = { ...defaultNavigationPluginConfig, ...config };
+        this.config = { ...defaultPerformancePluginConfig, ...config };
     }
 
     enable(): void {
