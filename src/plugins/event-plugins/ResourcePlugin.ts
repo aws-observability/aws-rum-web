@@ -6,44 +6,26 @@ import {
 } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
+import {
+    defaultPerformancePluginConfig,
+    PartialPerformancePluginConfig,
+    PerformancePluginConfig
+} from '../utils/performance-utils';
 
 export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
 const RESOURCE = 'resource';
 const LOAD = 'load';
 
-export type PartialResourcePluginConfig = {
-    eventLimit?: number;
-    recordAllTypes?: ResourceType[];
-    sampleTypes?: ResourceType[];
-};
-
-export type ResourcePluginConfig = {
-    eventLimit: number;
-    recordAllTypes: ResourceType[];
-    sampleTypes: ResourceType[];
-};
-
-export const defaultConfig = {
-    eventLimit: 10,
-    recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
-    sampleTypes: [
-        ResourceType.STYLESHEET,
-        ResourceType.IMAGE,
-        ResourceType.FONT,
-        ResourceType.OTHER
-    ]
-};
-
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
 export class ResourcePlugin extends InternalPlugin {
-    private config: ResourcePluginConfig;
+    private config: PerformancePluginConfig;
 
-    constructor(config?: PartialResourcePluginConfig) {
+    constructor(config?: PartialPerformancePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
-        this.config = { ...defaultConfig, ...config };
+        this.config = { ...defaultPerformancePluginConfig, ...config };
     }
 
     enable(): void {
@@ -72,6 +54,7 @@ export class ResourcePlugin extends InternalPlugin {
         const resourceObserver = new PerformanceObserver((list) => {
             list.getEntries()
                 .filter((e) => e.entryType === RESOURCE)
+                .filter((e) => !this.config.ignore(e))
                 .forEach((event) => {
                     // Out of n resource events, x events are recorded using Observer API
                     const type: ResourceType = getResourceFileType(event.name);
@@ -90,14 +73,16 @@ export class ResourcePlugin extends InternalPlugin {
         // Note: IE11 browser does not support Performance Observer API. Handle the failure gracefully
         const events = performance.getEntriesByType(RESOURCE);
         if (events !== undefined && events.length > 0) {
-            events.forEach((event) => {
-                const type: ResourceType = getResourceFileType(event.name);
-                if (this.config.recordAllTypes.includes(type)) {
-                    recordAll.push(event);
-                } else if (this.config.sampleTypes.includes(type)) {
-                    sample.push(event);
-                }
-            });
+            events
+                .filter((e) => !this.config.ignore(e))
+                .forEach((event) => {
+                    const type: ResourceType = getResourceFileType(event.name);
+                    if (this.config.recordAllTypes.includes(type)) {
+                        recordAll.push(event);
+                    } else if (this.config.sampleTypes.includes(type)) {
+                        sample.push(event);
+                    }
+                });
         }
 
         // Record events for resources in recordAllTypes

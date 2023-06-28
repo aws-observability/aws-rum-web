@@ -506,7 +506,7 @@ export class Orchestration {
             },
             [TelemetryEnum.Performance]: (config: object): InternalPlugin[] => {
                 return [
-                    new NavigationPlugin(),
+                    new NavigationPlugin(config),
                     new ResourcePlugin(config),
                     new WebVitalsPlugin()
                 ];

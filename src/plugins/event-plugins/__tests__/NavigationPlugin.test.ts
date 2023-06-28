@@ -10,9 +10,10 @@ import {
 import { NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
+import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
-const buildNavigationPlugin = () => {
-    return new NavigationPlugin();
+const buildNavigationPlugin = (config?: PartialPerformancePluginConfig) => {
+    return new NavigationPlugin(config);
 };
 
 describe('NavigationPlugin tests', () => {
@@ -104,6 +105,19 @@ describe('NavigationPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
+    });
+    test('when entry is ignored then level 2 navigation is not recorded', async () => {
+        // enables plugin by default
+        const plugin: NavigationPlugin = buildNavigationPlugin({
+            ignore: (event) => true
+        });
+
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
     });
 
     test('when window.load fires after plugin loads then navigation timing is recorded', async () => {

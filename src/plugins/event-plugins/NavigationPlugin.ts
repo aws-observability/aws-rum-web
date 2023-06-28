@@ -1,6 +1,11 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
+import {
+    PartialPerformancePluginConfig,
+    PerformancePluginConfig,
+    defaultPerformancePluginConfig
+} from '../utils/performance-utils';
 
 export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 
@@ -13,8 +18,10 @@ const LOAD = 'load';
  * For RUM, these event types are inter-dependent. So they are recorded under one plugin.
  */
 export class NavigationPlugin extends InternalPlugin {
-    constructor() {
+    private config: PerformancePluginConfig;
+    constructor(config?: PartialPerformancePluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
+        this.config = { ...defaultPerformancePluginConfig, ...config };
     }
 
     enable(): void {
@@ -70,13 +77,14 @@ export class NavigationPlugin extends InternalPlugin {
             this.performanceNavigationEventHandlerTimingLevel1();
         } else {
             const navigationObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((event) => {
-                    if (event.entryType === NAVIGATION) {
+                list.getEntries()
+                    .filter((e) => e.entryType === NAVIGATION)
+                    .filter((e) => !this.config.ignore(e))
+                    .forEach((event) => {
                         this.performanceNavigationEventHandlerTimingLevel2(
-                            event
+                            event as PerformanceNavigationTiming
                         );
-                    }
-                });
+                    });
             });
             navigationObserver.observe({
                 entryTypes: [NAVIGATION]
@@ -184,11 +192,20 @@ export class NavigationPlugin extends InternalPlugin {
     /**
      * W3C specification: https://www.w3.org/TR/navigation-timing-2/#bib-navigation-timing
      */
-    performanceNavigationEventHandlerTimingLevel2 = (entryData: any): void => {
+    performanceNavigationEventHandlerTimingLevel2 = (
+        entryData: PerformanceNavigationTiming
+    ): void => {
         const eventDataNavigationTimingLevel2: NavigationEvent = {
             version: '1.0.0',
-            initiatorType: entryData.initiatorType,
-            navigationType: entryData.type,
+            initiatorType: entryData.initiatorType as
+                | 'navigation'
+                | 'route_change',
+            navigationType: entryData.type as
+                | 'back_forward'
+                | 'navigate'
+                | 'reload'
+                | 'reserved'
+                | undefined,
             startTime: entryData.startTime,
             unloadEventStart: entryData.unloadEventStart,
             promptForUnload:
@@ -262,10 +279,14 @@ export class NavigationPlugin extends InternalPlugin {
     protected onload(): void {
         if (this.enabled) {
             if (this.hasTheWindowLoadEventFired()) {
-                const navData = window.performance.getEntriesByType(
-                    NAVIGATION
-                )[0] as PerformanceNavigationTiming;
-                this.performanceNavigationEventHandlerTimingLevel2(navData);
+                window.performance
+                    .getEntriesByType(NAVIGATION)
+                    .filter((e) => !this.config.ignore(e))
+                    .forEach((event) =>
+                        this.performanceNavigationEventHandlerTimingLevel2(
+                            event
+                        )
+                    );
             } else {
                 window.addEventListener(LOAD, this.eventListener);
             }

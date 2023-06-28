@@ -11,7 +11,7 @@ import {
     putRumEventsGammaDocument,
     dataPlaneDocument
 } from '../../../test-utils/mock-data';
-import { PartialResourcePluginConfig, ResourcePlugin } from '../ResourcePlugin';
+import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import {
     context,
@@ -23,8 +23,9 @@ import {
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext } from '../../types';
+import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
-const buildResourcePlugin = (config?: PartialResourcePluginConfig) => {
+const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
     return new ResourcePlugin(config);
 };
 
@@ -249,5 +250,21 @@ describe('ResourcePlugin tests', () => {
                 fileType: cssResourceEvent.fileType
             })
         );
+    });
+
+    test('when entry is ignored then resource is not recorded', async () => {
+        // Setup
+        mockPerformanceObjectWithResources();
+        mockPerformanceObserver();
+        const plugin = buildResourcePlugin({
+            ignore: (entry: PerformanceEntry) => true
+        });
+
+        // Run
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        expect(record).not.toHaveBeenCalled();
     });
 });
