@@ -24,8 +24,8 @@ type XhrDetails = {
     url: string;
     async: boolean;
     trace?: XRayTraceEvent;
-    startTimeMs: number;
-    endTimeMs?: number;
+    startTime: number;
+    endTime?: number;
 };
 
 /**
@@ -123,12 +123,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         ];
     }
 
-    /** Updates endTime if empty and returns it in seconds */
-    private fillEndTimeIfEmpty(xhrDetails: XhrDetails) {
-        if (!xhrDetails.endTimeMs) {
-            xhrDetails.endTimeMs = Date.now();
-        }
-        return xhrDetails.endTimeMs / 1000;
+    private updateEndTime(xhrDetails: XhrDetails) {
+        xhrDetails.endTime = Date.now();
     }
 
     private addXRayTraceIdHeader = () => {
@@ -147,9 +143,10 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails: XhrDetails = this.xhrMap.get(xhr) as XhrDetails;
         if (xhrDetails) {
-            const endTimeSeconds = this.fillEndTimeIfEmpty(xhrDetails);
-            xhrDetails.trace!.end_time = endTimeSeconds;
-            xhrDetails.trace!.subsegments![0].end_time = endTimeSeconds;
+            this.updateEndTime(xhrDetails);
+            xhrDetails.trace!.end_time = xhrDetails.endTime! / 1000;
+            xhrDetails.trace!.subsegments![0].end_time =
+                xhrDetails.endTime! / 1000;
             xhrDetails.trace!.subsegments![0].http!.response = {
                 status: xhr.status
             };
@@ -184,14 +181,15 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             ? xhr.status.toString() + ': ' + xhr.statusText
             : xhr.status.toString();
         if (xhrDetails) {
-            const endTimeSeconds = this.fillEndTimeIfEmpty(xhrDetails);
             // Guidance from X-Ray documentation:
             // > Record errors in segments when your application returns an
             // > error to the user, and in subsegments when a downstream call
             // > returns an error.
+            this.updateEndTime(xhrDetails);
             xhrDetails.trace!.fault = true;
-            xhrDetails.trace!.end_time = endTimeSeconds;
-            xhrDetails.trace!.subsegments![0].end_time = endTimeSeconds;
+            xhrDetails.trace!.end_time = xhrDetails.endTime! / 1000;
+            xhrDetails.trace!.subsegments![0].end_time =
+                xhrDetails.endTime! / 1000;
             xhrDetails.trace!.subsegments![0].fault = true;
             xhrDetails.trace!.subsegments![0].cause = {
                 exceptions: [
@@ -213,9 +211,9 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails = this.xhrMap.get(xhr);
         if (xhrDetails) {
-            this.fillEndTimeIfEmpty(xhrDetails);
+            this.updateEndTime(xhrDetails);
             const errorName = 'XMLHttpRequest abort';
-            this.handleXhrDetailsOnError(xhrDetails, errorName);
+            this.handleXhrDetailsOnError(xhrDetails, 'XMLHttpRequest abort');
         }
     };
 
@@ -223,7 +221,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails = this.xhrMap.get(xhr);
         if (xhrDetails) {
-            this.fillEndTimeIfEmpty(xhrDetails);
+            this.updateEndTime(xhrDetails);
             const errorName = 'XMLHttpRequest timeout';
             this.handleXhrDetailsOnError(xhrDetails, errorName);
         }
@@ -234,9 +232,9 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         errorName: string
     ) {
         if (xhrDetails) {
-            const endTimeSeconds = this.fillEndTimeIfEmpty(xhrDetails);
-            xhrDetails.trace!.end_time = endTimeSeconds;
-            xhrDetails.trace!.subsegments![0].end_time = endTimeSeconds;
+            xhrDetails.trace!.end_time = xhrDetails.endTime! / 1000;
+            xhrDetails.trace!.subsegments![0].end_time =
+                xhrDetails.endTime! / 1000;
             xhrDetails.trace!.subsegments![0].error = true;
             xhrDetails.trace!.subsegments![0].cause = {
                 exceptions: [
@@ -259,14 +257,13 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         xhr: XMLHttpRequest
     ) {
         if (this.config.recordAllRequests || !this.statusOk(xhr.status)) {
-            const httpEvent: HttpEvent = {
+            this.context.record(HTTP_EVENT_TYPE, {
                 version: '1.0.0',
                 request: { method: xhrDetails.method, url: xhrDetails.url },
                 response: { status: xhr.status, statusText: xhr.statusText },
-                startTime: xhrDetails.startTimeMs,
-                duration: xhrDetails.endTimeMs! - xhrDetails.startTimeMs
-            };
-            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+                startTime: xhrDetails.startTime,
+                duration: xhrDetails.endTime! - xhrDetails.startTime
+            });
         }
     }
 
@@ -277,8 +274,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const httpEvent: HttpEvent = {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url },
-            startTime: xhrDetails.startTimeMs,
-            duration: xhrDetails.endTimeMs! - xhrDetails.startTimeMs
+            startTime: xhrDetails.startTime,
+            duration: xhrDetails.endTime! - xhrDetails.startTime
         };
 
         httpEvent.error = errorEventToJsErrorEvent(
@@ -291,22 +288,21 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     }
 
-    private recordTraceEvent(traceEvent: XRayTraceEvent) {
+    private recordTraceEvent(trace: XRayTraceEvent) {
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            this.context.record(XRAY_TRACE_EVENT_TYPE, traceEvent);
+            this.context.record(XRAY_TRACE_EVENT_TYPE, trace);
         }
     }
 
     private initializeTrace = (xhrDetails: XhrDetails) => {
-        const startTimeSeconds = xhrDetails.startTimeMs / 1000;
         xhrDetails.trace = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTimeSeconds
+            xhrDetails.startTime
         );
         xhrDetails.trace.subsegments!.push(
             createXRaySubsegment(
                 requestInfoToHostname(xhrDetails.url),
-                startTimeSeconds,
+                xhrDetails.startTime,
                 {
                     request: {
                         method: xhrDetails.method,
@@ -362,9 +358,13 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 url: string,
                 async: boolean
             ): void {
-                const startTimeMs = Date.now();
                 if (isUrlAllowed(url, self.config)) {
-                    self.xhrMap.set(this, { url, method, async, startTimeMs });
+                    self.xhrMap.set(this, {
+                        url,
+                        method,
+                        async,
+                        startTime: Date.now()
+                    });
                 }
                 return original.apply(this, arguments);
             };

@@ -84,16 +84,16 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         input: RequestInfo | URL | string,
         init: RequestInit | undefined,
         argsArray: IArguments,
-        startTimeSeconds: number
+        startTime: number
     ): XRayTraceEvent => {
         const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTimeSeconds
+            startTime
         );
         const subsegment: Subsegment = createXRaySubsegment(
             requestInfoToHostname(input),
-            startTimeSeconds,
+            startTime,
             http
         );
         xRayTraceEvent.subsegments!.push(subsegment);
@@ -135,11 +135,11 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         xRayTraceEvent: XRayTraceEvent | undefined,
         response: Response | undefined,
         error: Error | string | number | boolean | undefined,
-        endTimeSeconds: number
+        endTime: number
     ) => {
         if (xRayTraceEvent) {
-            xRayTraceEvent.subsegments![0].end_time = endTimeSeconds;
-            xRayTraceEvent.end_time = endTimeSeconds;
+            xRayTraceEvent.subsegments![0].end_time = endTime / 1000;
+            xRayTraceEvent.end_time = endTime / 1000;
 
             if (response) {
                 xRayTraceEvent.subsegments![0].http!.response = {
@@ -216,7 +216,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private createHttpEvent = (
         input: RequestInfo | URL | string,
         init?: RequestInit,
-        startTimeMs?: number
+        startTime?: number
     ): HttpEvent => {
         const request = input as Request;
         return {
@@ -229,7 +229,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                     ? request.method
                     : 'GET'
             },
-            startTime: startTimeMs
+            startTime
         };
     };
 
@@ -260,13 +260,6 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     };
 
-    /** Manually updates the http duration and returns the end time in seconds */
-    private updateDurationManually(httpEvent: HttpEvent): number {
-        const endTime = Date.now();
-        httpEvent.duration = endTime - httpEvent.startTime!;
-        return endTime / 1000;
-    }
-
     private fetch = (
         original: Fetch,
         thisArg: Fetch,
@@ -274,11 +267,10 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         input: RequestInfo | URL | string,
         init?: RequestInit
     ): Promise<Response> => {
-        const startTimeMs = Date.now();
         const httpEvent: HttpEvent = this.createHttpEvent(
             input,
             init,
-            startTimeMs
+            Date.now()
         );
         let trace: XRayTraceEvent | undefined;
 
@@ -287,20 +279,27 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            trace = this.beginTrace(input, init, argsArray, startTimeMs / 1000);
+            trace = this.beginTrace(
+                input,
+                init,
+                argsArray,
+                httpEvent.startTime!
+            );
         }
 
         return original
             .apply(thisArg, argsArray as any)
             .then((response: Response) => {
-                const endTimeSeconds = this.updateDurationManually(httpEvent);
-                this.endTrace(trace, response, undefined, endTimeSeconds);
+                const endTime = Date.now();
+                httpEvent.duration = endTime - httpEvent.startTime!;
+                this.endTrace(trace, response, undefined, endTime);
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
             .catch((error: Error) => {
-                const endTimeSeconds = this.updateDurationManually(httpEvent);
-                this.endTrace(trace, undefined, error, endTimeSeconds);
+                const endTime = Date.now();
+                httpEvent.duration = Date.now() - httpEvent.startTime!;
+                this.endTrace(trace, undefined, error, endTime);
                 this.recordHttpEventWithError(httpEvent, error);
                 throw error;
             });
