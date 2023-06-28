@@ -3,7 +3,7 @@ import {
     Subsegment,
     XRayTraceEvent
 } from '../../events/xray-trace-event';
-
+import { MonkeyPatched } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
     defaultConfig,
@@ -20,13 +20,12 @@ import {
     is4xx,
     is5xx
 } from '../utils/http-utils';
+import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
     errorEventToJsErrorEvent,
     isErrorPrimitive
 } from '../utils/js-error-utils';
 import { HttpEvent } from '../../events/http-event';
-import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
-import { MonkeyPatched } from '../MonkeyPatched';
 
 type Fetch = typeof fetch;
 
