@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Filter unwanted performance events with custom callback. By default, ignore resources with non-http url scheme. ([#419](https://github.com/aws-observability/aws-rum-web/issues/419)) ([42a2ae5](https://github.com/aws-observability/aws-rum-web/commit/42a2ae568b954190db942377df32c7fc5b89686e))
+* Ignore resources with non-http scheme ([#419](https://github.com/aws-observability/aws-rum-web/issues/419)) ([42a2ae5](https://github.com/aws-observability/aws-rum-web/commit/42a2ae568b954190db942377df32c7fc5b89686e)).
 
 ### Bug Fixes
 * Export PageAttributes type. ([#369](https://github.com/aws-observability/aws-rum-web/issues/369)) ([4b78dc1](https://github.com/aws-observability/aws-rum-web/commit/4b78dc14799151422bee07f6263c1aaa098354f6))
