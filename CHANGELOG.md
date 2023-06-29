@@ -7,17 +7,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* Create a session ID when cookies are disabled ([#314](https://github.com/aws-observability/aws-rum-web/issues/314)) ([6943587](https://github.com/aws-observability/aws-rum-web/commit/6943587259b8d7623742656199dc26b26b5bcd5d))
 * Ignore resources with non-http scheme ([#419](https://github.com/aws-observability/aws-rum-web/issues/419)) ([42a2ae5](https://github.com/aws-observability/aws-rum-web/commit/42a2ae568b954190db942377df32c7fc5b89686e))
-* Increase stack trace length ([#313](https://github.com/aws-observability/aws-rum-web/issues/313)) ([28e34c5](https://github.com/aws-observability/aws-rum-web/commit/28e34c5ad541e1fc1e0b12c1a937289df5911791))
-* referrer ([#327](https://github.com/aws-observability/aws-rum-web/issues/327)) ([a414c92](https://github.com/aws-observability/aws-rum-web/commit/a414c9265b37f9eafe7ae6475fe71357beadbcfc))
-* webclient version and installation method ([#321](https://github.com/aws-observability/aws-rum-web/issues/321)) ([97c543a](https://github.com/aws-observability/aws-rum-web/commit/97c543a13d845bb4c2683c2b6b85ac97237fa410))
-
 
 ### Bug Fixes
 
 * Add @aws-sdk/querystring-builder as a dependency. ([#370](https://github.com/aws-observability/aws-rum-web/issues/370)) ([42662eb](https://github.com/aws-observability/aws-rum-web/commit/42662eb98695c027c3eef3ec6547527240486ac5))
-* Add type to recordJsErrorEvent parameter ([#339](https://github.com/aws-observability/aws-rum-web/issues/339)) ([2ee6ffa](https://github.com/aws-observability/aws-rum-web/commit/2ee6ffa115f448e5f43b18b6af6f58750c35e544))
 * Export PageAttributes type. ([#369](https://github.com/aws-observability/aws-rum-web/issues/369)) ([4b78dc1](https://github.com/aws-observability/aws-rum-web/commit/4b78dc14799151422bee07f6263c1aaa098354f6))
 * Handle missing pageId in metadata when page is resumed ([#388](https://github.com/aws-observability/aws-rum-web/issues/388)) ([f81bcf2](https://github.com/aws-observability/aws-rum-web/commit/f81bcf24e8094a65fe2b99e6bbe65196ec2ea595))
 * Hardcode webclient version ([#381](https://github.com/aws-observability/aws-rum-web/issues/381)) ([bc1c15f](https://github.com/aws-observability/aws-rum-web/commit/bc1c15ff7c6cc85a3d5843ba343e194b88449921))
