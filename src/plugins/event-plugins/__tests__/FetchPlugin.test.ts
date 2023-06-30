@@ -908,7 +908,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when an http event is recorded then latency is captured', async () => {
+    test('when http event is recorded with response then latency is captured', async () => {
         // Init
         const resetNow = mockNow();
         const plugin = new FetchPlugin();
@@ -923,36 +923,51 @@ describe('FetchPlugin tests', () => {
         const eventType = record.mock.calls[0][0];
         const httpEvent = record.mock.calls[0][1] as HttpEvent;
         expect(eventType).toEqual(HTTP_EVENT_TYPE);
-        expect(httpEvent.startTime).toBeGreaterThanOrEqual(0);
-        expect(httpEvent.duration).toBeGreaterThanOrEqual(0);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                response: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
 
         // Restore
         resetNow();
     });
 
-    test('when a trace event is recorded then latency is captured', async () => {
+    test('when http event is recorded with error then latency is captured', async () => {
         // Init
         const resetNow = mockNow();
-        const plugin = new FetchPlugin();
-        plugin.load(xRayOnContext);
+        global.fetch = mockFetchWithError;
+
+        const plugin: FetchPlugin = new FetchPlugin();
+        plugin.load(xRayOffContext);
 
         // Run
-        await fetch(URL);
+        await fetch(URL).catch((error) => {
+            // expected
+        });
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(2);
         const eventType = record.mock.calls[0][0];
-        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
-        expect(eventType).toEqual(XRAY_TRACE_EVENT_TYPE);
-        expect(traceEvent.start_time).toBeGreaterThanOrEqual(0);
-        expect(traceEvent.end_time).toBeGreaterThanOrEqual(0);
+        const httpEvent = record.mock.calls[0][1] as HttpEvent;
+        expect(mockFetchWithError).toHaveBeenCalledTimes(1);
+        expect(eventType).toEqual(HTTP_EVENT_TYPE);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                error: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
 
-        // Restore
+        // restore
+        global.fetch = mockFetch;
         resetNow();
     });
 
-    test('when an http and trace event pair is recorded then latency is shared', async () => {
+    test('when http/trace event pair without error is recorded then latency is shared', async () => {
         // Init
         const resetNow = mockNow();
         const plugin = new FetchPlugin();
@@ -975,40 +990,7 @@ describe('FetchPlugin tests', () => {
         resetNow();
     });
 
-    test('when fetch throws error then latency is captured in the http event', async () => {
-        // Init
-        const resetNow = mockNow();
-        global.fetch = mockFetchWithError;
-
-        const plugin: FetchPlugin = new FetchPlugin();
-        plugin.load(xRayOffContext);
-
-        // Run
-        await fetch(URL).catch((error) => {
-            // expected
-        });
-        plugin.disable();
-
-        // Assert
-        const eventType = record.mock.calls[0][0];
-        const httpEvent = record.mock.calls[0][1] as HttpEvent;
-        expect(mockFetchWithError).toHaveBeenCalledTimes(1);
-        expect(eventType).toEqual(HTTP_EVENT_TYPE);
-        expect(httpEvent).toEqual(
-            expect.objectContaining({
-                request: expect.anything(),
-                error: expect.anything(),
-                startTime: expect.any(Number),
-                duration: expect.any(Number)
-            })
-        );
-
-        // restore
-        global.fetch = mockFetch;
-        resetNow();
-    });
-
-    test('when fetch throws error then latency is shared between http and trace events', async () => {
+    test('when http/trace pair is recorded with error then latency is shared', async () => {
         // Init
         const resetNow = mockNow();
         global.fetch = mockFetchWithError;

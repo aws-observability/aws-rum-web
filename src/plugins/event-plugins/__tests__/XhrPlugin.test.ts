@@ -824,7 +824,7 @@ describe('XhrPlugin tests', () => {
         });
     });
 
-    test('when an http event is recorded then latency is captured', async () => {
+    test('when http event is recorded with response then latency is captured', async () => {
         // Init
         const resetNow = mockNow();
         mock.get(/.*/, {
@@ -846,40 +846,53 @@ describe('XhrPlugin tests', () => {
         const eventType = record.mock.calls[0][0];
         const httpEvent = record.mock.calls[0][1] as HttpEvent;
         expect(eventType).toEqual(HTTP_EVENT_TYPE);
-        expect(httpEvent.startTime).toBeGreaterThanOrEqual(0);
-        expect(httpEvent.duration).toBeGreaterThanOrEqual(0);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                response: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
 
         // Restore
         resetNow();
     });
 
-    test('when a trace event is recorded then latency is captured', async () => {
+    test('when http event is recorded with error then latency is captured', async () => {
         // Init
         const resetNow = mockNow();
-        const plugin = new XhrPlugin();
-        plugin.load(xRayOnContext);
+        mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
+
+        const plugin: XhrPlugin = new XhrPlugin();
+        plugin.load(xRayOffContext);
 
         // Run
         const xhr = new XMLHttpRequest();
         xhr.open('GET', './response.json', true);
         xhr.send();
+
         // Yield to the event queue so the event listeners can run
         await new Promise((resolve) => setTimeout(resolve, 0));
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(2);
+        expect(record).toHaveBeenCalledTimes(1);
         const eventType = record.mock.calls[0][0];
-        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
-        expect(eventType).toEqual(XRAY_TRACE_EVENT_TYPE);
-        expect(traceEvent.start_time).toBeGreaterThanOrEqual(0);
-        expect(traceEvent.end_time).toBeGreaterThanOrEqual(0);
+        const httpEvent = record.mock.calls[0][1] as HttpEvent;
+        expect(eventType).toEqual(HTTP_EVENT_TYPE);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                error: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
 
-        // Restore
+        // restore
         resetNow();
     });
 
-    test('when an http and trace event pair is recorded then latency is shared', async () => {
+    test('when http and trace event are recorded without error then latency is shared', async () => {
         // Init
         const resetNow = mockNow();
         const plugin = new XhrPlugin();
@@ -906,42 +919,7 @@ describe('XhrPlugin tests', () => {
         resetNow();
     });
 
-    test('when xhr returns an error code then latency is captured in the http event', async () => {
-        // Init
-        const resetNow = mockNow();
-        mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
-
-        const plugin: XhrPlugin = new XhrPlugin();
-        plugin.load(xRayOffContext);
-
-        // Run
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', './response.json', true);
-        xhr.send();
-
-        // Yield to the event queue so the event listeners can run
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        plugin.disable();
-
-        // Assert
-        expect(record).toHaveBeenCalledTimes(1);
-        const eventType = record.mock.calls[0][0];
-        const httpEvent = record.mock.calls[0][1] as HttpEvent;
-        expect(eventType).toEqual(HTTP_EVENT_TYPE);
-        expect(httpEvent).toEqual(
-            expect.objectContaining({
-                request: expect.anything(),
-                error: expect.anything(),
-                startTime: expect.any(Number),
-                duration: expect.any(Number)
-            })
-        );
-
-        // restore
-        resetNow();
-    });
-
-    test('when xhr throws error then latency is shared between http and trace events', async () => {
+    test('when http and trace event are recorded with error then latency is shared', async () => {
         // Init
         const resetNow = mockNow();
         mock.get(/.*/, () => Promise.reject(new Error()));
