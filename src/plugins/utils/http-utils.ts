@@ -49,7 +49,7 @@ export const defaultConfig: HttpPluginConfig = {
         /sts\.([^\.]*\.)?amazonaws\.com/
     ],
     stackTraceLength: 200,
-    recordAllRequests: false,
+    recordAllRequests: true,
     addXRayTraceIdHeader: false
 };
 

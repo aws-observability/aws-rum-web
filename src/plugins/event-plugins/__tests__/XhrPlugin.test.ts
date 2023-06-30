@@ -88,7 +88,7 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(1);
+        expect(record).toHaveBeenCalledTimes(2);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             in_progress: false,
@@ -527,7 +527,10 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalledWith(
+            XRAY_TRACE_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('when session is not being recorded then the plugin does not record a trace', async () => {
@@ -568,7 +571,10 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalledWith(
+            XRAY_TRACE_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {

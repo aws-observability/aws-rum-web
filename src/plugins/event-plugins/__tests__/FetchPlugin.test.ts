@@ -524,7 +524,10 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(record).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalledWith(
+            XRAY_TRACE_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('when session is not being recorded then the plugin does not record a trace', async () => {
@@ -555,7 +558,10 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(record).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalledWith(
+            XRAY_TRACE_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
@@ -584,7 +590,10 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(record).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalledWith(
+            XRAY_TRACE_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('the plugin records a stack trace by default', async () => {
