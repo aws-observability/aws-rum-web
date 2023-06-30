@@ -297,7 +297,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
             })
             .catch((error: Error) => {
                 const endTime = Date.now();
-                httpEvent.duration = Date.now() - httpEvent.startTime!;
+                httpEvent.duration = endTime - httpEvent.startTime!;
                 this.endTrace(trace, undefined, error, endTime);
                 this.recordHttpEventWithError(httpEvent, error);
                 throw error;

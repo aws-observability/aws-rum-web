@@ -894,7 +894,6 @@ describe('XhrPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(2);
         const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
         const httpEvent = record.mock.calls[1][1] as HttpEvent;
-
         expect(traceEvent.start_time).toEqual(httpEvent.startTime! / 1000);
         expect(traceEvent.end_time).toEqual(
             (httpEvent.duration! + httpEvent.startTime!) / 1000
@@ -904,5 +903,66 @@ describe('XhrPlugin tests', () => {
         resetNow();
     });
 
-    // todo: add unit tests that http errors have latency
+    test('when xhr returns an error code then latency is captured in the http event', async () => {
+        // Init
+        const resetNow = mockNow();
+        mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
+
+        const plugin: XhrPlugin = new XhrPlugin();
+        plugin.load(xRayOffContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        const eventType = record.mock.calls[0][0];
+        const httpEvent = record.mock.calls[0][1] as HttpEvent;
+        expect(eventType).toEqual(HTTP_EVENT_TYPE);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                request: expect.anything(),
+                error: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
+
+        // restore
+        resetNow();
+    });
+
+    test('when xhr throws error then latency is shared between http and trace events', async () => {
+        // Init
+        const resetNow = mockNow();
+        mock.get(/.*/, () => Promise.reject(new Error()));
+        const plugin: XhrPlugin = new XhrPlugin();
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
+        const httpEvent = record.mock.calls[1][1] as HttpEvent;
+        expect(traceEvent.start_time).toEqual(httpEvent.startTime! / 1000);
+        expect(traceEvent.end_time).toEqual(
+            (httpEvent.duration! + httpEvent.startTime!) / 1000
+        );
+
+        // restore
+        resetNow();
+    });
 });

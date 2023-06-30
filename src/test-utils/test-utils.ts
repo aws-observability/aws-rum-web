@@ -214,10 +214,10 @@ export const mockFetchWithErrorObjectAndStack = jest.fn(
 
 export function mockNow() {
     const original = Date.now;
-    let time = 10000;
+    let time = 0;
     Date.now = () => {
         const now = time;
-        time += 100;
+        time += 1000;
         return now;
     };
     return function resetNow() {
