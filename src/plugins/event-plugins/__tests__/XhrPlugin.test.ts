@@ -618,7 +618,7 @@ describe('XhrPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(1);
     });
 
-    test('when recordAllRequests is true then the plugin records a request with status OK', async () => {
+    test('when recordAllRequests is true then the plugin does record a request with status OK', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             urlsToInclude: [/response\.json/],
@@ -827,6 +827,9 @@ describe('XhrPlugin tests', () => {
     test('when an http event is recorded then latency is captured', async () => {
         // Init
         const resetNow = mockNow();
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
         const plugin = new XhrPlugin();
         plugin.load(xRayOffContext);
 
