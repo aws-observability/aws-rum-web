@@ -88,11 +88,11 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime
+            startTime / 1000
         );
         const subsegment: Subsegment = createXRaySubsegment(
             requestInfoToHostname(input),
-            startTime,
+            startTime / 1000,
             http
         );
         xRayTraceEvent.subsegments!.push(subsegment);

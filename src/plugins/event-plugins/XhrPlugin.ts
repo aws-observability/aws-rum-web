@@ -296,12 +296,12 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private initializeTrace = (xhrDetails: XhrDetails) => {
         xhrDetails.trace = createXRayTraceEvent(
             this.config.logicalServiceName,
-            xhrDetails.startTime
+            xhrDetails.startTime / 1000
         );
         xhrDetails.trace.subsegments!.push(
             createXRaySubsegment(
                 requestInfoToHostname(xhrDetails.url),
-                xhrDetails.startTime,
+                xhrDetails.startTime / 1000,
                 {
                     request: {
                         method: xhrDetails.method,
