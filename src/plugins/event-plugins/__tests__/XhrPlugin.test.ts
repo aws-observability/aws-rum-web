@@ -826,7 +826,7 @@ describe('XhrPlugin tests', () => {
 
     test('when http event is recorded with response then latency is captured', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         mock.get(/.*/, {
             body: JSON.stringify({ message: 'Hello World!' })
         });
@@ -855,12 +855,12 @@ describe('XhrPlugin tests', () => {
         );
 
         // Restore
-        resetNow();
+        restoreNow();
     });
 
     test('when http event is recorded with error then latency is captured', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
 
         const plugin: XhrPlugin = new XhrPlugin();
@@ -889,12 +889,12 @@ describe('XhrPlugin tests', () => {
         );
 
         // restore
-        resetNow();
+        restoreNow();
     });
 
     test('when http and trace event are recorded without error then latency is shared', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         const plugin = new XhrPlugin();
         plugin.load(xRayOnContext);
 
@@ -916,12 +916,12 @@ describe('XhrPlugin tests', () => {
         );
 
         // Restore
-        resetNow();
+        restoreNow();
     });
 
     test('when http and trace event are recorded with error then latency is shared', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         mock.get(/.*/, () => Promise.reject(new Error()));
         const plugin: XhrPlugin = new XhrPlugin();
         plugin.load(xRayOnContext);
@@ -944,6 +944,6 @@ describe('XhrPlugin tests', () => {
         );
 
         // restore
-        resetNow();
+        restoreNow();
     });
 });

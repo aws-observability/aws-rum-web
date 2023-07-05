@@ -910,7 +910,7 @@ describe('FetchPlugin tests', () => {
 
     test('when http event is recorded with response then latency is captured', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         const plugin = new FetchPlugin();
         plugin.load(xRayOffContext);
 
@@ -932,12 +932,12 @@ describe('FetchPlugin tests', () => {
         );
 
         // Restore
-        resetNow();
+        restoreNow();
     });
 
     test('when http event is recorded with error then latency is captured', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         global.fetch = mockFetchWithError;
 
         const plugin: FetchPlugin = new FetchPlugin();
@@ -964,12 +964,12 @@ describe('FetchPlugin tests', () => {
 
         // restore
         global.fetch = mockFetch;
-        resetNow();
+        restoreNow();
     });
 
     test('when http/trace event pair without error is recorded then latency is shared', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         const plugin = new FetchPlugin();
         plugin.load(xRayOnContext);
 
@@ -987,12 +987,12 @@ describe('FetchPlugin tests', () => {
         );
 
         // Restore
-        resetNow();
+        restoreNow();
     });
 
     test('when http/trace pair is recorded with error then latency is shared', async () => {
         // Init
-        const resetNow = mockNow();
+        const restoreNow = mockNow();
         global.fetch = mockFetchWithError;
 
         const plugin = new FetchPlugin();
@@ -1015,7 +1015,7 @@ describe('FetchPlugin tests', () => {
         );
 
         // Restore
-        resetNow();
+        restoreNow();
         global.fetch = mockFetch;
     });
 });

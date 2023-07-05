@@ -220,7 +220,7 @@ export function mockNow() {
         time += 1000;
         return now;
     };
-    return function resetNow() {
+    return function restoreNow() {
         Date.now = original;
     };
 }
