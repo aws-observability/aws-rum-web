@@ -211,3 +211,16 @@ export const mockFetchWithErrorObjectAndStack = jest.fn(
             stack: 'stack trace'
         })
 );
+
+export function mockNow() {
+    const original = Date.now;
+    let time = 0;
+    Date.now = () => {
+        const now = time;
+        time += 1000;
+        return now;
+    };
+    return function restoreNow() {
+        Date.now = original;
+    };
+}

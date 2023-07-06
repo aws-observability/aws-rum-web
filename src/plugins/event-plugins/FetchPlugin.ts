@@ -7,7 +7,6 @@ import { MonkeyPatched } from '../MonkeyPatched';
 import {
     PartialHttpPluginConfig,
     defaultConfig,
-    epochTime,
     createXRayTraceEvent,
     addAmznTraceIdHeaderToInit,
     HttpPluginConfig,
@@ -83,17 +82,17 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private beginTrace = (
         input: RequestInfo | URL | string,
         init: RequestInit | undefined,
-        argsArray: IArguments
+        argsArray: IArguments,
+        startTime: number
     ): XRayTraceEvent => {
-        const startTime = epochTime();
         const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime
+            startTime / 1000
         );
         const subsegment: Subsegment = createXRaySubsegment(
             requestInfoToHostname(input),
-            startTime,
+            startTime / 1000,
             http
         );
         xRayTraceEvent.subsegments!.push(subsegment);
@@ -134,12 +133,12 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private endTrace = (
         xRayTraceEvent: XRayTraceEvent | undefined,
         response: Response | undefined,
-        error: Error | string | number | boolean | undefined
+        error: Error | string | number | boolean | undefined,
+        endTime: number
     ) => {
         if (xRayTraceEvent) {
-            const endTime = epochTime();
-            xRayTraceEvent.subsegments![0].end_time = endTime;
-            xRayTraceEvent.end_time = endTime;
+            xRayTraceEvent.subsegments![0].end_time = endTime / 1000;
+            xRayTraceEvent.end_time = endTime / 1000;
 
             if (response) {
                 xRayTraceEvent.subsegments![0].http!.response = {
@@ -215,7 +214,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
 
     private createHttpEvent = (
         input: RequestInfo | URL | string,
-        init?: RequestInit
+        init?: RequestInit,
+        startTime?: number
     ): HttpEvent => {
         const request = input as Request;
         return {
@@ -227,7 +227,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                     : request.method
                     ? request.method
                     : 'GET'
-            }
+            },
+            startTime
         };
     };
 
@@ -265,7 +266,11 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         input: RequestInfo | URL | string,
         init?: RequestInit
     ): Promise<Response> => {
-        const httpEvent: HttpEvent = this.createHttpEvent(input, init);
+        const httpEvent: HttpEvent = this.createHttpEvent(
+            input,
+            init,
+            Date.now()
+        );
         let trace: XRayTraceEvent | undefined;
 
         if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
@@ -273,18 +278,27 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         }
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
-            trace = this.beginTrace(input, init, argsArray);
+            trace = this.beginTrace(
+                input,
+                init,
+                argsArray,
+                httpEvent.startTime!
+            );
         }
 
         return original
             .apply(thisArg, argsArray as any)
             .then((response: Response) => {
-                this.endTrace(trace, response, undefined);
+                const endTime = Date.now();
+                httpEvent.duration = endTime - httpEvent.startTime!;
+                this.endTrace(trace, response, undefined, endTime);
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
             .catch((error: Error) => {
-                this.endTrace(trace, undefined, error);
+                const endTime = Date.now();
+                httpEvent.duration = endTime - httpEvent.startTime!;
+                this.endTrace(trace, undefined, error, endTime);
                 this.recordHttpEventWithError(httpEvent, error);
                 throw error;
             });

@@ -55,6 +55,14 @@
                 }
             },
             "additionalProperties": false
+        },
+        "startTime": {
+            "type": "number",
+            "description": "Epoch timestamp (ms) immediately before the HTTP request begins"
+        },
+        "duration": {
+            "type": "number",
+            "description": "Duration (ms) from startTime to end of response"
         }
     },
     "additionalProperties": false,

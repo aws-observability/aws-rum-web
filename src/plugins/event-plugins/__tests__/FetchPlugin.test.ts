@@ -16,11 +16,13 @@ import {
     mockFetchWithErrorObject,
     mockFetchWithErrorObjectAndStack,
     mockFetchWith400,
-    mockFetchWith429
+    mockFetchWith429,
+    mockNow
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { HttpEvent } from '../../../events/http-event';
+import { XRayTraceEvent } from 'events/xray-trace-event';
 
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
@@ -904,5 +906,122 @@ describe('FetchPlugin tests', () => {
                 statusText: 'OK'
             }
         });
+    });
+
+    test('when http event is recorded with response then latency is captured', async () => {
+        // Init
+        const restoreNow = mockNow();
+        const plugin = new FetchPlugin();
+        plugin.load(xRayOffContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        const eventType = record.mock.calls[0][0];
+        const httpEvent = record.mock.calls[0][1] as HttpEvent;
+        expect(eventType).toEqual(HTTP_EVENT_TYPE);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                response: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
+        // expected results depend on mockNow()
+        expect(httpEvent.startTime).toEqual(0);
+        expect(httpEvent.duration).toEqual(1000);
+
+        // Restore
+        restoreNow();
+    });
+
+    test('when http event is recorded with error then latency is captured', async () => {
+        // Init
+        const restoreNow = mockNow();
+        global.fetch = mockFetchWithError;
+
+        const plugin: FetchPlugin = new FetchPlugin();
+        plugin.load(xRayOffContext);
+
+        // Run
+        await fetch(URL).catch((error) => {
+            // expected
+        });
+        plugin.disable();
+
+        // Assert
+        const eventType = record.mock.calls[0][0];
+        const httpEvent = record.mock.calls[0][1] as HttpEvent;
+        expect(mockFetchWithError).toHaveBeenCalledTimes(1);
+        expect(eventType).toEqual(HTTP_EVENT_TYPE);
+        expect(httpEvent).toEqual(
+            expect.objectContaining({
+                error: expect.anything(),
+                startTime: expect.any(Number),
+                duration: expect.any(Number)
+            })
+        );
+        // expected results depend on mockNow()
+        expect(httpEvent.startTime).toEqual(0);
+        expect(httpEvent.duration).toEqual(1000);
+
+        // restore
+        global.fetch = mockFetch;
+        restoreNow();
+    });
+
+    test('when http/trace event pair without error is recorded then latency is shared', async () => {
+        // Init
+        const restoreNow = mockNow();
+        const plugin = new FetchPlugin();
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
+        const httpEvent = record.mock.calls[1][1] as HttpEvent;
+        expect(traceEvent.start_time).toEqual(httpEvent.startTime! / 1000);
+        expect(traceEvent.end_time).toEqual(
+            (httpEvent.duration! + httpEvent.startTime!) / 1000
+        );
+
+        // Restore
+        restoreNow();
+    });
+
+    test('when http/trace pair is recorded with error then latency is shared', async () => {
+        // Init
+        const restoreNow = mockNow();
+        global.fetch = mockFetchWithError;
+
+        const plugin = new FetchPlugin();
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL).catch((error) => {
+            // expected
+        });
+        plugin.disable();
+
+        // Assert
+        expect(mockFetchWithError).toHaveBeenCalledTimes(1);
+        expect(record).toHaveBeenCalledTimes(2);
+        const traceEvent = record.mock.calls[0][1] as XRayTraceEvent;
+        const httpEvent = record.mock.calls[1][1] as HttpEvent;
+        expect(traceEvent.start_time).toEqual(httpEvent.startTime! / 1000);
+        expect(traceEvent.end_time).toEqual(
+            (httpEvent.duration! + httpEvent.startTime!) / 1000
+        );
+
+        // Restore
+        restoreNow();
+        global.fetch = mockFetch;
     });
 });
