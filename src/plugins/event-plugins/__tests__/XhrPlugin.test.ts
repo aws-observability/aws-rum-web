@@ -853,6 +853,9 @@ describe('XhrPlugin tests', () => {
                 duration: expect.any(Number)
             })
         );
+        // expected results depend on mockNow()
+        expect(httpEvent.startTime).toEqual(0);
+        expect(httpEvent.duration).toEqual(2000);
 
         // Restore
         restoreNow();
@@ -887,6 +890,9 @@ describe('XhrPlugin tests', () => {
                 duration: expect.any(Number)
             })
         );
+        // expected results depend on mockNow()
+        expect(httpEvent.startTime).toEqual(0);
+        expect(httpEvent.duration).toEqual(2000);
 
         // restore
         restoreNow();

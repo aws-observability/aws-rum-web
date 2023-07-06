@@ -930,6 +930,9 @@ describe('FetchPlugin tests', () => {
                 duration: expect.any(Number)
             })
         );
+        // expected results depend on mockNow()
+        expect(httpEvent.startTime).toEqual(0);
+        expect(httpEvent.duration).toEqual(1000);
 
         // Restore
         restoreNow();
@@ -961,6 +964,9 @@ describe('FetchPlugin tests', () => {
                 duration: expect.any(Number)
             })
         );
+        // expected results depend on mockNow()
+        expect(httpEvent.startTime).toEqual(0);
+        expect(httpEvent.duration).toEqual(1000);
 
         // restore
         global.fetch = mockFetch;
