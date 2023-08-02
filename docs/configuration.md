@@ -67,8 +67,7 @@ custom attributes with the `aws:` prefix, or they may be overwritten by future
 versions of the CloudWatch RUM web client.
 
 The RUM web client also records a set of [default
-attributes](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/meta-data.json).
-You cannot overwrite default attributes with custom attributes.
+attributes](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/meta-data.json). Overriding default attributes can have unintended consequences in the Cloudwatch RUM console.
 
 | Field Name | Type | Default | Description |
 | --- | --- | --- | --- |
