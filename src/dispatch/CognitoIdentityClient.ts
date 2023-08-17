@@ -29,6 +29,7 @@ interface CognitoCredentials {
     AccessKeyId: string;
     Expiration: number;
     SecretAccessKey: string;
+    SecretKey: string;
     SessionToken: string;
 }
 
@@ -45,12 +46,6 @@ interface CredentialsResponse {
 interface GetIdResponse {
     IdentityId: string;
 }
-
-export const fromCognitoIdentityPool = (
-    params: CognitoProviderParameters
-): (() => Promise<Credentials>) => {
-    return () => params.client.getCredentialsForIdentity(params.identityPoolId);
-};
 
 export declare type CognitoIdentityClientConfig = {
     fetchRequestHandler: HttpHandler;
@@ -115,11 +110,11 @@ export class CognitoIdentityClient {
             const { Credentials } = (await responseToJson(
                 response
             )) as CredentialsResponse;
-            const { AccessKeyId, Expiration, SecretAccessKey, SessionToken } =
+            const { AccessKeyId, Expiration, SecretKey, SessionToken } =
                 Credentials;
             return {
                 accessKeyId: AccessKeyId as string,
-                secretAccessKey: SecretAccessKey as string,
+                secretAccessKey: SecretKey as string,
                 sessionToken: SessionToken as string,
                 expiration: new Date(Expiration * 1000)
             };
