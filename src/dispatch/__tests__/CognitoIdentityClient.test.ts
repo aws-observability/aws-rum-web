@@ -6,7 +6,7 @@ import { Credentials } from '@aws-sdk/types';
 import { getReadableStream } from '../../test-utils/test-utils';
 
 const mockCredentials =
-    '{ "IdentityId": "a", "Credentials": { "AccessKeyId": "x", "SecretAccessKey": "y", "SessionToken": "z" } }';
+    '{ "IdentityId": "a", "Credentials": { "AccessKeyId": "x", "SecretKey": "y", "SessionToken": "z" } }';
 const mockToken = '{"IdentityId": "mockId", "Token": "mockToken"}';
 const mockIdCommand = '{"IdentityId": "mockId"}';
 
