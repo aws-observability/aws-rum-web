@@ -1,9 +1,6 @@
-import {
-    CognitoIdentityClient,
-    fromCognitoIdentityPool
-} from './CognitoIdentityClient';
+import { CognitoIdentityClient } from './CognitoIdentityClient';
 import { Config } from '../orchestration/Orchestration';
-import { CredentialProvider, Credentials } from '@aws-sdk/types';
+import { Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
@@ -96,7 +93,6 @@ export class EnhancedAuthentication {
                     // The credentials have expired.
                     return reject();
                 }
-                this.credentials = credentials;
                 resolve(credentials);
             });
         };
@@ -111,21 +107,26 @@ export class EnhancedAuthentication {
      */
     private AnonymousCognitoCredentialsProvider =
         async (): Promise<Credentials> => {
-            const credentialProvider: CredentialProvider =
-                fromCognitoIdentityPool({
-                    client: this.cognitoIdentityClient,
-                    identityPoolId: this.config.identityPoolId as string
-                });
+            return this.cognitoIdentityClient
+                .getId({ IdentityPoolId: this.config.identityPoolId as string })
+                .then((getIdResponse) =>
+                    this.cognitoIdentityClient.getCredentialsForIdentity(
+                        getIdResponse.IdentityId
+                    )
+                )
+                .then((credentials: Credentials) => {
+                    this.credentials = credentials;
+                    try {
+                        localStorage.setItem(
+                            CRED_KEY,
+                            JSON.stringify(credentials)
+                        );
+                    } catch (e) {
+                        // Ignore
+                    }
 
-            return credentialProvider().then((credentials) => {
-                this.credentials = credentials;
-                try {
-                    localStorage.setItem(CRED_KEY, JSON.stringify(credentials));
-                } catch (e) {
-                    // Ignore
-                }
-                return credentials;
-            });
+                    return credentials;
+                });
         };
 
     private renewCredentials(): boolean {

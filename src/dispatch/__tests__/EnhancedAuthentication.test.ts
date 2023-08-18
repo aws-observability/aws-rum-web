@@ -1,14 +1,11 @@
 import { CRED_KEY } from '../../utils/constants';
-import { Credentials } from '@aws-sdk/types';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
-import { fromCognitoIdentityPool } from '../CognitoIdentityClient';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const mockGetId = jest.fn();
 const getCredentials = jest.fn();
 
 jest.mock('../CognitoIdentityClient', () => ({
-    fromCognitoIdentityPool: jest.fn(),
     CognitoIdentityClient: jest.fn().mockImplementation(() => ({
         getId: mockGetId,
         getCredentialsForIdentity: getCredentials
@@ -31,18 +28,6 @@ describe('EnhancedAuthentication tests', () => {
             sessionToken: 'z',
             expiration: new Date(Date.now() + 3600 * 1000)
         });
-        (fromCognitoIdentityPool as any).mockReset();
-        (fromCognitoIdentityPool as any).mockReturnValue(
-            () =>
-                new Promise<Credentials>((resolve) =>
-                    resolve({
-                        accessKeyId: 'x',
-                        secretAccessKey: 'y',
-                        sessionToken: 'z',
-                        expiration: new Date(Date.now() + 3600 * 1000)
-                    })
-                )
-        );
         localStorage.removeItem(CRED_KEY);
     });
 
@@ -169,29 +154,19 @@ describe('EnhancedAuthentication tests', () => {
     test('when credential is retrieved from basic auth then next credential is retrieved from localStorage', async () => {
         // Init
         const expiration = new Date(Date.now() + 3600 * 1000);
-        (fromCognitoIdentityPool as any)
-            .mockReturnValueOnce(
-                () =>
-                    new Promise<Credentials>((resolve) =>
-                        resolve({
-                            accessKeyId: 'a',
-                            secretAccessKey: 'b',
-                            sessionToken: 'c',
-                            expiration
-                        })
-                    )
-            )
-            .mockReturnValueOnce(
-                () =>
-                    new Promise<Credentials>((resolve) =>
-                        resolve({
-                            accessKeyId: 'x',
-                            secretAccessKey: 'y',
-                            sessionToken: 'z',
-                            expiration
-                        })
-                    )
-            );
+        getCredentials
+            .mockResolvedValueOnce({
+                accessKeyId: 'a',
+                expiration,
+                secretAccessKey: 'b',
+                sessionToken: 'c'
+            })
+            .mockResolvedValueOnce({
+                accessKeyId: 'x',
+                expiration,
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            });
 
         const auth = new EnhancedAuthentication({
             ...DEFAULT_CONFIG,
