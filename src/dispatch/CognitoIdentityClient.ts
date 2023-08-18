@@ -1,6 +1,7 @@
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { Credentials } from '@aws-sdk/types';
 import { responseToJson } from './utils';
+import { IDENTITY_KEY } from '../utils/constants';
 
 const METHOD = 'POST';
 const CONTENT_TYPE = 'application/x-amz-json-1.1';
@@ -62,16 +63,40 @@ export class CognitoIdentityClient {
     }
 
     public getId = async (request: { IdentityPoolId: string }) => {
+        let getIdResponse: GetIdResponse | null = null;
+
+        try {
+            getIdResponse = JSON.parse(
+                localStorage.getItem(IDENTITY_KEY)!
+            ) as GetIdResponse | null;
+        } catch (e) {
+            // Ignore -- we will get a new identity Id from Cognito
+        }
+
+        if (getIdResponse && getIdResponse.IdentityId) {
+            return Promise.resolve(getIdResponse);
+        }
+
         try {
             const requestPayload = JSON.stringify(request);
             const idRequest = this.getHttpRequest(
                 GET_ID_TARGET,
                 requestPayload
             );
-            const { response } = await this.fetchRequestHandler.handle(
-                idRequest
-            );
-            return (await responseToJson(response)) as GetIdResponse;
+            const getIdResponse = (await responseToJson(
+                (
+                    await this.fetchRequestHandler.handle(idRequest)
+                ).response
+            )) as GetIdResponse;
+            try {
+                localStorage.setItem(
+                    IDENTITY_KEY,
+                    JSON.stringify({ IdentityId: getIdResponse.IdentityId })
+                );
+            } catch (e) {
+                // Ignore
+            }
+            return getIdResponse;
         } catch (e) {
             throw new Error(`CWR: Failed to retrieve Cognito identity: ${e}`);
         }

@@ -175,4 +175,30 @@ describe('CognitoIdentityClient tests', () => {
             })
         ).rejects.toEqual(expected);
     });
+
+    test('when identity Id is retrieved from Cognito then next identity Id is retrieved from localStorage', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(mockIdCommand)
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Run
+        await client.getId({ IdentityPoolId: 'my-fake-identity-pool-id' });
+        const idCommand = await client.getId({
+            IdentityPoolId: 'my-fake-identity-pool-id'
+        });
+
+        // Assert
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        expect(idCommand).toMatchObject({
+            IdentityId: 'mockId'
+        });
+    });
 });
