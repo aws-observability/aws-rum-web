@@ -77,12 +77,12 @@ export class EnhancedAuthentication {
     private AnonymousStorageCredentialsProvider =
         async (): Promise<Credentials> => {
             return new Promise<Credentials>((resolve, reject) => {
-                let credentials;
+                let credentials: Credentials;
                 try {
                     credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
                 } catch (e) {
                     // Error decoding or parsing the cookie -- abort
-                    reject();
+                    return reject();
                 }
                 // The expiration property of Credentials has a date type. Because the date was serialized as a string,
                 // we need to convert it back into a date, otherwise the AWS SDK signing middleware
@@ -95,7 +95,7 @@ export class EnhancedAuthentication {
                     // The credentials have expired.
                     return reject();
                 }
-                resolve(credentials);
+                resolve(this.credentials);
             });
         };
 

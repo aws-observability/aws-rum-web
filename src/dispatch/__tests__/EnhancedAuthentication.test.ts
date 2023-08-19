@@ -305,4 +305,79 @@ describe('EnhancedAuthentication tests', () => {
             })
         );
     });
+
+    test('when credentials are read from storage then a new date object is created', async () => {
+        // Init
+        const fetchExpiration = new Date(0);
+        const storageExpiration = new Date(Date.now() + 3600 * 1000);
+        getCredentials.mockResolvedValue({
+            accessKeyId: 'x',
+            secretAccessKey: 'y',
+            sessionToken: 'z',
+            expiration: fetchExpiration
+        });
+
+        localStorage.setItem(
+            CRED_KEY,
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration: storageExpiration
+            })
+        );
+
+        const auth = new EnhancedAuthentication({
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID
+            }
+        });
+
+        // Run
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials.expiration!.getTime()).toEqual(
+            storageExpiration.getTime()
+        );
+    });
+
+    test('when credentials are read from storage then the member variable stores the expiration as a date object', async () => {
+        // Init
+        const fetchExpiration = new Date(0);
+        const storageExpiration = new Date(Date.now() + 3600 * 1000);
+        getCredentials.mockResolvedValue({
+            accessKeyId: 'x',
+            secretAccessKey: 'y',
+            sessionToken: 'z',
+            expiration: fetchExpiration
+        });
+
+        localStorage.setItem(
+            CRED_KEY,
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration: storageExpiration
+            })
+        );
+
+        const auth = new EnhancedAuthentication({
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID
+            }
+        });
+
+        // Run
+        await auth.ChainAnonymousCredentialsProvider();
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials.expiration!.getTime()).toEqual(
+            storageExpiration.getTime()
+        );
+    });
 });
