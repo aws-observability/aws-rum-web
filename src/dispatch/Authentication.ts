@@ -101,7 +101,7 @@ export class Authentication {
                     // The credentials have expired.
                     return reject();
                 }
-                resolve(credentials);
+                resolve(this.credentials);
             });
         };
 

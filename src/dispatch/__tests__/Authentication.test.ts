@@ -336,4 +336,69 @@ describe('Authentication tests', () => {
             })
         );
     });
+
+    test('when credentials are read from storage then a new date object is created', async () => {
+        // Init
+        const storageExpiration = new Date(Date.now() + 3600 * 1000);
+
+        localStorage.setItem(
+            CRED_KEY,
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration: storageExpiration
+            })
+        );
+
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN
+            }
+        };
+        const auth = new Authentication(config);
+
+        // Run
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials.expiration!.getTime()).toEqual(
+            storageExpiration.getTime()
+        );
+    });
+
+    test('when credentials are read from storage then the member variable stores the expiration as a date object', async () => {
+        // Init
+        const storageExpiration = new Date(Date.now() + 3600 * 1000);
+
+        localStorage.setItem(
+            CRED_KEY,
+            JSON.stringify({
+                accessKeyId: 'a',
+                secretAccessKey: 'b',
+                sessionToken: 'c',
+                expiration: storageExpiration
+            })
+        );
+
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN
+            }
+        };
+        const auth = new Authentication(config);
+
+        // Run
+        await auth.ChainAnonymousCredentialsProvider();
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials.expiration!.getTime()).toEqual(
+            storageExpiration.getTime()
+        );
+    });
 });
