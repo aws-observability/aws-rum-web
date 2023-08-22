@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { Credentials } from '@aws-sdk/types';
 import { responseToJson } from './utils';
@@ -132,9 +133,11 @@ export class CognitoIdentityClient {
             const { response } = await this.fetchRequestHandler.handle(
                 credentialRequest
             );
-            const { Credentials } = (await responseToJson(
+            const credentialsResponse = (await responseToJson(
                 response
             )) as CredentialsResponse;
+            this.validateCredenentialsResponse(credentialsResponse);
+            const Credentials = credentialsResponse.Credentials;
             const { AccessKeyId, Expiration, SecretKey, SessionToken } =
                 Credentials;
             return {
@@ -147,6 +150,22 @@ export class CognitoIdentityClient {
             throw new Error(
                 `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
             );
+        }
+    };
+
+    private validateCredenentialsResponse = (cr: any) => {
+        if (
+            cr &&
+            cr.__type &&
+            (cr.__type === 'ResourceNotFoundException' ||
+                cr.__type === 'ValidationException')
+        ) {
+            // The request may have failed because of ValidationException or
+            // ResourceNotFoundException, which means the identity Id is bad. In
+            // any case, we invalidate the identity Id so the entire process can
+            // be re-tried.
+            localStorage.removeItem(IDENTITY_KEY);
+            throw new Error(`${cr.__type}: ${cr.message}`);
         }
     };
 
