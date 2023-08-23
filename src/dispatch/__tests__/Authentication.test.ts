@@ -372,6 +372,12 @@ describe('Authentication tests', () => {
     test('when credentials are read from storage then the member variable stores the expiration as a date object', async () => {
         // Init
         const storageExpiration = new Date(Date.now() + 3600 * 1000);
+        assumeRole.mockResolvedValue({
+            accessKeyId: 'x',
+            secretAccessKey: 'y',
+            sessionToken: 'z',
+            expiration: new Date(0)
+        });
 
         localStorage.setItem(
             CRED_KEY,
