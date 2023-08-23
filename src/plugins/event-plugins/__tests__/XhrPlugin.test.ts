@@ -2,10 +2,10 @@ import { PartialHttpPluginConfig } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import { XhrPlugin } from '../XhrPlugin';
 import {
+    context as mockContext,
     xRayOffContext,
     xRayOnContext,
     record,
-    recordPageView,
     mockNow
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
@@ -543,14 +543,11 @@ describe('XhrPlugin tests', () => {
             record: false,
             eventCount: 0
         }));
-        const context: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: DEFAULT_CONFIG,
-            record,
-            recordPageView,
+
+        const context = Object.assign({}, mockContext, {
             getSession
-        };
+        });
+
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/]
@@ -583,14 +580,7 @@ describe('XhrPlugin tests', () => {
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
         // Init
         const getSession: jest.MockedFunction<GetSession> = jest.fn();
-        const context: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
+        const context = Object.assign({}, xRayOnContext, { getSession });
         const config: PartialHttpPluginConfig = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/response\.json/],

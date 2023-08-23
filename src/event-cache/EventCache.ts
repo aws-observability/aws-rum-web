@@ -32,6 +32,7 @@ export class EventCache {
     private installationMethod: string;
 
     private store = new EventStore();
+    getEvent = (key: string) => this.store.get(key);
 
     /**
      * @param applicationDetails Application identity and version.
@@ -265,9 +266,5 @@ export class EventCache {
         );
 
         return include && !exclude;
-    }
-
-    get(key: string) {
-        return this.store.get(key);
     }
 }

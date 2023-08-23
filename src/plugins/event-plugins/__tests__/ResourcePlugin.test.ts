@@ -14,7 +14,7 @@ import {
 import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import {
-    context,
+    context as mockContext,
     DEFAULT_CONFIG,
     getSession,
     record,
@@ -48,7 +48,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -70,14 +70,9 @@ describe('ResourcePlugin tests', () => {
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
-        const context: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, recordResourceUrl: false },
-            record,
-            recordPageView,
-            getSession
-        };
+        const context = Object.assign({}, mockContext, {
+            config: { ...DEFAULT_CONFIG, recordResourceUrl: false }
+        });
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
@@ -102,7 +97,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -118,7 +113,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -134,7 +129,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -147,7 +142,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         plugin.disable();
         plugin.enable();
         window.dispatchEvent(new Event('load'));
@@ -162,7 +157,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         plugin.disable();
         window.dispatchEvent(new Event('load'));
         plugin.disable();
@@ -179,7 +174,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -196,7 +191,7 @@ describe('ResourcePlugin tests', () => {
         // Run
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
 
         plugin.disable();
@@ -220,7 +215,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
 
         mockRandom(0.99); // Retain order in shuffle
         window.dispatchEvent(new Event('load'));
@@ -261,7 +256,7 @@ describe('ResourcePlugin tests', () => {
         });
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 

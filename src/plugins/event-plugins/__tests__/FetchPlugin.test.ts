@@ -5,9 +5,7 @@ import {
 } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
-    DEFAULT_CONFIG,
     record,
-    recordPageView,
     xRayOffContext,
     xRayOnContext,
     mockFetch,
@@ -542,17 +540,10 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const xRayOnContext: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
+        const context = Object.assign({}, xRayOnContext, { getSession });
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
+        plugin.load(context);
 
         // Run
         await fetch(URL);
@@ -574,17 +565,10 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const xRayOnContext: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
+        const context = Object.assign({}, xRayOnContext, { getSession });
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
+        plugin.load(context);
 
         // Run
         await fetch(URL);

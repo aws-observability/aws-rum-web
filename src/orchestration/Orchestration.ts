@@ -445,7 +445,7 @@ export class Orchestration {
             record: this.eventCache.recordEvent,
             recordPageView: this.eventCache.recordPageView,
             getSession: this.eventCache.getSession,
-            getEvent: this.eventCache.get
+            getEvent: this.eventCache.getEvent
         };
 
         // Initialize PluginManager

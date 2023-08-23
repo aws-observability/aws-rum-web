@@ -118,25 +118,13 @@ export const context: PluginContext = {
     getEvent
 };
 
-export const xRayOffContext: PluginContext = {
-    applicationId: 'b',
-    applicationVersion: '1.0',
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
-    record,
-    recordPageView,
-    getSession,
-    getEvent
-};
+export const xRayOffContext: PluginContext = Object.assign({}, context, {
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } }
+});
 
-export const xRayOnContext: PluginContext = {
-    applicationId: 'b',
-    applicationVersion: '1.0',
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-    record,
-    recordPageView,
-    getSession,
-    getEvent
-};
+export const xRayOnContext: PluginContext = Object.assign({}, context, {
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
+});
 
 export const stringToUtf16 = (inputString: string) => {
     const utf16array = [];
