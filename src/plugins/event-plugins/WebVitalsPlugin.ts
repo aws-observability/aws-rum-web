@@ -40,55 +40,46 @@ export class WebVitalsPlugin extends InternalPlugin {
     }
 
     handleLCP(metric: LCPMetricWithAttribution | Metric) {
-        const lcpEvent: LargestContentfulPaintEvent = {
+        const a = (metric as LCPMetricWithAttribution).attribution;
+        this.context?.record(LCP_EVENT_TYPE, {
             version: '1.0.0',
-            value: metric.value
-        };
-        if ('attribution' in metric) {
-            const a = (metric as LCPMetricWithAttribution).attribution;
-            lcpEvent.attribution = {
+            value: metric.value,
+            attribution: {
                 element: a.element,
                 url: a.url,
                 timeToFirstByte: a.timeToFirstByte,
                 resourceLoadDelay: a.resourceLoadDelay,
                 resourceLoadTime: a.resourceLoadTime,
                 elementRenderDelay: a.elementRenderDelay
-            };
-        }
-        this.context?.record(LCP_EVENT_TYPE, lcpEvent);
+            }
+        } as LargestContentfulPaintEvent);
     }
 
     handleCLS(metric: CLSMetricWithAttribution | Metric) {
-        const clsEvent: CumulativeLayoutShiftEvent = {
+        const a = (metric as CLSMetricWithAttribution).attribution;
+        this.context?.record(CLS_EVENT_TYPE, {
             version: '1.0.0',
-            value: metric.value
-        };
-        if ('attribution' in metric) {
-            const a = (metric as CLSMetricWithAttribution).attribution;
-            clsEvent.attribution = {
+            value: metric.value,
+            attribution: {
                 largestShiftTarget: a.largestShiftTarget,
                 largestShiftValue: a.largestShiftValue,
                 largestShiftTime: a.largestShiftTime,
                 loadState: a.loadState
-            };
-        }
-        this.context?.record(CLS_EVENT_TYPE, clsEvent);
+            }
+        } as CumulativeLayoutShiftEvent);
     }
 
     handleFID(metric: FIDMetricWithAttribution | Metric) {
-        const fidEvent: FirstInputDelayEvent = {
+        const a = (metric as FIDMetricWithAttribution).attribution;
+        this.context?.record(FID_EVENT_TYPE, {
             version: '1.0.0',
-            value: metric.value
-        };
-        if ('attribution' in metric) {
-            const a = (metric as FIDMetricWithAttribution).attribution;
-            fidEvent.attribution = {
+            value: metric.value,
+            attribution: {
                 eventTarget: a.eventTarget,
                 eventType: a.eventType,
                 eventTime: a.eventTime,
                 loadState: a.loadState
-            };
-        }
-        this.context?.record(FID_EVENT_TYPE, fidEvent);
+            }
+        } as FirstInputDelayEvent);
     }
 }
