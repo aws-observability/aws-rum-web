@@ -16,13 +16,10 @@ import { mockRandom } from 'jest-mock-random';
 import {
     context as mockContext,
     DEFAULT_CONFIG,
-    getSession,
-    record,
-    recordPageView
+    record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
-import { PluginContext } from '../../types';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
@@ -261,5 +258,20 @@ describe('ResourcePlugin tests', () => {
         plugin.disable();
 
         expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when entry is an image then it is stored', async () => {
+        mockPerformanceObjectWithResources();
+        mockPerformanceObserver();
+
+        const plugin = buildResourcePlugin();
+        plugin.load(mockContext);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        const imageCall = record.mock.calls.find(
+            (call) => (call[1] as ResourceEvent).fileType === 'image'
+        )!;
+        expect(imageCall[2]).toMatchObject(imageResourceEvent);
     });
 });
