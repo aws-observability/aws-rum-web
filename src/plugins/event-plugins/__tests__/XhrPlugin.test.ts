@@ -6,6 +6,7 @@ import {
     xRayOffContext,
     xRayOnContext,
     record,
+    recordPageView,
     mockNow
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';

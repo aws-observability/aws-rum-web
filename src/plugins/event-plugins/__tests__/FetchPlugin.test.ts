@@ -5,7 +5,9 @@ import {
 } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
+    DEFAULT_CONFIG,
     record,
+    recordPageView,
     xRayOffContext,
     xRayOnContext,
     mockFetch,

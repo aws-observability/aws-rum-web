@@ -14,12 +14,15 @@ import {
 import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import {
-    context as mockContext,
+    context,
     DEFAULT_CONFIG,
-    record
+    getSession,
+    record,
+    recordPageView
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
+import { PluginContext } from '../../types';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
@@ -45,7 +48,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -67,13 +70,13 @@ describe('ResourcePlugin tests', () => {
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
-        const context = Object.assign({}, mockContext, {
+        const mockContext = Object.assign({}, context, {
             config: { ...DEFAULT_CONFIG, recordResourceUrl: false }
         });
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -94,7 +97,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -110,7 +113,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -126,7 +129,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -139,7 +142,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         plugin.disable();
         plugin.enable();
         window.dispatchEvent(new Event('load'));
@@ -154,7 +157,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         plugin.disable();
         window.dispatchEvent(new Event('load'));
         plugin.disable();
@@ -171,7 +174,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -188,7 +191,7 @@ describe('ResourcePlugin tests', () => {
         // Run
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
 
         plugin.disable();
@@ -212,7 +215,7 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
 
         mockRandom(0.99); // Retain order in shuffle
         window.dispatchEvent(new Event('load'));
@@ -253,7 +256,7 @@ describe('ResourcePlugin tests', () => {
         });
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -265,7 +268,7 @@ describe('ResourcePlugin tests', () => {
         mockPerformanceObserver();
 
         const plugin = buildResourcePlugin();
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
