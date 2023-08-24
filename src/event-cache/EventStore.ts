@@ -1,12 +1,15 @@
 import { RumEvent } from '../dispatch/dataplane';
 
+// store events by calling context.record(type, event, key)
+// get events by key with context.getEvent(key)
+// events are evicted from store when removed from EventCache
 export class EventStore {
     // maps custom keys to RUM events
-    private events = new Map<any, RumEvent>();
+    private events = new Map<string, RumEvent>();
     // maps event ids to custom keys
-    private keys = new Map<string, any>();
+    private keys = new Map<string, string>();
 
-    get(key: any) {
+    get(key: string) {
         return this.events.get(key);
     }
 
@@ -17,16 +20,16 @@ export class EventStore {
         }
     }
 
-    put(key: any, event: RumEvent) {
+    put(key: string, event: RumEvent) {
         const dup = this.get(key);
         if (dup) {
             this.keys.delete(dup.id);
         }
         this.keys.set(event.id, key);
-        this.map.set(key, event);
+        this.events.set(key, event);
     }
 
-    evict(key: any) {
+    evict(key: string) {
         const event = this.events.get(key);
         if (event) {
             this.events.delete(key);
@@ -37,17 +40,17 @@ export class EventStore {
     evictById(id: string) {
         const key = this.keys.get(id);
         if (key) {
-            this.keys.delete(eventId);
-            this.map.delete(key);
+            this.keys.delete(id);
+            this.events.delete(key);
         }
     }
 
-    get(key: string) {
-        return this.map.get(key);
+    clear() {
+        this.events.clear();
+        this.keys.clear();
     }
 
-    clear() {
-        this.map.clear();
-        this.keys.clear();
+    get size() {
+        return this.events.size;
     }
 }

@@ -18,6 +18,7 @@ import {
     UserDetails
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
+import { EventStore } from '../event-cache/EventStore';
 
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'
@@ -65,8 +66,11 @@ export const createDefaultEventCache = (): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
 };
 
-export const createEventCache = (config: Config): EventCache => {
-    return new EventCache(APP_MONITOR_DETAILS, config);
+export const createEventCache = (
+    config: Config,
+    store?: EventStore
+): EventCache => {
+    return new EventCache(APP_MONITOR_DETAILS, config, store);
 };
 
 export const createDefaultEventCacheWithEvents = (): EventCache => {

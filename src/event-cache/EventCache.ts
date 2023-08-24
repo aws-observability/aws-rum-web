@@ -31,7 +31,7 @@ export class EventCache {
     private enabled: boolean;
     private installationMethod: string;
 
-    private store = new EventStore();
+    private store: EventStore;
     getEvent = (key: string) => this.store.get(key);
 
     /**
@@ -41,7 +41,11 @@ export class EventCache {
      * @param sessionManager  The sessionManager returns user id, session id and handles session timeout.
      * @param pageManager The pageManager returns page id.
      */
-    constructor(applicationDetails: AppMonitorDetails, config: Config) {
+    constructor(
+        applicationDetails: AppMonitorDetails,
+        config: Config,
+        eventStore?: EventStore
+    ) {
         this.appMonitorDetails = applicationDetails;
         this.config = config;
         this.enabled = true;
@@ -53,6 +57,7 @@ export class EventCache {
             this.pageManager
         );
         this.installationMethod = config.client;
+        this.store = eventStore ?? new EventStore();
     }
 
     /**
@@ -140,7 +145,7 @@ export class EventCache {
         } else {
             // Dispatch the front of the array and retain the back of the array.
             for (let i = 0; i < this.config.batchLimit; i++) {
-                this.store.evict(this.events[i].id);
+                this.store.evictById(this.events[i].id);
             }
             rumEvents = this.events.splice(0, this.config.batchLimit);
         }
@@ -220,7 +225,7 @@ export class EventCache {
         if (this.events.length === this.config.eventCacheSize) {
             // Make room in the cache by dropping the oldest event.
             const evicted = this.events.shift();
-            this.store.evict(evicted!.id);
+            this.store.evictById(evicted!.id);
         }
 
         // The data plane service model (i.e., LogEvents) does not adhere to the
