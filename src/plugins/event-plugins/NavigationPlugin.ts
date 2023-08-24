@@ -265,7 +265,8 @@ export class NavigationPlugin extends InternalPlugin {
         if (this.context?.record) {
             this.context.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
-                eventDataNavigationTimingLevel2
+                eventDataNavigationTimingLevel2,
+                entryData
             );
         }
     };
