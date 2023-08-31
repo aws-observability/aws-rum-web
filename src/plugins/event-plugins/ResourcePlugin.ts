@@ -22,7 +22,6 @@ const LOAD = 'load';
  */
 export class ResourcePlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
-    private storeTypes = [ResourceType.IMAGE];
 
     constructor(config?: PartialPerformancePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
@@ -118,27 +117,17 @@ export class ResourcePlugin extends InternalPlugin {
         }
 
         if (this.context?.record) {
-            const fileType = getResourceFileType(entryData.name);
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,
                 duration: entryData.duration,
-                fileType,
+                fileType: getResourceFileType(entryData.name),
                 transferSize: entryData.transferSize
             };
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-
-            const storageKey = this.storeTypes.includes(fileType)
-                ? entryData
-                : undefined;
-
-            this.context.record(
-                PERFORMANCE_RESOURCE_EVENT_TYPE,
-                eventData,
-                storageKey
-            );
+            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }
     };
 

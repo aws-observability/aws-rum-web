@@ -3,14 +3,8 @@ import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
 import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
-import {
-    DEFAULT_CONFIG,
-    createEventCache,
-    mockFetch
-} from '../../test-utils/test-utils';
+import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
-import { EventStore } from '../EventStore';
-import { Config } from '../../orchestration/Orchestration';
 
 global.fetch = mockFetch;
 const getSession = jest.fn(() => ({
@@ -496,80 +490,6 @@ describe('EventCache tests', () => {
 
         // Assert
         expect(eventCache.getEventBatch().length).toEqual(1);
-    });
-
-    describe('EventStore integration tests', () => {
-        const config: Config = Object.assign({}, DEFAULT_CONFIG, {
-            batchLimit: 1,
-            eventCacheSize: 2,
-            getSession
-        });
-        const store = new EventStore();
-        let cache = createEventCache(config, store);
-        beforeEach(() => {
-            store.clear();
-            cache = createEventCache(config, store);
-        });
-        test('when event is recorded then it is stored', async () => {
-            // init
-            const put = jest.spyOn(store, 'put');
-
-            // run
-            cache.recordEvent('', {}, 'key');
-
-            // assert
-            const actual = store.get('key');
-            expect(put).toHaveBeenCalled();
-            expect(actual).toEqual(expect.objectContaining({ details: '{}' }));
-        });
-
-        test('when events are dropped then only dropped events are evicted', async () => {
-            // init
-            const evictById = jest.spyOn(store, 'evictById');
-
-            // run
-            cache.recordEvent('', {}, 'one');
-            cache.recordEvent('', {}, 'two');
-            cache.recordEvent('', {}, 'three');
-            cache.recordEvent('', {}, 'four');
-
-            // assert
-            const one = store.get('one');
-            const two = store.get('two');
-            const three = store.get('three');
-            const four = store.get('four');
-            expect(evictById).toHaveBeenCalled();
-            expect(one).toBeUndefined();
-            expect(two).toBeUndefined();
-            expect(three).toEqual(expect.anything());
-            expect(four).toEqual(expect.anything());
-        });
-        test('when events are batched then the store is cleared', async () => {
-            // init
-            const clear = jest.spyOn(store, 'clear');
-
-            // run
-            cache.recordEvent('', {}, 'one');
-            cache.getEventBatch();
-
-            // assert
-            expect(clear).toHaveBeenCalled();
-            expect(store.size).toEqual(0);
-        });
-        test('when batching has leftovers then those events are not evicted', async () => {
-            // run
-            cache.recordEvent('', {}, 'one');
-            cache.recordEvent('', {}, 'two');
-            const events = cache.getEventBatch();
-
-            // assert
-            const one = store.get('one');
-            const two = store.get('two');
-            expect(events.length).toEqual(1);
-            expect(store.size).toEqual(1);
-            expect(one).toBeUndefined();
-            expect(two).toEqual(expect.anything());
-        });
     });
 
     test('when event limit is zero then recordEvent records all events', async () => {

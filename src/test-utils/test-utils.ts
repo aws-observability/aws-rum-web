@@ -6,7 +6,6 @@ import {
     defaultCookieAttributes
 } from '../orchestration/Orchestration';
 import {
-    GetEvent,
     GetSession,
     PluginContext,
     RecordEvent,
@@ -18,7 +17,6 @@ import {
     UserDetails
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
-import { EventStore } from '../event-cache/EventStore';
 
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'
@@ -66,11 +64,8 @@ export const createDefaultEventCache = (): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
 };
 
-export const createEventCache = (
-    config: Config,
-    store?: EventStore
-): EventCache => {
-    return new EventCache(APP_MONITOR_DETAILS, config, store);
+export const createEventCache = (config: Config): EventCache => {
+    return new EventCache(APP_MONITOR_DETAILS, config);
 };
 
 export const createDefaultEventCacheWithEvents = (): EventCache => {
@@ -110,7 +105,6 @@ export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     record: true,
     eventCount: 0
 }));
-export const getEvent: jest.MockedFunction<GetEvent> = jest.fn();
 
 export const context: PluginContext = {
     applicationId: 'b',
@@ -118,17 +112,26 @@ export const context: PluginContext = {
     config: DEFAULT_CONFIG,
     record,
     recordPageView,
-    getSession,
-    getEvent
+    getSession
 };
 
-export const xRayOffContext: PluginContext = Object.assign({}, context, {
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } }
-});
+export const xRayOffContext: PluginContext = {
+    applicationId: 'b',
+    applicationVersion: '1.0',
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
+    record,
+    recordPageView,
+    getSession
+};
 
-export const xRayOnContext: PluginContext = Object.assign({}, context, {
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
-});
+export const xRayOnContext: PluginContext = {
+    applicationId: 'b',
+    applicationVersion: '1.0',
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
+    record,
+    recordPageView,
+    getSession
+};
 
 export const stringToUtf16 = (inputString: string) => {
     const utf16array = [];

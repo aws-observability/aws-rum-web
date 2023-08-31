@@ -8,7 +8,6 @@ import {
     UserDetails,
     RumEvent
 } from '../dispatch/dataplane';
-import { EventStore } from './EventStore';
 
 const webClientVersion = '1.13.4';
 
@@ -31,9 +30,6 @@ export class EventCache {
     private enabled: boolean;
     private installationMethod: string;
 
-    private store: EventStore;
-    getEvent = (key: string) => this.store.get(key);
-
     /**
      * @param applicationDetails Application identity and version.
      * @param batchLimit The maximum number of events that will be returned in a batch.
@@ -41,11 +37,7 @@ export class EventCache {
      * @param sessionManager  The sessionManager returns user id, session id and handles session timeout.
      * @param pageManager The pageManager returns page id.
      */
-    constructor(
-        applicationDetails: AppMonitorDetails,
-        config: Config,
-        eventStore?: EventStore
-    ) {
+    constructor(applicationDetails: AppMonitorDetails, config: Config) {
         this.appMonitorDetails = applicationDetails;
         this.config = config;
         this.enabled = true;
@@ -57,7 +49,6 @@ export class EventCache {
             this.pageManager
         );
         this.installationMethod = config.client;
-        this.store = eventStore ?? new EventStore();
     }
 
     /**
@@ -90,11 +81,9 @@ export class EventCache {
      * If the session is being recorded, the event will be recorded.
      * If the session is not being recorded, the event will not be recorded.
      *
-     * @param {string} type RUM event type
-     * @param {object} eventData RUM event details
-     * @param {string} [key] if truthy, stores event with provided key until removed from cache
+     * @param type The event schema.
      */
-    public recordEvent = (type: string, eventData: object, key?: string) => {
+    public recordEvent = (type: string, eventData: object) => {
         if (!this.enabled) {
             return;
         }
@@ -104,7 +93,7 @@ export class EventCache {
             this.sessionManager.incrementSessionEventCount();
 
             if (this.canRecord(session)) {
-                this.addRecordToCache(type, eventData, key);
+                this.addRecordToCache(type, eventData);
             }
         }
     };
@@ -141,12 +130,8 @@ export class EventCache {
             // Return all events.
             rumEvents = this.events;
             this.events = [];
-            this.store.clear();
         } else {
             // Dispatch the front of the array and retain the back of the array.
-            for (let i = 0; i < this.config.batchLimit; i++) {
-                this.store.evictById(this.events[i].id);
-            }
             rumEvents = this.events.splice(0, this.config.batchLimit);
         }
 
@@ -213,19 +198,14 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    private addRecordToCache = (
-        type: string,
-        eventData: object,
-        key?: string
-    ) => {
+    private addRecordToCache = (type: string, eventData: object) => {
         if (!this.enabled) {
             return;
         }
 
         if (this.events.length === this.config.eventCacheSize) {
             // Make room in the cache by dropping the oldest event.
-            const evicted = this.events.shift();
-            this.store.evictById(evicted!.id);
+            this.events.shift();
         }
 
         // The data plane service model (i.e., LogEvents) does not adhere to the
@@ -240,19 +220,13 @@ export class EventCache {
             'aws:clientVersion': webClientVersion
         };
 
-        const event: RumEvent = {
+        this.events.push({
             details: JSON.stringify(eventData),
             id: v4(),
             metadata: JSON.stringify(metaData),
             timestamp: new Date(),
             type
-        };
-
-        if (key) {
-            this.store.put(key, event);
-        }
-
-        this.events.push(event);
+        });
     };
 
     /**

@@ -542,10 +542,17 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const context = Object.assign({}, xRayOnContext, { getSession });
+        const xRayOnContext: PluginContext = {
+            applicationId: 'b',
+            applicationVersion: '1.0',
+            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
+            record,
+            recordPageView,
+            getSession
+        };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         await fetch(URL);
@@ -567,10 +574,17 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const context = Object.assign({}, xRayOnContext, { getSession });
+        const xRayOnContext: PluginContext = {
+            applicationId: 'b',
+            applicationVersion: '1.0',
+            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
+            record,
+            recordPageView,
+            getSession
+        };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(context);
+        plugin.load(xRayOnContext);
 
         // Run
         await fetch(URL);

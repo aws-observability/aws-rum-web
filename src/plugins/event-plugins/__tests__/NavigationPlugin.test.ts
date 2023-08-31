@@ -145,14 +145,4 @@ describe('NavigationPlugin tests', () => {
         // Assert
         expect(record).toHaveBeenCalled();
     });
-
-    test('when level 2 navigation event is recorded then is is stored', async () => {
-        const plugin: NavigationPlugin = buildNavigationPlugin();
-        // Run
-        plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
-        const call = record.mock.calls[0];
-        expect(call[2]).toMatchObject(navigationEvent);
-    });
 });

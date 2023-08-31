@@ -70,13 +70,18 @@ describe('ResourcePlugin tests', () => {
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
-        const mockContext = Object.assign({}, context, {
-            config: { ...DEFAULT_CONFIG, recordResourceUrl: false }
-        });
+        const context: PluginContext = {
+            applicationId: 'b',
+            applicationVersion: '1.0',
+            config: { ...DEFAULT_CONFIG, recordResourceUrl: false },
+            record,
+            recordPageView,
+            getSession
+        };
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
-        plugin.load(mockContext);
+        plugin.load(context);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -261,20 +266,5 @@ describe('ResourcePlugin tests', () => {
         plugin.disable();
 
         expect(record).not.toHaveBeenCalled();
-    });
-
-    test('when entry is an image then it is stored', async () => {
-        mockPerformanceObjectWithResources();
-        mockPerformanceObserver();
-
-        const plugin = buildResourcePlugin();
-        plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
-
-        const imageCall = record.mock.calls.find(
-            (call) => (call[1] as ResourceEvent).fileType === 'image'
-        )!;
-        expect(imageCall[2]).toMatchObject(imageResourceEvent);
     });
 });

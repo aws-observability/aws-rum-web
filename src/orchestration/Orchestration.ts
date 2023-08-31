@@ -387,8 +387,8 @@ export class Orchestration {
      * @param type A unique name for the type of event being recorded.
      * @param eventData A JSON object containing the event's attributes.
      */
-    public recordEvent(eventType: string, eventData: object, key?: string) {
-        this.eventCache.recordEvent(eventType, eventData, key);
+    public recordEvent(eventType: string, eventData: object) {
+        this.eventCache.recordEvent(eventType, eventData);
     }
 
     private initEventCache(
@@ -444,8 +444,7 @@ export class Orchestration {
             config: this.config,
             record: this.eventCache.recordEvent,
             recordPageView: this.eventCache.recordPageView,
-            getSession: this.eventCache.getSession,
-            getEvent: this.eventCache.getEvent
+            getSession: this.eventCache.getSession
         };
 
         // Initialize PluginManager
