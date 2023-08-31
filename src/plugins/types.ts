@@ -7,7 +7,7 @@ export type RecordPageView = (pageId: string) => void;
 
 export type GetSession = () => Session | undefined;
 
-export type GetEvent = (key: string) => RumEvent | undefined;
+export type GetEvent = (key: any) => RumEvent | undefined;
 
 export type PluginContext = {
     applicationId: string;
