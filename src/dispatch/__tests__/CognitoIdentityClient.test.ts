@@ -4,6 +4,7 @@ import { advanceTo } from 'jest-date-mock';
 import { CognitoIdentityClient } from '../CognitoIdentityClient';
 import { Credentials } from '@aws-sdk/types';
 import { getReadableStream } from '../../test-utils/test-utils';
+import { IDENTITY_KEY } from '../../utils/constants';
 
 const mockCredentials =
     '{ "IdentityId": "a", "Credentials": { "AccessKeyId": "x", "SecretKey": "y", "SessionToken": "z" } }';
@@ -22,6 +23,7 @@ describe('CognitoIdentityClient tests', () => {
     beforeEach(() => {
         advanceTo(0);
         fetchHandler.mockClear();
+        localStorage.clear();
 
         // @ts-ignore
         FetchHttpHandler.mockImplementation(() => {
@@ -74,7 +76,7 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Assert
-        return expect(
+        await expect(
             client.getCredentialsForIdentity('my-fake-identity-id')
         ).rejects.toEqual(expected);
     });
@@ -174,5 +176,107 @@ describe('CognitoIdentityClient tests', () => {
                 IdentityPoolId: 'my-fake-identity-pool-id'
             })
         ).rejects.toEqual(expected);
+    });
+
+    test('when identity Id is retrieved from Cognito then next identity Id is retrieved from localStorage', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(mockIdCommand)
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Run
+        await client.getId({ IdentityPoolId: 'my-fake-identity-pool-id' });
+        const idCommand = await client.getId({
+            IdentityPoolId: 'my-fake-identity-pool-id'
+        });
+
+        // Assert
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        expect(idCommand).toMatchObject({
+            IdentityId: 'mockId'
+        });
+    });
+
+    test('when getCredentialsForIdentity returns a ResourceNotFoundException then an error is thrown', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(
+                    '{"__type": "ResourceNotFoundException", "message": ""}'
+                )
+            }
+        });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve credentials for Cognito identity: Error: ResourceNotFoundException: `
+        );
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Assert
+        await expect(
+            client.getCredentialsForIdentity('my-fake-identity-id')
+        ).rejects.toEqual(expected);
+    });
+
+    test('when getCredentialsForIdentity returns a ValidationException then an error is thrown', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(
+                    '{"__type": "ValidationException", "message": ""}'
+                )
+            }
+        });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve credentials for Cognito identity: Error: ValidationException: `
+        );
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Assert
+        await expect(
+            client.getCredentialsForIdentity('my-fake-identity-id')
+        ).rejects.toEqual(expected);
+    });
+
+    test('when getCredentialsForIdentity returns a ResourceNotFoundException then identity id is removed from localStorage ', async () => {
+        localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
+
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(
+                    '{"__type": "ResourceNotFoundException", "message": ""}'
+                )
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Run
+        try {
+            await client.getCredentialsForIdentity('my-fake-identity-id');
+        } catch (e) {
+            // Ignore
+        }
+
+        // Assert
+        expect(localStorage.getItem(IDENTITY_KEY)).toBe(null);
     });
 });
