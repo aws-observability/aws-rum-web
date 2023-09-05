@@ -263,4 +263,19 @@ describe('ResourcePlugin tests', () => {
 
         expect(record).not.toHaveBeenCalled();
     });
+
+    test('when entry is an image then it is stored with key=PerformanceResourceTiming', async () => {
+        mockPerformanceObjectWithResources();
+        mockPerformanceObserver();
+
+        const plugin = buildResourcePlugin();
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        const imageCall = record.mock.calls.find(
+            (call) => (call[1] as ResourceEvent).fileType === 'image'
+        )!;
+        expect(imageCall[2]).toMatchObject(imageResourceEvent);
+    });
 });
