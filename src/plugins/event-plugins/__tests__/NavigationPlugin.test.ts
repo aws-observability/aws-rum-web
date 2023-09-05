@@ -7,7 +7,7 @@ import {
     mockPerformanceObjectWith,
     putRumEventsDocument
 } from '../../../test-utils/mock-data';
-import { NavigationPlugin } from '../NavigationPlugin';
+import { L1_NAV_KEY, NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
@@ -79,6 +79,22 @@ describe('NavigationPlugin tests', () => {
         );
     });
 
+    test('When level 1 event is recorded then it is stored', async () => {
+        jest.useFakeTimers();
+        mockPerformanceObjectWith([putRumEventsDocument], [], []);
+        mockPerformanceObserver();
+
+        const plugin: NavigationPlugin = buildNavigationPlugin();
+
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        jest.runAllTimers();
+        const key = record.mock.calls[0][2];
+        expect(key).toEqual(L1_NAV_KEY);
+    });
+
     test('when enabled then events are recorded', async () => {
         // enables plugin by default
         const plugin: NavigationPlugin = buildNavigationPlugin();
@@ -144,5 +160,16 @@ describe('NavigationPlugin tests', () => {
         plugin.load(context);
         // Assert
         expect(record).toHaveBeenCalled();
+    });
+
+    test('when level 2 navigation event is recorded then is is stored', async () => {
+        const plugin: NavigationPlugin = buildNavigationPlugin();
+        // Run
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+        const call = record.mock.calls[0];
+        const key = call[2];
+        expect(key).toMatchObject(navigationEvent);
     });
 });

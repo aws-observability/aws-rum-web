@@ -11,6 +11,7 @@ export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 
 const NAVIGATION = 'navigation';
 const LOAD = 'load';
+export const L1_NAV_KEY = `${PERFORMANCE_NAVIGATION_EVENT_TYPE}#l1`;
 
 /**
  * This plugin records performance timing events generated during every page load/re-load activity.
@@ -19,6 +20,8 @@ const LOAD = 'load';
  */
 export class NavigationPlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
+    // only store the first navigation event
+    private stored = false;
     constructor(config?: PartialPerformancePluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
@@ -178,10 +181,13 @@ export class NavigationPlugin extends InternalPlugin {
                 duration: entryData.loadEventEnd - entryData.navigationStart,
                 navigationTimingLevel: 1
             };
+
+            const storageKey = this.createKey(L1_NAV_KEY);
             if (this.context?.record) {
                 this.context.record(
                     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-                    eventDataNavigationTimingLevel1
+                    eventDataNavigationTimingLevel1,
+                    storageKey
                 );
             }
         };
@@ -262,10 +268,12 @@ export class NavigationPlugin extends InternalPlugin {
             navigationTimingLevel: 2
         };
 
+        const storageKey = this.createKey(entryData);
         if (this.context?.record) {
             this.context.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
-                eventDataNavigationTimingLevel2
+                eventDataNavigationTimingLevel2,
+                storageKey
             );
         }
     };
@@ -291,5 +299,16 @@ export class NavigationPlugin extends InternalPlugin {
                 window.addEventListener(LOAD, this.eventListener);
             }
         }
+    }
+
+    /**
+     * Only creates a storage key once
+     */
+    private createKey(key: any) {
+        if (this.stored) {
+            return;
+        }
+        this.stored = true;
+        return key;
     }
 }
