@@ -5,6 +5,7 @@ import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
+import { EventStore } from '../../event-store/EventStore';
 
 global.fetch = mockFetch;
 const getSession = jest.fn(() => ({
@@ -492,6 +493,17 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch().length).toEqual(1);
     });
 
+    test('when truthy key is provided then event is stored', async () => {
+        const store = new EventStore();
+        const cache = Utils.createEventCache(DEFAULT_CONFIG, store);
+        const add = jest.spyOn(store, 'add');
+        const type = 'com.amazon.rum.event';
+
+        cache.recordEvent(type, {}, 'key');
+        expect(add).toHaveBeenCalled();
+    });
+
+    // this test pollutes and must be run last or refactored
     test('when event limit is zero then recordEvent records all events', async () => {
         // Init
         const eventCount = 0;

@@ -8,6 +8,7 @@ import {
     UserDetails,
     RumEvent
 } from '../dispatch/dataplane';
+import { EventStore } from '../event-store/EventStore';
 
 const webClientVersion = '1.13.4';
 
@@ -37,7 +38,11 @@ export class EventCache {
      * @param sessionManager  The sessionManager returns user id, session id and handles session timeout.
      * @param pageManager The pageManager returns page id.
      */
-    constructor(applicationDetails: AppMonitorDetails, config: Config) {
+    constructor(
+        applicationDetails: AppMonitorDetails,
+        config: Config,
+        private eventStore: EventStore = new EventStore()
+    ) {
         this.appMonitorDetails = applicationDetails;
         this.config = config;
         this.enabled = true;
@@ -82,8 +87,10 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
+     * @param eventData The event payload
+     * @param key stores the event if truthy key is provided
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent = (type: string, eventData: object, key?: any) => {
         if (!this.enabled) {
             return;
         }
@@ -93,9 +100,16 @@ export class EventCache {
             this.sessionManager.incrementSessionEventCount();
 
             if (this.canRecord(session)) {
-                this.addRecordToCache(type, eventData);
+                this.addRecordToCache(type, eventData, key);
             }
         }
+    };
+
+    /**
+     * Finds a stored event with matching key, if any
+     */
+    public getEvent = (key: any): RumEvent | undefined => {
+        return this.eventStore.find(key);
     };
 
     /**
@@ -198,7 +212,7 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    private addRecordToCache = (type: string, eventData: object) => {
+    private addRecordToCache = (type: string, eventData: object, key?: any) => {
         if (!this.enabled) {
             return;
         }
@@ -220,13 +234,17 @@ export class EventCache {
             'aws:clientVersion': webClientVersion
         };
 
-        this.events.push({
+        const event: RumEvent = {
             details: JSON.stringify(eventData),
             id: v4(),
             metadata: JSON.stringify(metaData),
             timestamp: new Date(),
             type
-        });
+        };
+        if (key) {
+            this.eventStore.add(key, event);
+        }
+        this.events.push(event);
     };
 
     /**
