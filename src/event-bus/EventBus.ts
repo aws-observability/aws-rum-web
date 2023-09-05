@@ -2,8 +2,8 @@ export type Subsriber = (payload: any) => void;
 
 /** A topic-based event bus to facilitate communication between plugins */
 export default class EventBus {
-    // map<topic, listener>
-    private subscribers = new Map<string, Subsriber[]>();
+    // map<topic, subscriber>
+    private subscribrers = new Map<string, Subscriber[]>();
 
     subscribe(topic: string, subscriber: Subsriber): void {
         const list = this.subscribers.get(topic) ?? [];

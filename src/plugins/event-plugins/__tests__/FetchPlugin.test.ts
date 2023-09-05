@@ -560,8 +560,7 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const context = Object.assign({}, xRayOnContext, {getSession})
-        
+        const context = Object.assign({}, xRayOnContext, { getSession });
 
         const plugin: FetchPlugin = new FetchPlugin(config);
         plugin.load(context);

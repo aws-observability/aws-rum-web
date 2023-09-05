@@ -66,7 +66,10 @@ export const createDefaultEventCache = (): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
 };
 
-export const createEventCache = (config: Config, bus?: EventBus): EventCache => {
+export const createEventCache = (
+    config: Config,
+    bus?: EventBus
+): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, config, bus);
 };
 

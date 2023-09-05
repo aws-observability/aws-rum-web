@@ -514,7 +514,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
         const eventBatch: RumEvent[] = eventCache.getEventBatch();
         expect(eventBatch).toEqual(expect.arrayContaining([event]));
-        expect(bus.notify).toHaveBeenCalledWith(EVENT1_SCHEMA, event);
+        expect(bus.notify).toHaveBeenCalledWith(EVENT1_SCHEMA, event); // eslint-disable-line
     });
 
     test('when cache is disabled then subscribers are not notified', async () => {
@@ -538,7 +538,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
         const eventBatch: RumEvent[] = eventCache.getEventBatch();
         expect(eventBatch).toHaveLength(0);
-        expect(bus.notify).not.toHaveBeenCalled();
+        expect(bus.notify).not.toHaveBeenCalled(); // eslint-disable-line
     });
 
     test('when event limit is zero then recordEvent records all events', async () => {
