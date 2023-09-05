@@ -6,6 +6,7 @@ import {
     defaultCookieAttributes
 } from '../orchestration/Orchestration';
 import {
+    GetEvent,
     GetSession,
     PluginContext,
     RecordEvent,
@@ -103,6 +104,7 @@ export const sleep = (ms: number) => {
 };
 
 export const record: jest.MockedFunction<RecordEvent> = jest.fn();
+export const getEvent: jest.MockedFunction<GetEvent> = jest.fn();
 export const recordPageView: jest.MockedFunction<RecordPageView> = jest.fn();
 export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     sessionId: 'abc123',
@@ -115,26 +117,19 @@ export const context: PluginContext = {
     applicationVersion: '1.0',
     config: DEFAULT_CONFIG,
     record,
+    getEvent,
     recordPageView,
     getSession
 };
 
 export const xRayOffContext: PluginContext = {
-    applicationId: 'b',
-    applicationVersion: '1.0',
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
-    record,
-    recordPageView,
-    getSession
+    ...context,
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } }
 };
 
 export const xRayOnContext: PluginContext = {
-    applicationId: 'b',
-    applicationVersion: '1.0',
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-    record,
-    recordPageView,
-    getSession
+    ...context,
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
 };
 
 export const stringToUtf16 = (inputString: string) => {

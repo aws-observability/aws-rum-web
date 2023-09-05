@@ -5,6 +5,7 @@ import {
 } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
+    context,
     DEFAULT_CONFIG,
     record,
     recordPageView,
@@ -17,7 +18,8 @@ import {
     mockFetchWithErrorObjectAndStack,
     mockFetchWith400,
     mockFetchWith429,
-    mockNow
+    mockNow,
+    getSession
 } from '../../../test-utils/test-utils';
 import { GetSession, PluginContext } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
@@ -75,6 +77,7 @@ describe('FetchPlugin tests', () => {
         mockFetchWithErrorObject.mockClear();
         mockFetchWithErrorObjectAndStack.mockClear();
         record.mockClear();
+        getSession.mockClear();
     });
 
     test('when fetch is called then the plugin records the http request/response', async () => {
@@ -542,17 +545,9 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const xRayOnContext: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
-
+        const context = Object.assign({}, xRayOnContext, { getSession });
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
+        plugin.load(context);
 
         // Run
         await fetch(URL);
@@ -574,17 +569,11 @@ describe('FetchPlugin tests', () => {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
-        const xRayOnContext: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-            record,
-            recordPageView,
-            getSession
-        };
+        const context = Object.assign({}, xRayOnContext, {getSession})
+        
 
         const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
+        plugin.load(context);
 
         // Run
         await fetch(URL);

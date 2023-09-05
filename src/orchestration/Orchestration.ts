@@ -443,6 +443,7 @@ export class Orchestration {
             applicationVersion,
             config: this.config,
             record: this.eventCache.recordEvent,
+            getEvent: this.eventCache.getEvent,
             recordPageView: this.eventCache.recordPageView,
             getSession: this.eventCache.getSession
         };
