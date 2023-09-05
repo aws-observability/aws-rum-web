@@ -225,15 +225,21 @@ export class EventCache {
             'aws:clientVersion': webClientVersion
         };
 
-        const event: RumEvent = {
-            details: JSON.stringify(eventData),
+        const partialEvent = {
             id: v4(),
-            metadata: JSON.stringify(metaData),
             timestamp: new Date(),
             type
         };
-        this.events.push(event);
-        this.bus.notify(type, event);
+        this.bus.notify(type, {
+            ...partialEvent,
+            details: eventData,
+            metadata: metaData
+        });
+        this.events.push({
+            ...partialEvent,
+            details: JSON.stringify(eventData),
+            metadata: JSON.stringify(metaData)
+        });
     };
 
     /**

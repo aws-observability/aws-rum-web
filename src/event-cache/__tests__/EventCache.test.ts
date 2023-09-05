@@ -494,7 +494,7 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch().length).toEqual(1);
     });
 
-    test('when event is recorded then subscribers are notified', async () => {
+    test('when event is recorded then subscribers are notified with raw event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const bus = new EventBus();
@@ -502,6 +502,7 @@ describe('EventCache tests', () => {
             DEFAULT_CONFIG,
             bus
         );
+
         const event = {
             id: expect.stringMatching(/[0-9a-f\-]+/),
             timestamp: new Date(),
@@ -514,7 +515,21 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
         const eventBatch: RumEvent[] = eventCache.getEventBatch();
         expect(eventBatch).toEqual(expect.arrayContaining([event]));
-        expect(bus.notify).toHaveBeenCalledWith(EVENT1_SCHEMA, event); // eslint-disable-line
+        // eslint-disable-next-line
+        expect(bus.notify).toHaveBeenCalledWith(
+            EVENT1_SCHEMA,
+            expect.objectContaining({
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: expect.objectContaining({
+                    version: '1.0.0',
+                    'aws:client': INSTALL_MODULE,
+                    'aws:clientVersion': WEB_CLIENT_VERSION
+                }),
+                details: expect.objectContaining({})
+            })
+        );
     });
 
     test('when cache is disabled then subscribers are not notified', async () => {
@@ -525,14 +540,6 @@ describe('EventCache tests', () => {
             DEFAULT_CONFIG,
             bus
         );
-        const event = {
-            id: expect.stringMatching(/[0-9a-f\-]+/),
-            timestamp: new Date(),
-            type: EVENT1_SCHEMA,
-            metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
-            details: '{}'
-        };
-
         // Run
         eventCache.disable();
         eventCache.recordEvent(EVENT1_SCHEMA, {});
