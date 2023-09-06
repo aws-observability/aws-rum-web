@@ -265,7 +265,7 @@ describe('ResourcePlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
-    test('when entry is recorded then it is published to event bus', async () => {
+    test('when entry is recorded then it is dispatched to event bus', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
 
@@ -287,6 +287,6 @@ describe('ResourcePlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect(context.bus.notify).toHaveBeenCalled(); // eslint-disable-line
+        expect(context.bus.dispatch).toHaveBeenCalled(); // eslint-disable-line
     });
 });

@@ -290,10 +290,9 @@ export class NavigationPlugin extends InternalPlugin {
             event
         );
         if (rawEvent) {
-            this.context?.bus.notify(
-                PERFORMANCE_NAVIGATION_EVENT_TYPE,
-                rawEvent
-            );
+            this.context?.bus.dispatch(PERFORMANCE_NAVIGATION_EVENT_TYPE, {
+                payload: rawEvent
+            });
         }
     }
 }

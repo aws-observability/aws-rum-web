@@ -19,7 +19,7 @@ export class DemoPlugin implements Plugin {
         this.configuration = {};
         this.timerId = undefined;
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        this.recordEvent = () => {};
+        this.recordEvent = () => undefined;
     }
 
     getPluginId(): string {

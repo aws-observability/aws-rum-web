@@ -88,9 +88,12 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
-     * @returns {ParsedRumEvent} if the event was recorded
+     * @returns {ParsedRumEvent | undefined} if the event was recorded
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent = (
+        type: string,
+        eventData: object
+    ): ParsedRumEvent | undefined => {
         if (!this.enabled) {
             return;
         }
@@ -208,7 +211,7 @@ export class EventCache {
     private addRecordToCache = (
         type: string,
         eventData: object
-    ): ParsedRumEvent => {
+    ): ParsedRumEvent | undefined => {
         if (!this.enabled) {
             return;
         }
