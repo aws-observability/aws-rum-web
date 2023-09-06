@@ -5,12 +5,14 @@ import {
     mockPerformanceObserver,
     MockPerformanceTiming,
     mockPerformanceObjectWith,
-    putRumEventsDocument
+    putRumEventsDocument,
+    parsedRumEvent
 } from '../../../test-utils/mock-data';
 import { NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
+import { RecordEvent } from 'plugins/types';
 
 const buildNavigationPlugin = (config?: PartialPerformancePluginConfig) => {
     return new NavigationPlugin(config);
@@ -30,7 +32,14 @@ describe('NavigationPlugin tests', () => {
     test('When navigation event is present then event is recorded', async () => {
         const plugin: NavigationPlugin = buildNavigationPlugin();
         // Run
-        plugin.load(context);
+        const record: jest.MockedFunction<RecordEvent> = jest
+            .fn()
+            .mockReturnValue({ ...parsedRumEvent });
+        const mockContext = {
+            ...context,
+            record
+        };
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -44,6 +53,7 @@ describe('NavigationPlugin tests', () => {
                 navigationType: navigationEvent.type
             })
         );
+        expect(context.bus.notify).toHaveBeenCalledTimes(1); // eslint-disable-line
     });
 
     test('When navigation timing level 2 API is not present then navigation timing level 1 API is recorded', async () => {
@@ -52,8 +62,14 @@ describe('NavigationPlugin tests', () => {
         mockPerformanceObserver();
 
         const plugin: NavigationPlugin = buildNavigationPlugin();
-
-        plugin.load(context);
+        const record: jest.MockedFunction<RecordEvent> = jest
+            .fn()
+            .mockReturnValue({ ...parsedRumEvent });
+        const mockContext = {
+            ...context,
+            record
+        };
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
@@ -77,6 +93,7 @@ describe('NavigationPlugin tests', () => {
                 navigationTimingLevel: 1
             })
         );
+        expect(context.bus.notify).toHaveBeenCalledTimes(1); // eslint-disable-line
     });
 
     test('when enabled then events are recorded', async () => {
