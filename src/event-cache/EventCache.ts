@@ -6,7 +6,8 @@ import { PageAttributes, PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
     UserDetails,
-    RumEvent
+    RumEvent,
+    ParsedRumEvent
 } from '../dispatch/dataplane';
 import EventBus from '../event-bus/EventBus';
 
@@ -98,7 +99,7 @@ export class EventCache {
             this.sessionManager.incrementSessionEventCount();
 
             if (this.canRecord(session)) {
-                this.addRecordToCache(type, eventData);
+                return this.addRecordToCache(type, eventData);
             }
         }
     };
@@ -203,7 +204,10 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    private addRecordToCache = (type: string, eventData: object) => {
+    private addRecordToCache = (
+        type: string,
+        eventData: object
+    ): ParsedRumEvent => {
         if (!this.enabled) {
             return;
         }
@@ -225,21 +229,22 @@ export class EventCache {
             'aws:clientVersion': webClientVersion
         };
 
-        const partialEvent = {
+        const partial = {
             id: v4(),
             timestamp: new Date(),
             type
         };
-        this.bus.notify(type, {
-            ...partialEvent,
-            details: eventData,
-            metadata: metaData
-        });
+
         this.events.push({
-            ...partialEvent,
+            ...partial,
             details: JSON.stringify(eventData),
             metadata: JSON.stringify(metaData)
         });
+        return {
+            ...partial,
+            details: eventData,
+            metadata: metaData
+        };
     };
 
     /**
