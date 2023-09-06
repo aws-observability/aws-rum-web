@@ -133,7 +133,7 @@ export class ResourcePlugin extends InternalPlugin {
                 eventData
             );
 
-            if (parsedEvent) {
+            if (parsedEvent && fileType === ResourceType.IMAGE) {
                 this.context?.bus.dispatch(PERFORMANCE_RESOURCE_EVENT_TYPE, {
                     key: entryData,
                     payload: parsedEvent
