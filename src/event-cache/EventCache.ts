@@ -88,6 +88,7 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
+     * @returns {ParsedRumEvent} if the event was recorded
      */
     public recordEvent = (type: string, eventData: object) => {
         if (!this.enabled) {

@@ -11,6 +11,7 @@ import {
     PartialPerformancePluginConfig,
     PerformancePluginConfig
 } from '../utils/performance-utils';
+import { ParsedRumEvent } from 'dispatch/dataplane';
 
 export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
@@ -117,17 +118,28 @@ export class ResourcePlugin extends InternalPlugin {
         }
 
         if (this.context?.record) {
+            const fileType = getResourceFileType(entryData.name);
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType: entryData.initiatorType,
                 duration: entryData.duration,
-                fileType: getResourceFileType(entryData.name),
+                fileType,
                 transferSize: entryData.transferSize
             };
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
+            const parsedEvent = this.context.record(
+                PERFORMANCE_RESOURCE_EVENT_TYPE,
+                eventData
+            );
+
+            if (parsedEvent) {
+                this.context?.bus.notify(PERFORMANCE_RESOURCE_EVENT_TYPE, [
+                    entryData,
+                    parsedEvent
+                ]);
+            }
         }
     };
 
