@@ -283,15 +283,17 @@ export class NavigationPlugin extends InternalPlugin {
         }
     }
 
+    private dispatchedLoad = false;
     /** Record event and publish if record was successful */
     private recordEvent(event: NavigationEvent) {
-        const rawEvent = this.context?.record(
+        const parsedEvent = this.context?.record(
             PERFORMANCE_NAVIGATION_EVENT_TYPE,
             event
         );
-        if (rawEvent) {
+        if (parsedEvent && !this.dispatchedLoad) {
+            this.dispatchedLoad = true;
             this.context?.bus.dispatch(PERFORMANCE_NAVIGATION_EVENT_TYPE, {
-                payload: rawEvent
+                payload: parsedEvent
             });
         }
     }
