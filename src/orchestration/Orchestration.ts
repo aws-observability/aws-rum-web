@@ -207,7 +207,7 @@ export class Orchestration {
     private eventCache: EventCache;
     private dispatchManager: Dispatch;
     private config: Config;
-    private bus = new EventBus();
+    private eventBus = new EventBus();
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
@@ -447,7 +447,7 @@ export class Orchestration {
             record: this.eventCache.recordEvent,
             recordPageView: this.eventCache.recordPageView,
             getSession: this.eventCache.getSession,
-            bus: this.bus
+            eventBus: this.eventBus
         };
 
         // Initialize PluginManager

@@ -41,7 +41,7 @@ export class EventCache {
     constructor(
         applicationDetails: AppMonitorDetails,
         config: Config,
-        private bus = new EventBus()
+        private eventBus = new EventBus()
     ) {
         this.appMonitorDetails = applicationDetails;
         this.config = config;
@@ -230,7 +230,7 @@ export class EventCache {
             timestamp: new Date(),
             type
         };
-        this.bus.dispatch(type, {
+        this.eventBus.dispatch(type, {
             ...partialEvent,
             details: eventData,
             metadata: metaData

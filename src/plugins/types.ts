@@ -13,5 +13,5 @@ export type PluginContext = {
     record: RecordEvent;
     recordPageView: RecordPageView;
     getSession: GetSession;
-    bus: EventBus;
+    eventBus: EventBus;
 };

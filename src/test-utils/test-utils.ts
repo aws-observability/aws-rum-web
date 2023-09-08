@@ -118,7 +118,7 @@ export const context: PluginContext = {
     record,
     recordPageView,
     getSession,
-    bus: new EventBus()
+    eventBus: new EventBus()
 };
 
 export const xRayOffContext: PluginContext = {
