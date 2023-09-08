@@ -230,7 +230,7 @@ export class EventCache {
             timestamp: new Date(),
             type
         };
-        this.eventBus.dispatch(Topic.EVENTS, {
+        this.eventBus.dispatch(Topic.EVENT, {
             ...(key && { key }),
             payload: {
                 ...partialEvent,

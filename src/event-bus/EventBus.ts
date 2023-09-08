@@ -4,7 +4,7 @@ export interface Message {
     payload: any;
 }
 export enum Topic {
-    EVENTS = 'events'
+    EVENT = 'event'
 }
 
 /** A topic-based event bus to facilitate communication between plugins */

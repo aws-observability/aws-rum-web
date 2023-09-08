@@ -517,7 +517,7 @@ describe('EventCache tests', () => {
         expect(eventBatch).toEqual(expect.arrayContaining([event]));
         // eslint-disable-next-line
         expect(bus.dispatch).toHaveBeenCalledWith(
-            Topic.EVENTS,
+            Topic.EVENT,
             expect.objectContaining({
                 payload: expect.objectContaining({
                     id: expect.stringMatching(/[0-9a-f\-]+/),
@@ -547,7 +547,7 @@ describe('EventCache tests', () => {
 
         // eslint-disable-next-line
         expect(bus.dispatch).toHaveBeenCalledWith(
-            Topic.EVENTS,
+            Topic.EVENT,
             expect.objectContaining({ key: 'key' })
         );
     });
