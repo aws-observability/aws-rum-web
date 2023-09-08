@@ -26,7 +26,7 @@ export default class EventBus {
         return false;
     }
 
-    notify(topic: string, payload: any): void {
+    dispatch(topic: string, payload: any): void {
         const list = this.subscribers.get(topic);
         if (list) {
             for (const subscriber of list) {

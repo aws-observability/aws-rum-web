@@ -230,7 +230,7 @@ export class EventCache {
             timestamp: new Date(),
             type
         };
-        this.bus.notify(type, {
+        this.bus.dispatch(type, {
             ...partialEvent,
             details: eventData,
             metadata: metaData

@@ -8,13 +8,13 @@ describe('EventBus tests', () => {
         eventBus = new EventBus();
         jest.clearAllMocks();
     });
-    test('when notify is invoked then all listeners are called', async () => {
+    test('when dispatch is invoked then all listeners are called', async () => {
         // init
         eventBus.subscribe('food', l1);
         eventBus.subscribe('food', l2);
 
         // run
-        eventBus.notify('food', 'burger');
+        eventBus.dispatch('food', 'burger');
 
         // assert
         expect(l1).toHaveBeenCalledWith('burger');
@@ -28,7 +28,7 @@ describe('EventBus tests', () => {
         const removed = eventBus.unsubscribe('food', l2);
 
         // run
-        eventBus.notify('food', 'burger');
+        eventBus.dispatch('food', 'burger');
 
         // assert
         expect(l1).toHaveBeenCalledWith('burger');

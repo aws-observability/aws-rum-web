@@ -516,7 +516,7 @@ describe('EventCache tests', () => {
         const eventBatch: RumEvent[] = eventCache.getEventBatch();
         expect(eventBatch).toEqual(expect.arrayContaining([event]));
         // eslint-disable-next-line
-        expect(bus.notify).toHaveBeenCalledWith(
+        expect(bus.dispatch).toHaveBeenCalledWith(
             EVENT1_SCHEMA,
             expect.objectContaining({
                 id: expect.stringMatching(/[0-9a-f\-]+/),
@@ -545,7 +545,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
         const eventBatch: RumEvent[] = eventCache.getEventBatch();
         expect(eventBatch).toHaveLength(0);
-        expect(bus.notify).not.toHaveBeenCalled(); // eslint-disable-line
+        expect(bus.dispatch).not.toHaveBeenCalled(); // eslint-disable-line
     });
 
     test('when event limit is zero then recordEvent records all events', async () => {
