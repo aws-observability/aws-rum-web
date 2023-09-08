@@ -127,7 +127,11 @@ export class ResourcePlugin extends InternalPlugin {
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = entryData.name;
             }
-            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
+            this.context.record(
+                PERFORMANCE_RESOURCE_EVENT_TYPE,
+                eventData,
+                entryData
+            );
         }
     };
 
