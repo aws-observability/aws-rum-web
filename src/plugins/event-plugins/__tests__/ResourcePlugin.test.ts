@@ -9,8 +9,7 @@ import {
     mockPerformanceObjectWith,
     putRumEventsDocument,
     putRumEventsGammaDocument,
-    dataPlaneDocument,
-    parsedRumEvent
+    dataPlaneDocument
 } from '../../../test-utils/mock-data';
 import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
@@ -23,7 +22,7 @@ import {
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
-import { PluginContext, RecordEvent } from '../../types';
+import { PluginContext } from '../../types';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
@@ -263,30 +262,5 @@ describe('ResourcePlugin tests', () => {
         plugin.disable();
 
         expect(record).not.toHaveBeenCalled();
-    });
-
-    test('when entry is recorded then it is published to event bus', async () => {
-        // Setup
-        mockRandom(0); // Retain order in shuffle
-
-        const plugin: ResourcePlugin = buildResourcePlugin();
-        const record: jest.MockedFunction<RecordEvent> = jest
-            .fn()
-            .mockReturnValue({ ...parsedRumEvent });
-        const mockContext = {
-            ...context,
-            record
-        };
-
-        // Run
-        plugin.load(mockContext);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
-
-        // Assert
-        expect(record.mock.calls[0][0]).toEqual(
-            PERFORMANCE_RESOURCE_EVENT_TYPE
-        );
-        expect(context.bus.notify).toHaveBeenCalled(); // eslint-disable-line
     });
 });

@@ -3,11 +3,7 @@ import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
 import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
-import {
-    DEFAULT_CONFIG,
-    WEB_CLIENT_VERSION,
-    mockFetch
-} from '../../test-utils/test-utils';
+import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
 
 global.fetch = mockFetch;

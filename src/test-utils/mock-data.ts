@@ -1,7 +1,3 @@
-/* eslint max-classes-per-file: 0 */
-import { INSTALL_MODULE } from '../utils/constants';
-import { WEB_CLIENT_VERSION } from './test-utils';
-
 /* eslint-disable max-classes-per-file */
 export const firstPaintEvent = {
     name: 'first-paint',
@@ -461,16 +457,4 @@ export const httpErrorEvent = {
     responseURL:
         'https://jtrm21au2a.execute-api.us-west-2.amazonaws.com/alpha/v1.0.0/putBatchMetrics',
     responseText: '{"message":"Could not persist data"}'
-};
-
-export const parsedRumEvent = {
-    id: expect.stringMatching(/[0-9a-f\-]+/),
-    timestamp: new Date(),
-    type: 'com.amazon.rum.event',
-    metadata: {
-        version: '1.0.0',
-        'aws:client': INSTALL_MODULE,
-        'aws:clientVersion': WEB_CLIENT_VERSION
-    },
-    details: {}
 };
