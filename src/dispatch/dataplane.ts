@@ -5,8 +5,6 @@
 // use the type definitions from the CloudWatch RUM SDK, we have made a copy of
 // them here to completely remove the dependency on the CloudWatch RUM SDK.
 
-import { MetaData } from '../events/meta-data';
-
 export interface PutRumEventsRequest {
     BatchId: string;
     AppMonitorDetails: AppMonitorDetails;
@@ -30,12 +28,4 @@ export interface RumEvent {
     type: string;
     metadata?: string;
     details: string;
-}
-
-export interface ParsedRumEvent {
-    id: string;
-    timestamp: Date;
-    type: string;
-    metadata?: MetaData;
-    details: object;
 }
