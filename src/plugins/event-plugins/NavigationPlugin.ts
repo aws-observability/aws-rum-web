@@ -178,7 +178,12 @@ export class NavigationPlugin extends InternalPlugin {
                 duration: entryData.loadEventEnd - entryData.navigationStart,
                 navigationTimingLevel: 1
             };
-            this.recordEvent(eventDataNavigationTimingLevel1);
+            if (this.context?.record) {
+                this.context.record(
+                    PERFORMANCE_NAVIGATION_EVENT_TYPE,
+                    eventDataNavigationTimingLevel1
+                );
+            }
         };
         // Timeout is required for loadEventEnd to complete
         setTimeout(recordNavigation, 0);
@@ -257,7 +262,12 @@ export class NavigationPlugin extends InternalPlugin {
             navigationTimingLevel: 2
         };
 
-        this.recordEvent(eventDataNavigationTimingLevel2);
+        if (this.context?.record) {
+            this.context.record(
+                PERFORMANCE_NAVIGATION_EVENT_TYPE,
+                eventDataNavigationTimingLevel2
+            );
+        }
     };
 
     /**
@@ -280,20 +290,6 @@ export class NavigationPlugin extends InternalPlugin {
             } else {
                 window.addEventListener(LOAD, this.eventListener);
             }
-        }
-    }
-
-    /** Record event and publish if record was successful */
-    private recordEvent(event: NavigationEvent) {
-        const rawEvent = this.context?.record(
-            PERFORMANCE_NAVIGATION_EVENT_TYPE,
-            event
-        );
-        if (rawEvent) {
-            this.context?.bus.notify(
-                PERFORMANCE_NAVIGATION_EVENT_TYPE,
-                rawEvent
-            );
         }
     }
 }
