@@ -88,7 +88,7 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent = (type: string, eventData: object, key?: any) => {
         if (!this.enabled) {
             return;
         }
@@ -98,7 +98,7 @@ export class EventCache {
             this.sessionManager.incrementSessionEventCount();
 
             if (this.canRecord(session)) {
-                this.addRecordToCache(type, eventData);
+                this.addRecordToCache(type, eventData, key);
             }
         }
     };
@@ -203,7 +203,7 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    private addRecordToCache = (type: string, eventData: object) => {
+    private addRecordToCache = (type: string, eventData: object, key?: any) => {
         if (!this.enabled) {
             return;
         }
@@ -231,9 +231,12 @@ export class EventCache {
             type
         };
         this.eventBus.dispatch(Topic.EVENTS, {
-            ...partialEvent,
-            details: eventData,
-            metadata: metaData
+            ...(key && { key }),
+            payload: {
+                ...partialEvent,
+                details: eventData,
+                metadata: metaData
+            }
         });
         this.events.push({
             ...partialEvent,
