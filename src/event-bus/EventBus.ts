@@ -1,8 +1,4 @@
-export type Subscriber = (message: any) => void;
-export interface Message {
-    key?: any;
-    payload: any;
-}
+export type Subscriber = (payload: any) => void;
 
 /** A topic-based event bus to facilitate communication between plugins */
 export default class EventBus {
@@ -30,11 +26,11 @@ export default class EventBus {
         return false;
     }
 
-    dispatch(topic: string, message: Message): void {
+    notify(topic: string, payload: any): void {
         const list = this.subscribers.get(topic);
         if (list) {
             for (const subscriber of list) {
-                subscriber(message);
+                subscriber(payload);
             }
         }
     }

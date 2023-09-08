@@ -53,7 +53,7 @@ describe('NavigationPlugin tests', () => {
                 navigationType: navigationEvent.type
             })
         );
-        expect(context.bus.dispatch).toHaveBeenCalledTimes(1); // eslint-disable-line
+        expect(context.bus.notify).toHaveBeenCalledTimes(1); // eslint-disable-line
     });
 
     test('When navigation timing level 2 API is not present then navigation timing level 1 API is recorded', async () => {
@@ -93,7 +93,7 @@ describe('NavigationPlugin tests', () => {
                 navigationTimingLevel: 1
             })
         );
-        expect(context.bus.dispatch).toHaveBeenCalledTimes(1); // eslint-disable-line
+        expect(context.bus.notify).toHaveBeenCalledTimes(1); // eslint-disable-line
     });
 
     test('when enabled then events are recorded', async () => {
