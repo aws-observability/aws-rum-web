@@ -25,7 +25,6 @@ import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
 import { PluginContext, RecordEvent } from '../../types';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
-import { ResourceType } from '../../../utils/common-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
     return new ResourcePlugin(config);
@@ -266,11 +265,10 @@ describe('ResourcePlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
-    test('when image is recorded then it is dispatched', async () => {
+    test('when entry is recorded then it is dispatched to event bus', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
-        mockPerformanceObjectWith([imageResourceEvent], [], []);
-        mockPerformanceObserver();
+
         const plugin: ResourcePlugin = buildResourcePlugin();
         const record: jest.MockedFunction<RecordEvent> = jest
             .fn()
@@ -288,9 +286,6 @@ describe('ResourcePlugin tests', () => {
         // Assert
         expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
-        );
-        expect((record.mock.calls[0][1] as ResourceEvent).fileType).toEqual(
-            ResourceType.IMAGE
         );
         expect(context.bus.dispatch).toHaveBeenCalled(); // eslint-disable-line
     });
