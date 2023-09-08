@@ -1,11 +1,14 @@
 export type Subscriber = (payload: any) => void;
+export enum Topic {
+    EVENTS = 'events'
+}
 
 /** A topic-based event bus to facilitate communication between plugins */
-export default class EventBus {
+export default class EventBus<T = Topic> {
     // map<topic, subscriber>
-    private subscribers = new Map<string, Subscriber[]>();
+    private subscribers = new Map<T, Subscriber[]>();
 
-    subscribe(topic: string, subscriber: Subscriber): void {
+    subscribe(topic: T, subscriber: Subscriber): void {
         const list = this.subscribers.get(topic) ?? [];
         if (list.length === 0) {
             this.subscribers.set(topic, list);
@@ -13,7 +16,7 @@ export default class EventBus {
         list.push(subscriber);
     }
 
-    unsubscribe(topic: string, subscriber: Subscriber) {
+    unsubscribe(topic: T, subscriber: Subscriber) {
         const list = this.subscribers.get(topic);
         if (list) {
             for (let i = 0; i < list.length; i++) {
@@ -26,7 +29,7 @@ export default class EventBus {
         return false;
     }
 
-    dispatch(topic: string, payload: any): void {
+    dispatch(topic: T, payload: any): void {
         const list = this.subscribers.get(topic);
         if (list) {
             for (const subscriber of list) {

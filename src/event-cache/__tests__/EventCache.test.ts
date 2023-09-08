@@ -5,7 +5,7 @@ import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
-import EventBus from '../../event-bus/EventBus';
+import EventBus, { Topic } from '../../event-bus/EventBus';
 jest.mock('../../event-bus/EventBus');
 
 global.fetch = mockFetch;
@@ -494,7 +494,7 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch().length).toEqual(1);
     });
 
-    test('when event is recorded then subscribers are notified with raw event', async () => {
+    test('when event is recorded then events subscribers are notified with raw event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const bus = new EventBus();
@@ -517,7 +517,7 @@ describe('EventCache tests', () => {
         expect(eventBatch).toEqual(expect.arrayContaining([event]));
         // eslint-disable-next-line
         expect(bus.dispatch).toHaveBeenCalledWith(
-            EVENT1_SCHEMA,
+            Topic.EVENTS,
             expect.objectContaining({
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),

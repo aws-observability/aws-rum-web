@@ -8,7 +8,7 @@ import {
     UserDetails,
     RumEvent
 } from '../dispatch/dataplane';
-import EventBus from '../event-bus/EventBus';
+import EventBus, { Topic } from '../event-bus/EventBus';
 
 const webClientVersion = '1.14.0';
 
@@ -41,7 +41,7 @@ export class EventCache {
     constructor(
         applicationDetails: AppMonitorDetails,
         config: Config,
-        private eventBus = new EventBus()
+        private eventBus = new EventBus<Topic>()
     ) {
         this.appMonitorDetails = applicationDetails;
         this.config = config;
@@ -230,7 +230,7 @@ export class EventCache {
             timestamp: new Date(),
             type
         };
-        this.eventBus.dispatch(type, {
+        this.eventBus.dispatch(Topic.EVENTS, {
             ...partialEvent,
             details: eventData,
             metadata: metaData
