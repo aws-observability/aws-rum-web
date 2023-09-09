@@ -7,6 +7,7 @@ import { advanceTo } from 'jest-date-mock';
 import {
     context,
     DEFAULT_CONFIG,
+    getSession,
     record,
     recordPageView,
     xRayOffContext,
