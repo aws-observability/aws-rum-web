@@ -207,7 +207,7 @@ export class Orchestration {
     private eventCache: EventCache;
     private dispatchManager: Dispatch;
     private config: Config;
-    private eventBus = new EventBus();
+    private eventBus = new EventBus<Topic>();
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
