@@ -17,6 +17,8 @@ import {
     UserDetails
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
+import EventBus, { Topic } from '../event-bus/EventBus';
+jest.mock('../event-bus/EventBus');
 
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'
@@ -64,8 +66,11 @@ export const createDefaultEventCache = (): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);
 };
 
-export const createEventCache = (config: Config): EventCache => {
-    return new EventCache(APP_MONITOR_DETAILS, config);
+export const createEventCache = (
+    config: Config,
+    bus?: EventBus
+): EventCache => {
+    return new EventCache(APP_MONITOR_DETAILS, config, bus);
 };
 
 export const createDefaultEventCacheWithEvents = (): EventCache => {
@@ -112,25 +117,18 @@ export const context: PluginContext = {
     config: DEFAULT_CONFIG,
     record,
     recordPageView,
-    getSession
+    getSession,
+    eventBus: new EventBus()
 };
 
 export const xRayOffContext: PluginContext = {
-    applicationId: 'b',
-    applicationVersion: '1.0',
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } },
-    record,
-    recordPageView,
-    getSession
+    ...context,
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } }
 };
 
 export const xRayOnContext: PluginContext = {
-    applicationId: 'b',
-    applicationVersion: '1.0',
-    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } },
-    record,
-    recordPageView,
-    getSession
+    ...context,
+    config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
 };
 
 export const stringToUtf16 = (inputString: string) => {

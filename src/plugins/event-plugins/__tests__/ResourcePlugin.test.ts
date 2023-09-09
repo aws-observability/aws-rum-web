@@ -65,23 +65,22 @@ describe('ResourcePlugin tests', () => {
                 initiatorType: resourceEvent.initiatorType
             })
         );
+        expect(record.mock.calls[0][2]).toEqual(
+            expect.objectContaining(resourceEvent)
+        );
     });
 
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
-        const context: PluginContext = {
-            applicationId: 'b',
-            applicationVersion: '1.0',
-            config: { ...DEFAULT_CONFIG, recordResourceUrl: false },
-            record,
-            recordPageView,
-            getSession
-        };
+
         const plugin: ResourcePlugin = buildResourcePlugin();
+        const mockContext = Object.assign({}, context, {
+            config: { ...DEFAULT_CONFIG, recordResourceUrl: false }
+        });
 
         // Run
-        plugin.load(context);
+        plugin.load(mockContext);
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
