@@ -1,9 +1,9 @@
 import { Config } from '../orchestration/Orchestration';
 import { Session } from '../sessions/SessionManager';
+import EventBus from '../event-bus/EventBus';
 
 export type RecordEvent = (type: string, eventData: object) => void;
 export type RecordPageView = (pageId: string) => void;
-
 export type GetSession = () => Session | undefined;
 
 export type PluginContext = {
@@ -13,4 +13,5 @@ export type PluginContext = {
     record: RecordEvent;
     recordPageView: RecordPageView;
     getSession: GetSession;
+    bus: EventBus;
 };
