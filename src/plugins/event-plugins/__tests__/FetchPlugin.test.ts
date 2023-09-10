@@ -896,4 +896,54 @@ describe('FetchPlugin tests', () => {
             }
         });
     });
+
+    test('when tracing is enabled then the trace id is added to the http event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        expect(record.mock.calls[1][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            trace_id: '1-0-000000000000000000000000',
+            segment_id: '0000000000000000'
+        });
+    });
+
+    test('when tracing is not enabled then the trace id is not added to the http event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).not.toMatchObject({
+            trace_id: expect.anything()
+        });
+        expect(record.mock.calls[0][1]).not.toMatchObject({
+            segment_id: expect.anything()
+        });
+    });
 });

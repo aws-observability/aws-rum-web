@@ -243,12 +243,17 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         xhrDetails: XhrDetails,
         xhr: XMLHttpRequest
     ) {
+        const httpEvent: HttpEvent = {
+            version: '1.0.0',
+            request: { method: xhrDetails.method, url: xhrDetails.url },
+            response: { status: xhr.status, statusText: xhr.statusText }
+        };
+        if (this.isTracingEnabled()) {
+            httpEvent.trace_id = xhrDetails.trace!.trace_id;
+            httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
+        }
         if (this.config.recordAllRequests || !this.statusOk(xhr.status)) {
-            this.context.record(HTTP_EVENT_TYPE, {
-                version: '1.0.0',
-                request: { method: xhrDetails.method, url: xhrDetails.url },
-                response: { status: xhr.status, statusText: xhr.statusText }
-            });
+            this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
     }
 
@@ -258,15 +263,19 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     ) {
         const httpEvent: HttpEvent = {
             version: '1.0.0',
-            request: { method: xhrDetails.method, url: xhrDetails.url }
+            request: { method: xhrDetails.method, url: xhrDetails.url },
+            error: errorEventToJsErrorEvent(
+                {
+                    type: 'error',
+                    error
+                } as ErrorEvent,
+                this.config.stackTraceLength
+            )
         };
-        httpEvent.error = errorEventToJsErrorEvent(
-            {
-                type: 'error',
-                error
-            } as ErrorEvent,
-            this.config.stackTraceLength
-        );
+        if (this.isTracingEnabled()) {
+            httpEvent.trace_id = xhrDetails.trace!.trace_id;
+            httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
+        }
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     }
 
