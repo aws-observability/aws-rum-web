@@ -203,7 +203,7 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    private addRecordToCache = (type: string, eventData: object, key?: any) => {
+    private addRecordToCache = (type: string, eventData: object) => {
         if (!this.enabled) {
             return;
         }
@@ -231,11 +231,9 @@ export class EventCache {
             type
         };
         this.eventBus.dispatch(Topic.EVENT, {
-            payload: {
-                ...partialEvent,
-                details: eventData,
-                metadata: metaData
-            }
+            ...partialEvent,
+            details: eventData,
+            metadata: metaData
         });
         this.events.push({
             ...partialEvent,

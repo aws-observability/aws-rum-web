@@ -519,17 +519,15 @@ describe('EventCache tests', () => {
         expect(bus.dispatch).toHaveBeenCalledWith(
             Topic.EVENT,
             expect.objectContaining({
-                payload: expect.objectContaining({
-                    id: expect.stringMatching(/[0-9a-f\-]+/),
-                    timestamp: new Date(),
-                    type: EVENT1_SCHEMA,
-                    metadata: expect.objectContaining({
-                        version: '1.0.0',
-                        'aws:client': INSTALL_MODULE,
-                        'aws:clientVersion': WEB_CLIENT_VERSION
-                    }),
-                    details: expect.objectContaining({})
-                })
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: expect.objectContaining({
+                    version: '1.0.0',
+                    'aws:client': INSTALL_MODULE,
+                    'aws:clientVersion': WEB_CLIENT_VERSION
+                }),
+                details: expect.objectContaining({})
             })
         );
     });

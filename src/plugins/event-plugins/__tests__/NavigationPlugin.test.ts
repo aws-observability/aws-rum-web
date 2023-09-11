@@ -77,9 +77,6 @@ describe('NavigationPlugin tests', () => {
                 navigationTimingLevel: 1
             })
         );
-
-        // // expect to record without key
-        expect(record.mock.calls[0].length).toEqual(2);
     });
 
     test('when enabled then events are recorded', async () => {
