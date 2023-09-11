@@ -4,7 +4,11 @@ import {
     RESPONSE_STATUS
 } from '../../../test-utils/integ-test-utils';
 import { Selector } from 'testcafe';
-import { CLS_EVENT_TYPE, LCP_EVENT_TYPE } from '../../utils/constant';
+import {
+    CLS_EVENT_TYPE,
+    FID_EVENT_TYPE,
+    LCP_EVENT_TYPE
+} from '../../utils/constant';
 
 const testButton: Selector = Selector(`#testButton`);
 const makePageHidden: Selector = Selector(`#makePageHidden`);
@@ -17,7 +21,7 @@ fixture('WebVitalEvent Plugin').page(
 // "FID is not reported if the user never interacts with the page."
 // It doesn't seem like TestCafe actions are registered as user interactions, so cannot test FID
 
-test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
+test('WebVitalEvent records lcp and cls events on chrome', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     const browser = t.browser.name;
@@ -51,5 +55,9 @@ test('WebVitalEvent records lcp and cls events', async (t: TestController) => {
         .expect(lcpEventDetails.value)
         .typeOf('number')
         .expect(clsEventDetails.value)
-        .typeOf('number');
+        .typeOf('number')
+        .expect(lcpEventDetails.attribution)
+        .typeOf('object')
+        .expect(clsEventDetails.attribution)
+        .typeOf('object');
 });
