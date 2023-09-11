@@ -5,6 +5,8 @@ import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
+import EventBus, { Topic } from '../../event-bus/EventBus';
+jest.mock('../../event-bus/EventBus');
 
 global.fetch = mockFetch;
 const getSession = jest.fn(() => ({
@@ -490,6 +492,60 @@ describe('EventCache tests', () => {
 
         // Assert
         expect(eventCache.getEventBatch().length).toEqual(1);
+    });
+
+    test('when event is recorded then events subscribers are notified with parsed rum event', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const bus = new EventBus();
+        const eventCache: EventCache = Utils.createEventCache(
+            DEFAULT_CONFIG,
+            bus
+        );
+
+        const event = {
+            id: expect.stringMatching(/[0-9a-f\-]+/),
+            timestamp: new Date(),
+            type: EVENT1_SCHEMA,
+            metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+            details: '{}'
+        };
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+        expect(eventBatch).toEqual(expect.arrayContaining([event]));
+        // eslint-disable-next-line
+        expect(bus.dispatch).toHaveBeenCalledWith(
+            Topic.EVENT,
+            expect.objectContaining({
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: expect.objectContaining({
+                    version: '1.0.0',
+                    'aws:client': INSTALL_MODULE,
+                    'aws:clientVersion': WEB_CLIENT_VERSION
+                }),
+                details: expect.objectContaining({})
+            })
+        );
+    });
+
+    test('when cache is disabled then subscribers are not notified', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const bus = new EventBus();
+        const eventCache: EventCache = Utils.createEventCache(
+            DEFAULT_CONFIG,
+            bus
+        );
+        // Run
+        eventCache.disable();
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+        expect(eventBatch).toHaveLength(0);
+        expect(bus.dispatch).not.toHaveBeenCalled(); // eslint-disable-line
     });
 
     test('when event limit is zero then recordEvent records all events', async () => {

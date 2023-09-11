@@ -24,6 +24,7 @@ import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
 import { INSTALL_MODULE } from '../utils/constants';
+import EventBus, { Topic } from '../event-bus/EventBus';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -206,6 +207,7 @@ export class Orchestration {
     private eventCache: EventCache;
     private dispatchManager: Dispatch;
     private config: Config;
+    private eventBus = new EventBus<Topic>();
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
@@ -444,7 +446,8 @@ export class Orchestration {
             config: this.config,
             record: this.eventCache.recordEvent,
             recordPageView: this.eventCache.recordPageView,
-            getSession: this.eventCache.getSession
+            getSession: this.eventCache.getSession,
+            eventBus: this.eventBus
         };
 
         // Initialize PluginManager

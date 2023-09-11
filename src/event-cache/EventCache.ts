@@ -8,6 +8,7 @@ import {
     UserDetails,
     RumEvent
 } from '../dispatch/dataplane';
+import EventBus, { Topic } from '../event-bus/EventBus';
 
 const webClientVersion = '1.14.0';
 
@@ -37,7 +38,11 @@ export class EventCache {
      * @param sessionManager  The sessionManager returns user id, session id and handles session timeout.
      * @param pageManager The pageManager returns page id.
      */
-    constructor(applicationDetails: AppMonitorDetails, config: Config) {
+    constructor(
+        applicationDetails: AppMonitorDetails,
+        config: Config,
+        private eventBus = new EventBus<Topic>()
+    ) {
         this.appMonitorDetails = applicationDetails;
         this.config = config;
         this.enabled = true;
@@ -220,12 +225,20 @@ export class EventCache {
             'aws:clientVersion': webClientVersion
         };
 
-        this.events.push({
-            details: JSON.stringify(eventData),
+        const partialEvent = {
             id: v4(),
-            metadata: JSON.stringify(metaData),
             timestamp: new Date(),
             type
+        };
+        this.eventBus.dispatch(Topic.EVENT, {
+            ...partialEvent,
+            details: eventData,
+            metadata: metaData
+        });
+        this.events.push({
+            ...partialEvent,
+            details: JSON.stringify(eventData),
+            metadata: JSON.stringify(metaData)
         });
     };
 
