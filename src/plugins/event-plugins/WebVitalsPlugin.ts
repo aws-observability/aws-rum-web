@@ -14,15 +14,28 @@ import {
 import {
     CLS_EVENT_TYPE,
     FID_EVENT_TYPE,
-    LCP_EVENT_TYPE
+    LCP_EVENT_TYPE,
+    PERFORMANCE_NAVIGATION_EVENT_TYPE,
+    PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../utils/constant';
+import { Topic } from '../../event-bus/EventBus';
+import { ParsedRumEvent } from '../../dispatch/dataplane';
+import { ResourceEvent } from '../../events/resource-event';
+import {
+    HasLatency,
+    ResourceType,
+    performanceKey
+} from '../../utils/common-utils';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
 export class WebVitalsPlugin extends InternalPlugin {
     constructor() {
         super(WEB_VITAL_EVENT_PLUGIN_ID);
+        this.lcpHelper = this.lcpHelper.bind(this);
     }
+    private resourceEventIds = new Map<string, string>();
+    private navigationEventsIds: string[] = [];
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     enable(): void {}
@@ -34,25 +47,57 @@ export class WebVitalsPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
+        this.context?.eventBus.subscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
         onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
         onCLS((metric) => this.handleCLS(metric));
     }
 
+    lcpHelper(msg: any) {
+        const event = msg as ParsedRumEvent;
+        switch (event.type) {
+            // lcp resource is either image or text
+            case PERFORMANCE_RESOURCE_EVENT_TYPE:
+                const details = event.details as ResourceEvent;
+                if (
+                    details.fileType === ResourceType.IMAGE ||
+                    details.initiatorType === 'img'
+                ) {
+                    const key = performanceKey(event.details as HasLatency);
+                    this.resourceEventIds.set(key, event.id);
+                }
+                break;
+            case PERFORMANCE_NAVIGATION_EVENT_TYPE:
+                this.navigationEventsIds.push(event.id);
+                break;
+        }
+    }
+
     handleLCP(metric: LCPMetricWithAttribution | Metric) {
         const a = (metric as LCPMetricWithAttribution).attribution;
+        const attribution: any = {
+            element: a.element,
+            url: a.url,
+            timeToFirstByte: a.timeToFirstByte,
+            resourceLoadDelay: a.resourceLoadDelay,
+            resourceLoadTime: a.resourceLoadTime,
+            elementRenderDelay: a.elementRenderDelay,
+            navigationEntry: this.navigationEventsIds[0]
+        };
+        if (a.lcpResourceEntry) {
+            const key = performanceKey(a.lcpResourceEntry as HasLatency);
+            attribution.lcpResourceEntry = this.resourceEventIds.get(key);
+        }
         this.context?.record(LCP_EVENT_TYPE, {
             version: '1.0.0',
             value: metric.value,
-            attribution: {
-                element: a.element,
-                url: a.url,
-                timeToFirstByte: a.timeToFirstByte,
-                resourceLoadDelay: a.resourceLoadDelay,
-                resourceLoadTime: a.resourceLoadTime,
-                elementRenderDelay: a.elementRenderDelay
-            }
+            attribution
         } as LargestContentfulPaintEvent);
+
+        // teardown
+        this.context?.eventBus.unsubscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
+        this.resourceEventIds.clear();
+        this.navigationEventsIds = [];
     }
 
     handleCLS(metric: CLSMetricWithAttribution | Metric) {

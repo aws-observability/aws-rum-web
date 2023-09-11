@@ -37,6 +37,21 @@ export enum InitiatorType {
     CSS = 'css'
 }
 
+/**
+ * A PerformanceEntry or RumEvent that is sourced from the PerformanceAPI
+ */
+export interface HasLatency {
+    startTime: DOMHighResTimeStamp;
+    duration: DOMHighResTimeStamp;
+}
+
+/**
+ * Creates key to link a RumEvent to the PerformanceEntry that it is sourced from
+ * e.g. performanceKey(ResourceEvent) === performanceKey(PerformanceResourceTiming)
+ */
+export const performanceKey = (details: HasLatency) =>
+    [details.startTime, details.duration].join('#');
+
 const extensions = [
     {
         name: ResourceType.STYLESHEET,
