@@ -1,4 +1,4 @@
-import EventBus, { Topic } from '../EventBus';
+import EventBus from '../EventBus';
 
 export enum MockTopics {
     FOOD = 'food',
@@ -18,11 +18,11 @@ describe('EventBus tests', () => {
         eventBus.subscribe(MockTopics.FOOD, l2);
 
         // run
-        eventBus.dispatch(MockTopics.FOOD, { payload: 'burger' });
+        eventBus.dispatch(MockTopics.FOOD, 'burger');
 
         // assert
-        expect(l1).toHaveBeenCalledWith({ payload: 'burger' });
-        expect(l2).toHaveBeenCalledWith({ payload: 'burger' });
+        expect(l1).toHaveBeenCalledWith('burger');
+        expect(l2).toHaveBeenCalledWith('burger');
     });
 
     test('when subscriber is removed then it is not called', async () => {
@@ -32,10 +32,10 @@ describe('EventBus tests', () => {
         const removed = eventBus.unsubscribe(MockTopics.FOOD, l2);
 
         // run
-        eventBus.dispatch(MockTopics.FOOD, { payload: 'burger' });
+        eventBus.dispatch(MockTopics.FOOD, 'burger');
 
         // assert
-        expect(l1).toHaveBeenCalledWith({ payload: 'burger' });
+        expect(l1).toHaveBeenCalledWith('burger');
         expect(removed).toBe(true);
         expect(l2).not.toHaveBeenCalled();
     });
@@ -45,7 +45,7 @@ describe('EventBus tests', () => {
         eventBus.subscribe(MockTopics.BOOKS, l2);
 
         // run
-        eventBus.dispatch(MockTopics.FOOD, { payload: 'burger' });
+        eventBus.dispatch(MockTopics.FOOD, 'burger');
 
         // assert
         expect(l2).not.toHaveBeenCalled();

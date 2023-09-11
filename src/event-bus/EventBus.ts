@@ -1,8 +1,4 @@
-export type Subscriber = (message: Message) => void;
-export interface Message {
-    key?: any;
-    payload: any;
-}
+export type Subscriber = (message: any) => void;
 export enum Topic {
     EVENT = 'event'
 }
@@ -33,7 +29,7 @@ export default class EventBus<T = Topic> {
         return false;
     }
 
-    dispatch(topic: T, message: Message): void {
+    dispatch(topic: T, message: any): void {
         const list = this.subscribers.get(topic);
         if (list) {
             for (const subscriber of list) {

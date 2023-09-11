@@ -494,7 +494,7 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch().length).toEqual(1);
     });
 
-    test('when event is recorded then events subscribers are notified with raw event', async () => {
+    test('when event is recorded then events subscribers are notified with parsed rum event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const bus = new EventBus();
@@ -531,41 +531,6 @@ describe('EventCache tests', () => {
                     details: expect.objectContaining({})
                 })
             })
-        );
-    });
-
-    test('when event is recorded with key then the key is dispatched', async () => {
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const bus = new EventBus();
-        const eventCache: EventCache = Utils.createEventCache(
-            DEFAULT_CONFIG,
-            bus
-        );
-
-        // run
-        eventCache.recordEvent(EVENT1_SCHEMA, {}, 'key');
-
-        // eslint-disable-next-line
-        expect(bus.dispatch).toHaveBeenCalledWith(
-            Topic.EVENT,
-            expect.objectContaining({ key: 'key' })
-        );
-    });
-
-    test('when event is recorded without key then dispatched message does not contain key', async () => {
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const bus = new EventBus();
-        const eventCache: EventCache = Utils.createEventCache(
-            DEFAULT_CONFIG,
-            bus
-        );
-
-        // run
-        eventCache.recordEvent(EVENT1_SCHEMA, {});
-        // eslint-disable-next-line
-        expect(bus.dispatch).not.toHaveBeenCalledWith(
-            expect.anything(),
-            expect.objectContaining({ key: 'key' })
         );
     });
 

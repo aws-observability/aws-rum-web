@@ -65,9 +65,6 @@ describe('ResourcePlugin tests', () => {
                 initiatorType: resourceEvent.initiatorType
             })
         );
-        expect(record.mock.calls[0][2]).toEqual(
-            expect.objectContaining(resourceEvent)
-        );
     });
 
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
