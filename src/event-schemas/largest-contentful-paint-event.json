@@ -11,7 +11,44 @@
         },
         "value": {
             "type": "number",
-            "description": "Value of the lcp metric"
+            "description": "Time until the largest element before first user interaction is rendered"
+        },
+        "attribution": {
+            "type": "object",
+            "description": "Attributions for CLS",
+            "properties": {
+                "element": {
+                    "type": "string",
+                    "description": "CSS selector of LCP resource"
+                },
+                "url": {
+                    "type": "string",
+                    "description": "URL source of the LCP resource's image, if any"
+                },
+                "timeToFirstByte": {
+                    "type": "number",
+                    "description": "Duration until first byte of response"
+                },
+                "resourceLoadDelay": {
+                    "type": "number",
+                    "description": "Duration after TTFP until LCP resource begins loading"
+                },
+                "resourceLoadTime": {
+                    "type": "number",
+                    "description": "Duration loading the LCP resource"
+                },
+                "elementRenderDelay": {
+                    "type": "number",
+                    "description": "Duration rendering the LCP resource"
+                }
+            },
+            "required": [
+                "timeToFirstByte",
+                "resourceLoadDelay",
+                "resourceLoadTime",
+                "elementRenderDelay"
+            ],
+            "additionalProperties": false
         }
     },
     "additionalProperties": false,

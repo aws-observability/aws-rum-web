@@ -11,7 +11,36 @@
         },
         "value": {
             "type": "number",
-            "description": "Value of the cls metric"
+            "description": "Largest burst of unexpected layout shifts during a page's lifespan"
+        },
+        "attribution": {
+            "type": "object",
+            "description": "Attributions for CLS",
+            "properties": {
+                "largestShiftTarget": {
+                    "type": "string",
+                    "description": "First element in the largest layout shift contributing to CLS score"
+                },
+                "largestShiftValue": {
+                    "type": "number",
+                    "description": "Value of CLS' single largest shift"
+                },
+                "largestShiftTime": {
+                    "type": "number",
+                    "description": "DOMHighResTimeStamp of CLS' single largest shift"
+                },
+                "loadState": {
+                    "type": "string",
+                    "enum": [
+                        "loading",
+                        "dom-interactive",
+                        "dom-content-loaded",
+                        "complete"
+                    ],
+                    "description": "LoadState during CLS' single largest shift"
+                }
+            },
+            "additionalProperties": false
         }
     },
     "additionalProperties": false,

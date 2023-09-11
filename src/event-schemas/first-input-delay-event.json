@@ -11,7 +11,37 @@
         },
         "value": {
             "type": "number",
-            "description": "Value of the fid metric"
+            "description": "Time from first user interaction until the main thread is next idle"
+        },
+        "attribution": {
+            "type": "object",
+            "description": "Attributions for FID",
+            "properties": {
+                "eventTarget": {
+                    "type": "string",
+                    "description": "Selector of the element targeted by first user interaction"
+                },
+                "eventType": {
+                    "type": "string",
+                    "description": "Type of event dispatched by first user interaction"
+                },
+                "eventTime": {
+                    "type": "number",
+                    "description": "Timestamp of user first user interaction"
+                },
+                "loadState": {
+                    "type": "string",
+                    "enum": [
+                        "loading",
+                        "dom-interactive",
+                        "dom-content-loaded",
+                        "complete"
+                    ],
+                    "description": "LoadState of the document during first user interaction"
+                }
+            },
+            "required": ["eventTarget", "eventType", "eventTime", "loadState"],
+            "additionalProperties": false
         }
     },
     "additionalProperties": false,
