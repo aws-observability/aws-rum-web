@@ -274,6 +274,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
 
         if (this.isTracingEnabled() && this.isSessionRecorded()) {
             trace = this.beginTrace(input, init, argsArray);
+            httpEvent.trace_id = trace.trace_id;
+            httpEvent.segment_id = trace.subsegments![0].id;
         }
 
         return original

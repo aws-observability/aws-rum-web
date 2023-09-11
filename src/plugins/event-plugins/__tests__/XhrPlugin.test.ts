@@ -803,4 +803,108 @@ describe('XhrPlugin tests', () => {
             ]
         });
     });
+
+    test('when the plugin records a trace then the trace id is added to the http event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/response\.json/],
+            recordAllRequests: true
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' }),
+            headers: { 'Content-Length': '125' } as MockHeaders
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        expect(record.mock.calls[1][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            trace_id: '1-0-000000000000000000000000',
+            segment_id: '0000000000000000'
+        });
+    });
+
+    test('when XHR aborts with tracing then the trace id is added to the http event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/response\.json/]
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+        xhr.abort();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        expect(record.mock.calls[1][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            trace_id: '1-0-000000000000000000000000',
+            segment_id: '0000000000000000'
+        });
+    });
+
+    test('when the plugin does not record a trace then the trace id is not added to the http event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/response\.json/],
+            recordAllRequests: true
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' }),
+            headers: { 'Content-Length': '125' } as MockHeaders
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOffContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).not.toMatchObject({
+            trace_id: '1-0-000000000000000000000000',
+            segment_id: '0000000000000000'
+        });
+    });
 });

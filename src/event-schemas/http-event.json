@@ -9,6 +9,16 @@
             "type": "string",
             "description": "Schema version."
         },
+        "trace_id": {
+            "type": "string",
+            "minLength": 35,
+            "maxLength": 35
+        },
+        "segment_id": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 16
+        },
         "request": {
             "type": "object",
             "properties": {
