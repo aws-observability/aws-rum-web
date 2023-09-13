@@ -14,6 +14,10 @@ import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 import { MockHeaders } from 'xhr-mock/lib/types';
 
+const actualUserAgent = navigator.userAgent;
+const SYNTHETIC_USER_AGENT =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11 CloudWatchSynthetics/arn:aws:synthetics:us-west-2:0000000000000:canary:test-canary-name';
+
 // Mock getRandomValues -- since it does nothing, the 'random' number will be 0.
 jest.mock('../../../utils/random');
 
@@ -905,6 +909,100 @@ describe('XhrPlugin tests', () => {
         expect(record.mock.calls[0][1]).not.toMatchObject({
             trace_id: '1-0-000000000000000000000000',
             segment_id: '0000000000000000'
+        });
+    });
+
+    test('when user agent is CW Synthetics then plugin does not record a trace', async () => {
+        // Init
+        Object.defineProperty(navigator, 'userAgent', {
+            get() {
+                return SYNTHETIC_USER_AGENT;
+            },
+            configurable: true
+        });
+
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/response\.json/]
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Reset
+        plugin.disable();
+        Object.defineProperty(navigator, 'userAgent', {
+            get() {
+                return actualUserAgent;
+            },
+            configurable: true
+        });
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when user agent is CW Synthetics then the plugin records the http request/response', async () => {
+        // Init
+        Object.defineProperty(navigator, 'userAgent', {
+            get() {
+                return SYNTHETIC_USER_AGENT;
+            },
+            configurable: true
+        });
+
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/response\.json/],
+            recordAllRequests: true
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Reset
+        plugin.disable();
+        Object.defineProperty(navigator, 'userAgent', {
+            get() {
+                return actualUserAgent;
+            },
+            configurable: true
+        });
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'GET',
+                url: './response.json'
+            },
+            response: {
+                status: 200,
+                statusText: 'OK'
+            }
         });
     });
 });

@@ -96,11 +96,15 @@ export const XHR_PLUGIN_ID = 'xhr';
 export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private config: HttpPluginConfig;
     private xhrMap: Map<XMLHttpRequest, XhrDetails>;
+    private isSyntheticsUA: boolean;
 
     constructor(config?: PartialHttpPluginConfig) {
         super(XHR_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
         this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();
+        this.isSyntheticsUA = navigator.userAgent.includes(
+            'CloudWatchSynthetics'
+        );
     }
 
     protected onload(): void {
@@ -280,7 +284,11 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     }
 
     private recordTraceEvent(trace: XRayTraceEvent) {
-        if (this.isTracingEnabled() && this.isSessionRecorded()) {
+        if (
+            !this.isSyntheticsUA &&
+            this.isTracingEnabled() &&
+            this.isSessionRecorded()
+        ) {
             this.context.record(XRAY_TRACE_EVENT_TYPE, trace);
         }
     }
@@ -323,6 +331,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                     self.initializeTrace(xhrDetails);
 
                     if (
+                        !self.isSyntheticsUA &&
                         self.isTracingEnabled() &&
                         self.addXRayTraceIdHeader() &&
                         self.isSessionRecorded()
