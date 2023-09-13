@@ -35,7 +35,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         this.lcpHelper = this.lcpHelper.bind(this);
     }
     private resourceEventIds = new Map<string, string>();
-    private navigationEventsIds: string[] = [];
+    private navigationEventId?: string;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     enable(): void {}
@@ -47,13 +47,13 @@ export class WebVitalsPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
-        this.context?.eventBus.subscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
+        this.context.eventBus.subscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
         onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    lcpHelper(msg: any) {
+    private lcpHelper(msg: any) {
         const event = msg as ParsedRumEvent;
         switch (event.type) {
             // lcp resource is either image or text
@@ -63,17 +63,21 @@ export class WebVitalsPlugin extends InternalPlugin {
                     details.fileType === ResourceType.IMAGE ||
                     details.initiatorType === 'img'
                 ) {
-                    const key = performanceKey(event.details as HasLatency);
-                    this.resourceEventIds.set(key, event.id);
+                    this.resourceEventIds.set(
+                        performanceKey(event.details as HasLatency),
+                        event.id
+                    );
                 }
                 break;
             case PERFORMANCE_NAVIGATION_EVENT_TYPE:
-                this.navigationEventsIds.push(event.id);
+                if (!this.navigationEventId) {
+                    this.navigationEventId = event.id;
+                }
                 break;
         }
     }
 
-    handleLCP(metric: LCPMetricWithAttribution | Metric) {
+    private handleLCP(metric: LCPMetricWithAttribution | Metric) {
         const a = (metric as LCPMetricWithAttribution).attribution;
         const attribution: any = {
             element: a.element,
@@ -81,12 +85,14 @@ export class WebVitalsPlugin extends InternalPlugin {
             timeToFirstByte: a.timeToFirstByte,
             resourceLoadDelay: a.resourceLoadDelay,
             resourceLoadTime: a.resourceLoadTime,
-            elementRenderDelay: a.elementRenderDelay,
-            navigationEntry: this.navigationEventsIds[0]
+            elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {
             const key = performanceKey(a.lcpResourceEntry as HasLatency);
             attribution.lcpResourceEntry = this.resourceEventIds.get(key);
+        }
+        if (this.navigationEventId) {
+            attribution.navigationEntry = this.navigationEventId;
         }
         this.context?.record(LCP_EVENT_TYPE, {
             version: '1.0.0',
@@ -97,10 +103,10 @@ export class WebVitalsPlugin extends InternalPlugin {
         // teardown
         this.context?.eventBus.unsubscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
         this.resourceEventIds.clear();
-        this.navigationEventsIds = [];
+        this.navigationEventId = undefined;
     }
 
-    handleCLS(metric: CLSMetricWithAttribution | Metric) {
+    private handleCLS(metric: CLSMetricWithAttribution | Metric) {
         const a = (metric as CLSMetricWithAttribution).attribution;
         this.context?.record(CLS_EVENT_TYPE, {
             version: '1.0.0',
@@ -114,7 +120,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         } as CumulativeLayoutShiftEvent);
     }
 
-    handleFID(metric: FIDMetricWithAttribution | Metric) {
+    private handleFID(metric: FIDMetricWithAttribution | Metric) {
         const a = (metric as FIDMetricWithAttribution).attribution;
         this.context?.record(FID_EVENT_TYPE, {
             version: '1.0.0',
