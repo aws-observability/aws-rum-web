@@ -39,6 +39,11 @@ export type HttpPluginConfig = {
     addXRayTraceIdHeader: boolean;
 };
 
+export type TraceHeader = {
+    traceId?: string;
+    segmentId?: string;
+};
+
 export const defaultConfig: HttpPluginConfig = {
     logicalServiceName: 'rum.aws.amazon.com',
     urlsToInclude: [/.*/],
@@ -181,6 +186,18 @@ export const getAmznTraceIdHeaderValue = (
     return 'Root=' + traceId + ';Parent=' + segmentId + ';Sampled=1';
 };
 
+export const getTraceHeader = (headers: Headers) => {
+    const traceHeader: TraceHeader = {};
+
+    if (headers) {
+        const headerComponents = headers.get(X_AMZN_TRACE_ID)?.split(';');
+        if (headerComponents?.length === 3) {
+            traceHeader.traceId = headerComponents[0].split('Root=')[1];
+            traceHeader.segmentId = headerComponents[1].split('Parent=')[1];
+        }
+    }
+    return traceHeader;
+};
 /**
  * Extracts an URL string from the fetch resource parameter.
  */

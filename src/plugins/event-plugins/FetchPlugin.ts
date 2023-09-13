@@ -19,7 +19,8 @@ import {
     resourceToUrlString,
     is429,
     is4xx,
-    is5xx
+    is5xx,
+    getTraceHeader
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -271,8 +272,12 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray as any);
         }
+        const traceHeader = getTraceHeader((input as Request).headers);
 
-        if (this.isTracingEnabled() && this.isSessionRecorded()) {
+        if (traceHeader.traceId && traceHeader.segmentId) {
+            httpEvent.trace_id = traceHeader.traceId;
+            httpEvent.segment_id = traceHeader.segmentId;
+        } else if (this.isTracingEnabled() && this.isSessionRecorded()) {
             trace = this.beginTrace(input, init, argsArray);
             httpEvent.trace_id = trace.trace_id;
             httpEvent.segment_id = trace.subsegments![0].id;

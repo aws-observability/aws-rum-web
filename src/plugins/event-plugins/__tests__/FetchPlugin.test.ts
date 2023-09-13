@@ -32,6 +32,10 @@ const URL = 'https://aws.amazon.com';
 const TRACE_ID =
     'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1';
 
+const existingTraceId = '1-0-000000000000000000000001';
+const existingSegmentId = '0000000000000001';
+const existingTraceHeaderValue = `Root=${existingTraceId};Parent=${existingSegmentId};Sampled=1`;
+
 const Headers = function (init?: Record<string, string>) {
     const headers = init ? init : {};
     this.get = (name: string) => {
@@ -932,6 +936,37 @@ describe('FetchPlugin tests', () => {
         });
         expect(record.mock.calls[0][1]).not.toMatchObject({
             segment_id: expect.anything()
+        });
+    });
+    test('when fetch is called and request has existing trace header then existing trace data is added to the http event', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        const init: RequestInit = {
+            headers: {
+                [X_AMZN_TRACE_ID]: existingTraceHeaderValue
+            }
+        };
+
+        const request: Request = new Request(URL, init);
+
+        // Run
+        await fetch(request);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            trace_id: existingTraceId,
+            segment_id: existingSegmentId
         });
     });
 });
