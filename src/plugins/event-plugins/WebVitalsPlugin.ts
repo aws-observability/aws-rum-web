@@ -32,7 +32,7 @@ export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 export class WebVitalsPlugin extends InternalPlugin {
     constructor() {
         super(WEB_VITAL_EVENT_PLUGIN_ID);
-        this.lcpHelper = this.lcpHelper.bind(this);
+        this.handleEvent = this.handleEvent.bind(this);
     }
     private resourceEventIds = new Map<string, string>();
     private navigationEventId?: string;
@@ -47,14 +47,13 @@ export class WebVitalsPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
-        this.context.eventBus.subscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
+        this.context.eventBus.subscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line
         onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    private lcpHelper(msg: any) {
-        const event = msg as ParsedRumEvent;
+    private handleEvent(event: ParsedRumEvent) {
         switch (event.type) {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
@@ -70,9 +69,7 @@ export class WebVitalsPlugin extends InternalPlugin {
                 }
                 break;
             case PERFORMANCE_NAVIGATION_EVENT_TYPE:
-                if (!this.navigationEventId) {
-                    this.navigationEventId = event.id;
-                }
+                this.navigationEventId = event.id;
                 break;
         }
     }
@@ -101,7 +98,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         } as LargestContentfulPaintEvent);
 
         // teardown
-        this.context?.eventBus.unsubscribe(Topic.EVENT, this.lcpHelper); // eslint-disable-line
+        this.context?.eventBus.unsubscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line
         this.resourceEventIds.clear();
         this.navigationEventId = undefined;
     }
