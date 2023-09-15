@@ -1,15 +1,14 @@
 import {
-    performanceEvent,
-    mockPerformanceObserver,
-    mockPerformanceObjectWithResources,
     resourceEvent,
-    mockPerformanceObjectWith,
     putRumEventsDocument,
     putRumEventsGammaDocument,
     dataPlaneDocument,
-    mockPerformanceObjectWithSampledResources,
     imageResourceEventA,
-    imageResourceEventB
+    imageResourceEventB,
+    navigationEvent,
+    doMockPerformanceObserver,
+    cssResourceEvent,
+    scriptResourceEvent
 } from '../../../test-utils/mock-data';
 import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
@@ -28,9 +27,7 @@ const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
 
 describe('ResourcePlugin tests', () => {
     beforeEach(() => {
-        (window as any).performance = performanceEvent.performance();
-        (window as any).PerformanceObserver =
-            performanceEvent.PerformanceObserver;
+        doMockPerformanceObserver([navigationEvent, resourceEvent]);
         record.mockClear();
     });
 
@@ -48,10 +45,10 @@ describe('ResourcePlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record.mock.calls[1][0]).toEqual(
+        expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect(record.mock.calls[1][1]).toEqual(
+        expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
                 fileType: resourceEvent.fileType,
                 duration: resourceEvent.duration,
@@ -85,8 +82,7 @@ describe('ResourcePlugin tests', () => {
 
     test('when resource is a PutRumEvents request then resource event is not recorded', async () => {
         // Setup
-        mockPerformanceObjectWith([putRumEventsDocument], [], []);
-        mockPerformanceObserver();
+        doMockPerformanceObserver([putRumEventsDocument]);
 
         const plugin: ResourcePlugin = buildResourcePlugin();
 
@@ -99,8 +95,7 @@ describe('ResourcePlugin tests', () => {
 
     test('when resource is a PutRumEvents request with a path prefix then resource event is not recorded', async () => {
         // Setup
-        mockPerformanceObjectWith([putRumEventsGammaDocument], [], []);
-        mockPerformanceObserver();
+        doMockPerformanceObserver([putRumEventsGammaDocument]);
 
         const plugin: ResourcePlugin = buildResourcePlugin();
 
@@ -113,8 +108,7 @@ describe('ResourcePlugin tests', () => {
 
     test('when resource is not a PutRumEvents request but has the same host then the resource event is recorded', async () => {
         // Setup
-        mockPerformanceObjectWith([dataPlaneDocument], [], []);
-        mockPerformanceObserver();
+        doMockPerformanceObserver([dataPlaneDocument]);
 
         const plugin: ResourcePlugin = buildResourcePlugin();
 
@@ -154,8 +148,7 @@ describe('ResourcePlugin tests', () => {
 
     test('when event limit is reached no more sampled resources are recorded', async () => {
         // Setup
-        mockPerformanceObjectWithSampledResources();
-        mockPerformanceObserver();
+        doMockPerformanceObserver([imageResourceEventA, imageResourceEventB]);
 
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
 
@@ -170,8 +163,11 @@ describe('ResourcePlugin tests', () => {
 
     test('when event limit is reached prioritized resources are recorded', async () => {
         // Setup
-        mockPerformanceObjectWithResources();
-        mockPerformanceObserver();
+        doMockPerformanceObserver([
+            scriptResourceEvent,
+            imageResourceEventA,
+            cssResourceEvent
+        ]);
 
         // Run
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
@@ -187,8 +183,7 @@ describe('ResourcePlugin tests', () => {
 
     test('sampled events are randomized', async () => {
         // Setup
-        mockPerformanceObjectWithSampledResources();
-        mockPerformanceObserver();
+        doMockPerformanceObserver([imageResourceEventA, imageResourceEventB]);
 
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 4 });
 
@@ -223,8 +218,12 @@ describe('ResourcePlugin tests', () => {
 
     test('when entry is ignored then resource is not recorded', async () => {
         // Setup
-        mockPerformanceObjectWithResources();
-        mockPerformanceObserver();
+        doMockPerformanceObserver([
+            scriptResourceEvent,
+            imageResourceEventA,
+            cssResourceEvent
+        ]);
+
         const plugin = buildResourcePlugin({
             ignore: (entry: PerformanceEntry) => true
         });

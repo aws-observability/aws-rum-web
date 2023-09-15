@@ -28,7 +28,7 @@ test('when resource loads before the plugin then the resource is recorded', asyn
 
 test('when resource loads after window.load then the resource is recorded', async (t: TestController) => {
     await t
-        .wait(300)
+        .wait(500)
         .click(dispatch)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
