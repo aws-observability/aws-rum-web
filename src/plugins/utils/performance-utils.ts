@@ -20,11 +20,11 @@ export type PerformancePluginConfig = {
 export const defaultPerformancePluginConfig = {
     eventLimit: 10,
     ignore: defaultIgnore,
-    recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
-    sampleTypes: [
+    recordAllTypes: [
+        ResourceType.DOCUMENT,
+        ResourceType.SCRIPT,
         ResourceType.STYLESHEET,
-        ResourceType.IMAGE,
-        ResourceType.FONT,
-        ResourceType.OTHER
-    ]
+        ResourceType.FONT
+    ],
+    sampleTypes: [ResourceType.IMAGE, ResourceType.OTHER]
 };

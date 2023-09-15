@@ -201,7 +201,7 @@ export const scriptResourceEvent = {
     fileType: 'script'
 };
 
-export const imageResourceEvent = {
+export const imageResourceEventA = {
     connectEnd: 386.37999998172745,
     connectStart: 386.37999998172745,
     decodedBodySize: 79,
@@ -212,7 +212,33 @@ export const imageResourceEvent = {
     entryType: 'resource',
     fetchStart: 386.37999998172745,
     initiatorType: 'script',
-    name: 'http://localhost:9000/picture.jpg',
+    name: 'http://localhost:9000/pictureA.jpg',
+    nextHopProtocol: 'http/1.1',
+    redirectEnd: 0,
+    redirectStart: 0,
+    requestStart: 388.2449999800883,
+    responseEnd: 389.02000000234693,
+    responseStart: 388.71499997912906,
+    secureConnectionStart: 0,
+    serverTiming: [],
+    startTime: 386.37999998172745,
+    transferSize: 368,
+    workerStart: 0,
+    fileType: 'image'
+};
+
+export const imageResourceEventB = {
+    connectEnd: 386.37999998172745,
+    connectStart: 386.37999998172745,
+    decodedBodySize: 79,
+    domainLookupEnd: 386.37999998172745,
+    domainLookupStart: 386.37999998172745,
+    duration: 2.640000020619482,
+    encodedBodySize: 79,
+    entryType: 'resource',
+    fetchStart: 386.37999998172745,
+    initiatorType: 'script',
+    name: 'http://localhost:9000/pictureB.jpg',
     nextHopProtocol: 'http/1.1',
     redirectEnd: 0,
     redirectStart: 0,
@@ -272,6 +298,9 @@ export class MockPerformanceObserver {
             cb({ getEntries: () => [...entries] });
             return {};
         };
+        (this as any).disconnect = () => {
+            /* Nothing to do*/
+        };
     }
 }
 
@@ -304,6 +333,9 @@ export class MockEmptyPerformanceObserver {
     constructor(cb: any) {
         (this as any).observe = (options: ObserveInterface) => {
             return cb({ getEntries: () => [] });
+        };
+        (this as any).disconnect = () => {
+            /* Nothing to do*/
         };
     }
 }
@@ -414,7 +446,15 @@ export const mockPerformanceObjectWithDataPlaneResource = () => {
 
 export const mockPerformanceObjectWithResources = () => {
     mockPerformanceObjectWith(
-        [scriptResourceEvent, imageResourceEvent, cssResourceEvent],
+        [scriptResourceEvent, imageResourceEventA, cssResourceEvent],
+        [],
+        []
+    );
+};
+
+export const mockPerformanceObjectWithSampledResources = () => {
+    mockPerformanceObjectWith(
+        [imageResourceEventA, imageResourceEventB],
         [],
         []
     );
@@ -435,6 +475,9 @@ export class MockPaintPerformanceObserver {
             }
             cb({ getEntries: () => [resourceEvent2] });
             return {};
+        };
+        (this as any).disconnect = () => {
+            /* Nothing to do*/
         };
     }
 }

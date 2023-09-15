@@ -1,7 +1,4 @@
 import {
-    scriptResourceEvent,
-    imageResourceEvent,
-    cssResourceEvent,
     performanceEvent,
     mockPerformanceObserver,
     mockPerformanceObjectWithResources,
@@ -9,20 +6,20 @@ import {
     mockPerformanceObjectWith,
     putRumEventsDocument,
     putRumEventsGammaDocument,
-    dataPlaneDocument
+    dataPlaneDocument,
+    mockPerformanceObjectWithSampledResources,
+    imageResourceEventA,
+    imageResourceEventB
 } from '../../../test-utils/mock-data';
 import { ResourcePlugin } from '../ResourcePlugin';
 import { mockRandom } from 'jest-mock-random';
 import {
     context,
     DEFAULT_CONFIG,
-    getSession,
-    record,
-    recordPageView
+    record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { ResourceEvent } from '../../../events/resource-event';
-import { PluginContext } from '../../types';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
@@ -49,14 +46,12 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         // Assert
-        expect(record.mock.calls[0][0]).toEqual(
+        expect(record.mock.calls[1][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect(record.mock.calls[0][1]).toEqual(
+        expect(record.mock.calls[1][1]).toEqual(
             expect.objectContaining({
                 fileType: resourceEvent.fileType,
                 duration: resourceEvent.duration,
@@ -78,8 +73,6 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(mockContext);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         // Assert
         expect(record.mock.calls[0][0]).toEqual(
@@ -99,8 +92,6 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         // Assert
         expect(record).not.toHaveBeenCalled();
@@ -115,8 +106,6 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         // Assert
         expect(record).not.toHaveBeenCalled();
@@ -131,8 +120,6 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalled();
@@ -144,10 +131,9 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
+        record.mockClear();
         plugin.disable();
         plugin.enable();
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalled();
@@ -159,17 +145,16 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
-        plugin.disable();
-        window.dispatchEvent(new Event('load'));
+        record.mockClear();
         plugin.disable();
 
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
     });
 
-    test('when event limit is reached no more events are recorded', async () => {
+    test('when event limit is reached no more sampled resources are recorded', async () => {
         // Setup
-        mockPerformanceObjectWithResources();
+        mockPerformanceObjectWithSampledResources();
         mockPerformanceObserver();
 
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 1 });
@@ -183,9 +168,8 @@ describe('ResourcePlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(1);
     });
 
-    test('when resources > eventLimit then recordAll events are prioritized', async () => {
+    test('when event limit is reached prioritized resources are recorded', async () => {
         // Setup
-        mockRandom(0); // Reverse order in shuffle
         mockPerformanceObjectWithResources();
         mockPerformanceObserver();
 
@@ -198,52 +182,41 @@ describe('ResourcePlugin tests', () => {
         plugin.disable();
 
         // Assert
-        expect(record.mock.calls[0][0]).toEqual(
-            PERFORMANCE_RESOURCE_EVENT_TYPE
-        );
-        expect(record.mock.calls[0][1]).toEqual(
-            expect.objectContaining({
-                fileType: scriptResourceEvent.fileType
-            })
-        );
+        expect(record).toHaveBeenCalledTimes(3);
     });
 
     test('sampled events are randomized', async () => {
         // Setup
-        mockPerformanceObjectWithResources();
+        mockPerformanceObjectWithSampledResources();
         mockPerformanceObserver();
 
-        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 4 });
 
         // Run
+        mockRandom(0.99); // Retain order in shuffle
+        plugin.load(context);
+        mockRandom(0); // Reverse order in shuffle
         plugin.load(context);
 
-        mockRandom(0.99); // Retain order in shuffle
-        window.dispatchEvent(new Event('load'));
-        mockRandom(0); // Reverse order in shuffle
-        window.dispatchEvent(new Event('load'));
-
-        plugin.disable();
-
         // Assert
+        expect(record.mock.calls[0][1]).toEqual(
+            expect.objectContaining({
+                targetUrl: imageResourceEventB.name
+            })
+        );
         expect(record.mock.calls[1][1]).toEqual(
             expect.objectContaining({
-                fileType: cssResourceEvent.fileType
+                targetUrl: imageResourceEventA.name
             })
         );
         expect(record.mock.calls[2][1]).toEqual(
             expect.objectContaining({
-                fileType: imageResourceEvent.fileType
+                targetUrl: imageResourceEventA.name
             })
         );
-        expect(record.mock.calls[4][1]).toEqual(
+        expect(record.mock.calls[3][1]).toEqual(
             expect.objectContaining({
-                fileType: imageResourceEvent.fileType
-            })
-        );
-        expect(record.mock.calls[5][1]).toEqual(
-            expect.objectContaining({
-                fileType: cssResourceEvent.fileType
+                targetUrl: imageResourceEventB.name
             })
         );
     });
@@ -258,8 +231,6 @@ describe('ResourcePlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
 
         expect(record).not.toHaveBeenCalled();
     });

@@ -15,17 +15,22 @@ import {
 export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
 
 const RESOURCE = 'resource';
-const LOAD = 'load';
 
 /**
  * This plugin records resource performance timing events generated during every page load/re-load.
  */
 export class ResourcePlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
+    private resourceObserver: PerformanceObserver;
+    private eventCount: number;
 
     constructor(config?: PartialPerformancePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
+        this.eventCount = 0;
+        this.resourceObserver = new PerformanceObserver(
+            this.performanceEntryHandler
+        );
     }
 
     enable(): void {
@@ -33,7 +38,9 @@ export class ResourcePlugin extends InternalPlugin {
             return;
         }
         this.enabled = true;
-        window.addEventListener(LOAD, this.resourceEventListener);
+        this.resourceObserver.observe({
+            entryTypes: [RESOURCE]
+        });
     }
 
     disable(): void {
@@ -41,64 +48,38 @@ export class ResourcePlugin extends InternalPlugin {
             return;
         }
         this.enabled = false;
-        if (this.resourceEventListener) {
-            window.removeEventListener(LOAD, this.resourceEventListener);
-        }
+        this.resourceObserver.disconnect();
     }
 
-    resourceEventListener = (event: Event): void => {
+    performanceEntryHandler = (list: PerformanceObserverEntryList): void => {
+        this.recordPerformanceEntries(list.getEntries());
+    };
+
+    recordPerformanceEntries = (list: PerformanceEntryList) => {
         const recordAll: PerformanceEntry[] = [];
         const sample: PerformanceEntry[] = [];
-        let eventCount = 0;
 
-        const resourceObserver = new PerformanceObserver((list) => {
-            list.getEntries()
-                .filter((e) => e.entryType === RESOURCE)
-                .filter((e) => !this.config.ignore(e))
-                .forEach((event) => {
-                    // Out of n resource events, x events are recorded using Observer API
-                    const type: ResourceType = getResourceFileType(event.name);
-                    if (this.config.recordAllTypes.includes(type)) {
-                        recordAll.push(event);
-                    } else if (this.config.sampleTypes.includes(type)) {
-                        sample.push(event);
-                    }
-                });
-        });
-        resourceObserver.observe({
-            entryTypes: [RESOURCE]
-        });
+        list.filter((e) => e.entryType === RESOURCE)
+            .filter((e) => !this.config.ignore(e))
+            .forEach((event) => {
+                const type: ResourceType = getResourceFileType(event.name);
+                if (this.config.recordAllTypes.includes(type)) {
+                    recordAll.push(event);
+                } else if (this.config.sampleTypes.includes(type)) {
+                    sample.push(event);
+                }
+            });
 
-        // Remaining (n-x) resource events are recorded using getEntriesByType API.
-        // Note: IE11 browser does not support Performance Observer API. Handle the failure gracefully
-        const events = performance.getEntriesByType(RESOURCE);
-        if (events !== undefined && events.length > 0) {
-            events
-                .filter((e) => !this.config.ignore(e))
-                .forEach((event) => {
-                    const type: ResourceType = getResourceFileType(event.name);
-                    if (this.config.recordAllTypes.includes(type)) {
-                        recordAll.push(event);
-                    } else if (this.config.sampleTypes.includes(type)) {
-                        sample.push(event);
-                    }
-                });
-        }
+        // Record all events for resources in recordAllTypes
+        recordAll.forEach((r) =>
+            this.recordResourceEvent(r as PerformanceResourceTiming)
+        );
 
-        // Record events for resources in recordAllTypes
-        shuffle(recordAll);
-        while (recordAll.length > 0 && eventCount < this.config.eventLimit) {
-            this.recordResourceEvent(
-                recordAll.pop() as PerformanceResourceTiming
-            );
-            eventCount++;
-        }
-
-        // Record events sampled from resources in sample
+        // Record events from resources in sample until we hit the resource limit
         shuffle(sample);
-        while (sample.length > 0 && eventCount < this.config.eventLimit) {
+        while (sample.length > 0 && this.eventCount < this.config.eventLimit) {
             this.recordResourceEvent(sample.pop() as PerformanceResourceTiming);
-            eventCount++;
+            this.eventCount++;
         }
     };
 
@@ -132,6 +113,11 @@ export class ResourcePlugin extends InternalPlugin {
     };
 
     protected onload(): void {
-        window.addEventListener(LOAD, this.resourceEventListener);
+        // The observer will only record future resources. We must record past
+        // resources by accessing them through window.performance.
+        this.recordPerformanceEntries(performance.getEntriesByType(RESOURCE));
+        this.resourceObserver.observe({
+            entryTypes: [RESOURCE]
+        });
     }
 }
