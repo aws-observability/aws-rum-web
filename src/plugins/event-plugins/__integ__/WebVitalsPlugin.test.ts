@@ -23,9 +23,9 @@ test('when lcp image resource is recorded then it is attributed to lcp', async (
     if (browser === 'Safari' || browser === 'Firefox') {
         return 'Test is skipped';
     }
-    await t.wait(300);
 
     await t
+        .wait(300)
         // Interact with page to trigger lcp event
         .click(testButton)
         .click(makePageHidden)
@@ -41,7 +41,7 @@ test('when lcp image resource is recorded then it is attributed to lcp', async (
     const resource = events.filter(
         (x: { details: string; type: string }) =>
             x.type === PERFORMANCE_RESOURCE_EVENT_TYPE &&
-            x.details.includes('lcp.jpg')
+            x.details.includes('lcp.png')
     )[0];
     await t.expect(lcp.details).contains(`"lcpResourceEntry":"${resource.id}"`);
 });
@@ -57,9 +57,9 @@ test('WebVitalEvent records lcp and cls events on chrome', async (t: TestControl
     if (browser === 'Safari' || browser === 'Firefox') {
         return 'Test is skipped';
     }
-    await t.wait(300);
 
     await t
+        .wait(300)
         // Interact with page to trigger lcp event
         .click(testButton)
         .click(makePageHidden)
@@ -97,9 +97,9 @@ test('when navigation is recorded then it is attributed to lcp', async (t: TestC
         return 'Test is skipped';
     }
 
-    await t.wait(300);
     await t
         // Interact with page to trigger lcp event
+        .wait(300)
         .click(testButton)
         .click(makePageHidden)
         .expect(RESPONSE_STATUS.textContent)
