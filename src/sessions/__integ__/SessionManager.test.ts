@@ -122,9 +122,7 @@ test('When custom attribute set at init, custom attribute recorded in event meta
         .pressKey('ctrl+a delete')
         .click(SUBMIT);
 
-    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
-        (e) => e.type === SESSION_START_EVENT_TYPE
-    );
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents;
 
     const metaData = JSON.parse(events[0].metadata);
 

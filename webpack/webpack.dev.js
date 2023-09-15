@@ -10,6 +10,7 @@ module.exports = merge(common, {
         rum_javascript_telemetry: './src/index-browser.ts',
         loader_standard: './src/loader/loader-standard.js',
         loader_page_event: './src/loader/loader-page-event.js',
+        loader_navigation_event: './src/loader/loader-navigation-event.js',
         loader_resource_event: './src/loader/loader-resource-event.js',
         loader_dom_event: './src/loader/loader-dom-event.js',
         loader_dom_event_mutation_observer_enabled:
