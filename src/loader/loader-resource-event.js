@@ -6,13 +6,10 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     metaDataPluginsToLoad: [],
     eventPluginsToLoad: [
         new ResourcePlugin({
-            defaultIgnore: (entry) =>
+            ignore: (entry) =>
                 entry.entryType === 'resource' &&
-                (!/^https?:/.test(entry.name) ||
-                    /testcafe/.test(entry.targetUrl) ||
-                    /dispatch-native-automation-event-sequence/.test(
-                        entry.targetUrl
-                    )),
+                !/blank\.png/.test(entry.name) &&
+                !/rum_javascript_telemetry\.js/.test(entry.name),
             eventLimit: 20,
             recordAllTypes: ['script', 'image'],
             sampleTypes: []
