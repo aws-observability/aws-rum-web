@@ -39,7 +39,8 @@ export class ResourcePlugin extends InternalPlugin {
         }
         this.enabled = true;
         this.resourceObserver.observe({
-            entryTypes: [RESOURCE]
+            type: RESOURCE,
+            buffered: true
         });
     }
 
@@ -113,11 +114,12 @@ export class ResourcePlugin extends InternalPlugin {
     };
 
     protected onload(): void {
-        // The observer will only record future resources. We must record past
-        // resources by accessing them through window.performance.
-        this.recordPerformanceEntries(performance.getEntriesByType(RESOURCE));
+        // We need to set `buffered: true`, so the observer also records past
+        // resource entries. However, there is a limited buffer size, so we may
+        // not be able to collect all resource entries.
         this.resourceObserver.observe({
-            entryTypes: [RESOURCE]
+            type: RESOURCE,
+            buffered: true
         });
     }
 }
