@@ -18,6 +18,34 @@ fixture('WebVitalEvent Plugin').page(
     'http://localhost:8080/web_vital_event.html'
 );
 
+test('when lcp image resource is recorded then it is attributed to lcp', async (t: TestController) => {
+    const browser = t.browser.name;
+    if (browser === 'Safari' || browser === 'Firefox') {
+        return 'Test is skipped';
+    }
+    await t.wait(300);
+
+    await t
+        // Interact with page to trigger lcp event
+        .click(testButton)
+        .click(makePageHidden)
+        .expect(RESPONSE_STATUS.textContent)
+        .eql(STATUS_202.toString())
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents;
+    const lcp = events.filter(
+        (x: { type: string }) => x.type === LCP_EVENT_TYPE
+    )[0];
+    const resource = events.filter(
+        (x: { details: string; type: string }) =>
+            x.type === PERFORMANCE_RESOURCE_EVENT_TYPE &&
+            x.details.includes('lcp.jpg')
+    )[0];
+    await t.expect(lcp.details).contains(`"lcpResourceEntry":"${resource.id}"`);
+});
+
 // According to https://github.com/GoogleChrome/web-vitals,
 // "FID is not reported if the user never interacts with the page."
 // It doesn't seem like TestCafe actions are registered as user interactions, so cannot test FID
@@ -61,34 +89,6 @@ test('WebVitalEvent records lcp and cls events on chrome', async (t: TestControl
         .typeOf('object')
         .expect(clsEventDetails.attribution)
         .typeOf('object');
-});
-
-test('when lcp image resource is recorded then it is attributed to lcp', async (t: TestController) => {
-    const browser = t.browser.name;
-    if (browser === 'Safari' || browser === 'Firefox') {
-        return 'Test is skipped';
-    }
-    await t.wait(300);
-
-    await t
-        // Interact with page to trigger lcp event
-        .click(testButton)
-        .click(makePageHidden)
-        .expect(RESPONSE_STATUS.textContent)
-        .eql(STATUS_202.toString())
-        .expect(REQUEST_BODY.textContent)
-        .contains('BatchId');
-
-    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents;
-    const lcp = events.filter(
-        (x: { type: string }) => x.type === LCP_EVENT_TYPE
-    )[0];
-    const resource = events.filter(
-        (x: { details: string; type: string }) =>
-            x.type === PERFORMANCE_RESOURCE_EVENT_TYPE &&
-            x.details.includes('lcp.jpg')
-    )[0];
-    await t.expect(lcp.details).contains(`"lcpResourceEntry":"${resource.id}"`);
 });
 
 test('when navigation is recorded then it is attributed to lcp', async (t: TestController) => {
