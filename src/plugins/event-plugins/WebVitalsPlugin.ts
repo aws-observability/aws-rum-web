@@ -24,7 +24,8 @@ import { ResourceEvent } from '../../events/resource-event';
 import {
     HasLatency,
     ResourceType,
-    performanceKey
+    performanceKey,
+    RumLCPAttribution
 } from '../../utils/common-utils';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
@@ -32,7 +33,6 @@ export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 export class WebVitalsPlugin extends InternalPlugin {
     constructor() {
         super(WEB_VITAL_EVENT_PLUGIN_ID);
-        this.handleEvent = this.handleEvent.bind(this);
     }
     private resourceEventIds = new Map<string, string>();
     private navigationEventId?: string;
@@ -47,13 +47,13 @@ export class WebVitalsPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
-        this.context.eventBus.subscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line
+        this.context.eventBus.subscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line @typescript-eslint/unbound-method
         onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    private handleEvent(event: ParsedRumEvent) {
+    private handleEvent = (event: ParsedRumEvent) => {
         switch (event.type) {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
@@ -72,11 +72,11 @@ export class WebVitalsPlugin extends InternalPlugin {
                 this.navigationEventId = event.id;
                 break;
         }
-    }
+    };
 
     private handleLCP(metric: LCPMetricWithAttribution | Metric) {
         const a = (metric as LCPMetricWithAttribution).attribution;
-        const attribution: any = {
+        const attribution: RumLCPAttribution = {
             element: a.element,
             url: a.url,
             timeToFirstByte: a.timeToFirstByte,

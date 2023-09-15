@@ -186,3 +186,14 @@ export const httpStatusText = {
     '504': 'Gateway Timeout',
     '505': 'HTTP Version Not Supported'
 };
+
+export interface RumLCPAttribution {
+    element?: string;
+    url?: string;
+    timeToFirstByte: number;
+    resourceLoadDelay: number;
+    resourceLoadTime: number;
+    elementRenderDelay: number;
+    lcpResourceEntry?: string;
+    navigationEntry?: string;
+}
