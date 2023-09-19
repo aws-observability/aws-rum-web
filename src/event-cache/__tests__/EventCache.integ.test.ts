@@ -75,7 +75,7 @@ describe('EventCache tests', () => {
         });
     });
 
-    test('default meta data attributes except platformType can be overriden by custom attributes', async () => {
+    test('default meta data can be overriden by custom attributes', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
@@ -100,16 +100,10 @@ describe('EventCache tests', () => {
             'aws:client': INSTALL_MODULE,
             'aws:clientVersion': WEB_CLIENT_VERSION,
             domain: 'overridden.console.aws.amazon.com',
-<<<<<<< HEAD
-            browserLanguage: 'en-US',
-            browserName: 'WebKit',
-            deviceType: 'desktop',
-=======
             browserLanguage: 'en-UK',
             browserName: 'Chrome',
             deviceType: 'Mac',
->>>>>>> 632bfe3... feat: allow customization of default attributes
-            platformType: 'web',
+            platformType: 'other',
             pageId: '/console/home'
         };
 

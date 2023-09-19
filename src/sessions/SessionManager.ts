@@ -139,11 +139,7 @@ export class SessionManager {
     public addSessionAttributes(sessionAttributes: {
         [k: string]: string | number | boolean;
     }) {
-        this.attributes = {
-            ...this.attributes,
-            ...sessionAttributes,
-            platformType: this.attributes.platformType
-        };
+        this.attributes = { ...this.attributes, ...sessionAttributes };
     }
 
     public getUserId(): string {
