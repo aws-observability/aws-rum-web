@@ -1,7 +1,11 @@
 import { ResourceType } from '../../utils/common-utils';
 
 export const defaultIgnore = (entry: PerformanceEntry) =>
-    entry.entryType === 'resource' && !/^https?:/.test(entry.name);
+    entry.entryType === 'resource' &&
+    (!/^https?:/.test(entry.name) ||
+        /^(fetch|xmlhttprequest)$/.test(
+            (entry as PerformanceResourceTiming).initiatorType
+        ));
 
 export type PartialPerformancePluginConfig = {
     eventLimit?: number;
