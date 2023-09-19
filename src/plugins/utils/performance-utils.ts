@@ -1,7 +1,11 @@
 import { ResourceType } from '../../utils/common-utils';
 
 export const defaultIgnore = (entry: PerformanceEntry) =>
-    entry.entryType === 'resource' && !/^https?:/.test(entry.name);
+    entry.entryType === 'resource' &&
+    (!/^https?:/.test(entry.name) ||
+        /^(fetch|xmlhttprequest)$/.test(
+            (entry as PerformanceResourceTiming).initiatorType
+        ));
 
 export type PartialPerformancePluginConfig = {
     eventLimit?: number;
@@ -20,11 +24,11 @@ export type PerformancePluginConfig = {
 export const defaultPerformancePluginConfig = {
     eventLimit: 10,
     ignore: defaultIgnore,
-    recordAllTypes: [ResourceType.DOCUMENT, ResourceType.SCRIPT],
-    sampleTypes: [
+    recordAllTypes: [
+        ResourceType.DOCUMENT,
+        ResourceType.SCRIPT,
         ResourceType.STYLESHEET,
-        ResourceType.IMAGE,
-        ResourceType.FONT,
-        ResourceType.OTHER
-    ]
+        ResourceType.FONT
+    ],
+    sampleTypes: [ResourceType.IMAGE, ResourceType.OTHER]
 };

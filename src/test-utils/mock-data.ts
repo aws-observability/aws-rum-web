@@ -201,7 +201,7 @@ export const scriptResourceEvent = {
     fileType: 'script'
 };
 
-export const imageResourceEvent = {
+export const imageResourceEventA = {
     connectEnd: 386.37999998172745,
     connectStart: 386.37999998172745,
     decodedBodySize: 79,
@@ -212,7 +212,33 @@ export const imageResourceEvent = {
     entryType: 'resource',
     fetchStart: 386.37999998172745,
     initiatorType: 'script',
-    name: 'http://localhost:9000/picture.jpg',
+    name: 'http://localhost:9000/pictureA.jpg',
+    nextHopProtocol: 'http/1.1',
+    redirectEnd: 0,
+    redirectStart: 0,
+    requestStart: 388.2449999800883,
+    responseEnd: 389.02000000234693,
+    responseStart: 388.71499997912906,
+    secureConnectionStart: 0,
+    serverTiming: [],
+    startTime: 386.37999998172745,
+    transferSize: 368,
+    workerStart: 0,
+    fileType: 'image'
+};
+
+export const imageResourceEventB = {
+    connectEnd: 386.37999998172745,
+    connectStart: 386.37999998172745,
+    decodedBodySize: 79,
+    domainLookupEnd: 386.37999998172745,
+    domainLookupStart: 386.37999998172745,
+    duration: 2.640000020619482,
+    encodedBodySize: 79,
+    entryType: 'resource',
+    fetchStart: 386.37999998172745,
+    initiatorType: 'script',
+    name: 'http://localhost:9000/pictureB.jpg',
     nextHopProtocol: 'http/1.1',
     redirectEnd: 0,
     redirectStart: 0,
@@ -253,28 +279,6 @@ export const cssResourceEvent = {
     fileType: 'stylesheet'
 };
 
-export interface ObserveInterface {
-    type: string;
-    buffered: boolean;
-}
-
-const entries = [navigationEvent, resourceEvent];
-
-export class MockPerformanceObserver {
-    static simulateErrorOnObserve = false;
-
-    constructor(cb: any) {
-        (this as any).observe = (options: ObserveInterface) => {
-            if (MockPerformanceObserver.simulateErrorOnObserve) {
-                MockPerformanceObserver.simulateErrorOnObserve = false;
-                throw new Error('Simulated Error');
-            }
-            cb({ getEntries: () => [...entries] });
-            return {};
-        };
-    }
-}
-
 export const MockPerformanceTiming: PerformanceTiming = {
     connectEnd: 1618335687913,
     connectStart: 1618335687836,
@@ -300,10 +304,67 @@ export const MockPerformanceTiming: PerformanceTiming = {
     toJSON: () => ({})
 };
 
+export interface ObserveInterface {
+    type: string;
+    buffered: boolean;
+}
+
+export function doMockPerformanceObserver(entries: any) {
+    (window as any).PerformanceObserver = class MockPerformanceObserver {
+        cb: any;
+
+        constructor(cb: any) {
+            this.cb = cb;
+        }
+
+        observe(options: ObserveInterface): void {
+            this.cb({ getEntries: () => entries });
+        }
+
+        disconnect(): void {
+            /* Nothing to do. */
+        }
+    };
+}
+
+export class MockPerformanceObserver {
+    cb: any;
+
+    constructor(cb: any) {
+        this.cb = cb;
+    }
+
+    observe(options: ObserveInterface): void {
+        this.cb({ getEntries: () => [navigationEvent, resourceEvent] });
+    }
+
+    disconnect(): void {
+        /* Nothing to do. */
+    }
+}
+
 export class MockEmptyPerformanceObserver {
+    observe() {
+        throw new Error('Method not implemented.');
+    }
     constructor(cb: any) {
         (this as any).observe = (options: ObserveInterface) => {
             return cb({ getEntries: () => [] });
+        };
+        (this as any).disconnect = () => {
+            /* Nothing to do*/
+        };
+    }
+}
+
+export class MockPaintPerformanceObserver {
+    constructor(cb: any) {
+        (this as any).observe = (options: ObserveInterface) => {
+            cb({ getEntries: () => [resourceEvent2] });
+            return {};
+        };
+        (this as any).disconnect = () => {
+            /* Nothing to do*/
         };
     }
 }
@@ -407,37 +468,6 @@ export const mockPerformanceObjectWith = (
         writable: true
     });
 };
-
-export const mockPerformanceObjectWithDataPlaneResource = () => {
-    mockPerformanceObjectWith([putRumEventsDocument], [], []);
-};
-
-export const mockPerformanceObjectWithResources = () => {
-    mockPerformanceObjectWith(
-        [scriptResourceEvent, imageResourceEvent, cssResourceEvent],
-        [],
-        []
-    );
-};
-
-export const mockPaintPerformanceObject = () => {
-    mockPerformanceObjectWith([resourceEvent], [], [navigationEvent]);
-};
-
-export class MockPaintPerformanceObserver {
-    static simulateErrorOnObserve = false;
-
-    constructor(cb: any) {
-        (this as any).observe = (options: ObserveInterface) => {
-            if (MockPerformanceObserver.simulateErrorOnObserve) {
-                MockPerformanceObserver.simulateErrorOnObserve = false;
-                throw new Error('Simulated Error');
-            }
-            cb({ getEntries: () => [resourceEvent2] });
-            return {};
-        };
-    }
-}
 
 export const mockPaintPerformanceObserver = () => {
     (window as any).PerformanceObserver = MockPaintPerformanceObserver;

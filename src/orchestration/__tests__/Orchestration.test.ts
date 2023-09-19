@@ -7,6 +7,7 @@ import { PluginManager } from '../../plugins/PluginManager';
 import { PageIdFormatEnum } from '../Orchestration';
 import { PageAttributes } from '../../sessions/PageManager';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
+import { performanceEvent } from '../../test-utils/mock-data';
 
 global.fetch = jest.fn();
 
@@ -52,6 +53,12 @@ jest.mock('../../plugins/PluginManager', () => ({
 }));
 
 describe('Orchestration tests', () => {
+    beforeEach(() => {
+        (window as any).performance = performanceEvent.performance();
+        (window as any).PerformanceObserver =
+            performanceEvent.PerformanceObserver;
+    });
+
     afterEach(() => {
         jest.clearAllMocks();
     });

@@ -35,5 +35,25 @@ describe('performance-utils', () => {
             const result = defaultIgnore(mockEntry);
             expect(result).toBe(false);
         });
+
+        test('when initiator is xhr then entry is ignored', async () => {
+            const mockEntry = {
+                name: 'http://localhost',
+                initiatorType: 'xmlhttprequest',
+                entryType: 'resource'
+            } as PerformanceNavigationTiming;
+            const result = defaultIgnore(mockEntry);
+            expect(result).toBe(true);
+        });
+
+        test('when initiator is fetch then entry is ignored', async () => {
+            const mockEntry = {
+                name: 'http://localhost',
+                initiatorType: 'fetch',
+                entryType: 'resource'
+            } as PerformanceNavigationTiming;
+            const result = defaultIgnore(mockEntry);
+            expect(result).toBe(true);
+        });
     });
 });

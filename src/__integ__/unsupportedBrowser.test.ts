@@ -10,9 +10,10 @@ fixture('Unsupported Browsers').page(
 );
 
 test('when a browser is not supported then the command function is a no-op', async (t: TestController) => {
-    await t
-        .wait(300)
-        .click(viewCommandQueueFunction)
-        .expect(cwrFunction.textContent)
-        .contains('function(){}');
+    await t.wait(300).click(viewCommandQueueFunction);
+
+    let commandFunction = await cwrFunction.textContent;
+    commandFunction = commandFunction.replace(/\s/g, '');
+
+    await t.expect(commandFunction).contains('function(){}');
 });

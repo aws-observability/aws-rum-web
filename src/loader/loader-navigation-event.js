@@ -1,13 +1,12 @@
-import { loader } from '../loader/loader';
+import { loader } from './loader';
 import { showRequestClientBuilder } from '../test-utils/mock-http-handler';
+import { NavigationPlugin } from '../plugins/event-plugins/NavigationPlugin';
 loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
-    allowCookies: true,
     dispatchInterval: 0,
+    metaDataPluginsToLoad: [],
+    eventPluginsToLoad: [new NavigationPlugin()],
     telemetries: [],
-    clientBuilder: showRequestClientBuilder,
-    sessionAttributes: {
-        customAttributeAtInit: 'customAttributeAtInitValue'
-    }
+    clientBuilder: showRequestClientBuilder
 });
 window.cwr('setAwsCredentials', {
     accessKeyId: 'a',
