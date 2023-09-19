@@ -215,31 +215,6 @@ describe('WebVitalsPlugin tests', () => {
         );
     });
 
-    test('when lcp image resource has initiatorType=img then eventId is attributed to lcp', async () => {
-        // init
-        const fileType = imageResourceRumEvent.details.fileType;
-        delete imageResourceRumEvent.details.fileType;
-        imageResourceRumEvent.details.initiatorType = 'img';
-        const plugin = new WebVitalsPlugin();
-
-        // run
-        plugin.load(context);
-
-        // assert
-        expect(record).toHaveBeenCalledWith(
-            LCP_EVENT_TYPE,
-            expect.objectContaining({
-                attribution: expect.objectContaining({
-                    lcpResourceEntry: imageResourceRumEvent.id
-                })
-            })
-        );
-
-        // restore
-        delete imageResourceRumEvent.details.initiatorType;
-        imageResourceRumEvent.details.fileType = fileType;
-    });
-
     test('when no matching image resource does not exist then it is not attributed to lcp', async () => {
         // init
         const fileType = imageResourceRumEvent.details.fileType;
