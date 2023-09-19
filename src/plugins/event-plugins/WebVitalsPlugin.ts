@@ -58,10 +58,7 @@ export class WebVitalsPlugin extends InternalPlugin {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
                 const details = event.details as ResourceEvent;
-                if (
-                    details.fileType === ResourceType.IMAGE ||
-                    details.initiatorType === 'img'
-                ) {
+                if (details.fileType === ResourceType.IMAGE) {
                     this.resourceEventIds.set(
                         performanceKey(event.details as HasLatency),
                         event.id
