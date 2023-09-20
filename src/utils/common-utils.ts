@@ -1,3 +1,5 @@
+import { ResourceEvent } from 'events/resource-event';
+
 export enum ResourceType {
     OTHER = 'other',
     STYLESHEET = 'stylesheet',
