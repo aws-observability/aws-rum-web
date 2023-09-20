@@ -98,7 +98,7 @@ describe('EventCache tests', () => {
             version: '1.0.0',
             'aws:client': INSTALL_MODULE,
             'aws:clientVersion': WEB_CLIENT_VERSION,
-            domain: 'us-east-1.console.aws.amazon.com',
+            domain: 'overridden.console.aws.amazon.com',
             browserLanguage: 'en-US',
             browserName: 'WebKit',
             deviceType: 'desktop',

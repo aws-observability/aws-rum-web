@@ -759,4 +759,18 @@ describe('SessionManager tests', () => {
         expect(actualSessionAttributes.customAttributeNumber).toEqual(1);
         expect(actualSessionAttributes.customAttributeBoolean).toEqual(true);
     });
+
+    test('when domain is in custom session attributes then domain is overridden', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG
+        });
+
+        sessionManager.addSessionAttributes({
+            domain: 'overridden'
+        });
+
+        const actualSessionAttributes = sessionManager.getAttributes();
+
+        expect(actualSessionAttributes.domain).toEqual('overridden');
+    });
 });

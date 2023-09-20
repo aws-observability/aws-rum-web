@@ -131,6 +131,8 @@ export class SessionManager {
         [k: string]: string | number | boolean;
     }) {
         this.attributes = { ...sessionAttributes, ...this.attributes };
+        this.attributes.domain =
+            (sessionAttributes.domain as string) || this.attributes.domain;
     }
 
     public getUserId(): string {
