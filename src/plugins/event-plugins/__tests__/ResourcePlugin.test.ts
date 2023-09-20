@@ -50,12 +50,13 @@ describe('ResourcePlugin tests', () => {
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                startTime: resourceEvent.startTime,
-                fileType: resourceEvent.fileType,
-                duration: resourceEvent.duration,
-                transferSize: resourceEvent.transferSize,
-                targetUrl: resourceEvent.name,
-                initiatorType: resourceEvent.initiatorType
+                version: '1.0.0',
+                fileType: 'script',
+                startTime: resourceTiming.startTime,
+                duration: resourceTiming.duration,
+                transferSize: resourceTiming.transferSize,
+                targetUrl: resourceTiming.name,
+                initiatorType: resourceTiming.initiatorType
             })
         );
     });
