@@ -105,7 +105,7 @@ export const getResourceFileType = (
      * In these cases, they are mislablled as "other". In these cases, we can infer the correct
      * fileType from the initiator.
      */
-    if (ext === ResourceType.OTHER) {
+    if (initiatorType && ext === ResourceType.OTHER) {
         switch (initiatorType) {
             case InitiatorType.IMAGE:
             case InitiatorType.IMG:
