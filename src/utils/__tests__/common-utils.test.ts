@@ -60,4 +60,49 @@ describe('Common utils tests', () => {
             utils.ResourceType.FONT
         );
     });
+
+    test('when resource is image but file extension is no match, then initiatorType resolves to image', async () => {
+        // Init
+        const resourceUrl = 'example.com';
+        // Assert
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.IMG)
+        ).toEqual(utils.ResourceType.IMAGE);
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.IMAGE)
+        ).toEqual(utils.ResourceType.IMAGE);
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.INPUT)
+        ).toEqual(utils.ResourceType.IMAGE);
+    });
+
+    test('when resource is document but file extension is no match, then initiatorType resolves to document', async () => {
+        // Init
+        const resourceUrl = 'example.com';
+        // Assert
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.IFRAME)
+        ).toEqual(utils.ResourceType.DOCUMENT);
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.FRAME)
+        ).toEqual(utils.ResourceType.DOCUMENT);
+    });
+
+    test('when resource is script but file extension is no match, then initiatorType resolves to script', async () => {
+        // Init
+        const resourceUrl = 'example.com';
+        // Assert
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.SCRIPT)
+        ).toEqual(utils.ResourceType.SCRIPT);
+    });
+
+    test('when resource is stylesheet but file extension is no match, then initiatorType resolves to stylesheet', async () => {
+        // Init
+        const resourceUrl = 'example.com';
+        // Assert
+        expect(
+            utils.getResourceFileType(resourceUrl, utils.InitiatorType.CSS)
+        ).toEqual(utils.ResourceType.STYLESHEET);
+    });
 });

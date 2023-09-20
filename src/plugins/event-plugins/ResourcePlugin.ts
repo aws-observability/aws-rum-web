@@ -1,9 +1,5 @@
 import { InternalPlugin } from '../InternalPlugin';
-import {
-    getResourceFileType,
-    ResourceType,
-    shuffle
-} from '../../utils/common-utils';
+import { getResourceFileType, shuffle } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -63,7 +59,9 @@ export class ResourcePlugin extends InternalPlugin {
         list.filter((e) => e.entryType === RESOURCE)
             .filter((e) => !this.config.ignore(e))
             .forEach((event) => {
-                const type: ResourceType = getResourceFileType(event.name);
+                const { name, initiatorType } =
+                    event as PerformanceResourceTiming;
+                const type = getResourceFileType(name, initiatorType);
                 if (this.config.recordAllTypes.includes(type)) {
                     recordAll.push(event);
                 } else if (this.config.sampleTypes.includes(type)) {
@@ -84,10 +82,15 @@ export class ResourcePlugin extends InternalPlugin {
         }
     };
 
-    recordResourceEvent = (entryData: PerformanceResourceTiming): void => {
+    recordResourceEvent = ({
+        name,
+        initiatorType,
+        duration,
+        transferSize
+    }: PerformanceResourceTiming): void => {
         const pathRegex =
             /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-        const entryUrl = new URL(entryData.name);
+        const entryUrl = new URL(name);
         if (
             entryUrl.host === this.context.config.endpointUrl.host &&
             pathRegex.test(entryUrl.pathname)
@@ -101,13 +104,13 @@ export class ResourcePlugin extends InternalPlugin {
         if (this.context?.record) {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
-                initiatorType: entryData.initiatorType,
-                duration: entryData.duration,
-                fileType: getResourceFileType(entryData.name),
-                transferSize: entryData.transferSize
+                initiatorType,
+                duration,
+                fileType: getResourceFileType(name, initiatorType),
+                transferSize
             };
             if (this.context.config.recordResourceUrl) {
-                eventData.targetUrl = entryData.name;
+                eventData.targetUrl = name;
             }
             this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
         }

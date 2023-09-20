@@ -7,6 +7,36 @@ export enum ResourceType {
     FONT = 'font'
 }
 
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/initiatorType
+ */
+export enum InitiatorType {
+    /**
+     * IMAGES
+     * PerformanceResourceTiming with initiatorType=Input must be an image
+     * Per MDN docs: "if the request was initiated by an <input> element of type image.""
+     */
+    IMG = 'img',
+    IMAGE = 'image',
+    INPUT = 'input',
+
+    /**
+     * DOCUMENTS
+     */
+    IFRAME = 'iframe',
+    FRAME = 'frame',
+
+    /**
+     * SCRIPTS
+     */
+    SCRIPT = 'script',
+
+    /**
+     * STYLESHEETS
+     */
+    CSS = 'css'
+}
+
 const extensions = [
     {
         name: ResourceType.STYLESHEET,
@@ -52,18 +82,48 @@ export const shuffle = (a: any[]) => {
     }
 };
 
-export const getResourceFileType = (url: string): ResourceType => {
-    const filename = url.substring(url.lastIndexOf('/') + 1);
-    const extension = filename
-        .substring(filename.lastIndexOf('.') + 1)
-        .split(/[?#]/)[0];
-
+export const getResourceFileType = (
+    url: string,
+    initiatorType?: string
+): ResourceType => {
     let ext = ResourceType.OTHER;
-    extensions.forEach((type) => {
-        if (type.list.indexOf(extension) > -1) {
-            ext = type.name;
+    if (url) {
+        const filename = url.substring(url.lastIndexOf('/') + 1);
+        const extension = filename
+            .substring(filename.lastIndexOf('.') + 1)
+            .split(/[?#]/)[0];
+
+        extensions.forEach((type) => {
+            if (type.list.indexOf(extension) > -1) {
+                ext = type.name;
+            }
+        });
+    }
+
+    /**
+     * Resource name sometimes does not have the correct file extension names due to redirects.
+     * In these cases, they are mislablled as "other". In these cases, we can infer the correct
+     * fileType from the initiator.
+     */
+    if (initiatorType && ext === ResourceType.OTHER) {
+        switch (initiatorType) {
+            case InitiatorType.IMAGE:
+            case InitiatorType.IMG:
+            case InitiatorType.INPUT:
+                ext = ResourceType.IMAGE;
+                break;
+            case InitiatorType.IFRAME:
+            case InitiatorType.FRAME:
+                ext = ResourceType.DOCUMENT;
+                break;
+            case InitiatorType.SCRIPT:
+                ext = ResourceType.SCRIPT;
+                break;
+            case InitiatorType.CSS:
+                ext = ResourceType.STYLESHEET;
+                break;
         }
-    });
+    }
     return ext;
 };
 
