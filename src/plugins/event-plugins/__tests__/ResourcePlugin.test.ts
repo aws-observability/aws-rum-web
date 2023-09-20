@@ -1,5 +1,5 @@
 import {
-    resourceEvent,
+    resourceTiming,
     putRumEventsDocument,
     putRumEventsGammaDocument,
     dataPlaneDocument,
@@ -27,7 +27,7 @@ const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
 
 describe('ResourcePlugin tests', () => {
     beforeEach(() => {
-        doMockPerformanceObserver([navigationEvent, resourceEvent]);
+        doMockPerformanceObserver([navigationEvent, resourceTiming]);
         record.mockClear();
     });
 
@@ -50,11 +50,12 @@ describe('ResourcePlugin tests', () => {
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                fileType: resourceEvent.fileType,
-                duration: resourceEvent.duration,
-                transferSize: resourceEvent.transferSize,
-                targetUrl: resourceEvent.name,
-                initiatorType: resourceEvent.initiatorType
+                version: '1.0.0',
+                fileType: 'script',
+                duration: resourceTiming.duration,
+                transferSize: resourceTiming.transferSize,
+                targetUrl: resourceTiming.name,
+                initiatorType: resourceTiming.initiatorType
             })
         );
     });

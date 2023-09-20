@@ -85,7 +85,7 @@ export const navigationEventNotLoaded = {
     navigationTimingLevel: 2
 };
 
-export const resourceEvent = {
+export const resourceTiming: PerformanceResourceTiming = {
     connectEnd: 0,
     connectStart: 0,
     decodedBodySize: 0,
@@ -108,7 +108,7 @@ export const resourceEvent = {
     startTime: 357.59500000131084,
     transferSize: 0,
     workerStart: 0,
-    fileType: 'other'
+    toJSON: function () {} // eslint-disable-line
 };
 
 export const resourceEvent2 = {
@@ -335,7 +335,7 @@ export class MockPerformanceObserver {
     }
 
     observe(options: ObserveInterface): void {
-        this.cb({ getEntries: () => [navigationEvent, resourceEvent] });
+        this.cb({ getEntries: () => [navigationEvent, resourceTiming] });
     }
 
     disconnect(): void {
