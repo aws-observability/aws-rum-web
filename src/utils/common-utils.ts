@@ -49,7 +49,9 @@ export interface HasLatency {
 
 /**
  * Creates key to link a RumEvent to the PerformanceEntry that it is sourced from
- * e.g. performanceKey(ResourceEvent) === performanceKey(PerformanceResourceTiming)
+ * e.g. performanceKey(ResourceEvent) === performanceKey(PerformanceResourceTiming).
+ * There is some worry of collision when startTime or duration are zero, such as when
+ * resources are cached. But timestamps have not been observed to be zero in these cases.
  */
 export const performanceKey = (details: HasLatency) =>
     [details.startTime, details.duration].join('#');
