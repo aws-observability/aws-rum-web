@@ -111,10 +111,6 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         this.enable();
     }
 
-    get cacheSize() {
-        return this.xhrMap.size;
-    }
-
     protected get patches() {
         return [
             {
