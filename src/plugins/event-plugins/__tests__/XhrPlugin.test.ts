@@ -60,6 +60,7 @@ describe('XhrPlugin tests', () => {
                 statusText: 'OK'
             }
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR is called then the plugin records a trace', async () => {
@@ -114,6 +115,7 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when plugin is disabled then the plugin does not record any events', async () => {
@@ -141,6 +143,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when plugin is re-enabled then the plugin records a trace', async () => {
@@ -170,6 +173,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR returns an error code then the plugin adds the error to the trace', async () => {
@@ -230,6 +234,7 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR returns an error code then the plugin adds the error to the http event', async () => {
@@ -268,6 +273,7 @@ describe('XhrPlugin tests', () => {
                 message: '0'
             }
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR times out then the plugin adds the error to the trace', async () => {
@@ -315,6 +321,7 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR times out then the plugin adds the error to the http event', async () => {
@@ -352,6 +359,7 @@ describe('XhrPlugin tests', () => {
                 type: 'XMLHttpRequest timeout'
             }
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR aborts then the plugin adds the error to the trace', async () => {
@@ -401,6 +409,7 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when XHR aborts then the plugin adds the error to the http event', async () => {
@@ -439,6 +448,7 @@ describe('XhrPlugin tests', () => {
                 type: 'XMLHttpRequest abort'
             }
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when default config is used then X-Amzn-Trace-Id header is not to the HTTP request', async () => {
@@ -469,6 +479,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(header).toEqual(null);
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
@@ -501,6 +512,7 @@ describe('XhrPlugin tests', () => {
         expect(header).toEqual(
             'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
         );
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
@@ -528,6 +540,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when session is not being recorded then the plugin does not record a trace', async () => {
@@ -569,6 +582,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
@@ -607,6 +621,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
@@ -635,6 +650,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
@@ -663,6 +679,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when recordAllRequests is false then the plugin records a request with status 500', async () => {
@@ -692,6 +709,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when a url is excluded then the plugin does not record a request to that url', async () => {
@@ -720,6 +738,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('all urls are included by default', async () => {
@@ -747,6 +766,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when a request is made to cognito or sts using default exclude list then the requests are not recorded', async () => {
@@ -782,6 +802,7 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
+        expect(plugin.cacheSize).toEqual(0);
     });
 
     test('when a url is relative then the subsegment name is location.hostname', async () => {
@@ -813,5 +834,6 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
+        expect(plugin.cacheSize).toEqual(0);
     });
 });
