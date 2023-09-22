@@ -111,6 +111,10 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         this.enable();
     }
 
+    get cacheSize() {
+        return this.xhrMap.size;
+    }
+
     protected get patches() {
         return [
             {
@@ -199,6 +203,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             this.recordTraceEvent(xhrDetails.trace!);
             this.recordHttpEventWithError(
                 xhrDetails,
+                xhr,
                 new XhrError(errorMessage)
             );
         }
@@ -207,19 +212,25 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private handleXhrAbortEvent = (e: Event) => {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails = this.xhrMap.get(xhr);
-        const errorName = 'XMLHttpRequest abort';
-        this.handleXhrDetailsOnError(xhrDetails, errorName);
+        if (xhrDetails) {
+            this.handleXhrDetailsOnError(
+                xhrDetails,
+                xhr,
+                'XMLHttpRequest abort'
+            );
+        }
     };
 
     private handleXhrTimeoutEvent = (e: Event) => {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails = this.xhrMap.get(xhr);
         const errorName = 'XMLHttpRequest timeout';
-        this.handleXhrDetailsOnError(xhrDetails, errorName);
+        this.handleXhrDetailsOnError(xhrDetails, xhr, errorName);
     };
 
     private handleXhrDetailsOnError(
         xhrDetails: XhrDetails | undefined,
+        xhr: XMLHttpRequest,
         errorName: string
     ) {
         if (xhrDetails) {
@@ -235,7 +246,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 ]
             };
             this.recordTraceEvent(xhrDetails.trace!);
-            this.recordHttpEventWithError(xhrDetails, errorName);
+            this.recordHttpEventWithError(xhrDetails, xhr, errorName);
         }
     }
 
@@ -247,6 +258,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         xhrDetails: XhrDetails,
         xhr: XMLHttpRequest
     ) {
+        this.xhrMap.delete(xhr);
         const httpEvent: HttpEvent = {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url },
@@ -263,8 +275,10 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
 
     private recordHttpEventWithError(
         xhrDetails: XhrDetails,
+        xhr: XMLHttpRequest,
         error: Error | string | number | boolean | undefined | null
     ) {
+        this.xhrMap.delete(xhr);
         const httpEvent: HttpEvent = {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url },
