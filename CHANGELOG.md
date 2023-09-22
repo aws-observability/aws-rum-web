@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.14.1](https://github.com/aws-observability/aws-rum-web/compare/v1.14.0...v1.14.1) (2023-09-22)
+
+
+### Bug Fixes
+
+* XhrPlugin cleans cache on every record ([#454](https://github.com/aws-observability/aws-rum-web/issues/454)) ([54f6229](https://github.com/aws-observability/aws-rum-web/commit/54f62296e8f7f12199d5aa913f4a1c4832f9bb57))
+
 ## [1.14.0](https://github.com/aws-observability/aws-rum-web/compare/v1.13.0...v1.14.0) (2023-06-29)
 
 
