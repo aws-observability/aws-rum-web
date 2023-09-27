@@ -1,5 +1,3 @@
-import { ResourceEvent } from 'events/resource-event';
-
 export enum ResourceType {
     OTHER = 'other',
     STYLESHEET = 'stylesheet',
@@ -201,3 +199,18 @@ export interface RumLCPAttribution {
     lcpResourceEntry?: string;
     navigationEntry?: string;
 }
+
+/** Checks at runtime if the web vitals package will record LCP
+ * If PerformanceAPI ever changes this API, or if WebVitals package implements a polyfill,
+ * then this needs to be updated
+ *
+ * Reference code from web vitals package:
+ * https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/observe.ts#L46
+ * Discussion for context:
+ * https://github.com/aws-observability/aws-rum-web/pull/448#issuecomment-1734314463
+ */
+export const isLCPSupported = () => {
+    return PerformanceObserver.supportedEntryTypes.includes(
+        'largest-contentful-paint'
+    );
+};

@@ -1,3 +1,11 @@
+jest.mock('../../../utils/common-utils', () => {
+    const originalModule = jest.requireActual('../../../utils/common-utils');
+    return {
+        __esModule: true,
+        ...originalModule,
+        isLCPSupported: jest.fn().mockReturnValue(true)
+    };
+});
 import { ResourceType } from '../../../utils/common-utils';
 import {
     CLS_EVENT_TYPE,
@@ -237,6 +245,33 @@ describe('WebVitalsPlugin tests', () => {
         // restore
         imageResourceRumEvent.details.fileType = fileType;
     });
+
+    test('when lcp is recorded then cache is empty', async () => {
+        const plugin = new WebVitalsPlugin();
+
+        plugin.load(context);
+        expect(record).toHaveBeenCalledWith(LCP_EVENT_TYPE, expect.anything());
+        expect((plugin as any).resourceEventIds.size).toEqual(0);
+        expect((plugin as any).navigationEventId).toBeUndefined();
+    });
+
+    test('when lcp is not supported then cache is empty', async () => {
+        const plugin = new WebVitalsPlugin();
+        (plugin as any).cacheLCPCandidates = false;
+
+        plugin.load(context);
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.not.objectContaining({
+                    lcpResourceEntry: expect.anything()
+                })
+            })
+        );
+        expect((plugin as any).resourceEventIds.size).toEqual(0);
+        expect((plugin as any).navigationEventId).toBeUndefined();
+    });
+
     test('when lcp is recorded then unsubscribe is called', async () => {
         // init
         const unsubscribeSpy = jest.spyOn(context.eventBus, 'unsubscribe');

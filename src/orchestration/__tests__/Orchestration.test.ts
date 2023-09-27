@@ -21,6 +21,15 @@ jest.mock('../../dispatch/Dispatch', () => ({
     }))
 }));
 
+jest.mock('../../utils/common-utils', () => {
+    const originalModule = jest.requireActual('../../utils/common-utils');
+    return {
+        __esModule: true,
+        ...originalModule,
+        isLCPSupported: jest.fn().mockReturnValue(true)
+    };
+});
+
 const enableEventCache = jest.fn();
 const disableEventCache = jest.fn();
 const recordPageView = jest.fn();
