@@ -65,7 +65,6 @@ describe('XhrPlugin tests', () => {
                 statusText: 'OK'
             }
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when XHR is called then the plugin records a trace', async () => {
@@ -120,6 +119,37 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
+    });
+
+    test('when xhr loads successfully then cache is empty', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            recordAllRequests: true
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOffContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: expect.anything(),
+            response: expect.anything()
+        });
         expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
@@ -148,7 +178,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when plugin is re-enabled then the plugin records a trace', async () => {
@@ -178,7 +207,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when XHR returns an error code then the plugin adds the error to the trace', async () => {
@@ -239,7 +267,6 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when XHR returns an error code then the plugin adds the error to the http event', async () => {
@@ -277,6 +304,30 @@ describe('XhrPlugin tests', () => {
                 type: 'XMLHttpRequest error',
                 message: '0'
             }
+        });
+    });
+
+    test('when xhr returns error then cache is empty', async () => {
+        mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
+
+        const plugin: XhrPlugin = new XhrPlugin();
+        plugin.load(xRayOffContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: expect.anything(),
+            error: expect.anything()
         });
         expect((plugin as any).xhrMap.size).toEqual(0);
     });
@@ -326,7 +377,6 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when XHR times out then the plugin adds the error to the http event', async () => {
@@ -353,6 +403,36 @@ describe('XhrPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'GET'
+            },
+            error: {
+                version: '1.0.0',
+                type: 'XMLHttpRequest timeout'
+            }
+        });
+    });
+
+    test('when xhr times out then cache is empty', async () => {
+        // Init
+        mock.get(/.*/, () => new Promise(() => ({})));
+
+        const plugin: XhrPlugin = new XhrPlugin();
+        plugin.load(xRayOffContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.timeout = 1;
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
@@ -414,7 +494,6 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when XHR aborts then the plugin adds the error to the http event', async () => {
@@ -453,6 +532,34 @@ describe('XhrPlugin tests', () => {
                 type: 'XMLHttpRequest abort'
             }
         });
+    });
+
+    test('when xhr aborts then cache is empty', async () => {
+        // Init
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin();
+        plugin.load(xRayOffContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+        xhr.abort();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: expect.anything(),
+            error: expect.anything()
+        });
         expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
@@ -484,7 +591,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(header).toEqual(null);
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
@@ -517,7 +623,6 @@ describe('XhrPlugin tests', () => {
         expect(header).toEqual(
             'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
         );
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
@@ -545,7 +650,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when session is not being recorded then the plugin does not record a trace', async () => {
@@ -582,7 +686,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when getSession returns undefined then the plugin does not record a trace', async () => {
@@ -614,7 +717,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
@@ -643,7 +745,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
@@ -672,7 +773,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when recordAllRequests is false then the plugin records a request with status 500', async () => {
@@ -702,7 +802,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when a url is excluded then the plugin does not record a request to that url', async () => {
@@ -731,7 +830,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('all urls are included by default', async () => {
@@ -759,7 +857,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when a request is made to cognito or sts using default exclude list then the requests are not recorded', async () => {
@@ -795,7 +892,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when a url is relative then the subsegment name is location.hostname', async () => {
@@ -827,7 +923,6 @@ describe('XhrPlugin tests', () => {
                 }
             ]
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when the plugin records a trace then the trace id is added to the http event', async () => {
@@ -863,7 +958,6 @@ describe('XhrPlugin tests', () => {
             trace_id: '1-0-000000000000000000000000',
             segment_id: '0000000000000000'
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when XHR aborts with tracing then the trace id is added to the http event', async () => {
@@ -898,7 +992,6 @@ describe('XhrPlugin tests', () => {
             trace_id: '1-0-000000000000000000000000',
             segment_id: '0000000000000000'
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when the plugin does not record a trace then the trace id is not added to the http event', async () => {
@@ -934,7 +1027,6 @@ describe('XhrPlugin tests', () => {
             trace_id: '1-0-000000000000000000000000',
             segment_id: '0000000000000000'
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when user agent is CW Synthetics then plugin does not record a trace', async () => {
@@ -976,7 +1068,6 @@ describe('XhrPlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 
     test('when user agent is CW Synthetics then the plugin records the http request/response', async () => {
@@ -1030,6 +1121,5 @@ describe('XhrPlugin tests', () => {
                 statusText: 'OK'
             }
         });
-        expect((plugin as any).xhrMap.size).toEqual(0);
     });
 });
