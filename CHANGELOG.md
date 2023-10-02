@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.15.0](https://github.com/aws-observability/aws-rum-web/compare/v1.14.0...v1.15.0) (2023-10-02)
+
+
+### Features
+
+* Re-use Cognito identity id ([#437](https://github.com/aws-observability/aws-rum-web/issues/437)) ([81213b9](https://github.com/aws-observability/aws-rum-web/commit/81213b9ad9b2f4d611a08b4b4fc07ac493ab887a))
+* add attributions for core web vitals: LCP, CLS, and FID ([#432](https://github.com/aws-observability/aws-rum-web/issues/432)) ([33892c5](https://github.com/aws-observability/aws-rum-web/commit/33892c5e091735e9449ab3683868cde1c89ac163))
+* Add trace id to http events ([#447](https://github.com/aws-observability/aws-rum-web/issues/447)) ([f36a9b5](https://github.com/aws-observability/aws-rum-web/commit/f36a9b5580b5ebb995f79a1c1119f0c49fde5e31))
+* getResourceType() uses initiatorType when file extension missing ([#451](https://github.com/aws-observability/aws-rum-web/issues/451)) ([8d1e715](https://github.com/aws-observability/aws-rum-web/commit/8d1e715357f398fb444a80ac5a6d741bec32851d))
+* link lcp attribution to image resource and navigation page load ([#448](https://github.com/aws-observability/aws-rum-web/issues/448)) ([4b8506e](https://github.com/aws-observability/aws-rum-web/commit/4b8506e529b6cf2f5a045f54bd6c029df56c232a))
+
+
+
+### Bug Fixes
+
+* Add getId to enhanced authflow ([#433](https://github.com/aws-observability/aws-rum-web/issues/433)) ([8b95de0](https://github.com/aws-observability/aws-rum-web/commit/8b95de08580817a9006a86e23bf0a2eb002cdc51))
+* Save deserialized credential object to Authentication member ([#436](https://github.com/aws-observability/aws-rum-web/issues/436)) ([6120c61](https://github.com/aws-observability/aws-rum-web/commit/6120c61ed3d25362fc9765496942c9e4ffe3e087))
+* Update false-negative test case in Authentication.test ([#439](https://github.com/aws-observability/aws-rum-web/issues/439)) ([460770b](https://github.com/aws-observability/aws-rum-web/commit/460770b01fe4c5a4aa74d86201bca7dd0c81004f))
+* Avoid overwriting existing trace header ([#449](https://github.com/aws-observability/aws-rum-web/issues/449)) ([965ea07](https://github.com/aws-observability/aws-rum-web/commit/965ea07d03aefe0bace9c0cd62bc0e1fea1df867))
+* Record resource timing after load event ([#450](https://github.com/aws-observability/aws-rum-web/issues/450)) ([c0aa33a](https://github.com/aws-observability/aws-rum-web/commit/c0aa33aaf5975de9f726f0a9b4a89d87e4fc5000))
+* XhrPlugin cleans cache on every record ([#454](https://github.com/aws-observability/aws-rum-web/issues/454)) ([1380511](https://github.com/aws-observability/aws-rum-web/commit/1380511287b1c0c8d689702a3ada2dd42f91e5bd))
+
+
+
 ## [1.14.0](https://github.com/aws-observability/aws-rum-web/compare/v1.13.0...v1.14.0) (2023-06-29)
 
 
