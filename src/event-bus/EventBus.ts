@@ -10,7 +10,7 @@ export default class EventBus<T = Topic> {
 
     subscribe(topic: T, subscriber: Subscriber): void {
         const list = this.subscribers.get(topic) ?? [];
-        if (list.length === 0) {
+        if (!list.length) {
             this.subscribers.set(topic, list);
         }
         list.push(subscriber);

@@ -84,6 +84,7 @@ export class ResourcePlugin extends InternalPlugin {
 
     recordResourceEvent = ({
         name,
+        startTime,
         initiatorType,
         duration,
         transferSize
@@ -105,6 +106,7 @@ export class ResourcePlugin extends InternalPlugin {
             const eventData: ResourceEvent = {
                 version: '1.0.0',
                 initiatorType,
+                startTime,
                 duration,
                 fileType: getResourceFileType(name, initiatorType),
                 transferSize

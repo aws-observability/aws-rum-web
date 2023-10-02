@@ -402,7 +402,8 @@ export class Orchestration {
                 id: applicationId,
                 version: applicationVersion
             },
-            this.config
+            this.config,
+            this.eventBus
         );
     }
 

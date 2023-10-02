@@ -37,6 +37,23 @@ export enum InitiatorType {
     CSS = 'css'
 }
 
+/**
+ * A PerformanceEntry or RumEvent that is sourced from the PerformanceAPI
+ */
+export interface HasLatency {
+    startTime: DOMHighResTimeStamp;
+    duration: DOMHighResTimeStamp;
+}
+
+/**
+ * Creates key to link a RumEvent to the PerformanceEntry that it is sourced from
+ * e.g. performanceKey(ResourceEvent) === performanceKey(PerformanceResourceTiming).
+ * There is some worry of collision when startTime or duration are zero, such as when
+ * resources are cached. But timestamps have not been observed to be zero in these cases.
+ */
+export const performanceKey = (details: HasLatency) =>
+    [details.startTime, details.duration].join('#');
+
 const extensions = [
     {
         name: ResourceType.STYLESHEET,
@@ -170,4 +187,30 @@ export const httpStatusText = {
     '503': 'Service Unavailable',
     '504': 'Gateway Timeout',
     '505': 'HTTP Version Not Supported'
+};
+
+export interface RumLCPAttribution {
+    element?: string;
+    url?: string;
+    timeToFirstByte: number;
+    resourceLoadDelay: number;
+    resourceLoadTime: number;
+    elementRenderDelay: number;
+    lcpResourceEntry?: string;
+    navigationEntry?: string;
+}
+
+/** Checks at runtime if the web vitals package will record LCP
+ * If PerformanceAPI ever changes this API, or if WebVitals package implements a polyfill,
+ * then this needs to be updated
+ *
+ * Reference code from web vitals package:
+ * https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/observe.ts#L46
+ * Discussion for context:
+ * https://github.com/aws-observability/aws-rum-web/pull/448#issuecomment-1734314463
+ */
+export const isLCPSupported = () => {
+    return PerformanceObserver.supportedEntryTypes.includes(
+        'largest-contentful-paint'
+    );
 };

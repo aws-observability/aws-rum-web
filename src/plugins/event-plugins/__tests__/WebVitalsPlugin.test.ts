@@ -1,10 +1,23 @@
-import { WebVitalsPlugin } from '../WebVitalsPlugin';
-import { context, record } from '../../../test-utils/test-utils';
+jest.mock('../../../utils/common-utils', () => {
+    const originalModule = jest.requireActual('../../../utils/common-utils');
+    return {
+        __esModule: true,
+        ...originalModule,
+        isLCPSupported: jest.fn().mockReturnValue(true)
+    };
+});
+import { ResourceType } from '../../../utils/common-utils';
 import {
     CLS_EVENT_TYPE,
     FID_EVENT_TYPE,
-    LCP_EVENT_TYPE
-} from '../../utils/constant';
+    LCP_EVENT_TYPE,
+    PERFORMANCE_NAVIGATION_EVENT_TYPE,
+    PERFORMANCE_RESOURCE_EVENT_TYPE
+} from '../../../plugins/utils/constant';
+import { context, record } from '../../../test-utils/test-utils';
+import { Topic } from '../../../event-bus/EventBus';
+import { WebVitalsPlugin } from '../WebVitalsPlugin';
+import { navigationEvent } from '../../../test-utils/mock-data';
 
 const mockLCPData = {
     delta: 239.51,
@@ -47,11 +60,41 @@ const mockCLSData = {
     }
 };
 
+// only need hasLatency fields
+const imagePerformanceEntry = {
+    duration: 50,
+    startTime: 100
+};
+
+const imageResourceRumEvent: any = {
+    id: 'img-id',
+    type: PERFORMANCE_RESOURCE_EVENT_TYPE,
+    details: {
+        fileType: ResourceType.IMAGE,
+        ...imagePerformanceEntry
+    }
+};
+
+const navigationRumEvent: any = {
+    id: 'nav-id',
+    type: PERFORMANCE_NAVIGATION_EVENT_TYPE,
+    details: navigationEvent
+};
+
+const mockLCPDataWithImage = Object.assign({}, mockLCPData, {
+    attribution: {
+        ...mockLCPData.attribution,
+        lcpResourceEntry: imagePerformanceEntry
+    }
+});
+
 jest.mock('web-vitals/attribution', () => {
     return {
-        onLCP: jest
-            .fn()
-            .mockImplementation((callback) => callback(mockLCPData)),
+        onLCP: jest.fn().mockImplementation((callback) => {
+            context.eventBus.dispatch(Topic.EVENT, imageResourceRumEvent);
+            context.eventBus.dispatch(Topic.EVENT, navigationRumEvent);
+            callback(mockLCPDataWithImage);
+        }),
         onFID: jest
             .fn()
             .mockImplementation((callback) => callback(mockFIDData)),
@@ -70,7 +113,6 @@ describe('WebVitalsPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
 
         // Assert
         expect(record).toHaveBeenCalledTimes(3);
@@ -80,7 +122,7 @@ describe('WebVitalsPlugin tests', () => {
             expect.objectContaining({
                 version: '1.0.0',
                 value: mockLCPData.value,
-                attribution: {
+                attribution: expect.objectContaining({
                     element: mockLCPData.attribution.element,
                     url: mockLCPData.attribution.url,
                     timeToFirstByte: mockLCPData.attribution.timeToFirstByte,
@@ -89,7 +131,7 @@ describe('WebVitalsPlugin tests', () => {
                     resourceLoadTime: mockLCPData.attribution.resourceLoadTime,
                     elementRenderDelay:
                         mockLCPData.attribution.elementRenderDelay
-                }
+                })
             })
         );
     });
@@ -100,7 +142,6 @@ describe('WebVitalsPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
 
         // Assert
         expect(record).toHaveBeenCalledTimes(3);
@@ -126,7 +167,6 @@ describe('WebVitalsPlugin tests', () => {
 
         // Run
         plugin.load(context);
-        window.dispatchEvent(new Event('load'));
 
         // Assert
         expect(record).toHaveBeenCalledTimes(3);
@@ -154,7 +194,6 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
         plugin.disable();
         plugin.enable();
-        window.dispatchEvent(new Event('load'));
 
         // Assert
         expect(record).toHaveBeenCalled();
@@ -165,9 +204,116 @@ describe('WebVitalsPlugin tests', () => {
 
         plugin.load(context);
         plugin.disable();
-        window.dispatchEvent(new Event('load'));
 
         // Assert
         expect(record).toHaveBeenCalled();
+    });
+
+    test('when lcp image resource has filetype=image then eventId is attributed to lcp', async () => {
+        const plugin = new WebVitalsPlugin();
+
+        plugin.load(context);
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    lcpResourceEntry: imageResourceRumEvent.id
+                })
+            })
+        );
+    });
+
+    test('when no matching image resource does not exist then it is not attributed to lcp', async () => {
+        // init
+        const fileType = imageResourceRumEvent.details.fileType;
+        delete imageResourceRumEvent.details.fileType;
+        const plugin = new WebVitalsPlugin();
+
+        // run
+        plugin.load(context);
+
+        // assert
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.not.objectContaining({
+                    lcpResourceEntry: expect.anything()
+                })
+            })
+        );
+
+        // restore
+        imageResourceRumEvent.details.fileType = fileType;
+    });
+
+    test('when lcp is recorded then cache is empty', async () => {
+        const plugin = new WebVitalsPlugin();
+
+        plugin.load(context);
+        expect(record).toHaveBeenCalledWith(LCP_EVENT_TYPE, expect.anything());
+        expect((plugin as any).resourceEventIds.size).toEqual(0);
+        expect((plugin as any).navigationEventId).toBeUndefined();
+    });
+
+    test('when lcp is not supported then cache is empty', async () => {
+        const plugin = new WebVitalsPlugin();
+        (plugin as any).cacheLCPCandidates = false;
+
+        plugin.load(context);
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.not.objectContaining({
+                    lcpResourceEntry: expect.anything()
+                })
+            })
+        );
+        expect((plugin as any).resourceEventIds.size).toEqual(0);
+        expect((plugin as any).navigationEventId).toBeUndefined();
+    });
+
+    test('when lcp is recorded then unsubscribe is called', async () => {
+        // init
+        const unsubscribeSpy = jest.spyOn(context.eventBus, 'unsubscribe');
+        const plugin = new WebVitalsPlugin();
+        const recordSpy = jest.spyOn(context, 'record');
+
+        // run
+        plugin.load(context);
+
+        // assert
+        expect(recordSpy).toHaveBeenCalled();
+        expect(unsubscribeSpy).toHaveBeenCalled();
+    });
+
+    test('when navigation is recorded then it is attributed to lcp', async () => {
+        const plugin = new WebVitalsPlugin();
+
+        plugin.load(context);
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    navigationEntry: navigationRumEvent.id
+                })
+            })
+        );
+    });
+
+    test('when navigation is not recorded then it is not attributed to lcp', async () => {
+        navigationRumEvent.type = 'invalid';
+        const plugin = new WebVitalsPlugin();
+
+        plugin.load(context);
+        expect(record).not.toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    navigationEntry: expect.anything()
+                })
+            })
+        );
+
+        navigationEvent.type = PERFORMANCE_NAVIGATION_EVENT_TYPE;
     });
 });

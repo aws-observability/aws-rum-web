@@ -18,7 +18,6 @@ import {
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
 import EventBus from '../event-bus/EventBus';
-jest.mock('../event-bus/EventBus');
 
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'

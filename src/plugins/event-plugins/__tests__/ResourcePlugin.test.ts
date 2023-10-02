@@ -52,6 +52,7 @@ describe('ResourcePlugin tests', () => {
             expect.objectContaining({
                 version: '1.0.0',
                 fileType: 'script',
+                startTime: resourceTiming.startTime,
                 duration: resourceTiming.duration,
                 transferSize: resourceTiming.transferSize,
                 targetUrl: resourceTiming.name,

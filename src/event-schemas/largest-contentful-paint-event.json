@@ -40,6 +40,14 @@
                 "elementRenderDelay": {
                     "type": "number",
                     "description": "Duration rendering the LCP resource"
+                },
+                "navigationEntry": {
+                    "type": "string",
+                    "description": "Event id of the navigation event for the current page"
+                },
+                "lcpResourceEntry": {
+                    "type": "string",
+                    "description": "Event id of the resource event for the LCP resource, if any"
                 }
             },
             "required": [
