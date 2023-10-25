@@ -1,5 +1,5 @@
 import { InternalPlugin } from '../InternalPlugin';
-import { TTIBoomerang2 } from './TTIBommerang2';
+import { TTIBoomerang } from '../../time-to-interactive/TTIBommerang';
 import { TimeToInteractiveEvent } from '../../events/time-to-interactive-event';
 import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../utils/constant';
 
@@ -20,7 +20,7 @@ export class TTIPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
-        const tti: TTIBoomerang2 = new TTIBoomerang2();
+        const tti: TTIBoomerang = new TTIBoomerang();
 
         tti.computeTimeToInteractive().then((ttiVal) => {
             this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {

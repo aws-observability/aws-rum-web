@@ -9,11 +9,7 @@ const FCP = 'FCP';
 const LCP = 'LCP';
 const PAINT = 'paint';
 
-/*
-
-*/
-
-export class TTIBoomerang2 {
+export class TTIBoomerang {
     private fcpTime: number | null = null;
     private lcpTime: number | null = null;
     private domContentLoadedEventEnd: number | null = null;
@@ -24,14 +20,24 @@ export class TTIBoomerang2 {
     private fcpSupported = false;
     private lcpSupported = false;
 
+    private FPS_THRESHOLD = 2;
+    private LONG_TASK_THRESHOLD = 0;
+
     private COLLECTION_PERIOD = 100;
     private REQUIRED_OK_INTERVALS = 5;
     private CHECK_PERIOD = 1000; // Perform another check for TTI/Visually ready
     private VISUALLY_READY_RESOLVE_TIMEOUT = 10000;
     private TTI_RESOLVE_TIMEOUT = 10000;
 
+    // Page busy constants
+    private POLLING_INTERVAL = 32;
+    private POLL_PER_COLLECTION_INTERVAL = Math.floor(
+        this.COLLECTION_PERIOD / this.POLLING_INTERVAL
+    );
+    private PAGE_BUSY_THRESHOLD = 0.1;
+
     // Needs to return a Promise
-    public computeTimeToInteractive() {
+    computeTimeToInteractive() {
         this.initListeners();
         return new Promise<number>((resolve, reject) => {
             this.checkForVisualReady().then((result) => {
@@ -49,11 +55,6 @@ export class TTIBoomerang2 {
             const visuallyReadyInterval: any = setInterval(() => {
                 // Check if all Visually ready timestamps are available
                 let visuallyReady = true;
-                console.log(
-                    this.lcpTime,
-                    this.fcpTime,
-                    this.domContentLoadedEventEnd
-                );
 
                 if (this.fcpSupported) {
                     if (!this.fcpTime) {
@@ -108,8 +109,6 @@ export class TTIBoomerang2 {
     }
 
     private handleWebVitals(metric: Metric) {
-        console.log(metric);
-
         if (metric.name === FCP) {
             metric.entries.forEach(
                 (entry) => (this.fcpTime = entry.startTime + entry.duration)
@@ -160,7 +159,8 @@ export class TTIBoomerang2 {
                     if (
                         this.ttiTracker[LONG_TASK] &&
                         this.ttiTracker[LONG_TASK][bucket] &&
-                        this.ttiTracker[LONG_TASK][bucket] > 0
+                        this.ttiTracker[LONG_TASK][bucket] >
+                            this.LONG_TASK_THRESHOLD
                     ) {
                         allOk = false;
                     }
@@ -169,20 +169,34 @@ export class TTIBoomerang2 {
                     if (
                         this.ttiTracker[FPS] &&
                         this.ttiTracker[FPS][bucket] &&
-                        this.ttiTracker[FPS][bucket] < 2
+                        this.ttiTracker[FPS][bucket] < this.FPS_THRESHOLD
                     ) {
                         allOk = false;
                     }
 
+                    // TODO: Page busy is not very stable, need to make decision on if we will support it or not
+                    /*
                     // Check page busy only if long task not supported
                     if (
                         !this.ttiTracker[LONG_TASK] &&
-                        this.ttiTracker[PAGE_BUSY] &&
-                        this.ttiTracker[PAGE_BUSY][bucket] &&
-                        this.ttiTracker[PAGE_BUSY][bucket] > 10
+                        this.ttiTracker[PAGE_BUSY]
                     ) {
-                        allOk = false;
+                        // Compute page busy %
+
+                        // If no page busy data, means page busy was 100% for interval
+                        if (!this.ttiTracker[PAGE_BUSY][bucket]) {
+                            allOk = false;
+                        } else if (
+                            this.ttiTracker[PAGE_BUSY][bucket] /
+                                this.POLL_PER_COLLECTION_INTERVAL >
+                            this.PAGE_BUSY_THRESHOLD
+                        ) {
+                        
+                            allOk = false;
+                        }
+                       
                     }
+                    */
 
                     // if all ok, increment ok interval by 1 and then check if 5 are done. if yes, resolve, else continue
                     if (allOk) {
@@ -233,6 +247,16 @@ export class TTIBoomerang2 {
 
         // Init FPS listener
         this.framesPerSecondListener();
+
+        // If long task not supported, monitor page busy rate
+        // TODO: Not very stable, decide on if to keep or not
+        /*
+        if (
+            !window.PerformanceObserver.supportedEntryTypes.includes(LONG_TASK)
+        ) {
+            this.pageBusyListener();
+        }
+        */
     }
 
     private computeTimeWindow(currTime?: number) {
@@ -257,7 +281,6 @@ export class TTIBoomerang2 {
 
     eventListener = () => {
         const eventObserver = new window.PerformanceObserver((list) => {
-            console.log(list.getEntries());
             list.getEntries()
                 .filter(
                     (e) =>
@@ -312,5 +335,34 @@ export class TTIBoomerang2 {
     Track page busy 
     */
 
-    // pageBusyListener = () => {};
+    pageBusyListener = () => {
+        let lastTime = performance.now();
+
+        const POLLING_INTERVAL = 32;
+        const POLLING_DEVIATION = 4;
+
+        const pageBusyInteval = setInterval(() => {
+            const timeNow = performance.now();
+            const delta = timeNow - lastTime;
+            lastTime = timeNow;
+
+            if (this.ttiResolved) {
+                clearInterval(pageBusyInteval);
+            }
+
+            if (delta > POLLING_DEVIATION + POLLING_INTERVAL) {
+                this.addToTracker(
+                    PAGE_BUSY,
+                    this.computeTimeWindow(timeNow),
+                    1
+                );
+            } else {
+                this.addToTracker(
+                    PAGE_BUSY,
+                    this.computeTimeWindow(timeNow),
+                    0
+                );
+            }
+        }, POLLING_INTERVAL);
+    };
 }
