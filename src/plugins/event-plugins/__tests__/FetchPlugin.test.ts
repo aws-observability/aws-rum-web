@@ -5,11 +5,8 @@ import {
 } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
-    context,
-    DEFAULT_CONFIG,
     getSession,
     record,
-    recordPageView,
     xRayOffContext,
     xRayOnContext,
     mockFetch,
@@ -968,5 +965,59 @@ describe('FetchPlugin tests', () => {
             trace_id: existingTraceId,
             segment_id: existingSegmentId
         });
+    });
+
+    test('when urlsToTrace is empty then the plugin does not record a trace', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToTrace: []
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('when the url does not match urlsToTrace then the plugin does not record a trace', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            recordAllRequests: true,
+            urlsToTrace: [/a^/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+    });
+
+    test('when the url matches urlsToTrace then the plugin records a trace', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToTrace: [/https:\/\/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 });

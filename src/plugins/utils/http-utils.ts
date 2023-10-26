@@ -17,6 +17,7 @@ export type PartialHttpPluginConfig = {
     logicalServiceName?: string;
     urlsToInclude?: RegExp[];
     urlsToExclude?: RegExp[];
+    urlsToTrace?: RegExp[];
     stackTraceLength?: number;
     recordAllRequests?: boolean;
     addXRayTraceIdHeader?: boolean;
@@ -26,6 +27,7 @@ export type HttpPluginConfig = {
     logicalServiceName: string;
     urlsToInclude: RegExp[];
     urlsToExclude: RegExp[];
+    urlsToTrace: RegExp[];
     stackTraceLength: number;
     recordAllRequests: boolean;
     // Adding the trace ID header to the request is risky. It may:
@@ -53,6 +55,7 @@ export const defaultConfig: HttpPluginConfig = {
         // STS endpoints https://docs.aws.amazon.com/general/latest/gr/sts.html
         /sts\.([^\.]*\.)?amazonaws\.com/
     ],
+    urlsToTrace: [/.*/],
     stackTraceLength: 200,
     recordAllRequests: false,
     addXRayTraceIdHeader: false
