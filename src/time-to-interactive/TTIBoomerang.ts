@@ -3,10 +3,30 @@ import { onFCP, onLCP, Metric } from 'web-vitals';
 
 const LONG_TASK = 'longtask';
 const FPS = 'fps';
-const PAGE_BUSY = 'pageBusy';
 const NAVIGATION = 'navigation';
 const FCP = 'FCP';
 const LCP = 'LCP';
+
+/*
+This implements the TTI Boomerang algorithm with some modifications. 
+(Ref: https://akamai.github.io/boomerang/oss/BOOMR.plugins.Continuity.html)
+
+Steps to TTI: 
+1) Find visually ready timestamp (highest of domcontentLoadedEnd(if available), FCP(if available), LCP(if available))
+2) Starting from the Visually Ready timestamp, find a 500ms quiet window. 
+
+A quiet window has the following characteristics: 
+a) No Long Tasks 
+b) FPS is above 20
+
+Boomerang TTI's measurement interval is every 100ms. Each check is performed and bucketed into a 100ms interval. 
+
+3) TTI is recorded as Visually ready timestamp + time from visually ready to the start of the quiet window
+
+
+We do not record PageBusy metrics for now as there were some performance issues observed. 
+As such TTI can only be computed for now for browsers that support Long Tasks. 
+*/
 
 export class TTIBoomerang {
     private fcpTime: number | null = null;
@@ -142,13 +162,8 @@ export class TTIBoomerang {
                     currBucket = bucket;
                     let allOk = true;
 
-                    if (
-                        !this.ttiTracker[LONG_TASK] &&
-                        !this.ttiTracker[FPS] &&
-                        !this.ttiTracker[PAGE_BUSY]
-                    ) {
+                    if (!this.ttiTracker[LONG_TASK] && !this.ttiTracker[FPS]) {
                         // can't resolve tti so wait and try again
-
                         break;
                     }
 
@@ -172,17 +187,21 @@ export class TTIBoomerang {
                         allOk = false;
                     }
 
-                    // if all ok, increment ok interval by 1 and then check if 5 are done. if yes, resolve, else continue
                     if (allOk) {
                         okIntervals += 1;
                         if (okIntervals >= this.REQUIRED_OK_INTERVALS) {
                             this.ttiResolved = true;
                             clearInterval(tti);
-                            // TTI is Visually Ready + start of ok period
+                            // TTI is Visually Ready + time to start of ok period from visually ready
+                            const timeToQuietPeriodFromVisuallyReady: number =
+                                (currBucket -
+                                    this.REQUIRED_OK_INTERVALS -
+                                    startBucket +
+                                    1) *
+                                this.COLLECTION_PERIOD;
                             resolve(
                                 visuallyReadyTimestamp +
-                                    (currBucket - this.REQUIRED_OK_INTERVALS) *
-                                        this.COLLECTION_PERIOD
+                                    timeToQuietPeriodFromVisuallyReady
                             );
                             break;
                         } else {
