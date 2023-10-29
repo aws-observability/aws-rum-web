@@ -1,13 +1,12 @@
+import { isFCPSupported, isLCPSupported } from '../utils/common-utils';
 import { onFCP, onLCP, Metric } from 'web-vitals';
 
 const LONG_TASK = 'longtask';
 const FPS = 'fps';
 const PAGE_BUSY = 'pageBusy';
 const NAVIGATION = 'navigation';
-const LARGEST_CONTENTFUL_PAINT = 'largest-contentful-paint';
 const FCP = 'FCP';
 const LCP = 'LCP';
-const PAINT = 'paint';
 
 export class TTIBoomerang {
     private fcpTime: number | null = null;
@@ -19,9 +18,7 @@ export class TTIBoomerang {
 
     private fcpSupported = false;
     private lcpSupported = false;
-
-    private FPS_THRESHOLD = 2;
-    private LONG_TASK_THRESHOLD = 0;
+    private fpsSupported = false; // Check for support for requestAnimationFrame
 
     private COLLECTION_PERIOD = 100;
     private REQUIRED_OK_INTERVALS = 5;
@@ -29,15 +26,11 @@ export class TTIBoomerang {
     private VISUALLY_READY_RESOLVE_TIMEOUT = 10000;
     private TTI_RESOLVE_TIMEOUT = 10000;
 
-    // Page busy constants
-    private POLLING_INTERVAL = 32;
-    private POLL_PER_COLLECTION_INTERVAL = Math.floor(
-        this.COLLECTION_PERIOD / this.POLLING_INTERVAL
-    );
-    private PAGE_BUSY_THRESHOLD = 0.1;
+    private FPS_THRESHOLD = 20 / (1000 / this.COLLECTION_PERIOD);
+    private LONG_TASK_THRESHOLD = 0;
 
     // Needs to return a Promise
-    computeTimeToInteractive() {
+    computeTimeToInteractive(): Promise<number> {
         this.initListeners();
         return new Promise<number>((resolve, reject) => {
             this.checkForVisualReady().then((result) => {
@@ -48,7 +41,7 @@ export class TTIBoomerang {
         });
     }
 
-    private checkForVisualReady(): Promise<number> {
+    checkForVisualReady(): Promise<number> {
         // Check if visually ready
         return new Promise<number>((resolve, reject) => {
             let timeIntervals = 0;
@@ -76,18 +69,22 @@ export class TTIBoomerang {
                     timeIntervals * this.CHECK_PERIOD >
                         this.VISUALLY_READY_RESOLVE_TIMEOUT
                 ) {
-                    // If timed out, check if any VR signals are present, else can't find tti
+                    // If timed out, check if any visually ready signals are present, else can't find tti
                     if (
                         timeIntervals * this.CHECK_PERIOD >
                         this.VISUALLY_READY_RESOLVE_TIMEOUT
                     ) {
                         if (
-                            !this.fcpTime &&
                             !this.lcpTime &&
-                            !this.domContentLoadedEventEnd
+                            !this.domContentLoadedEventEnd &&
+                            !this.fcpTime
                         ) {
                             // No visually ready timestamps so can't compute tti
-                            reject();
+                            this.ttiResolved = true;
+                            this.ttiTracker = {};
+                            reject(
+                                'Insufficient visually ready timestamps to compute TTI'
+                            );
                         }
                     }
                     // Visually ready so start checking for TTI
@@ -100,7 +97,6 @@ export class TTIBoomerang {
                             ? this.domContentLoadedEventEnd
                             : 0
                     );
-
                     resolve(this.visuallyReadyTimestamp);
                 }
                 timeIntervals += 1;
@@ -121,7 +117,7 @@ export class TTIBoomerang {
         }
     }
 
-    private computeTTI(visuallyReadyTimestamp: number): Promise<number> {
+    computeTTI(visuallyReadyTimestamp: number): Promise<number> {
         return new Promise<number>((resolve, reject) => {
             const startBucket = Math.max(
                 this.computeTimeWindow(visuallyReadyTimestamp),
@@ -137,9 +133,10 @@ export class TTIBoomerang {
                     this.TTI_RESOLVE_TIMEOUT
                 ) {
                     // TTI did not resolve in timeout period, so TTI can't be computed
-                    reject();
+                    this.ttiResolved = true;
+                    this.ttiTracker = {};
+                    reject('TTI computation timed out');
                 }
-
                 const endBucket = this.computeTimeWindow();
                 for (let bucket = currBucket; bucket <= endBucket; bucket++) {
                     currBucket = bucket;
@@ -167,6 +164,7 @@ export class TTIBoomerang {
 
                     // Check FPS
                     if (
+                        this.fpsSupported &&
                         this.ttiTracker[FPS] &&
                         this.ttiTracker[FPS][bucket] &&
                         this.ttiTracker[FPS][bucket] < this.FPS_THRESHOLD
@@ -174,40 +172,16 @@ export class TTIBoomerang {
                         allOk = false;
                     }
 
-                    // TODO: Page busy is not very stable, need to make decision on if we will support it or not
-                    /*
-                    // Check page busy only if long task not supported
-                    if (
-                        !this.ttiTracker[LONG_TASK] &&
-                        this.ttiTracker[PAGE_BUSY]
-                    ) {
-                        // Compute page busy %
-
-                        // If no page busy data, means page busy was 100% for interval
-                        if (!this.ttiTracker[PAGE_BUSY][bucket]) {
-                            allOk = false;
-                        } else if (
-                            this.ttiTracker[PAGE_BUSY][bucket] /
-                                this.POLL_PER_COLLECTION_INTERVAL >
-                            this.PAGE_BUSY_THRESHOLD
-                        ) {
-                        
-                            allOk = false;
-                        }
-                       
-                    }
-                    */
-
                     // if all ok, increment ok interval by 1 and then check if 5 are done. if yes, resolve, else continue
                     if (allOk) {
                         okIntervals += 1;
                         if (okIntervals >= this.REQUIRED_OK_INTERVALS) {
                             this.ttiResolved = true;
                             clearInterval(tti);
-
+                            // TTI is Visually Ready + start of ok period
                             resolve(
                                 visuallyReadyTimestamp +
-                                    (currBucket - startBucket) *
+                                    (currBucket - this.REQUIRED_OK_INTERVALS) *
                                         this.COLLECTION_PERIOD
                             );
                             break;
@@ -225,19 +199,25 @@ export class TTIBoomerang {
         });
     }
 
-    private initListeners() {
-        // Use perf observer to record long tasks and domcontentloaded
+    initListeners(): void {
+        // record domcontentloaded if its found already
+        if (window.performance) {
+            if (window.performance.getEntriesByType(NAVIGATION)) {
+                this.domContentLoadedEventEnd =
+                    window.performance.getEntriesByType(
+                        NAVIGATION
+                    )[0]?.domContentLoadedEventEnd;
+            }
+        }
+
+        // Use performance observer to record long tasks and domcontentloaded
         this.eventListener();
 
         // Record support for FCP and LCP and init listeners
-        this.lcpSupported =
-            window.PerformanceObserver.supportedEntryTypes.includes(
-                LARGEST_CONTENTFUL_PAINT
-            );
-        this.fcpSupported =
-            window.PerformanceObserver.supportedEntryTypes.includes(PAINT);
+        this.lcpSupported = isLCPSupported();
+        this.fcpSupported = isFCPSupported();
 
-        // Use libraries instead of directly looking at the entries as it has better suppport
+        // Use web vitals library for LCP and FCP, if supported
         if (this.fcpSupported) {
             onFCP((metric) => this.handleWebVitals(metric));
         }
@@ -245,18 +225,12 @@ export class TTIBoomerang {
             onLCP((metric) => this.handleWebVitals(metric));
         }
 
-        // Init FPS listener
-        this.framesPerSecondListener();
-
-        // If long task not supported, monitor page busy rate
-        // TODO: Not very stable, decide on if to keep or not
-        /*
-        if (
-            !window.PerformanceObserver.supportedEntryTypes.includes(LONG_TASK)
-        ) {
-            this.pageBusyListener();
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        if (window.requestAnimationFrame(() => {})) {
+            // Init FPS listener if supported
+            this.fpsSupported = true;
+            this.framesPerSecondListener();
         }
-        */
     }
 
     private computeTimeWindow(currTime?: number) {
@@ -280,37 +254,41 @@ export class TTIBoomerang {
     }
 
     eventListener = () => {
-        const eventObserver = new window.PerformanceObserver((list) => {
-            list.getEntries()
-                .filter(
-                    (e) =>
-                        e.entryType === LONG_TASK || e.entryType === NAVIGATION
-                )
-                .forEach((event) => {
-                    if (event.entryType === LONG_TASK) {
-                        // Add to the time buckets where the long task spreads over
-                        if (event.startTime && event.duration) {
-                            const endTime = event.startTime + event.duration;
-                            this.addToTracker(
-                                LONG_TASK,
-                                this.computeTimeWindow(event.startTime),
-                                1
-                            );
-                            this.addToTracker(
-                                LONG_TASK,
-                                this.computeTimeWindow(endTime),
-                                1
-                            );
+        const eventObserver: PerformanceObserver = new PerformanceObserver(
+            (list) => {
+                list.getEntries()
+                    .filter(
+                        (e) =>
+                            e.entryType === LONG_TASK ||
+                            e.entryType === NAVIGATION
+                    )
+                    .forEach((event) => {
+                        if (event.entryType === LONG_TASK) {
+                            // Add to the time buckets where the long task spreads over
+                            if (event.startTime && event.duration) {
+                                const endTime =
+                                    event.startTime + event.duration;
+                                this.addToTracker(
+                                    LONG_TASK,
+                                    this.computeTimeWindow(event.startTime),
+                                    1
+                                );
+                                this.addToTracker(
+                                    LONG_TASK,
+                                    this.computeTimeWindow(endTime),
+                                    1
+                                );
+                            }
                         }
-                    }
-                    if (event.entryType === NAVIGATION) {
-                        if (event.toJSON().domContentLoadedEventEnd) {
-                            this.domContentLoadedEventEnd =
-                                event.toJSON().domContentLoadedEventEnd;
+                        if (event.entryType === NAVIGATION) {
+                            if (event.toJSON().domContentLoadedEventEnd) {
+                                this.domContentLoadedEventEnd =
+                                    event.toJSON().domContentLoadedEventEnd;
+                            }
                         }
-                    }
-                });
-        });
+                    });
+            }
+        );
         eventObserver.observe({
             entryTypes: [LONG_TASK, NAVIGATION]
         });
@@ -330,39 +308,5 @@ export class TTIBoomerang {
         if (!this.ttiResolved) {
             window.requestAnimationFrame(trackFrames);
         }
-    };
-    /*
-    Track page busy 
-    */
-
-    pageBusyListener = () => {
-        let lastTime = performance.now();
-
-        const POLLING_INTERVAL = 32;
-        const POLLING_DEVIATION = 4;
-
-        const pageBusyInteval = setInterval(() => {
-            const timeNow = performance.now();
-            const delta = timeNow - lastTime;
-            lastTime = timeNow;
-
-            if (this.ttiResolved) {
-                clearInterval(pageBusyInteval);
-            }
-
-            if (delta > POLLING_DEVIATION + POLLING_INTERVAL) {
-                this.addToTracker(
-                    PAGE_BUSY,
-                    this.computeTimeWindow(timeNow),
-                    1
-                );
-            } else {
-                this.addToTracker(
-                    PAGE_BUSY,
-                    this.computeTimeWindow(timeNow),
-                    0
-                );
-            }
-        }, POLLING_INTERVAL);
     };
 }

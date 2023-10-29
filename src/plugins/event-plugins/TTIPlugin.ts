@@ -1,14 +1,18 @@
-import { InternalPlugin } from '../InternalPlugin';
-import { TTIBoomerang } from '../../time-to-interactive/TTIBommerang';
+import { Plugin } from '../Plugin';
+
+import { TTIBoomerang } from '../../time-to-interactive/TTIBoomerang';
 import { TimeToInteractiveEvent } from '../../events/time-to-interactive-event';
 import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../utils/constant';
+import { PluginContext } from 'plugins/types';
+import { isLongTaskSupported } from '../../utils/common-utils';
 
 export const TTI_EVENT_PLUGIN_ID = 'time-to-interactive';
 
-export class TTIPlugin extends InternalPlugin {
-    constructor() {
-        super(TTI_EVENT_PLUGIN_ID);
+export class TTIPlugin implements Plugin {
+    getPluginId() {
+        return TTI_EVENT_PLUGIN_ID;
     }
+    protected context!: PluginContext;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     enable(): void {}
@@ -19,14 +23,18 @@ export class TTIPlugin extends InternalPlugin {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     configure(config: any): void {}
 
-    protected onload(): void {
-        const tti: TTIBoomerang = new TTIBoomerang();
+    load(context: PluginContext): void {
+        this.context = context;
+        const ttiBoomerang: TTIBoomerang = new TTIBoomerang();
 
-        tti.computeTimeToInteractive().then((ttiVal) => {
-            this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {
-                version: '1.0.0',
-                value: ttiVal
-            } as TimeToInteractiveEvent);
-        });
+        // If long task are not supported, TTI can't be computed for now
+        if (isLongTaskSupported()) {
+            ttiBoomerang.computeTimeToInteractive().then((ttiVal) => {
+                this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {
+                    version: '1.0.0',
+                    value: Math.round(ttiVal)
+                } as TimeToInteractiveEvent);
+            });
+        }
     }
 }

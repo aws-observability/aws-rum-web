@@ -137,6 +137,26 @@ export const resourceEvent2 = {
     fileType: 'image'
 };
 
+// Long Task Entries
+
+export const longTaskEntry = (startTime: number, duration: number) => {
+    return {
+        entryType: 'longtask',
+        startTime,
+        duration,
+        attribution: {}
+    };
+};
+
+export const navigationEntry = (domContentLoadedEndTime: number) => {
+    return {
+        entryType: 'navigation',
+        toJSON() {
+            return { domContentLoadedEventEnd: domContentLoadedEndTime };
+        }
+    };
+};
+
 export const createDocumentResource = (url: string) => {
     return {
         connectEnd: 0,
