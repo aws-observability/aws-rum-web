@@ -1,5 +1,5 @@
 import { TTIBoomerang } from '../../../time-to-interactive/TTIBoomerang';
-import { mockPerformanceObserver } from '../../../test-utils/mock-data';
+import { mockLongTaskPerformanceObserver } from '../../../test-utils/mock-data';
 import { TTIPlugin } from '../TTIPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../../../plugins/utils/constant';
@@ -7,7 +7,7 @@ import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../../../plugins/utils/constant'
 describe('Time to Interactive - Plugin Tests', () => {
     beforeEach(() => {
         // some setup
-        mockPerformanceObserver();
+        mockLongTaskPerformanceObserver();
         record.mockClear();
     });
 
