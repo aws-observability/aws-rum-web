@@ -29,12 +29,17 @@ export class TTIPlugin implements Plugin {
 
         // If long task are not supported, TTI can't be computed for now
         if (isLongTaskSupported()) {
-            ttiBoomerang.computeTimeToInteractive().then((ttiVal) => {
-                this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {
-                    version: '1.0.0',
-                    value: Math.round(ttiVal)
-                } as TimeToInteractiveEvent);
-            });
+            ttiBoomerang
+                .computeTimeToInteractive()
+                .then((ttiVal) => {
+                    this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {
+                        version: '1.0.0',
+                        value: Math.round(ttiVal)
+                    } as TimeToInteractiveEvent);
+                })
+                .catch(() => {
+                    // If issue, don't record anything to handle gracefully
+                });
         }
     }
 }
