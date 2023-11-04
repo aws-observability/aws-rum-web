@@ -1,6 +1,6 @@
 import { Plugin } from '../Plugin';
 
-import { TTIBoomerang } from '../../time-to-interactive/TTIBoomerang';
+import { TimeToInteractive } from '../../time-to-interactive/TimeToInteractive';
 import { TimeToInteractiveEvent } from '../../events/time-to-interactive-event';
 import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../utils/constant';
 import { PluginContext } from 'plugins/types';
@@ -25,11 +25,11 @@ export class TTIPlugin implements Plugin {
 
     load(context: PluginContext): void {
         this.context = context;
-        const ttiBoomerang: TTIBoomerang = new TTIBoomerang();
+        const timeToInteractive: TimeToInteractive = new TimeToInteractive();
 
         // If long task are not supported, TTI can't be computed for now
         if (isLongTaskSupported()) {
-            ttiBoomerang
+            timeToInteractive
                 .computeTimeToInteractive()
                 .then((ttiVal) => {
                     this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {

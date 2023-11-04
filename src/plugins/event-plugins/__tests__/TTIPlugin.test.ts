@@ -1,4 +1,4 @@
-import { TTIBoomerang } from '../../../time-to-interactive/TTIBoomerang';
+import { TimeToInteractive } from '../../../time-to-interactive/TimeToInteractive';
 import { mockLongTaskPerformanceObserver } from '../../../test-utils/mock-data';
 import { TTIPlugin } from '../TTIPlugin';
 import { context, record } from '../../../test-utils/test-utils';
@@ -17,7 +17,7 @@ describe('Time to Interactive - Plugin Tests', () => {
 
     test('When TTI resolves successfully, an event is recorded by plugin', async () => {
         jest.spyOn(
-            TTIBoomerang.prototype,
+            TimeToInteractive.prototype,
             'computeTimeToInteractive'
         ).mockResolvedValueOnce(880);
         const plugin: TTIPlugin = new TTIPlugin();
@@ -34,7 +34,7 @@ describe('Time to Interactive - Plugin Tests', () => {
 
     test('When TTI resolves successfully, TTI event with resolved value is recorded by plugin', async () => {
         jest.spyOn(
-            TTIBoomerang.prototype,
+            TimeToInteractive.prototype,
             'computeTimeToInteractive'
         ).mockResolvedValueOnce(880);
         const plugin: TTIPlugin = new TTIPlugin();
@@ -56,7 +56,7 @@ describe('Time to Interactive - Plugin Tests', () => {
 
     test('When TTI does not resolve, TTI event is not recorded by plugin', async () => {
         jest.spyOn(
-            TTIBoomerang.prototype,
+            TimeToInteractive.prototype,
             'computeTimeToInteractive'
         ).mockRejectedValueOnce('sample rejection');
         const plugin: TTIPlugin = new TTIPlugin();
@@ -72,7 +72,7 @@ describe('Time to Interactive - Plugin Tests', () => {
     });
     test('Disable and enable does not have effect on the plugin behavior', async () => {
         jest.spyOn(
-            TTIBoomerang.prototype,
+            TimeToInteractive.prototype,
             'computeTimeToInteractive'
         ).mockResolvedValueOnce(880);
         const plugin: TTIPlugin = new TTIPlugin();
@@ -90,7 +90,7 @@ describe('Time to Interactive - Plugin Tests', () => {
 
     test('Disable does not have effect on the plugin behavior', async () => {
         jest.spyOn(
-            TTIBoomerang.prototype,
+            TimeToInteractive.prototype,
             'computeTimeToInteractive'
         ).mockResolvedValueOnce(880);
         const plugin: TTIPlugin = new TTIPlugin();
@@ -107,7 +107,7 @@ describe('Time to Interactive - Plugin Tests', () => {
 
     test('Disable does not have effect on the plugin behavior', async () => {
         jest.spyOn(
-            TTIBoomerang.prototype,
+            TimeToInteractive.prototype,
             'computeTimeToInteractive'
         ).mockResolvedValueOnce(880);
         const plugin: TTIPlugin = new TTIPlugin();
