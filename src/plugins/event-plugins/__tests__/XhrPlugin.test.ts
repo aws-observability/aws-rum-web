@@ -593,7 +593,7 @@ describe('XhrPlugin tests', () => {
         expect(header).toEqual(null);
     });
 
-    test('X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+    test('when addXrayTraceIdHeader is true then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         let header: string;
         const config: PartialHttpPluginConfig = { addXRayTraceIdHeader: true };
@@ -623,6 +623,102 @@ describe('XhrPlugin tests', () => {
         expect(header).toEqual(
             'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
         );
+    });
+
+    test('when addXrayTraceIdHeader is false then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
+        // Init
+        let header: string | null;
+        const config: PartialHttpPluginConfig = { addXRayTraceIdHeader: false };
+
+        mock.get(/.*/, (req, res) => {
+            header = req.header('X-Amzn-Trace-Id');
+            return res
+                .status(200)
+                .body(JSON.stringify({ message: 'Hello World!' }));
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.setRequestHeader('Blarb', 'gurggle');
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(header).toBeNull();
+    });
+
+    test('when url matches some regex in addXrayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+        // Init
+        let header: string | null;
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: [/noMatch/, /.*response.json$/]
+        };
+
+        mock.get(/.*/, (req, res) => {
+            header = req.header('X-Amzn-Trace-Id');
+            return res
+                .status(200)
+                .body(JSON.stringify({ message: 'Hello World!' }));
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.setRequestHeader('Blarb', 'gurggle');
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(header).toBe(
+            'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1'
+        );
+    });
+
+    test('when url matches no regex in addXrayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+        // Init
+        let header: string | null;
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: [/noMatch/]
+        };
+
+        mock.get(/.*/, (req, res) => {
+            header = req.header('X-Amzn-Trace-Id');
+            return res
+                .status(200)
+                .body(JSON.stringify({ message: 'Hello World!' }));
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.setRequestHeader('Blarb', 'gurggle');
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(header).toBeNull();
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {

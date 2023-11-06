@@ -19,7 +19,7 @@ export type PartialHttpPluginConfig = {
     urlsToExclude?: RegExp[];
     stackTraceLength?: number;
     recordAllRequests?: boolean;
-    addXRayTraceIdHeader?: boolean;
+    addXRayTraceIdHeader?: boolean | RegExp[];
 };
 
 export type HttpPluginConfig = {
@@ -36,7 +36,17 @@ export type HttpPluginConfig = {
     // Applications that wish to link their client and server traces by enabling
     // the X-Amzn-Trace-Id header should test their applications before enabling
     // it in a production environment.
-    addXRayTraceIdHeader: boolean;
+    addXRayTraceIdHeader: boolean | RegExp[];
+};
+
+export const shouldAddXrayTraceIdHeader = (
+    url: string,
+    addXrayTraceIdHeader: boolean | RegExp[]
+): boolean => {
+    if (Array.isArray(addXrayTraceIdHeader)) {
+        return addXrayTraceIdHeader.some((matcher) => matcher.test(url));
+    }
+    return addXrayTraceIdHeader;
 };
 
 export type TraceHeader = {
