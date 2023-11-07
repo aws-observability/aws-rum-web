@@ -73,12 +73,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         this.enable();
     }
 
-    private isTracingEnabled = (url: string) => {
-        return (
-            this.context.config.enableXRay &&
-            this.config.urlsToTrace.length &&
-            this.config.urlsToTrace.every((re) => re.test(url))
-        );
+    private isTracingEnabled = () => {
+        return this.context.config.enableXRay;
     };
 
     private isSessionRecorded = () => {
@@ -272,9 +268,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     ): Promise<Response> => {
         const httpEvent: HttpEvent = this.createHttpEvent(input, init);
         let trace: XRayTraceEvent | undefined;
-        const url: string = resourceToUrlString(input);
 
-        if (!isUrlAllowed(url, this.config)) {
+        if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray as any);
         }
         const traceHeader = getTraceHeader((input as Request).headers);
@@ -282,7 +277,7 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         if (traceHeader.traceId && traceHeader.segmentId) {
             httpEvent.trace_id = traceHeader.traceId;
             httpEvent.segment_id = traceHeader.segmentId;
-        } else if (this.isTracingEnabled(url) && this.isSessionRecorded()) {
+        } else if (this.isTracingEnabled() && this.isSessionRecorded()) {
             trace = this.beginTrace(input, init, argsArray);
             httpEvent.trace_id = trace.trace_id;
             httpEvent.segment_id = trace.subsegments![0].id;

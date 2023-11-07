@@ -130,12 +130,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         return this.config.addXRayTraceIdHeader;
     };
 
-    private isTracingEnabled = (url: string) => {
-        return (
-            this.context.config.enableXRay &&
-            this.config.urlsToTrace.length &&
-            this.config.urlsToTrace.every((re) => re.test(url))
-        );
+    private isTracingEnabled = () => {
+        return this.context.config.enableXRay;
     };
 
     private isSessionRecorded = () => {
@@ -170,7 +166,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 xhrDetails.trace!.subsegments![0].http!.response.content_length =
                     cl;
             }
-            this.recordTraceEvent(xhrDetails);
+            this.recordTraceEvent(xhrDetails.trace!);
             this.recordHttpEventWithResponse(xhrDetails, xhr);
         }
     };
@@ -200,7 +196,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                     }
                 ]
             };
-            this.recordTraceEvent(xhrDetails);
+            this.recordTraceEvent(xhrDetails.trace!);
             this.recordHttpEventWithError(
                 xhrDetails,
                 xhr,
@@ -245,7 +241,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                     }
                 ]
             };
-            this.recordTraceEvent(xhrDetails);
+            this.recordTraceEvent(xhrDetails.trace!);
             this.recordHttpEventWithError(xhrDetails, xhr, errorName);
         }
     }
@@ -264,7 +260,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             request: { method: xhrDetails.method, url: xhrDetails.url },
             response: { status: xhr.status, statusText: xhr.statusText }
         };
-        if (this.isTracingEnabled(xhrDetails.url)) {
+        if (this.isTracingEnabled()) {
             httpEvent.trace_id = xhrDetails.trace!.trace_id;
             httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
         }
@@ -290,20 +286,20 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                 this.config.stackTraceLength
             )
         };
-        if (this.isTracingEnabled(xhrDetails.url)) {
+        if (this.isTracingEnabled()) {
             httpEvent.trace_id = xhrDetails.trace!.trace_id;
             httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
         }
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     }
 
-    private recordTraceEvent(xhrDetails: XhrDetails) {
+    private recordTraceEvent(trace: XRayTraceEvent) {
         if (
             !this.isSyntheticsUA &&
-            this.isTracingEnabled(xhrDetails.url) &&
+            this.isTracingEnabled() &&
             this.isSessionRecorded()
         ) {
-            this.context.record(XRAY_TRACE_EVENT_TYPE, xhrDetails.trace!);
+            this.context.record(XRAY_TRACE_EVENT_TYPE, trace);
         }
     }
 
@@ -346,7 +342,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
 
                     if (
                         !self.isSyntheticsUA &&
-                        self.isTracingEnabled(xhrDetails.url) &&
+                        self.isTracingEnabled() &&
                         self.addXRayTraceIdHeader() &&
                         self.isSessionRecorded()
                     ) {

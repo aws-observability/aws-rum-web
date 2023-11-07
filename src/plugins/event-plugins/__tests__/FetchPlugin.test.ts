@@ -967,10 +967,11 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when urlsToTrace is empty then the plugin does not record a trace', async () => {
+    test('when the url does not match urlsToInclude then the plugin does not record a trace', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            urlsToTrace: []
+            recordAllRequests: true,
+            urlsToInclude: [/a^/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
@@ -984,29 +985,10 @@ describe('FetchPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(0);
     });
 
-    test('when the url does not match urlsToTrace then the plugin does not record a trace', async () => {
+    test('when the url matches urlsToInclude then the plugin records a trace', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
-            recordAllRequests: true,
-            urlsToTrace: [/a^/]
-        };
-
-        const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
-
-        // Run
-        await fetch(URL);
-        plugin.disable();
-
-        // Assert
-        expect(record).toHaveBeenCalledTimes(1);
-        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
-    });
-
-    test('when the url matches urlsToTrace then the plugin records a trace', async () => {
-        // Init
-        const config: PartialHttpPluginConfig = {
-            urlsToTrace: [/https:\/\/aws\.amazon\.com/]
+            urlsToInclude: [/https:\/\/aws\.amazon\.com/]
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
