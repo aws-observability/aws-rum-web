@@ -572,7 +572,7 @@ describe('FetchPlugin tests', () => {
         expect(init.headers instanceof Array).toBeFalsy();
     });
 
-    test('when addXRayTraceIdHeader is true then RequestInit is added to the HTTP request', async () => {
+    test('when url matches some regex in addXRayTraceIdHeader then RequestInit is added to the HTTP request', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             addXRayTraceIdHeader: [/noMatch/, new RegExp(URL)]
@@ -612,7 +612,7 @@ describe('FetchPlugin tests', () => {
         expect(init.headers).toEqual(undefined);
     });
 
-    test('when addXRayTraceIdHeader is false then RequestInit is added to the HTTP request', async () => {
+    test('when url matches no regex in addXRayTraceIdHeader then RequestInit is not added to the HTTP request', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             addXRayTraceIdHeader: [/noMatch/]
