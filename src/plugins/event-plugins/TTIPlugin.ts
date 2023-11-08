@@ -1,17 +1,17 @@
-import { Plugin } from '../Plugin';
-
 import { TimeToInteractive } from '../../time-to-interactive/TimeToInteractive';
 import { TimeToInteractiveEvent } from '../../events/time-to-interactive-event';
 import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../utils/constant';
 import { PluginContext } from 'plugins/types';
 import { isLongTaskSupported } from '../../utils/common-utils';
+import { InternalPlugin } from '../InternalPlugin';
 
 export const TTI_EVENT_PLUGIN_ID = 'time-to-interactive';
 
-export class TTIPlugin implements Plugin {
-    getPluginId() {
-        return TTI_EVENT_PLUGIN_ID;
+export class TTIPlugin extends InternalPlugin {
+    constructor() {
+        super(TTI_EVENT_PLUGIN_ID);
     }
+
     protected context!: PluginContext;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
