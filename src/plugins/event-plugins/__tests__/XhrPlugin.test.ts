@@ -5,11 +5,10 @@ import {
     context as mockContext,
     xRayOffContext,
     xRayOnContext,
-    record,
-    recordPageView
+    record
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
-import { GetSession, PluginContext } from '../../types';
+import { GetSession } from '../../types';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 import { DEFAULT_CONFIG } from '../../../test-utils/test-utils';
 import { MockHeaders } from 'xhr-mock/lib/types';
@@ -1121,5 +1120,63 @@ describe('XhrPlugin tests', () => {
                 statusText: 'OK'
             }
         });
+    });
+
+    test('when the url does not match urlsToTrace then the plugin does not record a trace', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            recordAllRequests: true,
+            urlsToInclude: [/a^/]
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' }),
+            headers: { 'Content-Length': '125' } as MockHeaders
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(0);
+    });
+
+    test('when the url matches urlsToTrace then the plugin records a trace', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            urlsToInclude: [/\.\/response.json/]
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' }),
+            headers: { 'Content-Length': '125' } as MockHeaders
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 });
