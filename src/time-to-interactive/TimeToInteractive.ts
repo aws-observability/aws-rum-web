@@ -1,5 +1,6 @@
 import { isFCPSupported, isLCPSupported } from '../utils/common-utils';
 import { onFCP, onLCP, Metric } from 'web-vitals';
+import { error } from 'console';
 
 const LONG_TASK = 'longtask';
 const FPS = 'fps';
@@ -29,8 +30,8 @@ As such TTI can only be computed for now for browsers that support Long Tasks.
 */
 
 export class TimeToInteractive {
-    private fcpTime?: number = 0;
-    private lcpTime?: number = 0;
+    private fcpTime?: number;
+    private lcpTime?: number;
     private domContentLoadedEventEnd?: number;
     private visuallyReadyTimestamp: number | null = null;
     private ttiTracker: any = {};
@@ -60,7 +61,7 @@ export class TimeToInteractive {
         });
     }
 
-    private async checkForVisualReady(): Promise<number> {
+    async checkForVisualReady(): Promise<number> {
         // Check if visually ready
         return new Promise<number>((resolve, reject) => {
             let timeIntervals = 0;
@@ -83,6 +84,7 @@ export class TimeToInteractive {
                 } else {
                     // No VR timestamps and check timed out, therefore stop searching
                     if (isCheckTimedOut) {
+                        clearInterval(visuallyReadyInterval);
                         this.ttiResolved = true;
                         this.ttiTracker = {};
                         reject(
@@ -95,12 +97,13 @@ export class TimeToInteractive {
         });
     }
 
-    private async computeTTI(visuallyReadyTimestamp: number): Promise<number> {
+    async computeTTI(visuallyReadyTimestamp: number): Promise<number> {
         return new Promise<number>((resolve, reject) => {
             const startBucket = Math.max(
                 this.computeTimeWindow(visuallyReadyTimestamp),
                 0
             );
+
             let currBucket = startBucket;
             let acceptedIntervals = 0;
             let totalIntervals = 0;
@@ -119,11 +122,14 @@ export class TimeToInteractive {
                 const endBucket = this.computeTimeWindow();
 
                 for (let bucket = currBucket; bucket <= endBucket; bucket++) {
+                    error(bucket);
+
                     currBucket = bucket;
                     let allTTIConditionsFulfiled = true;
 
                     if (!this.ttiTracker[LONG_TASK] && !this.ttiTracker[FPS]) {
                         // Insufficient data so wait and try again
+
                         break;
                     }
 
@@ -188,8 +194,8 @@ export class TimeToInteractive {
             this.domContentLoadedEventEnd !== undefined;
 
         const isPartiallyVisually =
-            this.lcpTime !== undefined ||
-            this.fcpTime !== undefined ||
+            (this.lcpSupported && this.lcpTime !== undefined) ||
+            (this.fcpSupported && this.fcpTime !== undefined) ||
             this.domContentLoadedEventEnd !== undefined;
 
         if (isFullyVisuallyReady) {
@@ -245,10 +251,11 @@ export class TimeToInteractive {
         Determine if TTI condition does not meet the defined acceptance criteria. 
 
         */
+
         if (ttiCondition === LONG_TASK) {
             return (
-                this.ttiTracker[LONG_TASK] &&
-                this.ttiTracker[LONG_TASK][currrentBucket] &&
+                this.ttiTracker[LONG_TASK] !== undefined &&
+                this.ttiTracker[LONG_TASK][currrentBucket] !== undefined &&
                 this.ttiTracker[LONG_TASK][currrentBucket] >
                     this.LONG_TASK_THRESHOLD
             );
@@ -256,8 +263,8 @@ export class TimeToInteractive {
         if (ttiCondition === FPS) {
             return (
                 this.fpsSupported &&
-                this.ttiTracker[FPS] &&
-                this.ttiTracker[FPS][currrentBucket] &&
+                this.ttiTracker[FPS] !== undefined &&
+                this.ttiTracker[FPS][currrentBucket] !== undefined &&
                 this.ttiTracker[FPS][currrentBucket] < this.FPS_THRESHOLD
             );
         }
