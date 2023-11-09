@@ -1,6 +1,5 @@
 import { isFCPSupported, isLCPSupported } from '../utils/common-utils';
 import { onFCP, onLCP, Metric } from 'web-vitals';
-import { error } from 'console';
 
 const LONG_TASK = 'longtask';
 const FPS = 'fps';
@@ -122,8 +121,6 @@ export class TimeToInteractive {
                 const endBucket = this.computeTimeWindow();
 
                 for (let bucket = currBucket; bucket <= endBucket; bucket++) {
-                    error(bucket);
-
                     currBucket = bucket;
                     let allTTIConditionsFulfiled = true;
 

@@ -2,11 +2,8 @@ import { TimeToInteractive } from './../TimeToInteractive';
 
 /*
 
-This package unit tests the Time to interactive library 
+This package unit tests Time to interactive  
 */
-
-const LONG_TASK = 'longtask';
-const FPS = 'fps';
 
 describe('Time To Interactive tests', () => {
     beforeEach(() => {
