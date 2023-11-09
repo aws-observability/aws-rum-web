@@ -1,3 +1,4 @@
+import { bind } from 'lodash';
 import { isFCPSupported, isLCPSupported } from '../utils/common-utils';
 import { onFCP, onLCP, Metric } from 'web-vitals';
 
@@ -126,17 +127,19 @@ export class TimeToInteractive {
 
                     if (!this.ttiTracker[LONG_TASK] && !this.ttiTracker[FPS]) {
                         // Insufficient data so wait and try again
-
                         break;
                     }
 
-                    // Check long task
+                    // Check long task fulfils criteria
                     if (this.isTTIConditionNotFulfilied(LONG_TASK, bucket)) {
                         allTTIConditionsFulfiled = false;
                     }
 
-                    // Check FPS
-                    if (this.isTTIConditionNotFulfilied(FPS, bucket)) {
+                    // Check FPS if supported and fulfils criteria
+                    if (
+                        this.fpsSupported &&
+                        this.isTTIConditionNotFulfilied(FPS, bucket)
+                    ) {
                         allTTIConditionsFulfiled = false;
                     }
 
@@ -250,18 +253,16 @@ export class TimeToInteractive {
         */
 
         if (ttiCondition === LONG_TASK) {
-            return (
-                this.ttiTracker[LONG_TASK] !== undefined &&
-                this.ttiTracker[LONG_TASK][currrentBucket] !== undefined &&
-                this.ttiTracker[LONG_TASK][currrentBucket] >
-                    this.LONG_TASK_THRESHOLD
-            );
+            // Any intervals with no long tasks are undefined and should be marked as 0
+            const longTasksNum =
+                this.ttiTracker[ttiCondition][currrentBucket] === undefined
+                    ? 0
+                    : this.ttiTracker[ttiCondition][currrentBucket];
+            return longTasksNum > this.LONG_TASK_THRESHOLD;
         }
         if (ttiCondition === FPS) {
             return (
-                this.fpsSupported &&
-                this.ttiTracker[FPS] !== undefined &&
-                this.ttiTracker[FPS][currrentBucket] !== undefined &&
+                this.ttiTracker[ttiCondition][currrentBucket] === undefined ||
                 this.ttiTracker[FPS][currrentBucket] < this.FPS_THRESHOLD
             );
         }

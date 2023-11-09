@@ -51,13 +51,12 @@ describe('Time To Interactive tests', () => {
         });
     });
 
-    // TTI tests
-    test('When visually ready, time to interactive is computed correctly', async () => {
+    test('When long tasks and fps are supported, time to interactive is computed correctly', async () => {
         const timeToInteractive = new TimeToInteractive();
         const visuallyReadyTimeStamp = 12;
         timeToInteractive['fpsSupported'] = true;
 
-        // with 5 good intervals
+        // Quiet window comes after 10 measurement intervals
         timeToInteractive['ttiTracker'] = {
             longtask: [
                 2, 2, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -69,7 +68,6 @@ describe('Time To Interactive tests', () => {
             ]
         };
 
-        // Mock the computed time window
         return timeToInteractive
             .computeTTI(visuallyReadyTimeStamp)
             .then((ttiVal) => {
@@ -82,7 +80,7 @@ describe('Time To Interactive tests', () => {
         const visuallyReadyTimeStamp = 12;
         timeToInteractive['fpsSupported'] = false;
 
-        // with 5 good intervals
+        // Quiet window comes after 3 measurement intervals
         timeToInteractive['ttiTracker'] = {
             longtask: [
                 2, 2, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -94,11 +92,51 @@ describe('Time To Interactive tests', () => {
             ]
         };
 
-        // Mock the computed time window
         return timeToInteractive
             .computeTTI(visuallyReadyTimeStamp)
             .then((ttiVal) => {
                 expect(ttiVal).toBe(312);
+            });
+    });
+
+    test('When no data is available post visually ready, TTI is not computed and times out', async () => {
+        const timeToInteractive = new TimeToInteractive();
+        timeToInteractive['fpsSupported'] = false;
+        timeToInteractive['TTI_RESOLVE_TIMEOUT'] = 1000; // shorter duration to avoid long running test
+
+        // Visually ready is met
+        const visuallyReadyTimeStamp = 12;
+
+        // No data available
+        timeToInteractive['ttiTracker'] = {};
+
+        // TTI should not resolve
+        return timeToInteractive
+            .computeTTI(visuallyReadyTimeStamp)
+            .catch((exception) => {
+                expect(exception).toBe('TTI computation timed out');
+            });
+    });
+
+    test('When insufficient data is available post visually ready, TTI is not computed and times out', async () => {
+        const timeToInteractive = new TimeToInteractive();
+        timeToInteractive['fpsSupported'] = true;
+        timeToInteractive['TTI_RESOLVE_TIMEOUT'] = 1000; // shorter duration to avoid long running test
+
+        // Visually ready is met
+        const visuallyReadyTimeStamp = 12;
+
+        // Insufficent data recorded post 5 time units and quiet window was not found before that
+        timeToInteractive['ttiTracker'] = {
+            longtask: [2, 2, 2, 2, 2],
+            fps: [1, 0, 1, 1, 1]
+        };
+
+        // TTI should not resolve
+        return timeToInteractive
+            .computeTTI(visuallyReadyTimeStamp)
+            .catch((exception) => {
+                expect(exception).toBe('TTI computation timed out');
             });
     });
 });
