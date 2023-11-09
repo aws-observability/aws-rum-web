@@ -251,15 +251,17 @@ export class TimeToInteractive {
         if (ttiCondition === LONG_TASK) {
             // Any intervals with no long tasks are undefined and should be marked as 0
             return (
+                this.ttiTracker[LONG_TASK] !== undefined &&
                 this.ttiTracker[LONG_TASK][currrentBucket] !== undefined &&
-                this.ttiTracker[ttiCondition][currrentBucket] >
+                this.ttiTracker[LONG_TASK][currrentBucket] >
                     this.LONG_TASK_THRESHOLD
             );
         }
         if (ttiCondition === FPS) {
             return (
                 this.fpsSupported &&
-                this.ttiTracker[ttiCondition][currrentBucket] !== undefined &&
+                this.ttiTracker[FPS] !== undefined &&
+                this.ttiTracker[FPS][currrentBucket] !== undefined &&
                 this.ttiTracker[FPS][currrentBucket] < this.FPS_THRESHOLD
             );
         }
