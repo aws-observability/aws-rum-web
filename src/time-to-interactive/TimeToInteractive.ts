@@ -254,7 +254,7 @@ export class TimeToInteractive {
 
         if (ttiCondition === LONG_TASK) {
             // Any intervals with no long tasks are undefined and should be marked as 0
-            const longTasksNum =
+            const longTasksNum: number =
                 this.ttiTracker[ttiCondition][currrentBucket] === undefined
                     ? 0
                     : this.ttiTracker[ttiCondition][currrentBucket];
