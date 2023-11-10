@@ -8,24 +8,51 @@ const FCP = 'FCP';
 const LCP = 'LCP';
 
 /*
-This implements the TTI Boomerang algorithm with some modifications. 
+What is Time to interactive (TTI)? 
+
+Time to interactive is a a measurement to indicate how long it takes for a page to become interactive for the user. 
+
+
+How is TTI computed? 
+
+This implements the TTI  algorithm with some modifications. 
 (Ref: https://akamai.github.io/boomerang/oss/BOOMR.plugins.Continuity.html)
 
-Steps to TTI: 
+Steps to TTI calculation: 
 1) Find visually ready timestamp (highest of domcontentLoadedEnd(if available), FCP(if available), LCP(if available))
-2) Starting from the Visually Ready timestamp, find a 500ms quiet window. 
-
-A quiet window has the following characteristics: 
+2) Starting from the Visually Ready timestamp, find a 500ms quiet window. A quiet window has the following characteristics: 
 a) No Long Tasks 
-b) FPS is above 20
+b) FPS is above 20 (if opted into)
 
-Boomerang TTI's measurement interval is every 100ms. Each check is performed and bucketed into a 100ms interval. 
+TTI's measurement interval is every 100ms. Each check is performed and bucketed into a 100ms interval. 
 
 3) TTI is recorded as Visually ready timestamp + time from visually ready to the start of the quiet window
 
 
-We do not record PageBusy metrics for now as there were some performance issues observed. 
-As such TTI can only be computed for now for browsers that support Long Tasks. 
+How is Frames per second (FPS) measured? 
+
+The frames per second listener measures frames per second. It does so using requestAnimationFrame. 
+This works by increasing the frame for each call in a given time bucket. For most devices and application this 
+will be 60. 
+
+
+Are there any performance implications of listening for frames per second? 
+
+Yes, there can be minimal performance implications if it disrupts the main thread of application. 
+This should not happen in most cases, but can be performance impacting when it does happen. There is some research 
+ongoing to more efficiently capture this via PerformanceObserver but there is no timeline on when this will be widely 
+available. 
+
+In order to lessen any potential performance impacts on consumer web applications, we decided to have FPS as an optional
+opt in measurement. If consumers see performance impacts on their application, they can disable FPS for their TTI measurements. 
+In most cases, long tasks should be suffice to capture the spirit of FPS since a quiet period with no long tasks will in most cases 
+have a FPS above the threshold.
+
+How is TTI support?
+
+TTI can only be computed for now for browsers that support Long Tasks. 
+
+Refer to this thread for more context on decision making: https://github.com/aws-observability/aws-rum-web/pull/465#discussion_r1382470863
 */
 
 export class TimeToInteractive {
