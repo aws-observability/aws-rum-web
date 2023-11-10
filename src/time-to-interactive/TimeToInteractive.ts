@@ -263,6 +263,8 @@ export class TimeToInteractive {
         const timeToQuietPeriodFromVisuallyReady: number =
             (currBucket - this.REQUIRED_ACCEPTED_INTERVALS - startBucket + 1) *
             this.COLLECTION_PERIOD;
+        // Cleanup
+        this.ttiTracker = {};
 
         return visuallyReadyTimestamp + timeToQuietPeriodFromVisuallyReady;
     }
