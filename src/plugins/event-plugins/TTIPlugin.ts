@@ -8,8 +8,14 @@ import { InternalPlugin } from '../InternalPlugin';
 export const TTI_EVENT_PLUGIN_ID = 'time-to-interactive';
 
 export class TTIPlugin extends InternalPlugin {
-    constructor() {
+    // By default, FPS measurements are disabled to optimize performance
+    protected fpsEnabled = false;
+
+    constructor(fpsMeasurementEnabled?: boolean) {
         super(TTI_EVENT_PLUGIN_ID);
+        if (fpsMeasurementEnabled !== undefined) {
+            this.fpsEnabled = fpsMeasurementEnabled;
+        }
     }
 
     protected context!: PluginContext;
@@ -30,7 +36,7 @@ export class TTIPlugin extends InternalPlugin {
         // If long task are not supported, TTI can't be computed for now
         if (isLongTaskSupported()) {
             timeToInteractive
-                .computeTimeToInteractive()
+                .computeTimeToInteractive(this.fpsEnabled)
                 .then((ttiVal) => {
                     this.context?.record(TIME_TO_INTERACTIVE_EVENT_TYPE, {
                         version: '1.0.0',

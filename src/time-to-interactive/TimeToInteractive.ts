@@ -38,7 +38,7 @@ export class TimeToInteractive {
 
     private fcpSupported = false;
     private lcpSupported = false;
-    private fpsSupported = false; // Check for support for requestAnimationFrame
+    private fpsEnabled = false;
 
     private COLLECTION_PERIOD = 100;
     private REQUIRED_ACCEPTED_INTERVALS = 5;
@@ -49,7 +49,10 @@ export class TimeToInteractive {
     private FPS_THRESHOLD = 20 / (1000 / this.COLLECTION_PERIOD);
     private LONG_TASK_THRESHOLD = 0;
 
-    public async computeTimeToInteractive(): Promise<number> {
+    public async computeTimeToInteractive(
+        fpsEnabled: boolean
+    ): Promise<number> {
+        this.fpsEnabled = fpsEnabled;
         this.initListeners();
         return new Promise<number>((resolve, reject) => {
             this.checkForVisualReady().then((visuallyReadyTimestamp) => {
@@ -124,18 +127,16 @@ export class TimeToInteractive {
                     currBucket = bucket;
                     let allTTIConditionsFulfiled = true;
 
-                    if (!this.ttiTracker[LONG_TASK] && !this.ttiTracker[FPS]) {
-                        // Insufficient data so wait and try again
-                        break;
-                    }
-
                     // Check long task fulfils criteria
                     if (this.isTTIConditionNotFulfilied(LONG_TASK, bucket)) {
                         allTTIConditionsFulfiled = false;
                     }
 
                     // Check FPS fulfils criteria
-                    if (this.isTTIConditionNotFulfilied(FPS, bucket)) {
+                    if (
+                        this.fpsEnabled &&
+                        this.isTTIConditionNotFulfilied(FPS, bucket)
+                    ) {
                         allTTIConditionsFulfiled = false;
                     }
 
@@ -259,7 +260,7 @@ export class TimeToInteractive {
         }
         if (ttiCondition === FPS) {
             return (
-                this.fpsSupported &&
+                this.fpsEnabled &&
                 this.ttiTracker[FPS] !== undefined &&
                 this.ttiTracker[FPS][currrentBucket] !== undefined &&
                 this.ttiTracker[FPS][currrentBucket] < this.FPS_THRESHOLD
@@ -286,9 +287,8 @@ export class TimeToInteractive {
             onLCP((metric) => this.handleWebVitals(metric));
         }
 
-        if (window.requestAnimationFrame !== undefined) {
-            // Init FPS listener if supported
-            this.fpsSupported = true;
+        // Init FPS listener if supported and enabled
+        if (this.fpsEnabled && window.requestAnimationFrame !== undefined) {
             this.framesPerSecondListener();
         }
     }

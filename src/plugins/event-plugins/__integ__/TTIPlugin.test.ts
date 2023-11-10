@@ -21,9 +21,10 @@ test('when TTI is recorded, a TTI event is recorded', async (t: TestController) 
     }
 
     await t
-        .wait(500)
         .click(testButton)
-        .wait(5000)
+        .wait(100)
+        .click(dispatch)
+        .wait(3000)
         .click(dispatch)
         .expect(RESPONSE_STATUS.textContent)
         .eql(STATUS_202.toString())
@@ -33,9 +34,9 @@ test('when TTI is recorded, a TTI event is recorded', async (t: TestController) 
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) => e.type === TIME_TO_INTERACTIVE_EVENT_TYPE
     );
+    await t.expect(events.length).eql(1);
 
     const ttiEvent = JSON.parse(events[0].details);
 
-    await t.expect(events.length).eql(1);
     await t.expect(ttiEvent.value).typeOf('number');
 });

@@ -10,8 +10,6 @@ describe('Time To Interactive tests', () => {
         jest.clearAllMocks();
     });
 
-    // Visually ready tests
-
     test('When visually ready check times out, then visually ready is the highest of the available timestamps', async () => {
         const timeToInteractive = new TimeToInteractive();
 
@@ -54,7 +52,7 @@ describe('Time To Interactive tests', () => {
     test('When long tasks and fps are supported, time to interactive is computed correctly', async () => {
         const timeToInteractive = new TimeToInteractive();
         const visuallyReadyTimeStamp = 12;
-        timeToInteractive['fpsSupported'] = true;
+        timeToInteractive['fpsEnabled'] = true;
 
         // Quiet window comes after 10 measurement intervals
         timeToInteractive['ttiTracker'] = {
@@ -75,10 +73,10 @@ describe('Time To Interactive tests', () => {
             });
     });
 
-    test('When fps support is not enabled, time to interactive is computed correctly', async () => {
+    test('When fps measurements are not enabled, time to interactive is computed correctly', async () => {
         const timeToInteractive = new TimeToInteractive();
         const visuallyReadyTimeStamp = 12;
-        timeToInteractive['fpsSupported'] = false;
+        timeToInteractive['fpsEnabled'] = false;
 
         // Quiet window comes after 3 measurement intervals
         timeToInteractive['ttiTracker'] = {
@@ -101,7 +99,7 @@ describe('Time To Interactive tests', () => {
 
     test('When no data is available post visually ready, TTI is not computed and times out', async () => {
         const timeToInteractive = new TimeToInteractive();
-        timeToInteractive['fpsSupported'] = false;
+        timeToInteractive['fpsEnabled'] = false;
         timeToInteractive['TTI_RESOLVE_TIMEOUT'] = 1000; // shorter duration to avoid long running test
 
         // Visually ready is met
