@@ -1,118 +1,161 @@
 import { TimeToInteractive } from './../TimeToInteractive';
+import { TTIMetric } from './../TimeToInteractive';
+import { mockLongTaskPerformanceObserver } from '../../test-utils/mock-data';
 
 /*
-
 This package unit tests Time to interactive  
 */
 
 describe('Time To Interactive tests', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockLongTaskPerformanceObserver();
+        jest.useFakeTimers();
     });
 
     test('When visually ready check times out, then visually ready is the highest of the available timestamps', async () => {
-        const timeToInteractive = new TimeToInteractive();
-
-        // Override the timeout to avoid long running test and keep within default test timeout
-        timeToInteractive['VISUALLY_READY_RESOLVE_TIMEOUT'] = 1000;
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        const timeToInteractive = new TimeToInteractive(() => {}, {
+            fpsEnabled: false
+        });
 
         // Only 1 of 3 timestamps are present
         timeToInteractive['domContentLoadedEventEnd'] = 88;
 
-        return timeToInteractive.checkForVisualReady().then((num) => {
-            expect(num).toBe(88);
-        });
+        // Advance time ahead
+        jest.advanceTimersByTime(12000);
+
+        return expect(timeToInteractive['visuallyReadyTimestamp']).toBe(88);
     });
 
     test('When there are multiple visually ready timestamps are present, then visually ready timestamp is the highest of them', async () => {
-        const timeToInteractive = new TimeToInteractive();
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        const timeToInteractive = new TimeToInteractive(() => {}, {
+            fpsEnabled: false
+        });
 
+        // 3 of 3 visually ready markers available
         timeToInteractive['fcpTime'] = 140;
         timeToInteractive['lcpTime'] = 200;
         timeToInteractive['domContentLoadedEventEnd'] = 88;
 
-        return timeToInteractive.checkForVisualReady().then((visuallyready) => {
-            expect(visuallyready).toBe(200);
-        });
+        // Advance time ahead
+        jest.advanceTimersByTime(12000);
+
+        return expect(timeToInteractive['visuallyReadyTimestamp']).toBe(200);
     });
 
-    test('When no visually ready timestamps are available, then visually ready is not resolved', async () => {
-        const timeToInteractive = new TimeToInteractive();
-
-        // Override the timeout to avoid long running test and keep within default test timeout
-        timeToInteractive['VISUALLY_READY_RESOLVE_TIMEOUT'] = 1000;
-
-        return timeToInteractive.checkForVisualReady().catch((reason) => {
-            expect(reason).toBe(
-                'Insufficient visually ready timestamps to compute TTI'
-            );
+    test('When no visually ready timestamps are available, then visually ready is not updated', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        const timeToInteractive = new TimeToInteractive(() => {}, {
+            fpsEnabled: false
         });
+
+        // Advance time ahead
+        jest.advanceTimersByTime(12000);
+
+        return expect(timeToInteractive['visuallyReadyTimestamp']).toBe(0);
     });
 
-    test('When long tasks and fps are supported, time to interactive is computed correctly', async () => {
-        const timeToInteractive = new TimeToInteractive();
-        const visuallyReadyTimeStamp = 12;
+    test('When long tasks are supported and fps measurements are disabled, time to interactive is computed correctly', async () => {
+        let ttiVal: any;
+        const timeToInteractive = new TimeToInteractive(
+            (metric: TTIMetric) => {
+                ttiVal = metric.value;
+            },
+            {
+                fpsEnabled: false
+            }
+        );
+
+        // Highest of 3 is visually ready timestamp
+        timeToInteractive['fcpTime'] = 140;
+        timeToInteractive['lcpTime'] = 212;
+        timeToInteractive['domContentLoadedEventEnd'] = 88;
+
+        // Quiet window comes after 1 measurement interval of VR
+        timeToInteractive['ttiTracker'] = {
+            longtask: [
+                2, 2, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
+            ],
+            fps: [
+                1, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                2, 2, 2
+            ]
+        };
+
+        // Advance time ahead
+        jest.advanceTimersByTime(7000);
+
+        // VR timestamp is highest of all available
+        expect(timeToInteractive['visuallyReadyTimestamp']).toBe(212);
+
+        expect(ttiVal).toBe(312);
+    });
+
+    test('When long tasks are supported and fps measurements are enabled, time to interactive is computed correctly', async () => {
+        let ttiVal: any;
+
+        // Disable FPS on initial call to avoid listener from overriding hardcoded values for unit test
+        const timeToInteractive = new TimeToInteractive(
+            (metric: TTIMetric) => {
+                ttiVal = metric.value;
+            },
+            {
+                fpsEnabled: false
+            }
+        );
+
+        // Enable FPS measurement flag after initialization
         timeToInteractive['fpsEnabled'] = true;
 
-        // Quiet window comes after 10 measurement intervals
+        // Highest of 3 is visually ready timestamp
+        timeToInteractive['fcpTime'] = 140;
+        timeToInteractive['lcpTime'] = 212;
+        timeToInteractive['domContentLoadedEventEnd'] = 88;
+
+        // Quiet window comes after 4 measurement interval of VR
         timeToInteractive['ttiTracker'] = {
             longtask: [
-                2, 2, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0
             ],
             fps: [
-                1, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                1, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
                 2, 2, 2
             ]
         };
 
-        return timeToInteractive
-            .computeTTI(visuallyReadyTimeStamp)
-            .then((ttiVal) => {
-                expect(ttiVal).toBe(1012);
-            });
+        // Advance time ahead
+        jest.advanceTimersByTime(7000);
+
+        // VR timestamp is highest of all available
+        expect(timeToInteractive['visuallyReadyTimestamp']).toBe(212);
+
+        expect(ttiVal).toBe(612);
     });
 
-    test('When fps measurements are not enabled, time to interactive is computed correctly', async () => {
-        const timeToInteractive = new TimeToInteractive();
-        const visuallyReadyTimeStamp = 12;
-        timeToInteractive['fpsEnabled'] = false;
+    test('When visually data cannot be determined, TTI is not computed and times out', async () => {
+        let ttiVal: any;
 
-        // Quiet window comes after 3 measurement intervals
-        timeToInteractive['ttiTracker'] = {
-            longtask: [
-                2, 2, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0
-            ],
-            fps: [
-                1, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                2, 2, 2
-            ]
-        };
+        // Disable FPS on initial call to avoid listener from overriding hardcoded values for unit test
+        const timeToInteractive = new TimeToInteractive(
+            (metric: TTIMetric) => {
+                ttiVal = metric.value;
+            },
+            {
+                fpsEnabled: false
+            }
+        );
 
-        return timeToInteractive
-            .computeTTI(visuallyReadyTimeStamp)
-            .then((ttiVal) => {
-                expect(ttiVal).toBe(312);
-            });
-    });
+        // Advance time ahead
+        jest.advanceTimersByTime(7000);
 
-    test('When no data is available post visually ready, TTI is not computed and times out', async () => {
-        const timeToInteractive = new TimeToInteractive();
-        timeToInteractive['fpsEnabled'] = false;
-        timeToInteractive['TTI_RESOLVE_TIMEOUT'] = 1000; // shorter duration to avoid long running test
+        // VR timestamp is not found
+        expect(timeToInteractive['visuallyReadyTimestamp']).toBe(0);
 
-        // Visually ready is met
-        const visuallyReadyTimeStamp = 12;
-
-        // No data available
-        timeToInteractive['ttiTracker'] = {};
-
-        // TTI should not resolve
-        return timeToInteractive
-            .computeTTI(visuallyReadyTimeStamp)
-            .catch((exception) => {
-                expect(exception).toBe('TTI computation timed out');
-            });
+        // No TTI value recorded as no TTI data available
+        expect(ttiVal).toBe(undefined);
     });
 });

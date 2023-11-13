@@ -58,7 +58,7 @@ export function onTTI(onReport: TTIReportCallback, opts: TTIReportOpts) {
  * <p>
  * This class measures TTI only when running in a browser that supports Long Tasks.
  */
-class TimeToInteractive {
+export class TimeToInteractive {
     private onReport: TTIReportCallback;
 
     private fcpTime?: number;
