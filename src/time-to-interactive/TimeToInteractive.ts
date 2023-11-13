@@ -186,7 +186,7 @@ class TimeToInteractive {
         this.currBucket = this.startBucket;
         this.acceptedIntervals = 0;
         this.totalIntervals = 0;
-        return setInterval(() => this.ttiIntervalHandler, this.CHECK_PERIOD);
+        return setInterval(this.ttiIntervalHandler, this.CHECK_PERIOD);
     }
 
     private isOkToResolveVisuallyReady(isCheckTimedOut: boolean): boolean {
