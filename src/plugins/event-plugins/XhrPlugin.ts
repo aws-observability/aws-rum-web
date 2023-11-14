@@ -14,7 +14,8 @@ import {
     requestInfoToHostname,
     is429,
     is4xx,
-    is5xx
+    is5xx,
+    isTraceIdHeaderEnabled
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
@@ -126,8 +127,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         ];
     }
 
-    private addXRayTraceIdHeader = () => {
-        return this.config.addXRayTraceIdHeader;
+    private addXRayTraceIdHeader = (url: string) => {
+        return isTraceIdHeaderEnabled(url, this.config.addXRayTraceIdHeader);
     };
 
     private isTracingEnabled = () => {
@@ -142,9 +143,9 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const xhr: XMLHttpRequest = e.target as XMLHttpRequest;
         const xhrDetails: XhrDetails = this.xhrMap.get(xhr) as XhrDetails;
         if (xhrDetails) {
-            const endTimee = epochTime();
-            xhrDetails.trace!.end_time = endTimee;
-            xhrDetails.trace!.subsegments![0].end_time = endTimee;
+            const endTime = epochTime();
+            xhrDetails.trace!.end_time = endTime;
+            xhrDetails.trace!.subsegments![0].end_time = endTime;
             xhrDetails.trace!.subsegments![0].http!.response = {
                 status: xhr.status
             };
@@ -343,7 +344,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                     if (
                         !self.isSyntheticsUA &&
                         self.isTracingEnabled() &&
-                        self.addXRayTraceIdHeader() &&
+                        self.addXRayTraceIdHeader(xhrDetails.url) &&
                         self.isSessionRecorded()
                     ) {
                         this.setRequestHeader(

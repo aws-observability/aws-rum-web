@@ -440,24 +440,7 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 
-    test('when default config is used then X-Amzn-Trace-Id header is not added to ', async () => {
-        // Init
-        const config: PartialHttpPluginConfig = {};
-
-        const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
-
-        const init: RequestInit = {};
-
-        // Run
-        await fetch(URL, init);
-        plugin.disable();
-
-        // Assert
-        expect(init.headers).toEqual(undefined);
-    });
-
-    test('when default config is used then RequestInit is not added to the HTTP request', async () => {
+    test('when default config is used then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
         const config: PartialHttpPluginConfig = {};
 
@@ -469,30 +452,11 @@ describe('FetchPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
         expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
     });
 
     test('when addXRayTraceIdHeader is true then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
-        // Init
-        const config: PartialHttpPluginConfig = {
-            addXRayTraceIdHeader: true
-        };
-
-        const plugin: FetchPlugin = new FetchPlugin(config);
-        plugin.load(xRayOnContext);
-
-        const init: RequestInit = {};
-
-        // Run
-        await fetch(URL, init);
-        plugin.disable();
-
-        // Assert
-        expect((init.headers[X_AMZN_TRACE_ID] = TRACE_ID));
-        expect(init.headers instanceof Array).toBeFalsy();
-    });
-
-    test('when addXRayTraceIdHeader is true then RequestInit is added to the HTTP request', async () => {
         // Init
         const config: PartialHttpPluginConfig = {
             addXRayTraceIdHeader: true
@@ -511,6 +475,137 @@ describe('FetchPlugin tests', () => {
                 [X_AMZN_TRACE_ID]: TRACE_ID
             }
         });
+    });
+
+    test('when addXRayTraceIdHeader is false then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: false
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
+    });
+
+    test('when url matches some regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: [/noMatch/, new RegExp(URL)]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        const init: RequestInit = {};
+
+        // Run
+        await fetch(URL, init);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                [X_AMZN_TRACE_ID]: TRACE_ID
+            }
+        });
+    });
+
+    test('when url matches no regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: [/noMatch/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
+    });
+
+    test('when addXRayTraceIdHeader is an empty array then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: []
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
+    });
+
+    test('when init object is provided then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        const init: RequestInit = {
+            method: 'POST',
+            headers: {
+                x: 'y'
+            }
+        };
+
+        // Run
+        await fetch(URL, Object.assign({}, init));
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                [X_AMZN_TRACE_ID]: TRACE_ID
+            }
+        });
+    });
+
+    test('when init object is provided then request options are persisted after adding trace id header', async () => {
+        // Init
+        const config: PartialHttpPluginConfig = {
+            addXRayTraceIdHeader: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOnContext);
+
+        const init: RequestInit = {
+            method: 'POST',
+            headers: {
+                x: 'y'
+            }
+        };
+
+        // Run
+        await fetch(URL, JSON.parse(JSON.stringify(init)));
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toMatchObject(init);
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
