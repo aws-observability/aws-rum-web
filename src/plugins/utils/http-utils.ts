@@ -39,7 +39,7 @@ export type HttpPluginConfig = {
     addXRayTraceIdHeader: boolean | RegExp[];
 };
 
-export const shouldAddXrayTraceIdHeader = (
+export const isTraceIdHeaderEnabled = (
     url: string,
     addXrayTraceIdHeader: boolean | RegExp[]
 ): boolean => {

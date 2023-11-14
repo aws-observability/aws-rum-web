@@ -21,7 +21,7 @@ import {
     is4xx,
     is5xx,
     getTraceHeader,
-    shouldAddXrayTraceIdHeader
+    isTraceIdHeaderEnabled
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -100,19 +100,16 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         );
         xRayTraceEvent.subsegments!.push(subsegment);
 
-        if (this.shouldAddXrayTraceIdHeader(input)) {
+        if (this.isTraceIdHeaderEnabled(input)) {
             this.addXRayTraceIdHeader(input, init, argsArray, xRayTraceEvent);
         }
 
         return xRayTraceEvent;
     };
 
-    private shouldAddXrayTraceIdHeader(input: RequestInfo | URL | string) {
+    private isTraceIdHeaderEnabled(input: RequestInfo | URL | string) {
         const url = resourceToUrlString(input);
-        return shouldAddXrayTraceIdHeader(
-            url,
-            this.config.addXRayTraceIdHeader
-        );
+        return isTraceIdHeaderEnabled(url, this.config.addXRayTraceIdHeader);
     }
 
     private addXRayTraceIdHeader = (

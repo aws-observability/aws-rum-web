@@ -15,7 +15,7 @@ import {
     is429,
     is4xx,
     is5xx,
-    shouldAddXrayTraceIdHeader
+    isTraceIdHeaderEnabled
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
@@ -128,10 +128,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     }
 
     private addXRayTraceIdHeader = (url: string) => {
-        return shouldAddXrayTraceIdHeader(
-            url,
-            this.config.addXRayTraceIdHeader
-        );
+        return isTraceIdHeaderEnabled(url, this.config.addXRayTraceIdHeader);
     };
 
     private isTracingEnabled = () => {
