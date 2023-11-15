@@ -90,6 +90,7 @@ export class QuietWindowSearch {
         this.totalIntervals += 1;
     };
 
+    // Begin search for Quiet window and TTI
     startTtiSearch(visuallyReadyTimestamp: number): void {
         this.startBucket = Math.max(
             this.computeTimeWindow(visuallyReadyTimestamp),
