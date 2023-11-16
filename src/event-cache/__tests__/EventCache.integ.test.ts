@@ -6,7 +6,7 @@ import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
 import { INSTALL_MODULE } from '../../utils/constants';
 
-const WEB_CLIENT_VERSION = '1.15.0';
+const WEB_CLIENT_VERSION = '1.16.0';
 
 global.fetch = mockFetch;
 describe('EventCache tests', () => {
