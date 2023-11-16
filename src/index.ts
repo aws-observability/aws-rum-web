@@ -11,6 +11,7 @@ export { ClientBuilder } from './dispatch/Dispatch';
 export { PageAttributes } from './sessions/PageManager';
 export { Plugin } from './plugins/Plugin';
 export { PluginContext } from './plugins/types';
+export { TTIPlugin } from './plugins/event-plugins/TTIPlugin';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';
 export * from './plugins/event-plugins/NavigationPlugin';

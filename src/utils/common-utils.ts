@@ -214,3 +214,11 @@ export const isLCPSupported = () => {
         'largest-contentful-paint'
     );
 };
+
+export const isFCPSupported = () => {
+    return PerformanceObserver.supportedEntryTypes.includes('paint');
+};
+
+export const isLongTaskSupported = () => {
+    return PerformanceObserver.supportedEntryTypes.includes('longtask');
+};

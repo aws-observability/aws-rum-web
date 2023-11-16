@@ -26,3 +26,6 @@ export const PAGE_VIEW_EVENT_TYPE = `${RUM_AMZ_PREFIX}.page_view_event`;
 
 // Session start event
 export const SESSION_START_EVENT_TYPE = `${RUM_AMZ_PREFIX}.session_start_event`;
+
+// Time to interactive event
+export const TIME_TO_INTERACTIVE_EVENT_TYPE = `${RUM_AMZ_PREFIX}.time_to_interactive_event`;

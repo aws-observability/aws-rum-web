@@ -20,6 +20,8 @@ module.exports = merge(common, {
         loader_http_fetch_event: './src/loader/loader-http-fetch-event.js',
         loader_http_xhr_event: './src/loader/loader-http-xhr-event.js',
         loader_web_vital_event: './src/loader/loader-web-vital-event.js',
+        loader_time_to_interactive_event:
+            './src/loader/loader-time-to-interactive-event.js',
         loader_cookies_enabled: './src/loader/loader-cookies-enabled.js',
         loader_cookies_disabled: './src/loader/loader-cookies-disabled.js',
         loader_pre_load_command_queue_test:

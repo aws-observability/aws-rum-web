@@ -477,6 +477,11 @@ export const mockPerformanceObserver = () => {
     (window as any).PerformanceObserver = MockEmptyPerformanceObserver;
 };
 
+export const mockLongTaskPerformanceObserver = () => {
+    (window as any).PerformanceObserver = MockEmptyPerformanceObserver;
+    (window as any).PerformanceObserver.supportedEntryTypes = ['longtask'];
+};
+
 export const httpErrorEvent = {
     version: '1.0.0',
     eventType: 'ERROR',

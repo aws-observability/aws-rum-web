@@ -1,0 +1,19 @@
+{
+    "$id": "com.amazon.rum.time_to_interactive_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "TimeToInteractiveEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "value": {
+            "type": "number",
+            "description": "Time to interactive value"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "value"]
+}
