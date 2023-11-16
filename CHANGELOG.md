@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.16.0](https://github.com/aws-observability/aws-rum-web/compare/v1.15.0...v1.16.0) (2023-11-16)
+
+
+### Features
+
+* Allow override of domain metadata attribute ([#453](https://github.com/aws-observability/aws-rum-web/issues/453)) ([b658d45](https://github.com/aws-observability/aws-rum-web/commit/b658d45257c1632f183baace0f5a1e19ca78ede3))
+* extend addXRayTraceIdHeader to accept allow list ([#466](https://github.com/aws-observability/aws-rum-web/issues/466)) ([fdc30fd](https://github.com/aws-observability/aws-rum-web/commit/fdc30fd99dd3fc133695fcbf40867bfd8175d0b2))
+* Time to interactive ([#465](https://github.com/aws-observability/aws-rum-web/issues/465)) ([8cf2753](https://github.com/aws-observability/aws-rum-web/commit/8cf2753f5a8ad6bf0dfc5b7224bcaac2eee78ef8))
+
+
 ## [1.15.0](https://github.com/aws-observability/aws-rum-web/compare/v1.14.0...v1.15.0) (2023-10-02)
 
 
