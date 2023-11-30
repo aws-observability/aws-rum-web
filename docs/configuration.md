@@ -212,3 +212,50 @@ telemetries: [
     ],
 ]
 ```
+
+## Time to Interactive (TTI)
+
+### What is Time to interactive (TTI)?
+
+Time to interactive (TTI) is a measure of how long a page takes till it is interactive. AWS RUM Web Client provides a plugin you can use to record this measurement. 
+
+### How is TTI measured by the AWS RUM web client? 
+
+The web client TTI plugin implements the [*Boomerang TTI algorithm*](https://akamai.github.io/boomerang/oss/BOOMR.plugins.Continuity.html#toc11__anchor), with some modifications. 
+
+Steps to TTI calculation:
+1) Find visually ready timestamp (highest of domcontentLoadedEnd, First Contentful Paint or Largest Contentful Paint,      whichever are available).
+2) Starting from the visually ready timestamp, find a 500ms quiet window. A quiet window has the following characteristics:
+     a) No Long Tasks
+     b) FPS (Frames Per Second) is above 20 (if enabled)
+3) TTI is recorded as visually ready timestamp + time from visually ready to the start of the quiet window.
+
+Note: TTI can measured using the plugin only when running in a browser that supports [*Long Tasks*](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming).
+
+### How to measure TTI using plugin? 
+
+You can enable TTI measurements by updating your web client configuration and using the plugin provided. 
+
+```
+import { TTIPlugin } from "aws-rum-web";
+
+const config = {
+    ...
+    sessionSampleRate: 1,
+    telemetries: ["performance", "errors", "http"],
+    eventPluginsToLoad: [new TTIPlugin()],
+    allowCookies: true,
+    enableXRay: false,
+    ...
+  };
+
+```
+
+By default, FPS (Frames per second) measurements are disabled when computing TTI. Enabling these measurement may result in some impact to your application's performance. To enable FPS measurements, simply pass option to the plugin your web client configuration: 
+
+```
+eventPluginsToLoad: [new TTIPlugin(true)],
+
+```
+Note: You must enable enable custom events to ingest TTI events. See
+[*Send custom events*](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html) in the CloudWatch RUM user guide. Recording TTI events may incur Cloudwatch RUM extra charges.  
