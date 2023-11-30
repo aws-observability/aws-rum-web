@@ -223,11 +223,11 @@ Time to interactive (TTI) is a measure of how long a page takes till it is inter
 
 The web client TTI plugin implements the [*Boomerang TTI algorithm*](https://akamai.github.io/boomerang/oss/BOOMR.plugins.Continuity.html#toc11__anchor), with some modifications. 
 
-Steps to TTI calculation:
+_Steps to TTI calculation:_
 1) Find visually ready timestamp (highest of domcontentLoadedEnd, First Contentful Paint or Largest Contentful Paint,      whichever are available).
 2) Starting from the visually ready timestamp, find a 500ms quiet window. A quiet window has the following characteristics:
-    * a) No Long Tasks
-    * b) FPS (Frames Per Second) is above 20 (if enabled)
+    * No Long Tasks
+    * FPS (Frames Per Second) is above 20 (if enabled)
 3) TTI is recorded as visually ready timestamp + time from visually ready to the start of the quiet window.
 
 Note: TTI can be measured using the plugin only when running in a browser that supports [*Long Tasks*](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming).
@@ -255,7 +255,6 @@ By default, FPS (Frames per second) measurements are disabled when computing TTI
 
 ```
 eventPluginsToLoad: [new TTIPlugin(true)],
-
 ```
 Note: You must enable enable custom events to ingest TTI events in your application monitor settings. See
-[*Send custom events*](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html) in the CloudWatch RUM user guide. Recording TTI events may incur Cloudwatch RUM extra charges.  
+[*custom events*](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html) in the CloudWatch RUM user guide. Recording TTI events may incur Cloudwatch RUM extra charges.  
