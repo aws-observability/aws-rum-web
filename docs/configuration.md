@@ -233,7 +233,8 @@ _Steps to calculate TTI:_
 
 #### How to measure TTI using plugin? 
 
-TTI can be used directly with the NPM installation of the web client. You can enable TTI measurements by updating your web client configuration and using the plugin provided. 
+TTI can be used directly with the NPM installation of the web client. It cannot be used with the CDN installation. 
+You can enable TTI measurements by updating your web client configuration and using the plugin provided. 
 
 ```
 import { TTIPlugin } from "aws-rum-web";
