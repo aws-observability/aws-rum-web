@@ -217,7 +217,7 @@ telemetries: [
 
 #### What is Time to interactive (TTI)?
 
-Time to interactive (TTI) is a measure of how long a page takes till it is interactive. AWS RUM Web Client provides a plugin you can use to record this measurement. 
+Time to interactive (TTI) is a measure of how long a page takes until it is interactive. AWS RUM Web Client provides a plugin you can use to record this measurement. 
 
 #### How is TTI measured by the AWS RUM web client? 
 
