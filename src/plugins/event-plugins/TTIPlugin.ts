@@ -1,7 +1,7 @@
 import { TTIMetric, onTTI } from '../../time-to-interactive/TimeToInteractive';
 import { TimeToInteractiveEvent } from '../../events/time-to-interactive-event';
 import { TIME_TO_INTERACTIVE_EVENT_TYPE } from '../utils/constant';
-import { PluginContext } from 'plugins/types';
+import { PluginContext } from './../types';
 import { InternalPlugin } from '../InternalPlugin';
 
 export const TTI_EVENT_PLUGIN_ID = 'time-to-interactive';
