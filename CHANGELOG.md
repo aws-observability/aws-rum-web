@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.16.1](https://github.com/aws-observability/aws-rum-web/compare/v1.16.0...v1.16.1) (2023-12-13)
+
+### Bug Fixes
+
+* Remove unnecessary import in the TTIPlugin ([#475](https://github.com/aws-observability/aws-rum-web/issues/475)) ([cc7c165](https://github.com/aws-observability/aws-rum-web/commit/cc7c165801d0c5e0a312b717213f5242a8b04f5d))
+
 ## [1.16.0](https://github.com/aws-observability/aws-rum-web/compare/v1.15.0...v1.16.0) (2023-11-16)
 
 
