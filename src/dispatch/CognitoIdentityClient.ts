@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
 
@@ -123,7 +123,7 @@ export class CognitoIdentityClient {
 
     public getCredentialsForIdentity = async (
         identityId: string
-    ): Promise<Credentials> => {
+    ): Promise<AwsCredentialIdentity> => {
         try {
             const requestPayload = JSON.stringify({ IdentityId: identityId });
             const credentialRequest = this.getHttpRequest(

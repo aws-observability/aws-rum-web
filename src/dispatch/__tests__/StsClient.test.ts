@@ -1,5 +1,5 @@
 import * as Utils from '../../test-utils/test-utils';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { advanceTo } from 'jest-date-mock';
 import { getReadableStream } from '../../test-utils/test-utils';
@@ -43,11 +43,12 @@ describe('StsClient tests', () => {
         });
 
         // Run
-        const creds: Credentials = await client.assumeRoleWithWebIdentity({
-            RoleArn: 'mock-role-arn',
-            RoleSessionName: 'mock-session-name',
-            WebIdentityToken: 'mock-web-identity-token'
-        });
+        const creds: AwsCredentialIdentity =
+            await client.assumeRoleWithWebIdentity({
+                RoleArn: 'mock-role-arn',
+                RoleSessionName: 'mock-session-name',
+                WebIdentityToken: 'mock-web-identity-token'
+            });
 
         // Assert
         expect(fetchHandler).toHaveBeenCalledTimes(1);

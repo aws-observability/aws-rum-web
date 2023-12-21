@@ -1,13 +1,13 @@
 import { CognitoIdentityClient } from './CognitoIdentityClient';
 import { Config } from '../orchestration/Orchestration';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
 export class EnhancedAuthentication {
     private cognitoIdentityClient: CognitoIdentityClient;
     private config: Config;
-    private credentials: Credentials | undefined;
+    private credentials: AwsCredentialIdentity | undefined;
 
     constructor(config: Config) {
         const region: string = config.identityPoolId!.split(':')[0];
@@ -48,7 +48,7 @@ export class EnhancedAuthentication {
      * Implements CredentialsProvider = Provider<Credentials>
      */
     public ChainAnonymousCredentialsProvider =
-        async (): Promise<Credentials> => {
+        async (): Promise<AwsCredentialIdentity> => {
             return this.AnonymousCredentialsProvider()
                 .catch(this.AnonymousStorageCredentialsProvider)
                 .catch(this.AnonymousCognitoCredentialsProvider);
@@ -59,15 +59,16 @@ export class EnhancedAuthentication {
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    private AnonymousCredentialsProvider = async (): Promise<Credentials> => {
-        return new Promise<Credentials>((resolve, reject) => {
-            if (this.renewCredentials()) {
-                // The credentials have expired.
-                return reject();
-            }
-            resolve(this.credentials!);
-        });
-    };
+    private AnonymousCredentialsProvider =
+        async (): Promise<AwsCredentialIdentity> => {
+            return new Promise<AwsCredentialIdentity>((resolve, reject) => {
+                if (this.renewCredentials()) {
+                    // The credentials have expired.
+                    return reject();
+                }
+                resolve(this.credentials!);
+            });
+        };
 
     /**
      * Provides credentials for an anonymous (guest) user. These credentials are read from localStorage.
@@ -75,9 +76,9 @@ export class EnhancedAuthentication {
      * Implements CredentialsProvider = Provider<Credentials>
      */
     private AnonymousStorageCredentialsProvider =
-        async (): Promise<Credentials> => {
-            return new Promise<Credentials>((resolve, reject) => {
-                let credentials: Credentials;
+        async (): Promise<AwsCredentialIdentity> => {
+            return new Promise<AwsCredentialIdentity>((resolve, reject) => {
+                let credentials: AwsCredentialIdentity;
                 try {
                     credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
                 } catch (e) {
@@ -108,7 +109,7 @@ export class EnhancedAuthentication {
      * Implements CredentialsProvider = Provider<Credentials>
      */
     private AnonymousCognitoCredentialsProvider =
-        async (): Promise<Credentials> => {
+        async (): Promise<AwsCredentialIdentity> => {
             return this.cognitoIdentityClient
                 .getId({ IdentityPoolId: this.config.identityPoolId as string })
                 .then((getIdResponse) =>
@@ -116,7 +117,7 @@ export class EnhancedAuthentication {
                         getIdResponse.IdentityId
                     )
                 )
-                .then((credentials: Credentials) => {
+                .then((credentials: AwsCredentialIdentity) => {
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
