@@ -14,19 +14,6 @@ const GET_TOKEN_TARGET = 'AWSCognitoIdentityService.GetOpenIdToken';
 const GET_CREDENTIALS_TARGET =
     'AWSCognitoIdentityService.GetCredentialsForIdentity';
 
-interface CognitoProviderParameters {
-    /**
-     * The unique identifier for the identity pool from which an identity should
-     * be retrieved or generated.
-     */
-    identityPoolId: string;
-    /**
-     * The SDK client with which the credential provider will contact the Amazon
-     * Cognito service.
-     */
-    client: CognitoIdentityClient;
-}
-
 interface CognitoCredentials {
     AccessKeyId: string;
     Expiration: number;
