@@ -1,13 +1,13 @@
 import { CognitoIdentityClient } from './CognitoIdentityClient';
 import { Config } from '../orchestration/Orchestration';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
 export abstract class Authentication {
     protected cognitoIdentityClient: CognitoIdentityClient;
     protected config: Config;
-    protected credentials: Credentials | undefined;
+    protected credentials: AwsCredentialIdentity | undefined;
 
     constructor(config: Config) {
         const region: string = config.identityPoolId!.split(':')[0];
@@ -45,10 +45,10 @@ export abstract class Authentication {
      * Taken together, (1) and (2) mean that if these temporary credentials were to be leaked, the leaked credentials
      * would not allow a bad actor to gain access to anything which they did not already have public access to.
      *
-     * Implements CredentialsProvider = Provider<Credentials>
+     * Implements AwsCredentialIdentityProvider = Provider<AwsCredentialIdentity>
      */
     public ChainAnonymousCredentialsProvider =
-        async (): Promise<Credentials> => {
+        async (): Promise<AwsCredentialIdentity> => {
             return this.AnonymousCredentialsProvider()
                 .catch(this.AnonymousStorageCredentialsProvider)
                 .catch(this.AnonymousCognitoCredentialsProvider);
@@ -57,27 +57,28 @@ export abstract class Authentication {
     /**
      * Provides credentials for an anonymous (guest) user. These credentials are read from a member variable.
      *
-     * Implements CredentialsProvider = Provider<Credentials>
+     * Implements AwsCredentialIdentityProvider = Provider<AwsCredentialIdentity>
      */
-    private AnonymousCredentialsProvider = async (): Promise<Credentials> => {
-        return new Promise<Credentials>((resolve, reject) => {
-            if (this.renewCredentials()) {
-                // The credentials have expired.
-                return reject();
-            }
-            resolve(this.credentials!);
-        });
-    };
+    private AnonymousCredentialsProvider =
+        async (): Promise<AwsCredentialIdentity> => {
+            return new Promise<AwsCredentialIdentity>((resolve, reject) => {
+                if (this.renewCredentials()) {
+                    // The credentials have expired.
+                    return reject();
+                }
+                resolve(this.credentials!);
+            });
+        };
 
     /**
      * Provides credentials for an anonymous (guest) user. These credentials are read from localStorage.
      *
-     * Implements CredentialsProvider = Provider<Credentials>
+     * Implements AwsCredentialIdentityProvider = Provider<AwsCredentialIdentity>
      */
     private AnonymousStorageCredentialsProvider =
-        async (): Promise<Credentials> => {
-            return new Promise<Credentials>((resolve, reject) => {
-                let credentials: Credentials;
+        async (): Promise<AwsCredentialIdentity> => {
+            return new Promise<AwsCredentialIdentity>((resolve, reject) => {
+                let credentials: AwsCredentialIdentity;
                 try {
                     credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
                 } catch (e) {
@@ -105,10 +106,13 @@ export abstract class Authentication {
      *
      * See https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
      *
-     * Implements CredentialsProvider = Provider<Credentials>
+     * Implements AwsCredentialIdentityProvider = Provider<AwsCredentialIdentity>
      */
-    protected abstract AnonymousCognitoCredentialsProvider(): Promise<Credentials>;
+    protected abstract AnonymousCognitoCredentialsProvider(): Promise<AwsCredentialIdentity>;
 
+    /**
+     * Checks if credentials should be renewed
+     */
     private renewCredentials(): boolean {
         if (!this.credentials || !this.credentials.expiration) {
             return true;

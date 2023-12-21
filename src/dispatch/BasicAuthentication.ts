@@ -1,5 +1,5 @@
 import { Config } from '../orchestration/Orchestration';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
 import { CRED_KEY } from '../utils/constants';
@@ -23,10 +23,10 @@ export class BasicAuthentication extends Authentication {
      *
      * See https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
      *
-     * Implements CredentialsProvider = Provider<Credentials>
+     * Implements AwsCredentialIdentityProvider = Provider<AwsCredentialIdentity>
      */
     protected AnonymousCognitoCredentialsProvider =
-        async (): Promise<Credentials> => {
+        async (): Promise<AwsCredentialIdentity> => {
             return this.cognitoIdentityClient
                 .getId({
                     IdentityPoolId: this.config.identityPoolId as string
@@ -41,7 +41,7 @@ export class BasicAuthentication extends Authentication {
                         WebIdentityToken: getOpenIdTokenResponse.Token
                     })
                 )
-                .then((credentials: Credentials) => {
+                .then((credentials: AwsCredentialIdentity) => {
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(

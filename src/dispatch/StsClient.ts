@@ -1,6 +1,6 @@
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { CognitoIdentityClientConfig } from './CognitoIdentityClient';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToString } from './utils';
 
 const METHOD = 'POST';
@@ -26,7 +26,7 @@ export class StsClient {
 
     public assumeRoleWithWebIdentity = async (
         request: STSSendRequest
-    ): Promise<Credentials> => {
+    ): Promise<AwsCredentialIdentity> => {
         try {
             const requestObject = {
                 ...request,
@@ -65,7 +65,7 @@ export class StsClient {
                         .split('<Expiration>')[1]
                         .split('</Expiration>')[0]
                 )
-            } as Credentials;
+            } as AwsCredentialIdentity;
         } catch (e) {
             throw new Error(
                 `CWR: Failed to retrieve credentials from STS: ${e}`
