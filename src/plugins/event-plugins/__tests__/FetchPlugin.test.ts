@@ -1,8 +1,5 @@
 import { FetchPlugin } from '../FetchPlugin';
-import {
-    PartialHttpPluginConfig,
-    X_AMZN_TRACE_ID
-} from '../../utils/http-utils';
+import { HttpPluginConfig, X_AMZN_TRACE_ID } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
     getSession,
@@ -81,7 +78,7 @@ describe('FetchPlugin tests', () => {
 
     test('when fetch is called then the plugin records the http request/response', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
         };
@@ -111,7 +108,7 @@ describe('FetchPlugin tests', () => {
 
     test('when fetch is called with a Request/RequestInfo then the plugin records the http request/response', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
         };
@@ -147,7 +144,7 @@ describe('FetchPlugin tests', () => {
     test('when fetch throws an error then the plugin adds the error to the http event', async () => {
         // Init
         global.fetch = mockFetchWithError;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -180,7 +177,7 @@ describe('FetchPlugin tests', () => {
     test('when fetch throws an error object then the plugin adds the error object to the http event', async () => {
         // Init
         global.fetch = mockFetchWithErrorObject;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -214,7 +211,7 @@ describe('FetchPlugin tests', () => {
 
     test('when fetch is called then the plugin records a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -259,7 +256,7 @@ describe('FetchPlugin tests', () => {
     test('when fetch throws an error then the plugin adds the error to the trace', async () => {
         // Init
         global.fetch = mockFetchWithError;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -313,7 +310,7 @@ describe('FetchPlugin tests', () => {
     test('when fetch returns a 404 then segment error is true', async () => {
         // Init
         global.fetch = mockFetchWith400;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -343,7 +340,7 @@ describe('FetchPlugin tests', () => {
     test('when fetch returns a 429 then segment throttle is true', async () => {
         // Init
         global.fetch = mockFetchWith429;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -373,7 +370,7 @@ describe('FetchPlugin tests', () => {
     test('when fetch returns a 500 then segment fault is true', async () => {
         // Init
         global.fetch = mockFetchWith500;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -402,7 +399,7 @@ describe('FetchPlugin tests', () => {
 
     test('when plugin is disabled then the plugin does not record a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -421,7 +418,7 @@ describe('FetchPlugin tests', () => {
 
     test('when plugin is re-enabled then the plugin records a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -442,7 +439,7 @@ describe('FetchPlugin tests', () => {
 
     test('when default config is used then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {};
+        const config: Partial<HttpPluginConfig> = {};
 
         const plugin: FetchPlugin = new FetchPlugin(config);
         plugin.load(xRayOnContext);
@@ -458,7 +455,7 @@ describe('FetchPlugin tests', () => {
 
     test('when addXRayTraceIdHeader is true then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: true
         };
 
@@ -479,7 +476,7 @@ describe('FetchPlugin tests', () => {
 
     test('when addXRayTraceIdHeader is false then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: false
         };
 
@@ -497,7 +494,7 @@ describe('FetchPlugin tests', () => {
 
     test('when url matches some regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: [/noMatch/, new RegExp(URL)]
         };
 
@@ -520,7 +517,7 @@ describe('FetchPlugin tests', () => {
 
     test('when url matches no regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: [/noMatch/]
         };
 
@@ -538,7 +535,7 @@ describe('FetchPlugin tests', () => {
 
     test('when addXRayTraceIdHeader is an empty array then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: []
         };
 
@@ -556,7 +553,7 @@ describe('FetchPlugin tests', () => {
 
     test('when init object is provided then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: true
         };
 
@@ -585,7 +582,7 @@ describe('FetchPlugin tests', () => {
 
     test('when init object is provided then request options are persisted after adding trace id header', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: true
         };
 
@@ -609,7 +606,7 @@ describe('FetchPlugin tests', () => {
     });
 
     test('when trace is disabled then the plugin does not record a trace', async () => {
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -632,7 +629,7 @@ describe('FetchPlugin tests', () => {
             record: false,
             eventCount: 0
         }));
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -653,7 +650,7 @@ describe('FetchPlugin tests', () => {
         const getSession: jest.MockedFunction<GetSession> = jest.fn(
             () => undefined
         );
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -674,7 +671,7 @@ describe('FetchPlugin tests', () => {
     test('the plugin records a stack trace by default', async () => {
         // Init
         global.fetch = mockFetchWithErrorObjectAndStack;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/]
         };
@@ -708,7 +705,7 @@ describe('FetchPlugin tests', () => {
     test('when stack trace length is zero then the plugin does not record a stack trace', async () => {
         // Init
         global.fetch = mockFetchWithErrorObjectAndStack;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/],
             stackTraceLength: 0
@@ -744,7 +741,7 @@ describe('FetchPlugin tests', () => {
 
     test('when recordAllRequests is true then the plugin records a request with status OK', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
         };
@@ -763,7 +760,7 @@ describe('FetchPlugin tests', () => {
 
     test('when recordAllRequests is false then the plugin does not record a request with status OK', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: false
         };
@@ -783,7 +780,7 @@ describe('FetchPlugin tests', () => {
     test('when recordAllRequests is false then the plugin records a request with status 500', async () => {
         // Init
         global.fetch = mockFetchWith500;
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: false
         };
@@ -803,7 +800,7 @@ describe('FetchPlugin tests', () => {
 
     test('when a url is excluded then the plugin does not record a request to that url', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             urlsToExclude: [/aws\.amazon\.com/],
             recordAllRequests: true
@@ -823,7 +820,7 @@ describe('FetchPlugin tests', () => {
 
     test('when a Request url is excluded then the plugin does not record a request to that url', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/.*/],
             urlsToExclude: [/aws\.amazon\.com/],
             recordAllRequests: true
@@ -843,7 +840,7 @@ describe('FetchPlugin tests', () => {
 
     test('all urls are included by default', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true
         };
 
@@ -861,7 +858,7 @@ describe('FetchPlugin tests', () => {
 
     test('when a request is made to cognito or sts using default exclude list then the requests are not recorded', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true
         };
 
@@ -880,7 +877,7 @@ describe('FetchPlugin tests', () => {
 
     test('when a request is made to cognito or sts using an empty exclude list then the requests are recorded', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true,
             urlsToExclude: []
         };
@@ -899,7 +896,7 @@ describe('FetchPlugin tests', () => {
 
     test('when a url is relative then the subsegment name is location.hostname', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {};
+        const config: Partial<HttpPluginConfig> = {};
         const plugin: FetchPlugin = new FetchPlugin(config);
         plugin.load(xRayOnContext);
 
@@ -924,7 +921,7 @@ describe('FetchPlugin tests', () => {
         const SIGN_HEADER_KEY = 'x-amzn-security-token';
         const SIGN_HEADER_VAL = 'abc123';
 
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: true,
             recordAllRequests: true
         };
@@ -951,7 +948,7 @@ describe('FetchPlugin tests', () => {
 
     test('when fetch uses request object then the URL is added to the event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
         };
@@ -983,7 +980,7 @@ describe('FetchPlugin tests', () => {
 
     test('when tracing is enabled then the trace id is added to the http event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
@@ -1007,7 +1004,7 @@ describe('FetchPlugin tests', () => {
 
     test('when tracing is not enabled then the trace id is not added to the http event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
@@ -1032,7 +1029,7 @@ describe('FetchPlugin tests', () => {
     });
     test('when fetch is called and request has existing trace header then existing trace data is added to the http event', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
             urlsToInclude: [/aws\.amazon\.com/],
             recordAllRequests: true
@@ -1064,7 +1061,7 @@ describe('FetchPlugin tests', () => {
 
     test('when the url does not match urlsToInclude then the plugin does not record a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true,
             urlsToInclude: [/a^/]
         };
@@ -1082,7 +1079,7 @@ describe('FetchPlugin tests', () => {
 
     test('when the url matches urlsToInclude then the plugin records a trace', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/https:\/\/aws\.amazon\.com/]
         };
 

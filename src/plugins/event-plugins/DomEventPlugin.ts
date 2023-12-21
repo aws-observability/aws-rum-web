@@ -26,12 +26,6 @@ export type TargetDomEvent = {
     element?: HTMLElement;
 };
 
-export type PartialDomEventPluginConfig = {
-    interactionId?: (event: Event) => string;
-    enableMutationObserver?: boolean;
-    events?: TargetDomEvent[];
-};
-
 export type DomEventPluginConfig = {
     interactionId: (event: Event) => string;
     enableMutationObserver?: boolean;
@@ -62,7 +56,7 @@ export class DomEventPlugin<
     private config: DomEventPluginConfig;
     private observer: MutationObserver | undefined;
 
-    constructor(config?: PartialDomEventPluginConfig) {
+    constructor(config?: Partial<DomEventPluginConfig>) {
         super(DOM_EVENT_PLUGIN_ID);
         this.eventListenerMap = new Map<
             TargetDomEvent,

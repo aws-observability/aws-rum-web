@@ -5,7 +5,6 @@ import {
 } from '../../events/xray-trace-event';
 import { MonkeyPatched } from '../MonkeyPatched';
 import {
-    PartialHttpPluginConfig,
     defaultConfig,
     epochTime,
     createXRayTraceEvent,
@@ -55,7 +54,7 @@ export const FETCH_PLUGIN_ID = 'fetch';
 export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
     private readonly config: HttpPluginConfig;
 
-    constructor(config?: PartialHttpPluginConfig) {
+    constructor(config?: Partial<HttpPluginConfig>) {
         super(FETCH_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
     }

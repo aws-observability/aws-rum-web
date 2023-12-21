@@ -7,13 +7,6 @@ export const defaultIgnore = (entry: PerformanceEntry) =>
             (entry as PerformanceResourceTiming).initiatorType
         ));
 
-export type PartialPerformancePluginConfig = {
-    eventLimit?: number;
-    ignore?: (event: PerformanceEntry) => any;
-    recordAllTypes?: ResourceType[];
-    sampleTypes?: ResourceType[];
-};
-
 export type PerformancePluginConfig = {
     eventLimit: number;
     ignore: (event: PerformanceEntry) => any;

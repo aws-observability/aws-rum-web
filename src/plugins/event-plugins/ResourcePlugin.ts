@@ -4,7 +4,6 @@ import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 import {
     defaultPerformancePluginConfig,
-    PartialPerformancePluginConfig,
     PerformancePluginConfig
 } from '../utils/performance-utils';
 
@@ -20,7 +19,7 @@ export class ResourcePlugin extends InternalPlugin {
     private resourceObserver: PerformanceObserver;
     private eventCount: number;
 
-    constructor(config?: PartialPerformancePluginConfig) {
+    constructor(config?: Partial<PerformancePluginConfig>) {
         super(RESOURCE_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
         this.eventCount = 0;

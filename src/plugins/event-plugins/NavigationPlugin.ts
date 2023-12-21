@@ -2,7 +2,6 @@ import { InternalPlugin } from '../InternalPlugin';
 import { NavigationEvent } from '../../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
 import {
-    PartialPerformancePluginConfig,
     PerformancePluginConfig,
     defaultPerformancePluginConfig
 } from '../utils/performance-utils';
@@ -19,7 +18,7 @@ const LOAD = 'load';
  */
 export class NavigationPlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
-    constructor(config?: PartialPerformancePluginConfig) {
+    constructor(config?: Partial<PerformancePluginConfig>) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
     }
