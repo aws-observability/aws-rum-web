@@ -5,9 +5,9 @@ import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
 export class EnhancedAuthentication {
-    private cognitoIdentityClient: CognitoIdentityClient;
-    private config: Config;
-    private credentials: Credentials | undefined;
+    protected cognitoIdentityClient: CognitoIdentityClient;
+    protected config: Config;
+    protected credentials: Credentials | undefined;
 
     constructor(config: Config) {
         const region: string = config.identityPoolId!.split(':')[0];
@@ -107,7 +107,7 @@ export class EnhancedAuthentication {
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    private AnonymousCognitoCredentialsProvider =
+    protected AnonymousCognitoCredentialsProvider =
         async (): Promise<Credentials> => {
             return this.cognitoIdentityClient
                 .getId({ IdentityPoolId: this.config.identityPoolId as string })

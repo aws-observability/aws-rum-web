@@ -1,4 +1,4 @@
-import { Authentication } from '../Authentication';
+import { BasicAuthentication } from '../BasicAuthentication';
 import { CRED_KEY } from '../../utils/constants';
 import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
@@ -22,7 +22,7 @@ jest.mock('../StsClient', () => ({
 const IDENTITY_POOL_ID = 'us-west-2:a-b-c-d';
 const GUEST_ROLE_ARN = 'arn:aws:iam::123:role/Unauth';
 
-describe('Authentication tests', () => {
+describe('BasicAuthentication tests', () => {
     beforeEach(() => {
         mockGetId.mockReset();
         mockGetIdToken.mockReset();
@@ -54,7 +54,7 @@ describe('Authentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         localStorage.setItem(
             CRED_KEY,
@@ -88,7 +88,7 @@ describe('Authentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         localStorage.setItem(CRED_KEY, 'corrupt');
 
@@ -107,7 +107,7 @@ describe('Authentication tests', () => {
 
     test('when credential is not in localStorage then authentication chain retrieves credential from basic authflow', async () => {
         // Init
-        const auth = new Authentication({
+        const auth = new BasicAuthentication({
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
@@ -139,7 +139,7 @@ describe('Authentication tests', () => {
             }
         };
 
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         localStorage.setItem(
             CRED_KEY,
@@ -181,7 +181,7 @@ describe('Authentication tests', () => {
                 sessionToken: 'z'
             });
 
-        const auth = new Authentication({
+        const auth = new BasicAuthentication({
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
@@ -210,7 +210,7 @@ describe('Authentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new Authentication({
+        const auth = new BasicAuthentication({
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
@@ -230,7 +230,7 @@ describe('Authentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new Authentication({
+        const auth = new BasicAuthentication({
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
@@ -250,7 +250,7 @@ describe('Authentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new Authentication({
+        const auth = new BasicAuthentication({
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
@@ -272,7 +272,7 @@ describe('Authentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -321,7 +321,7 @@ describe('Authentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -358,7 +358,7 @@ describe('Authentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -396,7 +396,7 @@ describe('Authentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new Authentication(config);
+        const auth = new BasicAuthentication(config);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();

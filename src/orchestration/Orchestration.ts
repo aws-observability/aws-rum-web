@@ -1,7 +1,7 @@
 import { Plugin } from '../plugins/Plugin';
 import { PluginContext } from '../plugins/types';
 import { InternalPlugin } from '../plugins/InternalPlugin';
-import { Authentication } from '../dispatch/Authentication';
+import { BasicAuthentication } from '../dispatch/BasicAuthentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 import { PluginManager } from '../plugins/PluginManager';
 import {
@@ -424,7 +424,7 @@ export class Orchestration {
 
         if (this.config.identityPoolId && this.config.guestRoleArn) {
             dispatch.setAwsCredentials(
-                new Authentication(this.config)
+                new BasicAuthentication(this.config)
                     .ChainAnonymousCredentialsProvider
             );
         } else if (this.config.identityPoolId) {

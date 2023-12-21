@@ -2,22 +2,16 @@ import { CognitoIdentityClient } from './CognitoIdentityClient';
 import { Config } from '../orchestration/Orchestration';
 import { Credentials } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
-import { StsClient } from './StsClient';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
-export class Authentication {
-    private cognitoIdentityClient: CognitoIdentityClient;
-    private stsClient: StsClient;
-    private config: Config;
-    private credentials: Credentials | undefined;
+export abstract class Authentication {
+    protected cognitoIdentityClient: CognitoIdentityClient;
+    protected config: Config;
+    protected credentials: Credentials | undefined;
 
     constructor(config: Config) {
         const region: string = config.identityPoolId!.split(':')[0];
         this.config = config;
-        this.stsClient = new StsClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region
-        });
         this.cognitoIdentityClient = new CognitoIdentityClient({
             fetchRequestHandler: new FetchHttpHandler(),
             region
@@ -33,7 +27,7 @@ export class Authentication {
      * re-authenticate every time the client loads, which (1) improves the performance of the RUM web client and (2)
      * reduces the load on AWS services Cognito and STS.
      *
-     * While storing credentials in localStorage puts the cookie at greater risk of being leaked through an
+     * While storing credentials in localStorage puts the credential at greater risk of being leaked through an
      * XSS attack, there is no impact if the credentials were to be leaked. This is because (1) the identity pool ID
      * and role ARN are public and (2) the credentials are for an anonymous (guest) user.
      *
@@ -87,7 +81,7 @@ export class Authentication {
                 try {
                     credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
                 } catch (e) {
-                    // Error retrieving, decoding or parsing the cred string -- abort
+                    // Error decoding or parsing the cookie -- abort
                     return reject();
                 }
                 // The expiration property of Credentials has a date type. Because the date was serialized as a string,
@@ -106,43 +100,14 @@ export class Authentication {
         };
 
     /**
-     * Provides credentials for an anonymous (guest) user. These credentials are retrieved from Cognito's basic
-     * (classic) authflow.
+     * Provides credentials for an anonymous (guest) user. These credentials are retrieved from Cognito's enhanced
+     * authflow.
      *
      * See https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
      *
      * Implements CredentialsProvider = Provider<Credentials>
      */
-    private AnonymousCognitoCredentialsProvider =
-        async (): Promise<Credentials> => {
-            return this.cognitoIdentityClient
-                .getId({
-                    IdentityPoolId: this.config.identityPoolId as string
-                })
-                .then((getIdResponse) =>
-                    this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
-                )
-                .then((getOpenIdTokenResponse) =>
-                    this.stsClient.assumeRoleWithWebIdentity({
-                        RoleArn: this.config.guestRoleArn as string,
-                        RoleSessionName: 'cwr',
-                        WebIdentityToken: getOpenIdTokenResponse.Token
-                    })
-                )
-                .then((credentials: Credentials) => {
-                    this.credentials = credentials;
-                    try {
-                        localStorage.setItem(
-                            CRED_KEY,
-                            JSON.stringify(credentials)
-                        );
-                    } catch (e) {
-                        // Ignore
-                    }
-
-                    return credentials;
-                });
-        };
+    protected abstract AnonymousCognitoCredentialsProvider(): Promise<Credentials>;
 
     private renewCredentials(): boolean {
         if (!this.credentials || !this.credentials.expiration) {
