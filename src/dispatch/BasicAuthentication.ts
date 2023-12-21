@@ -51,7 +51,6 @@ export class BasicAuthentication extends Authentication {
                     } catch (e) {
                         // Ignore
                     }
-
                     return credentials;
                 });
         };
