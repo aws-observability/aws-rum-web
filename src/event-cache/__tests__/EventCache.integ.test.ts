@@ -116,4 +116,31 @@ describe('EventCache tests', () => {
             expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
         });
     });
+
+    test('when a session is not sampled then return false', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                sessionSampleRate: 0
+            }
+        };
+
+        const eventCache: EventCache = Utils.createEventCache(config);
+
+        // Assert
+        expect(eventCache.isSessionSampled()).toBeFalsy();
+    });
+
+    test('when a session is sampled then return true', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG
+        };
+
+        const eventCache: EventCache = Utils.createEventCache(config);
+
+        // Assert
+        expect(eventCache.isSessionSampled()).toBeTruthy();
+    });
 });

@@ -18,13 +18,16 @@ const getUserId = jest.fn(() => 'b');
 const getAttributes = jest.fn();
 const incrementSessionEventCount = jest.fn();
 const addSessionAttributes = jest.fn();
+let samplingDecision = true;
+const isSampled = jest.fn().mockImplementation(() => samplingDecision);
 jest.mock('../../sessions/SessionManager', () => ({
     SessionManager: jest.fn().mockImplementation(() => ({
         getSession,
         getUserId,
         getAttributes,
         incrementSessionEventCount,
-        addSessionAttributes
+        addSessionAttributes,
+        isSampled
     }))
 }));
 
@@ -406,6 +409,41 @@ describe('EventCache tests', () => {
 
         // Assert
         expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('when a session is not sampled then return false', async () => {
+        // Init
+        samplingDecision = false;
+
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                sessionSampleRate: 0
+            }
+        };
+
+        const eventCache: EventCache = Utils.createEventCache(config);
+
+        // Assert
+        expect(eventCache.isSessionSampled()).toBeFalsy();
+
+        // Reset
+        samplingDecision = true;
+    });
+
+    test('when a session is sampled then return true', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                sessionSampleRate: 1
+            }
+        };
+
+        const eventCache: EventCache = Utils.createEventCache(config);
+
+        // Assert
+        expect(eventCache.isSessionSampled()).toBeTruthy();
     });
 
     test('when session.record is false then event is not recorded', async () => {

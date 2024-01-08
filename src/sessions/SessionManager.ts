@@ -102,11 +102,20 @@ export class SessionManager {
     }
 
     /**
+     * Returns true if the session is sampled, false otherwise.
+     */
+    public isSampled(): boolean {
+        return this.session.record;
+    }
+
+    /**
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
         if (this.session.sessionId === NIL_UUID) {
             // The session does not exist. Create a new one.
+            // If it is created before the page view is recorded, the session start event metadata will
+            // not have page attributes as the page does not exist yet.
             this.createSession();
         } else if (
             this.session.sessionId !== NIL_UUID &&
@@ -219,9 +228,15 @@ export class SessionManager {
     }
 
     private createSession() {
+        // The semantics of the nil session (created during initialization) are that there is no session.
+        // We ensure the nil session and new session created right after initialization have the same sampling decision.
+        // Otherwise, we will always reevaluate the sample decision.
         this.session = {
             sessionId: v4(),
-            record: this.sample(),
+            record:
+                this.session.sessionId === NIL_UUID
+                    ? this.session.record
+                    : this.sample(),
             eventCount: 0
         };
         this.session.page = this.pageManager.getPage();
