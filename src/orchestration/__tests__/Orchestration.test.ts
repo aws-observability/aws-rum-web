@@ -13,11 +13,13 @@ global.fetch = jest.fn();
 
 const enableDispatch = jest.fn();
 const disableDispatch = jest.fn();
+const setAwsCredentials = jest.fn();
 
 jest.mock('../../dispatch/Dispatch', () => ({
     Dispatch: jest.fn().mockImplementation(() => ({
         enable: enableDispatch,
-        disable: disableDispatch
+        disable: disableDispatch,
+        setAwsCredentials
     }))
 }));
 
@@ -36,13 +38,16 @@ const recordPageView = jest.fn();
 const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
 
+let samplingDecision = true;
+const isSessionSampled = jest.fn().mockImplementation(() => samplingDecision);
 jest.mock('../../event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
         recordPageView,
         addSessionAttributes,
-        recordEvent
+        recordEvent,
+        isSessionSampled
     }))
 }));
 
@@ -512,5 +517,33 @@ describe('Orchestration tests', () => {
             'client',
             INSTALL_SCRIPT
         );
+    });
+
+    test('when session is not recorded then credentials are not set', async () => {
+        samplingDecision = false;
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            telemetries: [],
+            identityPoolId: 'dummyPoolId',
+            guestRoleArn: 'dummyRoleArn'
+        });
+
+        // Assert
+        expect(setAwsCredentials).toHaveBeenCalledTimes(0);
+
+        // Reset
+        samplingDecision = true;
+    });
+
+    test('when session is recorded then credentials are set', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            telemetries: [],
+            identityPoolId: 'dummyPoolId',
+            guestRoleArn: 'dummyRoleArn'
+        });
+
+        // Assert
+        expect(setAwsCredentials).toHaveBeenCalledTimes(1);
     });
 });

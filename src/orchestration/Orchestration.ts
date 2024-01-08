@@ -415,6 +415,13 @@ export class Orchestration {
             this.config
         );
 
+        // Only retrieves and sets credentials if the session is sampled.
+        // The nil session created during initialization will have the same sampling decision as
+        // the new session created when the first event is recorded.
+        if (!this.eventCache.isSessionSampled()) {
+            return dispatch;
+        }
+
         if (this.config.identityPoolId && this.config.guestRoleArn) {
             dispatch.setAwsCredentials(
                 new Authentication(this.config)

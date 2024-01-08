@@ -22,6 +22,7 @@ import {
     DEFAULT_CONFIG,
     mockFetch
 } from '../../test-utils/test-utils';
+import { advanceTo } from 'jest-date-mock';
 
 global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
@@ -469,6 +470,7 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(session.record).toBeTruthy();
+        expect(sessionManager.isSampled()).toBeTruthy();
     });
 
     test('when sessionSampleRate is zero then session.record is false', async () => {
@@ -482,6 +484,53 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(session.record).toBeFalsy();
+        expect(sessionManager.isSampled()).toBeFalsy();
+    });
+
+    test('when sessionId is nil then create new session with same sampling decision', async () => {
+        mockRandom([0.01]);
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{ sessionSampleRate: 0.5, allowCookies: true }
+        });
+
+        // Ensure isSampled() returns a different value
+        mockRandom([0.99]);
+        const session = sessionManager.getSession();
+
+        // Assert
+        expect(session.record).toBeTruthy();
+        expect(sessionManager.isSampled()).toBeTruthy();
+    });
+
+    test('when sessionId is not nil then create new session with different sampling decision', async () => {
+        const dateNow = new Date();
+        mockRandom([0.01]);
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{ sessionSampleRate: 0.5 }
+        });
+
+        // create new session
+        // new session should have same sampling decision as nil session
+        let session = sessionManager.getSession();
+        expect(session.sessionId).not.toEqual(NIL_UUID);
+        expect(session.record).toBeTruthy();
+        expect(sessionManager.isSampled()).toBeTruthy();
+
+        // create new session after previous has expired
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 86400000)); // set to 24 hours from current date
+
+        // new session should have different sampling decision as previous session
+        mockRandom([0.99]);
+        session = sessionManager.getSession();
+
+        // Assert
+        expect(session.record).toBeFalsy();
+        expect(sessionManager.isSampled()).toBeFalsy();
     });
 
     test('when random value equals sessionSampleRate then session.record is false', async () => {
