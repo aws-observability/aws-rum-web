@@ -81,6 +81,13 @@ export class EventCache {
     };
 
     /**
+     * Returns true if the session is sampled, false otherwise.
+     */
+    public isSessionSampled(): boolean {
+        return this.sessionManager.isSampled();
+    }
+
+    /**
      * Add an event to the cache and reset the session timer.
      *
      * If the session is being recorded, the event will be recorded.
