@@ -87,8 +87,14 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
+     * @param eventData The RUM Event to be dispatched to PutRumEvents
+     * @param internal Internal-only message to EventBus subscribers
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent = (
+        type: string,
+        eventData: object,
+        internalMessage?: any
+    ) => {
         if (!this.enabled) {
             return;
         }
@@ -98,7 +104,7 @@ export class EventCache {
             this.sessionManager.incrementSessionEventCount();
 
             if (this.canRecord(session)) {
-                this.addRecordToCache(type, eventData);
+                this.addRecordToCache(type, eventData, internalMessage);
             }
         }
     };
@@ -202,8 +208,14 @@ export class EventCache {
      * Add an event to the cache.
      *
      * @param type The event schema.
+     * @param eventData The RUM Event to be dispatched to PutRumEvents
+     * @param internal Internal-only message to EventBus subscribers
      */
-    private addRecordToCache = (type: string, eventData: object) => {
+    private addRecordToCache = (
+        type: string,
+        eventData: object,
+        internalMessage?: any
+    ) => {
         if (!this.enabled) {
             return;
         }
@@ -230,11 +242,15 @@ export class EventCache {
             timestamp: new Date(),
             type
         };
-        this.eventBus.dispatch(Topic.EVENT, {
-            ...partialEvent,
-            details: eventData,
-            metadata: metaData
-        });
+        this.eventBus.dispatch(
+            Topic.EVENT,
+            {
+                ...partialEvent,
+                details: eventData,
+                metadata: metaData
+            },
+            internalMessage
+        );
         this.events.push({
             ...partialEvent,
             details: JSON.stringify(eventData),

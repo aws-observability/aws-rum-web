@@ -2,7 +2,11 @@ import { Config } from '../orchestration/Orchestration';
 import { Session } from '../sessions/SessionManager';
 import EventBus, { Topic } from '../event-bus/EventBus';
 
-export type RecordEvent = (type: string, eventData: object) => void;
+export type RecordEvent = (
+    type: string,
+    eventData: object,
+    internalMessage?: any
+) => void;
 export type RecordPageView = (pageId: string) => void;
 export type GetSession = () => Session | undefined;
 

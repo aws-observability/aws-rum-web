@@ -6,18 +6,20 @@ jest.mock('../../../utils/common-utils', () => {
         isLCPSupported: jest.fn().mockReturnValue(true)
     };
 });
-import { ResourceType } from '../../../utils/common-utils';
+
 import {
     CLS_EVENT_TYPE,
     FID_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_EVENT_TYPE
+    PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
 } from '../../../plugins/utils/constant';
 import { context, record } from '../../../test-utils/test-utils';
 import { Topic } from '../../../event-bus/EventBus';
 import { WebVitalsPlugin } from '../WebVitalsPlugin';
 import { navigationEvent } from '../../../test-utils/mock-data';
+import { PerformanceResourceTimingEvent } from 'events/performance-resource-timing-event';
+import { ParsedRumEvent, RumEvent } from 'dispatch/dataplane';
 
 const mockLCPData = {
     delta: 239.51,
@@ -61,17 +63,22 @@ const mockCLSData = {
 };
 
 // only need hasLatency fields
-const imagePerformanceEntry = {
+const mockImagePerformanceEntry = {
+    name: 'https://www.example.com/image.png',
     duration: 50,
     startTime: 100
-};
+} as PerformanceEntry;
 
-const imageResourceRumEvent: any = {
+const mockImageResourceTimingEvent = {
+    ...mockImagePerformanceEntry
+} as PerformanceResourceTimingEvent;
+
+const mockImageRumEvent: ParsedRumEvent = {
     id: 'img-id',
-    type: PERFORMANCE_RESOURCE_EVENT_TYPE,
+    type: PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE,
+    timestamp: new Date(),
     details: {
-        fileType: ResourceType.IMAGE,
-        ...imagePerformanceEntry
+        ...mockImageResourceTimingEvent
     }
 };
 
@@ -84,14 +91,18 @@ const navigationRumEvent: any = {
 const mockLCPDataWithImage = Object.assign({}, mockLCPData, {
     attribution: {
         ...mockLCPData.attribution,
-        lcpResourceEntry: imagePerformanceEntry
+        lcpResourceEntry: mockImagePerformanceEntry
     }
 });
 
 jest.mock('web-vitals/attribution', () => {
     return {
         onLCP: jest.fn().mockImplementation((callback) => {
-            context.eventBus.dispatch(Topic.EVENT, imageResourceRumEvent);
+            context.eventBus.dispatch(
+                Topic.EVENT,
+                mockImageRumEvent,
+                mockImagePerformanceEntry.name
+            );
             context.eventBus.dispatch(Topic.EVENT, navigationRumEvent);
             callback(mockLCPDataWithImage);
         }),
@@ -209,7 +220,7 @@ describe('WebVitalsPlugin tests', () => {
         expect(record).toHaveBeenCalled();
     });
 
-    test('when lcp image resource has filetype=image then eventId is attributed to lcp', async () => {
+    test('when lcp image resource is an image then eventId is attributed to lcp', async () => {
         const plugin = new WebVitalsPlugin();
 
         plugin.load(context);
@@ -217,7 +228,7 @@ describe('WebVitalsPlugin tests', () => {
             LCP_EVENT_TYPE,
             expect.objectContaining({
                 attribution: expect.objectContaining({
-                    lcpResourceEntry: imageResourceRumEvent.id
+                    lcpResourceEntry: mockImageRumEvent.id
                 })
             })
         );
@@ -225,8 +236,10 @@ describe('WebVitalsPlugin tests', () => {
 
     test('when no matching image resource does not exist then it is not attributed to lcp', async () => {
         // init
-        const fileType = imageResourceRumEvent.details.fileType;
-        delete imageResourceRumEvent.details.fileType;
+        const event =
+            mockImageRumEvent.details as PerformanceResourceTimingEvent;
+        const startTime = event.startTime;
+        event.startTime = -500; // no match
         const plugin = new WebVitalsPlugin();
 
         // run
@@ -243,7 +256,7 @@ describe('WebVitalsPlugin tests', () => {
         );
 
         // restore
-        imageResourceRumEvent.details.fileType = fileType;
+        event.startTime = startTime;
     });
 
     test('when lcp is recorded then cache is empty', async () => {

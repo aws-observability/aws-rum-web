@@ -1,4 +1,7 @@
 /* eslint-disable max-classes-per-file */
+
+import { PerformanceResourceTimingPolyfill } from 'plugins/utils/performance-utils';
+
 export const firstPaintEvent = {
     name: 'first-paint',
     duration: 0,
@@ -85,7 +88,7 @@ export const navigationEventNotLoaded = {
     navigationTimingLevel: 2
 };
 
-export const resourceTiming: PerformanceResourceTiming = {
+export const resourceTiming: PerformanceResourceTimingPolyfill = {
     connectEnd: 0,
     connectStart: 0,
     decodedBodySize: 0,
@@ -100,6 +103,7 @@ export const resourceTiming: PerformanceResourceTiming = {
     nextHopProtocol: 'h2',
     redirectEnd: 0,
     redirectStart: 0,
+    renderBlockingStatus: 'blocking',
     requestStart: 0,
     responseEnd: 795.9950000004028,
     responseStart: 0,
