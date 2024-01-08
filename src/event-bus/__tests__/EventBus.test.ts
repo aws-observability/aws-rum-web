@@ -44,10 +44,13 @@ describe('EventBus tests', () => {
 
         // run
         eventBus.dispatch(MockTopics.FOOD, 'burger');
+        eventBus.dispatch(MockTopics.FOOD, 'burger', 'internalMessage');
 
         // assert
-        expect(l1).toHaveBeenCalledWith('burger');
-        expect(l2).toHaveBeenCalledWith('burger');
+        expect(l1).toHaveBeenCalledWith('burger', undefined);
+        expect(l2).toHaveBeenCalledWith('burger', undefined);
+        expect(l1).toHaveBeenCalledWith('burger', 'internalMessage');
+        expect(l2).toHaveBeenCalledWith('burger', 'internalMessage');
     });
 
     test('when subscriber is removed then it is not called', async () => {
@@ -57,10 +60,10 @@ describe('EventBus tests', () => {
         const removed = eventBus.unsubscribe(MockTopics.FOOD, l2);
 
         // run
-        eventBus.dispatch(MockTopics.FOOD, 'burger');
+        eventBus.dispatch(MockTopics.FOOD, 'burger', undefined);
 
         // assert
-        expect(l1).toHaveBeenCalledWith('burger');
+        expect(l1).toHaveBeenCalledWith('burger', undefined);
         expect(removed).toBe(true);
         expect(l2).not.toHaveBeenCalled();
     });
@@ -83,6 +86,6 @@ describe('EventBus tests', () => {
         plugin.load(context);
         context.eventBus.dispatch(Topic.EVENT, 'hat');
 
-        expect(spy).toHaveBeenCalledWith('hat');
+        expect(spy).toHaveBeenCalledWith('hat', undefined);
     });
 });

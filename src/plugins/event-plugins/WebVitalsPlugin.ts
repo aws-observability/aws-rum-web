@@ -16,18 +16,19 @@ import {
     FID_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_EVENT_TYPE
+    PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
 } from '../utils/constant';
-import { Topic } from '../../event-bus/EventBus';
+import { Subscriber, Topic } from '../../event-bus/EventBus';
 import { ParsedRumEvent } from '../../dispatch/dataplane';
-import { ResourceEvent } from '../../events/resource-event';
+
 import {
-    HasLatency,
     ResourceType,
     performanceKey,
     RumLCPAttribution,
-    isLCPSupported
+    isLCPSupported,
+    getResourceFileType
 } from '../../utils/common-utils';
+import { PerformanceResourceTimingEvent } from '../../events/performance-resource-timing-event';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
@@ -49,23 +50,27 @@ export class WebVitalsPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
-        this.context.eventBus.subscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line @typescript-eslint/unbound-method
+        this.context.eventBus.subscribe(Topic.EVENT, this.messageHandler); // eslint-disable-line @typescript-eslint/unbound-method
         onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    private handleEvent = (event: ParsedRumEvent) => {
+    private messageHandler: Subscriber = (
+        event: ParsedRumEvent,
+        name?: string
+    ) => {
         switch (event.type) {
             // lcp resource is either image or text
-            case PERFORMANCE_RESOURCE_EVENT_TYPE:
-                const details = event.details as ResourceEvent;
+            case PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE:
+                const details = event.details as PerformanceResourceTimingEvent;
                 if (
                     this.cacheLCPCandidates &&
-                    details.fileType === ResourceType.IMAGE
+                    getResourceFileType(name!, details.initiatorType) ===
+                        ResourceType.IMAGE
                 ) {
                     this.resourceEventIds.set(
-                        performanceKey(event.details as HasLatency),
+                        performanceKey(details as PerformanceEntry),
                         event.id
                     );
                 }
@@ -87,7 +92,7 @@ export class WebVitalsPlugin extends InternalPlugin {
             elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {
-            const key = performanceKey(a.lcpResourceEntry as HasLatency);
+            const key = performanceKey(a.lcpResourceEntry as PerformanceEntry);
             attribution.lcpResourceEntry = this.resourceEventIds.get(key);
         }
         if (this.navigationEventId) {
@@ -100,7 +105,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         } as LargestContentfulPaintEvent);
 
         // teardown
-        this.context?.eventBus.unsubscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line
+        this.context?.eventBus.unsubscribe(Topic.EVENT, this.messageHandler); // eslint-disable-line
         this.resourceEventIds.clear();
         this.navigationEventId = undefined;
     }
