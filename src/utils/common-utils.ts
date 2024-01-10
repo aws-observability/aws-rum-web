@@ -12,8 +12,6 @@ export enum ResourceType {
  */
 export enum InitiatorType {
     // IMAGES
-    // PerformanceResourceTiming with initiatorType=Input must be an image
-    // Per MDN docs: "if the request was initiated by an <input> element of type image.""
     IMG = 'img',
     IMAGE = 'image',
     INPUT = 'input',
@@ -26,7 +24,8 @@ export enum InitiatorType {
     SCRIPT = 'script',
 
     // STYLESHEETS
-    CSS = 'css'
+    CSS = 'css',
+    LINK = 'link' // typically for stylesheets, but also for other things such as icons and fonts
 }
 
 /**
@@ -48,6 +47,7 @@ export const getResourceFileType = (initiatorType: string): ResourceType => {
         case InitiatorType.SCRIPT:
             return ResourceType.SCRIPT;
         case InitiatorType.CSS:
+        case InitiatorType.LINK:
             return ResourceType.STYLESHEET;
         default:
             return ResourceType.OTHER;
