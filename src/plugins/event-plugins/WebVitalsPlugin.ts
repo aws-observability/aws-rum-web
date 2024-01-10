@@ -20,15 +20,14 @@ import {
 } from '../utils/constant';
 import { Subscriber, Topic } from '../../event-bus/EventBus';
 import { ParsedRumEvent } from '../../dispatch/dataplane';
-
 import {
     ResourceType,
     performanceKey,
     RumLCPAttribution,
-    isLCPSupported,
-    getResourceFileType
+    isLCPSupported
 } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
+import { OmittedResourceFields } from '../utils/performance-utils';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
@@ -58,7 +57,7 @@ export class WebVitalsPlugin extends InternalPlugin {
 
     private messageHandler: Subscriber = (
         event: ParsedRumEvent,
-        name: string
+        omitted: OmittedResourceFields
     ) => {
         switch (event.type) {
             // lcp resource is either image or text
@@ -66,11 +65,10 @@ export class WebVitalsPlugin extends InternalPlugin {
                 const details = event.details as ResourceEvent;
                 if (
                     this.cacheLCPCandidates &&
-                    getResourceFileType(name!, details.initiatorType) ===
-                        ResourceType.IMAGE
+                    omitted.fileType === ResourceType.IMAGE
                 ) {
                     this.resourceEventIds.set(
-                        performanceKey(name, details.startTime),
+                        performanceKey(omitted.name, details.startTime),
                         event.id
                     );
                 }

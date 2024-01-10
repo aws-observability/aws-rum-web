@@ -20,6 +20,7 @@ import { WebVitalsPlugin } from '../WebVitalsPlugin';
 import { navigationEvent } from '../../../test-utils/mock-data';
 import { ResourceEvent } from '../../../events/resource-event';
 import { ParsedRumEvent } from 'dispatch/dataplane';
+import { ResourceType } from '../../../utils/common-utils';
 
 const mockLCPData = {
     delta: 239.51,
@@ -99,11 +100,10 @@ const mockLCPDataWithImage = Object.assign({}, mockLCPData, {
 jest.mock('web-vitals/attribution', () => {
     return {
         onLCP: jest.fn().mockImplementation((callback) => {
-            context.eventBus.dispatch(
-                Topic.EVENT,
-                mockImageRumEvent,
-                mockImagePerformanceEntry.name
-            );
+            context.eventBus.dispatch(Topic.EVENT, mockImageRumEvent, {
+                name: mockImagePerformanceEntry.name,
+                fileType: ResourceType.IMAGE
+            });
             context.eventBus.dispatch(Topic.EVENT, navigationRumEvent);
             callback(mockLCPDataWithImage);
         }),
