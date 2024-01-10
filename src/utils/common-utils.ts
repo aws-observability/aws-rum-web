@@ -11,29 +11,21 @@ export enum ResourceType {
  * https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/initiatorType
  */
 export enum InitiatorType {
-    /**
-     * IMAGES
-     * PerformanceResourceTiming with initiatorType=Input must be an image
-     * Per MDN docs: "if the request was initiated by an <input> element of type image.""
-     */
+    // IMAGES
+    // PerformanceResourceTiming with initiatorType=Input must be an image
+    // Per MDN docs: "if the request was initiated by an <input> element of type image.""
     IMG = 'img',
     IMAGE = 'image',
     INPUT = 'input',
 
-    /**
-     * DOCUMENTS
-     */
+    // DOCUMENTS
     IFRAME = 'iframe',
     FRAME = 'frame',
 
-    /**
-     * SCRIPTS
-     */
+    // SCRIPTS
     SCRIPT = 'script',
 
-    /**
-     * STYLESHEETS
-     */
+    // STYLESHEETS
     CSS = 'css'
 }
 
@@ -41,83 +33,25 @@ export enum InitiatorType {
  * Creates key to link a RumEvent to the PerformanceEntry that it is sourced from
  * e.g. performanceKey(ResourceEvent) === performanceKey(PerformanceResourceTiming).
  */
-export const performanceKey = (name: string, startTime: number) =>
-    [name, startTime].join('#');
+export const performanceKey = (startTime: number, duration: number) =>
+    [startTime, duration].join('#');
 
-const extensions = [
-    {
-        name: ResourceType.STYLESHEET,
-        list: ['css', 'less']
-    },
-    {
-        name: ResourceType.DOCUMENT,
-        list: ['htm', 'html', 'ts', 'doc', 'docx', 'pdf', 'xls', 'xlsx']
-    },
-    {
-        name: ResourceType.SCRIPT,
-        list: ['js']
-    },
-    {
-        name: ResourceType.IMAGE,
-        list: [
-            'ai',
-            'bmp',
-            'gif',
-            'ico',
-            'jpeg',
-            'jpg',
-            'png',
-            'ps',
-            'psd',
-            'svg',
-            'tif',
-            'tiff'
-        ]
-    },
-    {
-        name: ResourceType.FONT,
-        list: ['fnt', 'fon', 'otf', 'ttf', 'woff']
+export const getResourceFileType = (initiatorType: string): ResourceType => {
+    switch (initiatorType) {
+        case InitiatorType.IMAGE:
+        case InitiatorType.IMG:
+        case InitiatorType.INPUT:
+            return ResourceType.IMAGE;
+        case InitiatorType.IFRAME:
+        case InitiatorType.FRAME:
+            return ResourceType.DOCUMENT;
+        case InitiatorType.SCRIPT:
+            return ResourceType.SCRIPT;
+        case InitiatorType.CSS:
+            return ResourceType.STYLESHEET;
+        default:
+            return ResourceType.OTHER;
     }
-];
-
-export const getResourceFileType = (
-    url: string,
-    initiatorType?: string
-): ResourceType => {
-    let ext = ResourceType.OTHER;
-    const filename = url.substring(url.lastIndexOf('/') + 1);
-    const extension = filename
-        .substring(filename.lastIndexOf('.') + 1)
-        .split(/[?#]/)[0];
-    if (extension) {
-        ext = extensions.find((e) => e.list.includes(extension))?.name ?? ext;
-    }
-
-    /**
-     * Resource name sometimes does not have the correct file extension names due to redirects.
-     * In these cases, they are mislablled as "other". In these cases, we can infer the correct
-     * fileType from the initiator.
-     */
-    if (initiatorType && ext === ResourceType.OTHER) {
-        switch (initiatorType) {
-            case InitiatorType.IMAGE:
-            case InitiatorType.IMG:
-            case InitiatorType.INPUT:
-                ext = ResourceType.IMAGE;
-                break;
-            case InitiatorType.IFRAME:
-            case InitiatorType.FRAME:
-                ext = ResourceType.DOCUMENT;
-                break;
-            case InitiatorType.SCRIPT:
-                ext = ResourceType.SCRIPT;
-                break;
-            case InitiatorType.CSS:
-                ext = ResourceType.STYLESHEET;
-                break;
-        }
-    }
-    return ext;
 };
 
 export interface RumLCPAttribution {

@@ -10,7 +10,6 @@ import {
 } from '../../events/resource-event';
 import {
     defaultPerformancePluginConfig,
-    OmittedResourceFields,
     PartialPerformancePluginConfig,
     PerformancePluginConfig,
     PerformanceResourceTimingPolyfill
@@ -71,63 +70,52 @@ export class ResourcePlugin extends InternalPlugin {
             }
 
             // Sampling logic
-            const fileType = getResourceFileType(name, initiatorType);
+            const fileType = getResourceFileType(initiatorType);
             if (this.config.recordAllTypes.includes(fileType)) {
                 // Always record
-                this.recordResourceEvent(entry, { fileType, name });
+                this.recordResourceEvent(entry);
             } else if (
                 this.sampleCount < this.config.eventLimit &&
                 this.config.sampleTypes.includes(fileType)
             ) {
                 // Only sample first N
-                this.recordResourceEvent(entry, { fileType, name });
+                this.recordResourceEvent(entry);
                 this.sampleCount++;
             }
         }
     };
 
-    recordResourceEvent = (
-        r: PerformanceResourceTimingPolyfill,
-        omitted: OmittedResourceFields
-    ): void => {
-        this.context?.record(
-            PERFORMANCE_RESOURCE_EVENT_TYPE,
-            {
-                version: '2.0.0',
-                name: this.context.config.recordResourceUrl
-                    ? r.name
-                    : undefined,
-                entryType: RESOURCE,
-                startTime: r.startTime,
-                duration: r.duration,
-                connectStart: r.connectStart,
-                connectEnd: r.connectEnd,
-                decodedBodySize: r.decodedBodySize,
-                domainLookupEnd: r.domainLookupEnd,
-                domainLookupStart: r.domainLookupStart,
-                fetchStart: r.fetchStart,
-                encodedBodySize: r.encodedBodySize,
-                initiatorType: r.initiatorType,
-                nextHopProtocol: r.nextHopProtocol,
-                redirectEnd: r.redirectEnd,
-                redirectStart: r.redirectStart,
-                renderBlockingStatus: r.renderBlockingStatus,
-                requestStart: r.requestStart,
-                responseEnd: r.responseEnd,
-                responseStart: r.responseStart,
-                secureConnectionStart: r.secureConnectionStart,
-                serverTiming: r.serverTiming
-                    ? (r.serverTiming.map(
-                          (e) => e as PerformanceServerTimingPolyfill
-                      ) as PerformanceServerTimingPolyfill[])
-                    : undefined,
-                transferSize: r.transferSize,
-                workerStart: r.workerStart
-            } as ResourceEvent,
-            // Dispatch omitted fields that should not be sent to PutRumEvents
-            // but are needed by other plugins
-            omitted
-        );
+    recordResourceEvent = (r: PerformanceResourceTimingPolyfill): void => {
+        this.context?.record(PERFORMANCE_RESOURCE_EVENT_TYPE, {
+            version: '2.0.0',
+            name: this.context.config.recordResourceUrl ? r.name : undefined,
+            entryType: RESOURCE,
+            startTime: r.startTime,
+            duration: r.duration,
+            connectStart: r.connectStart,
+            connectEnd: r.connectEnd,
+            decodedBodySize: r.decodedBodySize,
+            domainLookupEnd: r.domainLookupEnd,
+            domainLookupStart: r.domainLookupStart,
+            fetchStart: r.fetchStart,
+            encodedBodySize: r.encodedBodySize,
+            initiatorType: r.initiatorType,
+            nextHopProtocol: r.nextHopProtocol,
+            redirectEnd: r.redirectEnd,
+            redirectStart: r.redirectStart,
+            renderBlockingStatus: r.renderBlockingStatus,
+            requestStart: r.requestStart,
+            responseEnd: r.responseEnd,
+            responseStart: r.responseStart,
+            secureConnectionStart: r.secureConnectionStart,
+            serverTiming: r.serverTiming
+                ? (r.serverTiming.map(
+                      (e) => e as PerformanceServerTimingPolyfill
+                  ) as PerformanceServerTimingPolyfill[])
+                : undefined,
+            transferSize: r.transferSize,
+            workerStart: r.workerStart
+        } as ResourceEvent);
     };
 
     protected onload(): void {

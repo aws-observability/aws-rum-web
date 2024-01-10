@@ -1,7 +1,3 @@
-/**
- * @param payload The main message that is usually also sent to PutRumEvents
- * @param internalMessage If payload is a RUM event, then additional information can be communicated here that should not be sent to PutRumEvents
- */
 export type Subscriber = (payload: any, internalMessage?: any) => void;
 export enum Topic {
     EVENT = 'event'
@@ -33,11 +29,11 @@ export default class EventBus<T = Topic> {
         return false;
     }
 
-    dispatch(topic: T, payload: any, internalMessage?: any): void {
+    dispatch(topic: T, payload: any): void {
         const list = this.subscribers.get(topic);
         if (list) {
             for (const subscriber of list) {
-                subscriber(payload, internalMessage);
+                subscriber(payload);
             }
         }
     }

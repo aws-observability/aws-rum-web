@@ -24,10 +24,10 @@ import {
     ResourceType,
     performanceKey,
     RumLCPAttribution,
-    isLCPSupported
+    isLCPSupported,
+    getResourceFileType
 } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
-import { OmittedResourceFields } from '../utils/performance-utils';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
@@ -55,20 +55,19 @@ export class WebVitalsPlugin extends InternalPlugin {
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    private messageHandler: Subscriber = (
-        event: ParsedRumEvent,
-        omitted: OmittedResourceFields
-    ) => {
+    private messageHandler: Subscriber = (event: ParsedRumEvent) => {
         switch (event.type) {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
                 const details = event.details as ResourceEvent;
                 if (
                     this.cacheLCPCandidates &&
-                    omitted.fileType === ResourceType.IMAGE
+                    details.initiatorType &&
+                    getResourceFileType(details.initiatorType) ===
+                        ResourceType.IMAGE
                 ) {
                     this.resourceEventIds.set(
-                        performanceKey(omitted.name, details.startTime),
+                        performanceKey(details.startTime, details.duration),
                         event.id
                     );
                 }
@@ -92,8 +91,8 @@ export class WebVitalsPlugin extends InternalPlugin {
         if (a.lcpResourceEntry) {
             attribution.lcpResourceEntry = this.resourceEventIds.get(
                 performanceKey(
-                    a.lcpResourceEntry.name,
-                    a.lcpResourceEntry.startTime
+                    a.lcpResourceEntry.startTime,
+                    a.lcpResourceEntry.duration
                 )
             );
         }

@@ -38,8 +38,3 @@ export interface PerformanceResourceTimingPolyfill
     extends PerformanceResourceTiming {
     renderBlockingStatus?: string;
 }
-
-export interface OmittedResourceFields {
-    fileType: ResourceType;
-    name: string;
-}
