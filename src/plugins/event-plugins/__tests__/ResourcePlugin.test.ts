@@ -18,8 +18,8 @@ import {
     record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
-import { ResourceEvent } from '../../../events/resource-event';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
+import { ResourceEvent } from '../../../events/resource-event';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
     return new ResourcePlugin(config);
@@ -38,25 +38,42 @@ describe('ResourcePlugin tests', () => {
     test('When resource event is present then event is recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
-
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
 
         // Assert
-        expect(record.mock.calls[0][0]).toEqual(
+        expect(record.mock.calls[1][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect(record.mock.calls[0][1]).toEqual(
+        const r = resourceTiming;
+        expect(record.mock.calls[1][1] as ResourceEvent).toEqual(
             expect.objectContaining({
-                version: '1.0.0',
-                fileType: 'script',
-                startTime: resourceTiming.startTime,
-                duration: resourceTiming.duration,
-                transferSize: resourceTiming.transferSize,
-                targetUrl: resourceTiming.name,
-                initiatorType: resourceTiming.initiatorType
+                version: '2.0.0',
+                name: r.name,
+                entryType: 'resource',
+                startTime: r.startTime,
+                duration: r.duration,
+                connectStart: r.connectStart,
+                connectEnd: r.connectEnd,
+                decodedBodySize: r.decodedBodySize,
+                domainLookupEnd: r.domainLookupEnd,
+                domainLookupStart: r.domainLookupStart,
+                fetchStart: r.fetchStart,
+                encodedBodySize: r.encodedBodySize,
+                initiatorType: r.initiatorType,
+                nextHopProtocol: r.nextHopProtocol,
+                redirectEnd: r.redirectEnd,
+                redirectStart: r.redirectStart,
+                renderBlockingStatus: r.renderBlockingStatus,
+                requestStart: r.requestStart,
+                responseEnd: r.responseEnd,
+                responseStart: r.responseStart,
+                secureConnectionStart: r.secureConnectionStart,
+                serverTiming: r.serverTiming,
+                transferSize: r.transferSize,
+                workerStart: r.workerStart
             })
         );
     });
@@ -77,9 +94,7 @@ describe('ResourcePlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect(
-            (record.mock.calls[0][1] as ResourceEvent).targetUrl
-        ).toBeUndefined();
+        expect((record.mock.calls[0][1] as ResourceEvent).name).toBeUndefined();
     });
 
     test('when resource is a PutRumEvents request then resource event is not recorded', async () => {
@@ -183,37 +198,37 @@ describe('ResourcePlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(3);
     });
 
-    test('sampled events are randomized', async () => {
+    test('sampled events are first N in sequence', async () => {
         // Setup
-        doMockPerformanceObserver([imageResourceEventA, imageResourceEventB]);
+        const images = [];
+        for (let i = 0; i < 5; i++) {
+            images.push({
+                ...imageResourceEventA,
+                name: `http://localhost:9000/picture-${i}.jpg`
+            });
+        }
+        doMockPerformanceObserver(images);
 
-        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 4 });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
 
         // Run
-        mockRandom(0.99); // Retain order in shuffle
-        plugin.load(context);
-        mockRandom(0); // Reverse order in shuffle
         plugin.load(context);
 
         // Assert
+        expect(record).toHaveBeenCalledTimes(3);
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                targetUrl: imageResourceEventB.name
+                name: `http://localhost:9000/picture-0.jpg`
             })
         );
         expect(record.mock.calls[1][1]).toEqual(
             expect.objectContaining({
-                targetUrl: imageResourceEventA.name
+                name: `http://localhost:9000/picture-1.jpg`
             })
         );
         expect(record.mock.calls[2][1]).toEqual(
             expect.objectContaining({
-                targetUrl: imageResourceEventA.name
-            })
-        );
-        expect(record.mock.calls[3][1]).toEqual(
-            expect.objectContaining({
-                targetUrl: imageResourceEventB.name
+                name: `http://localhost:9000/picture-2.jpg`
             })
         );
     });

@@ -1,88 +1,106 @@
 {
-    "$id": "com.amazon.rum.performance_resource_event",
+    "$id": "com.amazon.rum.performance_resource_timing_event",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "ResourceEvent",
     "type": "object",
+    "definitions": {
+        "performanceServerTimingPolyfill": {
+            "$id": "#performanceServerTimingPolyfill",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
     "properties": {
         "version": {
-            "const": "1.0.0",
+            "const": "2.0.0",
             "type": "string",
             "description": "Schema version."
         },
-        "targetUrl": {
-            "description": "Page URL",
+        "name": {
             "type": "string"
         },
-        "initiatorType": {
+        "entryType": {
+            "const": "resource",
             "type": "string"
         },
         "startTime": {
             "type": "number"
         },
-        "redirectStart": {
+        "duration": {
             "type": "number"
         },
-        "redirectTime": {
+        "connectStart": {
             "type": "number"
         },
-        "workerStart": {
+        "connectEnd": {
             "type": "number"
         },
-        "workerTime": {
+        "decodedBodySize": {
             "type": "number"
         },
-        "fetchStart": {
+        "domainLookupEnd": {
             "type": "number"
         },
         "domainLookupStart": {
             "type": "number"
         },
-        "dns": {
+        "encodedBodySize": {
             "type": "number"
+        },
+        "fetchStart": {
+            "type": "number"
+        },
+        "initiatorType": {
+            "type": "string"
         },
         "nextHopProtocol": {
             "type": "string"
         },
-        "connectStart": {
+        "redirectEnd": {
             "type": "number"
         },
-        "connect": {
+        "redirectStart": {
             "type": "number"
         },
-        "secureConnectionStart": {
-            "type": "number"
-        },
-        "tlsTime": {
-            "type": "number"
+        "renderBlockingStatus": {
+            "type": "string"
         },
         "requestStart": {
             "type": "number"
         },
-        "timeToFirstByte": {
+        "responseEnd": {
             "type": "number"
         },
         "responseStart": {
             "type": "number"
         },
-        "responseTime": {
+        "secureConnectionStart": {
             "type": "number"
         },
-        "duration": {
-            "type": "number"
-        },
-        "headerSize": {
-            "type": "number"
+        "serverTiming": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/performanceServerTimingPolyfill"
+            }
         },
         "transferSize": {
             "type": "number"
         },
-        "compressionRatio": {
+        "workerStart": {
             "type": "number"
-        },
-        "fileType": {
-            "type": "string"
         }
     },
     "additionalProperties": false,
-    "required": ["version", "initiatorType", "duration", "fileType"]
+    "required": ["version", "duration", "entryType", "startTime"]
 }

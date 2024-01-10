@@ -566,7 +566,8 @@ describe('EventCache tests', () => {
                     'aws:clientVersion': WEB_CLIENT_VERSION
                 }),
                 details: expect.objectContaining({})
-            })
+            }),
+            undefined
         );
     });
 

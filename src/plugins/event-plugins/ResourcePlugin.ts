@@ -1,15 +1,22 @@
 import { InternalPlugin } from '../InternalPlugin';
-import { getResourceFileType, shuffle } from '../../utils/common-utils';
-import { ResourceEvent } from '../../events/resource-event';
+import {
+    getResourceFileType,
+    isPutRumEventsCall
+} from '../../utils/common-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 import {
+    ResourceEvent,
+    PerformanceServerTimingPolyfill
+} from '../../events/resource-event';
+import {
     defaultPerformancePluginConfig,
+    OmittedResourceFields,
     PartialPerformancePluginConfig,
-    PerformancePluginConfig
+    PerformancePluginConfig,
+    PerformanceResourceTimingPolyfill
 } from '../utils/performance-utils';
 
 export const RESOURCE_EVENT_PLUGIN_ID = 'resource';
-
 const RESOURCE = 'resource';
 
 /**
@@ -18,12 +25,12 @@ const RESOURCE = 'resource';
 export class ResourcePlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
     private resourceObserver: PerformanceObserver;
-    private eventCount: number;
+    private sampleCount: number;
 
     constructor(config?: PartialPerformancePluginConfig) {
         super(RESOURCE_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
-        this.eventCount = 0;
+        this.sampleCount = 0;
         this.resourceObserver = new PerformanceObserver(
             this.performanceEntryHandler
         );
@@ -49,73 +56,78 @@ export class ResourcePlugin extends InternalPlugin {
     }
 
     performanceEntryHandler = (list: PerformanceObserverEntryList): void => {
-        this.recordPerformanceEntries(list.getEntries());
-    };
+        for (const e of list.getEntries()) {
+            const entry = e as PerformanceResourceTimingPolyfill;
+            const { name, initiatorType } = entry;
 
-    recordPerformanceEntries = (list: PerformanceEntryList) => {
-        const recordAll: PerformanceEntry[] = [];
-        const sample: PerformanceEntry[] = [];
-
-        list.filter((e) => e.entryType === RESOURCE)
-            .filter((e) => !this.config.ignore(e))
-            .forEach((event) => {
-                const { name, initiatorType } =
-                    event as PerformanceResourceTiming;
-                const type = getResourceFileType(name, initiatorType);
-                if (this.config.recordAllTypes.includes(type)) {
-                    recordAll.push(event);
-                } else if (this.config.sampleTypes.includes(type)) {
-                    sample.push(event);
-                }
-            });
-
-        // Record all events for resources in recordAllTypes
-        recordAll.forEach((r) =>
-            this.recordResourceEvent(r as PerformanceResourceTiming)
-        );
-
-        // Record events from resources in sample until we hit the resource limit
-        shuffle(sample);
-        while (sample.length > 0 && this.eventCount < this.config.eventLimit) {
-            this.recordResourceEvent(sample.pop() as PerformanceResourceTiming);
-            this.eventCount++;
-        }
-    };
-
-    recordResourceEvent = ({
-        name,
-        startTime,
-        initiatorType,
-        duration,
-        transferSize
-    }: PerformanceResourceTiming): void => {
-        const pathRegex =
-            /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-        const entryUrl = new URL(name);
-        if (
-            entryUrl.host === this.context.config.endpointUrl.host &&
-            pathRegex.test(entryUrl.pathname)
-        ) {
-            // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data
-            // plane), otherwise we end up in an infinite loop of recording
-            // PutRumEvents.
-            return;
-        }
-
-        if (this.context?.record) {
-            const eventData: ResourceEvent = {
-                version: '1.0.0',
-                initiatorType,
-                startTime,
-                duration,
-                fileType: getResourceFileType(name, initiatorType),
-                transferSize
-            };
-            if (this.context.config.recordResourceUrl) {
-                eventData.targetUrl = name;
+            // (1) Ignore by custom callback.
+            // (2) Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data plane),
+            // otherwise we end up in an infinite loop of recording PutRumEvents.
+            if (
+                this.config.ignore(e) ||
+                isPutRumEventsCall(name, this.context.config.endpointUrl.host)
+            ) {
+                continue;
             }
-            this.context.record(PERFORMANCE_RESOURCE_EVENT_TYPE, eventData);
+
+            // Sampling logic
+            const fileType = getResourceFileType(name, initiatorType);
+            if (this.config.recordAllTypes.includes(fileType)) {
+                // Always record
+                this.recordResourceEvent(entry, { fileType, name });
+            } else if (
+                this.sampleCount < this.config.eventLimit &&
+                this.config.sampleTypes.includes(fileType)
+            ) {
+                // Only sample first N
+                this.recordResourceEvent(entry, { fileType, name });
+                this.sampleCount++;
+            }
         }
+    };
+
+    recordResourceEvent = (
+        r: PerformanceResourceTimingPolyfill,
+        omitted: OmittedResourceFields
+    ): void => {
+        this.context?.record(
+            PERFORMANCE_RESOURCE_EVENT_TYPE,
+            {
+                version: '2.0.0',
+                name: this.context.config.recordResourceUrl
+                    ? r.name
+                    : undefined,
+                entryType: RESOURCE,
+                startTime: r.startTime,
+                duration: r.duration,
+                connectStart: r.connectStart,
+                connectEnd: r.connectEnd,
+                decodedBodySize: r.decodedBodySize,
+                domainLookupEnd: r.domainLookupEnd,
+                domainLookupStart: r.domainLookupStart,
+                fetchStart: r.fetchStart,
+                encodedBodySize: r.encodedBodySize,
+                initiatorType: r.initiatorType,
+                nextHopProtocol: r.nextHopProtocol,
+                redirectEnd: r.redirectEnd,
+                redirectStart: r.redirectStart,
+                renderBlockingStatus: r.renderBlockingStatus,
+                requestStart: r.requestStart,
+                responseEnd: r.responseEnd,
+                responseStart: r.responseStart,
+                secureConnectionStart: r.secureConnectionStart,
+                serverTiming: r.serverTiming
+                    ? (r.serverTiming.map(
+                          (e) => e as PerformanceServerTimingPolyfill
+                      ) as PerformanceServerTimingPolyfill[])
+                    : undefined,
+                transferSize: r.transferSize,
+                workerStart: r.workerStart
+            } as ResourceEvent,
+            // Dispatch omitted fields that should not be sent to PutRumEvents
+            // but are needed by other plugins
+            omitted
+        );
     };
 
     protected onload(): void {

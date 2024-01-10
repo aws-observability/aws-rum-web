@@ -18,9 +18,8 @@ test('when resource loads after window.load then the resource is recorded', asyn
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
             e.type === PERFORMANCE_RESOURCE_EVENT_TYPE &&
-            JSON.parse(e.details).targetUrl.includes('blank.png')
+            JSON.parse(e.details).name.includes('blank.png')
     );
-
     await t.expect(events.length).eql(1);
 });
 
@@ -34,9 +33,7 @@ test('when resource loads before the plugin then the resource is recorded', asyn
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) =>
             e.type === PERFORMANCE_RESOURCE_EVENT_TYPE &&
-            JSON.parse(e.details).targetUrl.includes(
-                'rum_javascript_telemetry.js'
-            )
+            JSON.parse(e.details).name.includes('rum_javascript_telemetry.js')
     );
 
     await t.expect(events.length).eql(1);
