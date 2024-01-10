@@ -3,11 +3,11 @@ import {
     getResourceFileType,
     isPutRumEventsCall
 } from '../../utils/common-utils';
-import { PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE } from '../utils/constant';
+import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 import {
-    PerformanceResourceTimingEvent,
+    ResourceEvent,
     PerformanceServerTimingPolyfill
-} from '../../events/performance-resource-timing-event';
+} from '../../events/resource-event';
 import {
     defaultPerformancePluginConfig,
     PartialPerformancePluginConfig,
@@ -59,89 +59,69 @@ export class ResourcePlugin extends InternalPlugin {
             const entry = e as PerformanceResourceTimingPolyfill;
             const { name, initiatorType } = entry;
 
-            // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data plane),
+            // (1) Ignore by custom callback.
+            // (2) Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data plane),
             // otherwise we end up in an infinite loop of recording PutRumEvents.
             if (
+                this.config.ignore(e) ||
                 isPutRumEventsCall(name, this.context.config.endpointUrl.host)
             ) {
-                continue;
-            }
-
-            // Ignore by custom callback
-            if (this.config.ignore(e)) {
                 continue;
             }
 
             // Sampling logic
             const type = getResourceFileType(name, initiatorType);
             if (this.config.recordAllTypes.includes(type)) {
-                // Always capture recordAll types
+                // Always record
                 this.recordResourceEvent(entry);
             } else if (
                 this.sampleCount < this.config.eventLimit &&
                 this.config.sampleTypes.includes(type)
             ) {
-                // Capture first N sampled types
+                // Only sample first N
                 this.recordResourceEvent(entry);
                 this.sampleCount++;
             }
         }
     };
 
-    recordResourceEvent = ({
-        name,
-        startTime,
-        duration,
-        connectEnd,
-        connectStart,
-        decodedBodySize,
-        domainLookupEnd,
-        domainLookupStart,
-        encodedBodySize,
-        fetchStart,
-        initiatorType,
-        nextHopProtocol,
-        redirectEnd,
-        redirectStart,
-        renderBlockingStatus,
-        requestStart,
-        responseEnd,
-        responseStart,
-        secureConnectionStart,
-        serverTiming,
-        transferSize,
-        workerStart
-    }: PerformanceResourceTimingPolyfill): void => {
+    recordResourceEvent = (r: PerformanceResourceTimingPolyfill): void => {
         this.context?.record(
-            PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE,
+            PERFORMANCE_RESOURCE_EVENT_TYPE,
             {
-                name: this.context.config.recordResourceUrl ? name : undefined,
+                name: this.context.config.recordResourceUrl
+                    ? r.name
+                    : undefined,
                 entryType: RESOURCE,
-                startTime,
-                duration,
-                connectEnd,
-                connectStart,
-                decodedBodySize,
-                domainLookupEnd,
-                domainLookupStart,
-                encodedBodySize,
-                fetchStart,
-                initiatorType,
-                nextHopProtocol,
-                redirectEnd,
-                redirectStart,
-                renderBlockingStatus,
-                requestStart,
-                responseEnd,
-                responseStart,
-                secureConnectionStart,
-                serverTiming: serverTiming.map(
-                    (e) => e as PerformanceServerTimingPolyfill
-                ) as PerformanceServerTimingPolyfill[],
-                transferSize,
-                workerStart
-            } as PerformanceResourceTimingEvent,
-            name
+                startTime: r.startTime,
+                duration: r.duration,
+                connectStart: r.connectStart,
+                connectEnd: r.connectEnd,
+                decodedBodySize: r.decodedBodySize,
+                domainLookupEnd: r.domainLookupEnd,
+                domainLookupStart: r.domainLookupStart,
+                fetchStart: r.fetchStart,
+                encodedBodySize: r.encodedBodySize,
+                initiatorType: r.initiatorType,
+                nextHopProtocol: r.nextHopProtocol,
+                redirectEnd: r.redirectEnd,
+                redirectStart: r.redirectStart,
+                renderBlockingStatus: r.renderBlockingStatus,
+                requestStart: r.requestStart,
+                responseEnd: r.responseEnd,
+                responseStart: r.responseStart,
+                secureConnectionStart: r.secureConnectionStart,
+                serverTiming: r.serverTiming
+                    ? (r.serverTiming.map(
+                          (e) => e as PerformanceServerTimingPolyfill
+                      ) as PerformanceServerTimingPolyfill[])
+                    : undefined,
+                transferSize: r.transferSize,
+                workerStart: r.workerStart
+            } as ResourceEvent,
+            // URL is dispatched separately to EventBus because it is sometimes omitted from ResourceEvent,
+            // but required by other plugins for PerformanceKey and fileType.
+            r.name
         );
     };
 

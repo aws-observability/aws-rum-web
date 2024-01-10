@@ -13,7 +13,7 @@ export const CLS_EVENT_TYPE = `${RUM_AMZ_PREFIX}.cumulative_layout_shift_event`;
 
 // Page load event schemas
 export const PERFORMANCE_NAVIGATION_EVENT_TYPE = `${RUM_AMZ_PREFIX}.performance_navigation_event`;
-export const PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE = `{RUM_AMZ_PREFIX}.performance_resource_timing_event`;
+export const PERFORMANCE_RESOURCE_EVENT_TYPE = `{RUM_AMZ_PREFIX}.performance_resource_timing_event`;
 
 // DOM event schemas
 export const DOM_EVENT_TYPE = `${RUM_AMZ_PREFIX}.dom_event`;

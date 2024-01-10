@@ -16,7 +16,7 @@ import {
     FID_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
+    PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../utils/constant';
 import { Subscriber, Topic } from '../../event-bus/EventBus';
 import { ParsedRumEvent } from '../../dispatch/dataplane';
@@ -28,7 +28,7 @@ import {
     isLCPSupported,
     getResourceFileType
 } from '../../utils/common-utils';
-import { PerformanceResourceTimingEvent } from '../../events/performance-resource-timing-event';
+import { ResourceEvent } from '../../events/resource-event';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
@@ -62,8 +62,8 @@ export class WebVitalsPlugin extends InternalPlugin {
     ) => {
         switch (event.type) {
             // lcp resource is either image or text
-            case PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE:
-                const details = event.details as PerformanceResourceTimingEvent;
+            case PERFORMANCE_RESOURCE_EVENT_TYPE:
+                const details = event.details as ResourceEvent;
                 if (
                     this.cacheLCPCandidates &&
                     getResourceFileType(name!, details.initiatorType) ===
