@@ -17,9 +17,9 @@ import {
     DEFAULT_CONFIG,
     record
 } from '../../../test-utils/test-utils';
-import { PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE } from '../../utils/constant';
+import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
-import { PerformanceResourceTimingEvent } from 'events/performance-resource-timing-event';
+import { ResourceEvent } from '../../../events/resource-event';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
     return new ResourcePlugin(config);
@@ -45,59 +45,34 @@ describe('ResourcePlugin tests', () => {
 
         // Assert
         expect(record.mock.calls[1][0]).toEqual(
-            PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
+            PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-
-        const {
-            startTime,
-            duration,
-            connectEnd,
-            connectStart,
-            decodedBodySize,
-            domainLookupEnd,
-            domainLookupStart,
-            encodedBodySize,
-            fetchStart,
-            initiatorType,
-            nextHopProtocol,
-            redirectEnd,
-            redirectStart,
-            renderBlockingStatus,
-            requestStart,
-            responseEnd,
-            responseStart,
-            secureConnectionStart,
-            serverTiming,
-            transferSize,
-            workerStart
-        } = resourceTiming;
-
-        expect(
-            record.mock.calls[1][1] as PerformanceResourceTimingEvent
-        ).toEqual(
+        const r = resourceTiming;
+        expect(record.mock.calls[1][1] as ResourceEvent).toEqual(
             expect.objectContaining({
+                name: r.name,
                 entryType: 'resource',
-                startTime,
-                duration,
-                connectEnd,
-                connectStart,
-                decodedBodySize,
-                domainLookupEnd,
-                domainLookupStart,
-                encodedBodySize,
-                fetchStart,
-                initiatorType,
-                nextHopProtocol,
-                redirectEnd,
-                redirectStart,
-                renderBlockingStatus,
-                requestStart,
-                responseEnd,
-                responseStart,
-                secureConnectionStart,
-                serverTiming,
-                transferSize,
-                workerStart
+                startTime: r.startTime,
+                duration: r.duration,
+                connectStart: r.connectStart,
+                connectEnd: r.connectEnd,
+                decodedBodySize: r.decodedBodySize,
+                domainLookupEnd: r.domainLookupEnd,
+                domainLookupStart: r.domainLookupStart,
+                fetchStart: r.fetchStart,
+                encodedBodySize: r.encodedBodySize,
+                initiatorType: r.initiatorType,
+                nextHopProtocol: r.nextHopProtocol,
+                redirectEnd: r.redirectEnd,
+                redirectStart: r.redirectStart,
+                renderBlockingStatus: r.renderBlockingStatus,
+                requestStart: r.requestStart,
+                responseEnd: r.responseEnd,
+                responseStart: r.responseStart,
+                secureConnectionStart: r.secureConnectionStart,
+                serverTiming: r.serverTiming,
+                transferSize: r.transferSize,
+                workerStart: r.workerStart
             })
         );
     });
@@ -116,11 +91,9 @@ describe('ResourcePlugin tests', () => {
 
         // Assert
         expect(record.mock.calls[0][0]).toEqual(
-            PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
+            PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect(
-            (record.mock.calls[0][1] as PerformanceResourceTimingEvent).name
-        ).toBeUndefined();
+        expect((record.mock.calls[0][1] as ResourceEvent).name).toBeUndefined();
     });
 
     test('when resource is a PutRumEvents request then resource event is not recorded', async () => {

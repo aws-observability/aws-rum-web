@@ -8,7 +8,7 @@ import {
     CLS_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
+    PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../../utils/constant';
 
 const testButton: Selector = Selector(`#testButton`);
@@ -40,7 +40,7 @@ test('when lcp image resource is recorded then it is attributed to lcp', async (
     )[0];
     const resource = events.filter(
         (x: { details: string; type: string }) =>
-            x.type === PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE &&
+            x.type === PERFORMANCE_RESOURCE_EVENT_TYPE &&
             x.details.includes('lcp.png')
     )[0];
     await t.expect(lcp.details).contains(`"lcpResourceEntry":"${resource.id}"`);

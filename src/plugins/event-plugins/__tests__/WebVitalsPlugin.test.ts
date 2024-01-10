@@ -12,14 +12,14 @@ import {
     FID_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE
+    PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../../../plugins/utils/constant';
 import { context, record } from '../../../test-utils/test-utils';
 import { Topic } from '../../../event-bus/EventBus';
 import { WebVitalsPlugin } from '../WebVitalsPlugin';
 import { navigationEvent } from '../../../test-utils/mock-data';
-import { PerformanceResourceTimingEvent } from 'events/performance-resource-timing-event';
-import { ParsedRumEvent, RumEvent } from 'dispatch/dataplane';
+import { ResourceEvent } from '../../../events/resource-event';
+import { ParsedRumEvent } from 'dispatch/dataplane';
 
 const mockLCPData = {
     delta: 239.51,
@@ -71,11 +71,11 @@ const mockImagePerformanceEntry = {
 
 const mockImageResourceTimingEvent = {
     ...mockImagePerformanceEntry
-} as PerformanceResourceTimingEvent;
+} as ResourceEvent;
 
 const mockImageRumEvent: ParsedRumEvent = {
     id: 'img-id',
-    type: PERFORMANCE_RESOURCE_TIMING_EVENT_TYPE,
+    type: PERFORMANCE_RESOURCE_EVENT_TYPE,
     timestamp: new Date(),
     details: {
         ...mockImageResourceTimingEvent
@@ -236,8 +236,7 @@ describe('WebVitalsPlugin tests', () => {
 
     test('when no matching image resource does not exist then it is not attributed to lcp', async () => {
         // init
-        const event =
-            mockImageRumEvent.details as PerformanceResourceTimingEvent;
+        const event = mockImageRumEvent.details as ResourceEvent;
         const startTime = event.startTime;
         event.startTime = -500; // no match
         const plugin = new WebVitalsPlugin();
