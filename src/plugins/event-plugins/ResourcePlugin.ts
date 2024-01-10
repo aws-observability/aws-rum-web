@@ -89,6 +89,7 @@ export class ResourcePlugin extends InternalPlugin {
         this.context?.record(
             PERFORMANCE_RESOURCE_EVENT_TYPE,
             {
+                version: '2.0.0',
                 name: this.context.config.recordResourceUrl
                     ? r.name
                     : undefined,

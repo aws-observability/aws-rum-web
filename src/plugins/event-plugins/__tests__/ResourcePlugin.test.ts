@@ -50,6 +50,7 @@ describe('ResourcePlugin tests', () => {
         const r = resourceTiming;
         expect(record.mock.calls[1][1] as ResourceEvent).toEqual(
             expect.objectContaining({
+                version: '2.0.0',
                 name: r.name,
                 entryType: 'resource',
                 startTime: r.startTime,
@@ -197,7 +198,7 @@ describe('ResourcePlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(3);
     });
 
-    test('sampled events are first N', async () => {
+    test('sampled events are first N in sequence', async () => {
         // Setup
         const images = [];
         for (let i = 0; i < 5; i++) {
