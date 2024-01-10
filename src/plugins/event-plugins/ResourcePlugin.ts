@@ -10,6 +10,7 @@ import {
 } from '../../events/resource-event';
 import {
     defaultPerformancePluginConfig,
+    OmittedResourceFields,
     PartialPerformancePluginConfig,
     PerformancePluginConfig,
     PerformanceResourceTimingPolyfill
@@ -70,22 +71,25 @@ export class ResourcePlugin extends InternalPlugin {
             }
 
             // Sampling logic
-            const type = getResourceFileType(name, initiatorType);
-            if (this.config.recordAllTypes.includes(type)) {
+            const fileType = getResourceFileType(name, initiatorType);
+            if (this.config.recordAllTypes.includes(fileType)) {
                 // Always record
-                this.recordResourceEvent(entry);
+                this.recordResourceEvent(entry, { fileType, name });
             } else if (
                 this.sampleCount < this.config.eventLimit &&
-                this.config.sampleTypes.includes(type)
+                this.config.sampleTypes.includes(fileType)
             ) {
                 // Only sample first N
-                this.recordResourceEvent(entry);
+                this.recordResourceEvent(entry, { fileType, name });
                 this.sampleCount++;
             }
         }
     };
 
-    recordResourceEvent = (r: PerformanceResourceTimingPolyfill): void => {
+    recordResourceEvent = (
+        r: PerformanceResourceTimingPolyfill,
+        omitted: OmittedResourceFields
+    ): void => {
         this.context?.record(
             PERFORMANCE_RESOURCE_EVENT_TYPE,
             {
@@ -120,9 +124,9 @@ export class ResourcePlugin extends InternalPlugin {
                 transferSize: r.transferSize,
                 workerStart: r.workerStart
             } as ResourceEvent,
-            // URL is dispatched separately to EventBus because it is sometimes omitted from ResourceEvent,
-            // but required by other plugins for PerformanceKey and fileType.
-            r.name
+            // Dispatch omitted fields that should not be sent to PutRumEvents
+            // but are needed by other plugins
+            omitted
         );
     };
 

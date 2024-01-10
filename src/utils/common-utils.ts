@@ -89,7 +89,9 @@ export const getResourceFileType = (
     const extension = filename
         .substring(filename.lastIndexOf('.') + 1)
         .split(/[?#]/)[0];
-    ext = extensions.find((e) => e.list.includes(extension))?.name ?? ext;
+    if (extension) {
+        ext = extensions.find((e) => e.list.includes(extension))?.name ?? ext;
+    }
 
     /**
      * Resource name sometimes does not have the correct file extension names due to redirects.
