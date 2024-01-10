@@ -12,7 +12,7 @@ const PLUGIN_EVENT_TYPE = 'custom_event_plugin';
 const COUNT = 5;
 
 fixture('Custom Events API & Plugin').page(
-    'http://localhost:9000/custom_event.html'
+    'http://localhost:8080/custom_event.html'
 );
 
 const removeUnwantedEvents = (json: any) => {
