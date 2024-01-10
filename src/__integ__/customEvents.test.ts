@@ -12,14 +12,14 @@ const PLUGIN_EVENT_TYPE = 'custom_event_plugin';
 const COUNT = 5;
 
 fixture('Custom Events API & Plugin').page(
-    'http://localhost:8080/custom_event.html'
+    'http://localhost:9000/custom_event.html'
 );
 
 const removeUnwantedEvents = (json: any) => {
     const newEventsList = json.RumEvents.filter(
         (e) =>
-            /(custom_event_api)/.test(e.type) ||
-            /(custom_event_plugin)/.test(e.type)
+            /custom_event_api/.test(e.type) ||
+            /custom_event_plugin/.test(e.type)
     );
 
     json.RumEvents = newEventsList;
@@ -173,6 +173,7 @@ test('when plugin recordEvent has empty event_data then RumEvent details is empt
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
+
     await t
         .expect(json.RumEvents.length)
         .eql(1)
