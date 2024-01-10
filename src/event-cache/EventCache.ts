@@ -211,7 +211,6 @@ export class EventCache {
      *
      * @param type The event schema.
      * @param eventData The RUM Event to be dispatched to PutRumEvents
-     * @param internal Internal-only message to EventBus subscribers
      */
     private addRecordToCache = (type: string, eventData: object) => {
         if (!this.enabled) {

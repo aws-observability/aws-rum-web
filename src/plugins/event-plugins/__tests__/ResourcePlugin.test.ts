@@ -18,8 +18,8 @@ import {
     record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
-import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 import { ResourceEvent } from '../../../events/resource-event';
+import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
     return new ResourcePlugin(config);

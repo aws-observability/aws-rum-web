@@ -62,7 +62,6 @@ const mockCLSData = {
     }
 };
 
-// only need hasLatency fields
 const mockImagePerformanceEntry = {
     name: 'https://www.example.com/image.png',
     duration: 50,
