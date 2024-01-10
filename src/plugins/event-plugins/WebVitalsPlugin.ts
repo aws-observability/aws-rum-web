@@ -58,7 +58,7 @@ export class WebVitalsPlugin extends InternalPlugin {
 
     private messageHandler: Subscriber = (
         event: ParsedRumEvent,
-        name?: string
+        name: string
     ) => {
         switch (event.type) {
             // lcp resource is either image or text
@@ -70,7 +70,7 @@ export class WebVitalsPlugin extends InternalPlugin {
                         ResourceType.IMAGE
                 ) {
                     this.resourceEventIds.set(
-                        performanceKey(details as PerformanceEntry),
+                        performanceKey(name, details.startTime),
                         event.id
                     );
                 }
@@ -92,8 +92,12 @@ export class WebVitalsPlugin extends InternalPlugin {
             elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {
-            const key = performanceKey(a.lcpResourceEntry as PerformanceEntry);
-            attribution.lcpResourceEntry = this.resourceEventIds.get(key);
+            attribution.lcpResourceEntry = this.resourceEventIds.get(
+                performanceKey(
+                    a.lcpResourceEntry.name,
+                    a.lcpResourceEntry.startTime
+                )
+            );
         }
         if (this.navigationEventId) {
             attribution.navigationEntry = this.navigationEventId;

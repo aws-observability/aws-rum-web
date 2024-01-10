@@ -22,6 +22,11 @@
         }
     },
     "properties": {
+        "version": {
+            "const": "2.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
         "name": {
             "type": "string"
         },
@@ -97,5 +102,5 @@
         }
     },
     "additionalProperties": false,
-    "required": ["duration", "entryType", "startTime"]
+    "required": ["version", "duration", "entryType", "startTime"]
 }

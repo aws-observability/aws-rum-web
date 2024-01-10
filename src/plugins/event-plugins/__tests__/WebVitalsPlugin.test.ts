@@ -70,6 +70,7 @@ const mockImagePerformanceEntry = {
 } as PerformanceEntry;
 
 const mockImageResourceTimingEvent = {
+    version: '2.0.0',
     ...mockImagePerformanceEntry
 } as ResourceEvent;
 
@@ -234,7 +235,7 @@ describe('WebVitalsPlugin tests', () => {
         );
     });
 
-    test('when no matching image resource does not exist then it is not attributed to lcp', async () => {
+    test('when no matching image resource exists then it is not attributed to lcp', async () => {
         // init
         const event = mockImageRumEvent.details as ResourceEvent;
         const startTime = event.startTime;

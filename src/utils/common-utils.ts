@@ -41,8 +41,8 @@ export enum InitiatorType {
  * Creates key to link a RumEvent to the PerformanceEntry that it is sourced from
  * e.g. performanceKey(ResourceEvent) === performanceKey(PerformanceResourceTiming).
  */
-export const performanceKey = (details: PerformanceEntry) =>
-    [details.name, details.startTime].join('#');
+export const performanceKey = (name: string, startTime: number) =>
+    [name, startTime].join('#');
 
 const extensions = [
     {
