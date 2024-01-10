@@ -360,7 +360,7 @@ describe('VirtualPageLoadTimer tests', () => {
         expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_NAVIGATION_EVENT_TYPE
         );
-        expect(record.mock.calls[0][1].initiatorType).toEqual('route_change');
+        expect(record.mock.calls[0][1].initiatorType).toEqual('navigation');
 
         // periodic checker and timeout should be undefined and isPageLoaded should be true
         expect(virtualPageLoadTimer['timeoutCheckerId']).toEqual(undefined);

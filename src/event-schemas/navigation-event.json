@@ -1,45 +1,60 @@
 {
-    "$id": "com.amazon.rum.performance_navigation_event",
+    "$id": "com.amazon.rum.performance_navigation_timing_event",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "NavigationEvent",
     "type": "object",
+    "definitions": {
+        "performanceServerTimingPolyfill": {
+            "$id": "#performanceServerTimingPolyfill",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
     "properties": {
         "version": {
-            "const": "1.0.0",
+            "const": "2.0.0",
             "type": "string",
-            "description": "Schema version."
+            "description": "Schema version"
         },
-        "initiatorType": {
-            "type": "string",
-            "enum": ["navigation", "route_change"]
+        "name": {
+            "type": "string"
         },
-        "navigationType": {
-            "description": "An unsigned short which indicates how the navigation to this page was done. Possible values are:TYPE_NAVIGATE (0), TYPE_RELOAD (1), TYPE_BACK_FORWARD (2), TYPE_RESERVED (255)",
-            "type": "string",
-            "enum": ["navigate", "reload", "back_forward", "reserved"]
+        "entryType": {
+            "const": "navigation",
+            "type": "string"
         },
         "startTime": {
+            "const": 0,
             "type": "number"
         },
-        "unloadEventStart": {
+        "duration": {
             "type": "number"
         },
-        "promptForUnload": {
-            "type": "number"
+        "initiatorType": {
+            "const": "navigation",
+            "type": "string"
         },
-        "redirectCount": {
-            "type": "integer"
-        },
-        "redirectStart": {
-            "type": "number"
-        },
-        "redirectTime": {
-            "type": "number"
+        "nextHopProtocol": {
+            "type": "string"
         },
         "workerStart": {
             "type": "number"
         },
-        "workerTime": {
+        "redirectStart": {
+            "type": "number"
+        },
+        "redirectEnd": {
             "type": "number"
         },
         "fetchStart": {
@@ -48,73 +63,73 @@
         "domainLookupStart": {
             "type": "number"
         },
-        "dns": {
+        "domainLookupEnd": {
             "type": "number"
-        },
-        "nextHopProtocol": {
-            "type": "string"
         },
         "connectStart": {
             "type": "number"
         },
-        "connect": {
+        "connectEnd": {
             "type": "number"
         },
         "secureConnectionStart": {
             "type": "number"
         },
-        "tlsTime": {
-            "type": "number"
-        },
         "requestStart": {
-            "type": "number"
-        },
-        "timeToFirstByte": {
             "type": "number"
         },
         "responseStart": {
             "type": "number"
         },
-        "responseTime": {
-            "type": "number"
-        },
-        "domInteractive": {
-            "type": "number"
-        },
-        "domContentLoadedEventStart": {
-            "type": "number"
-        },
-        "domContentLoaded": {
-            "type": "number"
-        },
-        "domComplete": {
-            "type": "number"
-        },
-        "domProcessingTime": {
-            "type": "number"
-        },
-        "loadEventStart": {
-            "type": "number"
-        },
-        "loadEventTime": {
-            "type": "number"
-        },
-        "duration": {
-            "type": "number"
-        },
-        "headerSize": {
+        "responseEnd": {
             "type": "number"
         },
         "transferSize": {
             "type": "number"
         },
-        "compressionRatio": {
+        "encodedBodySize": {
             "type": "number"
         },
-        "navigationTimingLevel": {
+        "decodedBodySize": {
+            "type": "number"
+        },
+        "serverTiming": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/performanceServerTimingPolyfill"
+            }
+        },
+        "domComplete": {
+            "type": "number"
+        },
+        "domContentLoadedEventEnd": {
+            "type": "number"
+        },
+        "domContentLoadedEventStart": {
+            "type": "number"
+        },
+        "domInteractive": {
+            "type": "number"
+        },
+        "loadEventEnd": {
+            "type": "number"
+        },
+        "loadEventStart": {
+            "type": "number"
+        },
+        "redirectCount": {
+            "type": "integer"
+        },
+        "type": {
+            "type": "string"
+        },
+        "unloadEventEnd": {
+            "type": "number"
+        },
+        "unloadEventStart": {
             "type": "number"
         }
     },
     "additionalProperties": false,
-    "required": ["version", "initiatorType", "startTime", "duration"]
+    "required": ["version", "entryType", "startTime", "duration"]
 }

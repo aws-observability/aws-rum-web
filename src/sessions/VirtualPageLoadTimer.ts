@@ -240,13 +240,11 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     };
 
     private recordRouteChangeNavigationEvent(page: Page) {
-        const virtualPageNavigationEvent: NavigationEvent = {
-            version: '1.0.0',
-            initiatorType: 'route_change',
-            navigationType: 'navigate',
-            startTime: page.start,
+        const virtualPageNavigationEvent = {
+            initiatorType: 'navigation',
+            type: 'navigate',
             duration: this.latestEndTime - page.start
-        };
+        } as NavigationEvent;
         if (this.record) {
             this.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
