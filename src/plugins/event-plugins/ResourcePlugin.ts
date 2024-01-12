@@ -63,11 +63,11 @@ export class ResourcePlugin extends InternalPlugin {
             const entry = e as PerformanceResourceTimingPolyfill;
             const { name, initiatorType } = entry;
 
-            // (1) Ignore by custom callback.
-            // (2) Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data plane),
-            // otherwise we end up in an infinite loop of recording PutRumEvents.
             if (
                 this.config.ignore(e) ||
+                // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data
+                // plane), otherwise we end up in an infinite loop of recording
+                // PutRumEvents.
                 isPutRumEventsCall(name, this.context.config.endpointUrl.host)
             ) {
                 continue;
