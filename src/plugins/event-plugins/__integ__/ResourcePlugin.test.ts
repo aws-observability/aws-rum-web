@@ -5,7 +5,7 @@ import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
 const dispatch: Selector = Selector(`#dispatch`);
 
 fixture('ResourceEvent Plugin').page(
-    'http://localhost:9000/delayed_image.html'
+    'http://localhost:8080/delayed_image.html'
 );
 
 test('when resource loads after window.load then the resource is recorded', async (t: TestController) => {
