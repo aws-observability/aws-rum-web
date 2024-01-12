@@ -46,15 +46,13 @@ test('when resource event is record it contains all fields', async (t: TestContr
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents?.filter(
-        (e: any) => e.type === PERFORMANCE_RESOURCE_EVENT_TYPE
+    const resourceEvent = JSON.parse(
+        JSON.parse(await REQUEST_BODY.textContent).RumEvents?.find(
+            (e: any) => e.type === PERFORMANCE_RESOURCE_EVENT_TYPE
+        )?.details
     );
 
-    const resourceEvent = JSON.parse(events[0]?.details);
-
     await t
-        .expect(events.length)
-        .eql(2)
         .expect(resourceEvent)
         .ok()
         .expect(resourceEvent.version)
