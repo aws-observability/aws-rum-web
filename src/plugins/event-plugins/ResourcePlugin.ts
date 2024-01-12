@@ -40,10 +40,7 @@ export class ResourcePlugin extends InternalPlugin {
             return;
         }
         this.enabled = true;
-        this.resourceObserver.observe({
-            type: RESOURCE,
-            buffered: true
-        });
+        this.onload();
     }
 
     disable(): void {
