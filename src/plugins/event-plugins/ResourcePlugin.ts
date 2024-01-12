@@ -37,7 +37,7 @@ export class ResourcePlugin extends InternalPlugin {
             return;
         }
         this.enabled = true;
-        this.onload();
+        this.observe();
     }
 
     disable(): void {
@@ -46,6 +46,16 @@ export class ResourcePlugin extends InternalPlugin {
         }
         this.enabled = false;
         this.resourceObserver.disconnect();
+    }
+
+    private observe() {
+        // We need to set `buffered: true`, so the observer also records past
+        // resource entries. However, there is a limited buffer size, so we may
+        // not be able to collect all resource entries.
+        this.resourceObserver.observe({
+            type: RESOURCE,
+            buffered: true
+        });
     }
 
     performanceEntryHandler = (list: PerformanceObserverEntryList): void => {
@@ -108,12 +118,6 @@ export class ResourcePlugin extends InternalPlugin {
     };
 
     protected onload(): void {
-        // We need to set `buffered: true`, so the observer also records past
-        // resource entries. However, there is a limited buffer size, so we may
-        // not be able to collect all resource entries.
-        this.resourceObserver.observe({
-            type: RESOURCE,
-            buffered: true
-        });
+        this.observe();
     }
 }
