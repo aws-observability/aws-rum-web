@@ -1,26 +1,8 @@
 {
-    "$id": "com.amazon.rum.performance_resource_timing_event",
+    "$id": "com.amazon.rum.performance_resource_timing",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "ResourceEvent",
     "type": "object",
-    "definitions": {
-        "performanceServerTimingPolyfill": {
-            "$id": "#performanceServerTimingPolyfill",
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "duration": {
-                    "type": "number"
-                },
-                "name": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        }
-    },
     "properties": {
         "version": {
             "const": "2.0.0",
@@ -87,12 +69,6 @@
         },
         "secureConnectionStart": {
             "type": "number"
-        },
-        "serverTiming": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/performanceServerTimingPolyfill"
-            }
         },
         "transferSize": {
             "type": "number"

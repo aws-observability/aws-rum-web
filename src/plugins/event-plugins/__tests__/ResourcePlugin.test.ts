@@ -18,7 +18,7 @@ import {
     record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
-import { ResourceEvent } from '../../../events/resource-event';
+import { ResourceEvent } from '../../../events/performance-resource-timing';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
@@ -71,7 +71,6 @@ describe('ResourcePlugin tests', () => {
                 responseEnd: r.responseEnd,
                 responseStart: r.responseStart,
                 secureConnectionStart: r.secureConnectionStart,
-                serverTiming: r.serverTiming,
                 transferSize: r.transferSize,
                 workerStart: r.workerStart
             })

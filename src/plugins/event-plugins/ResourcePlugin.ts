@@ -4,10 +4,7 @@ import {
     isPutRumEventsCall
 } from '../../utils/common-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
-import {
-    ResourceEvent,
-    PerformanceServerTimingPolyfill
-} from '../../events/resource-event';
+import { ResourceEvent } from '../../events/performance-resource-timing';
 import {
     defaultPerformancePluginConfig,
     PartialPerformancePluginConfig,
@@ -105,11 +102,6 @@ export class ResourcePlugin extends InternalPlugin {
             responseEnd: r.responseEnd,
             responseStart: r.responseStart,
             secureConnectionStart: r.secureConnectionStart,
-            serverTiming: r.serverTiming
-                ? (r.serverTiming.map(
-                      (e) => e as PerformanceServerTimingPolyfill
-                  ) as PerformanceServerTimingPolyfill[])
-                : undefined,
             transferSize: r.transferSize,
             workerStart: r.workerStart
         } as ResourceEvent);

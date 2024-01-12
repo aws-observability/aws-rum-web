@@ -96,13 +96,6 @@ test('when resource event is record it contains all fields', async (t: TestContr
         .expect(resourceEvent.decodedBodySize)
         .gte(0);
 
-    // There seems to be a PerformanceAPI bug on Firefox for serverTiming, despite documentation
-    // https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/serverTiming
-    // https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming#browser_compatibility
-    if (t.browser.name !== 'Firefox') {
-        await t.expect(resourceEvent.serverTiming).ok();
-    }
-
     // As of now, RenderBlockingStatus is not experimental but has limited support
     // https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming#browser_compatibility
     if (t.browser.name !== 'Firefox' && t.browser.name !== 'Safari') {

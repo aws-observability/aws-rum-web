@@ -18,7 +18,7 @@ import { context, record } from '../../../test-utils/test-utils';
 import { Topic } from '../../../event-bus/EventBus';
 import { WebVitalsPlugin } from '../WebVitalsPlugin';
 import { navigationEvent } from '../../../test-utils/mock-data';
-import { ResourceEvent } from '../../../events/resource-event';
+import { ResourceEvent } from '../../../events/performance-resource-timing';
 import { ParsedRumEvent } from 'dispatch/dataplane';
 
 const mockLCPData = {

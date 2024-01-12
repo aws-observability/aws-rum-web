@@ -27,7 +27,7 @@ import {
     isLCPSupported,
     getResourceFileType
 } from '../../utils/common-utils';
-import { ResourceEvent } from '../../events/resource-event';
+import { ResourceEvent } from '../../events/performance-resource-timing';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
