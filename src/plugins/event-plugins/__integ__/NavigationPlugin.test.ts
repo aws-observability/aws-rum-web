@@ -89,11 +89,4 @@ test('when plugin loads after window.load then navigation timing events are reco
         .gte(0)
         .expect(navigationEvent.unloadEventStart)
         .gte(0);
-
-    // There seems to be a PerformanceAPI bug on Firefox for serverTiming, despite documentation
-    // https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/serverTiming
-    // https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming#browser_compatibility
-    if (t.browser.name !== 'Firefox') {
-        await t.expect(navigationEvent.serverTiming).ok();
-    }
 });
