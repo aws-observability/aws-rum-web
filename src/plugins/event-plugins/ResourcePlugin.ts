@@ -4,7 +4,7 @@ import {
     isPutRumEventsCall
 } from '../../utils/common-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
-import { ResourceEvent } from '../../events/performance-resource-timing';
+import { PerformanceResourceTimingEvent } from '../../events/performance-resource-timing';
 import {
     defaultPerformancePluginConfig,
     PartialPerformancePluginConfig,
@@ -114,7 +114,7 @@ export class ResourcePlugin extends InternalPlugin {
             secureConnectionStart: r.secureConnectionStart,
             transferSize: r.transferSize,
             workerStart: r.workerStart
-        } as ResourceEvent);
+        } as PerformanceResourceTimingEvent);
     };
 
     protected onload(): void {

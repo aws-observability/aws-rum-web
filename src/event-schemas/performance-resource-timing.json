@@ -1,7 +1,7 @@
 {
     "$id": "com.amazon.rum.performance_resource_timing",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "ResourceEvent",
+    "title": "PerformanceResourceTimingEvent",
     "type": "object",
     "properties": {
         "version": {

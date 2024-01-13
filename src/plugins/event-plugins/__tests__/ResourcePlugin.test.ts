@@ -18,7 +18,7 @@ import {
     record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
-import { ResourceEvent } from '../../../events/performance-resource-timing';
+import { PerformanceResourceTimingEvent } from '../../../events/performance-resource-timing';
 import { PartialPerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: PartialPerformancePluginConfig) => {
@@ -48,7 +48,9 @@ describe('ResourcePlugin tests', () => {
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
         const r = resourceTiming;
-        expect(record.mock.calls[1][1] as ResourceEvent).toEqual(
+        expect(
+            record.mock.calls[1][1] as PerformanceResourceTimingEvent
+        ).toEqual(
             expect.objectContaining({
                 version: '2.0.0',
                 name: r.name,
@@ -93,7 +95,9 @@ describe('ResourcePlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        expect((record.mock.calls[0][1] as ResourceEvent).name).toBeUndefined();
+        expect(
+            (record.mock.calls[0][1] as PerformanceResourceTimingEvent).name
+        ).toBeUndefined();
     });
 
     test('when resource is a PutRumEvents request then resource event is not recorded', async () => {

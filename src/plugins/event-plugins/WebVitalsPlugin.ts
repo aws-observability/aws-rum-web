@@ -27,7 +27,7 @@ import {
     isLCPSupported,
     getResourceFileType
 } from '../../utils/common-utils';
-import { ResourceEvent } from '../../events/performance-resource-timing';
+import { PerformanceResourceTimingEvent } from '../../events/performance-resource-timing';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
@@ -59,7 +59,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         switch (event.type) {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
-                const details = event.details as ResourceEvent;
+                const details = event.details as PerformanceResourceTimingEvent;
                 if (
                     this.cacheLCPCandidates &&
                     details.initiatorType &&
