@@ -1,8 +1,5 @@
 import { InternalPlugin } from '../InternalPlugin';
-import {
-    NavigationEvent,
-    PerformanceServerTimingPolyfill
-} from '../../events/navigation-event';
+import { PerformanceNavigationTimingEvent } from '../../events/performance-navigation-timing';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../utils/constant';
 import {
     PartialPerformancePluginConfig,
@@ -28,7 +25,7 @@ export class NavigationPlugin extends InternalPlugin {
             return;
         }
         this.enabled = true;
-        this.onload();
+        this.observe();
     }
 
     disable(): void {
@@ -40,7 +37,7 @@ export class NavigationPlugin extends InternalPlugin {
     }
 
     /**
-     * Callback to record PerformanceNavigationTiming as RUM NavigationEvent
+     * Callback to record PerformanceNavigationTiming as RUM PerformanceNavigationTimingEvent
      * https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming
      */
     performanceEntryHandler: PerformanceObserverCallback = (
@@ -79,11 +76,6 @@ export class NavigationPlugin extends InternalPlugin {
                 transferSize: e.transferSize,
                 encodedBodySize: e.encodedBodySize,
                 decodedBodySize: e.decodedBodySize,
-                serverTiming: e.serverTiming
-                    ? e.serverTiming.map(
-                          (s) => s as PerformanceServerTimingPolyfill
-                      )
-                    : undefined,
                 domComplete: e.domComplete,
                 domContentLoadedEventEnd: e.domContentLoadedEventEnd,
                 domContentLoadedEventStart: e.domContentLoadedEventStart,
@@ -94,17 +86,21 @@ export class NavigationPlugin extends InternalPlugin {
                 type: e.type,
                 unloadEventEnd: e.unloadEventEnd,
                 unloadEventStart: e.unloadEventStart
-            } as NavigationEvent);
+            } as PerformanceNavigationTimingEvent);
 
             // Teardown
             this.po.disconnect();
         });
     };
 
-    protected onload(): void {
+    private observe() {
         this.po.observe({
             type: NAVIGATION,
             buffered: true
         });
+    }
+
+    protected onload(): void {
+        this.observe();
     }
 }

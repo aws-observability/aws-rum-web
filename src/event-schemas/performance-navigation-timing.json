@@ -1,26 +1,9 @@
 {
-    "$id": "com.amazon.rum.performance_navigation_timing_event",
+    "$id": "com.amazon.rum.performance_navigation_timing",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "NavigationEvent",
+    "title": "PerformanceNavigationTimingEvent",
     "type": "object",
-    "definitions": {
-        "performanceServerTimingPolyfill": {
-            "$id": "#performanceServerTimingPolyfill",
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "duration": {
-                    "type": "number"
-                },
-                "name": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        }
-    },
+
     "properties": {
         "version": {
             "const": "2.0.0",
@@ -92,12 +75,6 @@
         },
         "decodedBodySize": {
             "type": "number"
-        },
-        "serverTiming": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/performanceServerTimingPolyfill"
-            }
         },
         "domComplete": {
             "type": "number"

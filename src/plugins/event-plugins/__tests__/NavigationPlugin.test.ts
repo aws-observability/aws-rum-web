@@ -59,7 +59,6 @@ describe('NavigationPlugin tests', () => {
                 transferSize: e.transferSize,
                 encodedBodySize: e.encodedBodySize,
                 decodedBodySize: e.decodedBodySize,
-                serverTiming: e.serverTiming,
                 domComplete: e.domComplete,
                 domContentLoadedEventEnd: e.domContentLoadedEventEnd,
                 domContentLoadedEventStart: e.domContentLoadedEventStart,
