@@ -25,8 +25,8 @@
             "type": "number"
         },
         "initiatorType": {
-            "const": "navigation",
-            "type": "string"
+            "type": "string",
+            "enum": ["navigation", "route_change"]
         },
         "nextHopProtocol": {
             "type": "string"
