@@ -55,7 +55,6 @@ export class NavigationPlugin extends InternalPlugin {
             // Record
             const e = entry as PerformanceNavigationTiming;
             this.context?.record(PERFORMANCE_NAVIGATION_EVENT_TYPE, {
-                version: '2.0.0',
                 name: this.context.config.recordResourceUrl
                     ? e.name
                     : undefined,

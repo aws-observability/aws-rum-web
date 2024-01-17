@@ -49,7 +49,6 @@ describe('NavigationPlugin tests', () => {
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                version: '2.0.0',
                 name: e.name,
                 entryType: 'navigation',
                 startTime: e.startTime,
