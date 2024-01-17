@@ -3,13 +3,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "PerformanceNavigationTimingEvent",
     "type": "object",
-
     "properties": {
-        "version": {
-            "const": "2.0.0",
-            "type": "string",
-            "description": "Schema version"
-        },
         "name": {
             "type": "string"
         },
@@ -98,7 +92,8 @@
             "type": "integer"
         },
         "type": {
-            "type": "string"
+            "type": "string",
+            "enum": ["navigate", "reload", "back_forward", "prerender"]
         },
         "unloadEventEnd": {
             "type": "number"
@@ -108,5 +103,5 @@
         }
     },
     "additionalProperties": false,
-    "required": ["version", "entryType", "startTime", "duration"]
+    "required": ["entryType", "startTime", "duration"]
 }
