@@ -12,14 +12,16 @@
             "type": "string"
         },
         "startTime": {
-            "type": "number"
+            "type": "number",
+            "description": "StartTime value is always '0' for PerformanceNavigationTimingEvents created by the PerformanceAPI. However, non-W3C 'route_changes' created by RUM's polyfill for SinglePageApplications can have startTimes >= 0."
         },
         "duration": {
             "type": "number"
         },
         "initiatorType": {
             "type": "string",
-            "enum": ["navigation", "route_change"]
+            "enum": ["navigation", "route_change"],
+            "description": "InitiatorType value is always 'navigation' for PerformanceNavigationTimingEvents created by the PerformanceAPI. However, RUM adds the non-W3C concept 'route_change' as a polyfill because the PerformanceAPI currently does not support Single Page Applications."
         },
         "nextHopProtocol": {
             "type": "string"
