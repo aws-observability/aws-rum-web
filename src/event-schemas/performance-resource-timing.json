@@ -4,11 +4,6 @@
     "title": "PerformanceResourceTimingEvent",
     "type": "object",
     "properties": {
-        "version": {
-            "const": "2.0.0",
-            "type": "string",
-            "description": "Schema version."
-        },
         "name": {
             "type": "string"
         },
@@ -44,7 +39,30 @@
             "type": "number"
         },
         "initiatorType": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+                "audio",
+                "beacon",
+                "body",
+                "css",
+                "early-hint",
+                "embed",
+                "fetch",
+                "frame",
+                "iframe",
+                "icon",
+                "image",
+                "img",
+                "input",
+                "link",
+                "navigation",
+                "object",
+                "ping",
+                "script",
+                "track",
+                "video",
+                "xmlhttprequest"
+            ]
         },
         "nextHopProtocol": {
             "type": "string"
@@ -78,5 +96,5 @@
         }
     },
     "additionalProperties": false,
-    "required": ["version", "duration", "entryType", "startTime"]
+    "required": ["duration", "entryType", "startTime"]
 }

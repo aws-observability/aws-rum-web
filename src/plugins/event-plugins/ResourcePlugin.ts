@@ -91,7 +91,6 @@ export class ResourcePlugin extends InternalPlugin {
 
     recordResourceEvent = (r: PerformanceResourceTimingPolyfill): void => {
         this.context?.record(PERFORMANCE_RESOURCE_EVENT_TYPE, {
-            version: '2.0.0',
             name: this.context.config.recordResourceUrl ? r.name : undefined,
             entryType: RESOURCE,
             startTime: r.startTime,

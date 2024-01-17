@@ -69,7 +69,6 @@ const mockImagePerformanceEntry = {
 } as PerformanceEntry;
 
 const mockImageResourceTimingEvent = {
-    version: '2.0.0',
     initiatorType: 'img',
     ...mockImagePerformanceEntry
 } as PerformanceResourceTimingEvent;

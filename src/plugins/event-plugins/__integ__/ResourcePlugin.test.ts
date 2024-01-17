@@ -55,8 +55,6 @@ test('when resource event is record it contains all fields', async (t: TestContr
     await t
         .expect(resourceEvent)
         .ok()
-        .expect(resourceEvent.version)
-        .eql('2.0.0')
         .expect(resourceEvent.name)
         .ok()
         .expect(resourceEvent.entryType)

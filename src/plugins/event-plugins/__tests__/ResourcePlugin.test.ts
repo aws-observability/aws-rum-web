@@ -52,7 +52,6 @@ describe('ResourcePlugin tests', () => {
             record.mock.calls[1][1] as PerformanceResourceTimingEvent
         ).toEqual(
             expect.objectContaining({
-                version: '2.0.0',
                 name: r.name,
                 entryType: 'resource',
                 startTime: r.startTime,
