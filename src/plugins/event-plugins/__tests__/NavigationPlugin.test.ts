@@ -1,9 +1,12 @@
+let isNavigationSupported = true;
 jest.mock('../../../utils/common-utils', () => {
     const originalModule = jest.requireActual('../../../utils/common-utils');
     return {
         __esModule: true,
         ...originalModule,
-        isNavigationSupported: jest.fn().mockReturnValue(true)
+        isNavigationSupported: jest
+            .fn()
+            .mockImplementation(() => isNavigationSupported)
     };
 });
 
@@ -151,5 +154,23 @@ describe('NavigationPlugin tests', () => {
             PERFORMANCE_NAVIGATION_EVENT_TYPE,
             expect.anything()
         );
+    });
+
+    test('when PerformanceNavigationTiming is not supported, then the NavigationPlugin does not initialize an observer', async () => {
+        // init
+        isNavigationSupported = false;
+        // jest.mock('../NavigationPlugin');
+
+        // enables plugin by default
+        const plugin: NavigationPlugin = buildNavigationPlugin();
+
+        // window by default has already loaded before the plugin
+        // so when we load the plugin now, it should still record event
+        plugin.load(context);
+        // Assert
+        expect((plugin as any).po).toBeUndefined();
+
+        // restore
+        isNavigationSupported = true;
     });
 });

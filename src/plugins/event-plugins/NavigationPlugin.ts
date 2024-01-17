@@ -14,13 +14,15 @@ const NAVIGATION = 'navigation';
 /** This plugin records performance timing events generated during every page load/re-load activity. */
 export class NavigationPlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
-    private po: PerformanceObserver;
-    private readonly isSupported = isNavigationSupported();
+    private po?: PerformanceObserver;
 
     constructor(config?: PartialPerformancePluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
-        this.po = new PerformanceObserver(this.performanceEntryHandler);
+        const isSupported = isNavigationSupported();
+        this.po = isSupported
+            ? new PerformanceObserver(this.performanceEntryHandler)
+            : undefined;
     }
 
     enable(): void {
@@ -36,7 +38,7 @@ export class NavigationPlugin extends InternalPlugin {
             return;
         }
         this.enabled = false;
-        this.po.disconnect();
+        this.po?.disconnect();
     }
 
     /**
@@ -91,17 +93,15 @@ export class NavigationPlugin extends InternalPlugin {
             } as PerformanceNavigationTimingEvent);
 
             // Teardown
-            this.po.disconnect();
+            this.po?.disconnect();
         });
     };
 
     private observe() {
-        if (this.isSupported) {
-            this.po.observe({
-                type: NAVIGATION,
-                buffered: true
-            });
-        }
+        this.po?.observe({
+            type: NAVIGATION,
+            buffered: true
+        });
     }
 
     protected onload(): void {
