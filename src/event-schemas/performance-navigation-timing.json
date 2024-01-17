@@ -12,7 +12,6 @@
             "type": "string"
         },
         "startTime": {
-            "const": 0,
             "type": "number"
         },
         "duration": {

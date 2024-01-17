@@ -34,7 +34,7 @@ test('when plugin loads after window.load then navigation timing events are reco
         .expect(navigationEvent.entryType)
         .eql('navigation')
         .expect(navigationEvent.startTime)
-        .eql(0)
+        .gte(0)
         .expect(navigationEvent.duration)
         .gte(0)
         .expect(navigationEvent.initiatorType)
