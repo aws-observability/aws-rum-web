@@ -59,9 +59,9 @@ export class NavigationPlugin extends InternalPlugin {
                     ? e.name
                     : undefined,
                 entryType: NAVIGATION,
+                initiatorType: NAVIGATION,
                 startTime: e.startTime,
                 duration: e.duration,
-                initiatorType: e.initiatorType,
                 nextHopProtocol: e.nextHopProtocol,
                 workerStart: e.workerStart,
                 redirectStart: e.redirectStart,
