@@ -47,7 +47,6 @@ export class NavigationPlugin extends InternalPlugin {
         list: PerformanceObserverEntryList
     ) => {
         list.getEntries().forEach((entry) => {
-            // Ignore
             if (!this.enabled || this.config.ignore(entry)) {
                 return;
             }
