@@ -19,8 +19,7 @@ export class NavigationPlugin extends InternalPlugin {
     constructor(config?: PartialPerformancePluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
-        const isSupported = isNavigationSupported();
-        this.po = isSupported
+        this.po = isNavigationSupported()
             ? new PerformanceObserver(this.performanceEntryHandler)
             : undefined;
     }
