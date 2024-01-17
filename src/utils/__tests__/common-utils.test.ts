@@ -1,7 +1,8 @@
 import {
     InitiatorType,
     getResourceFileType,
-    ResourceType
+    ResourceType,
+    isPutRumEventsCall
 } from '../../utils/common-utils';
 
 describe('Common utils tests', () => {
@@ -47,5 +48,32 @@ describe('Common utils tests', () => {
         expect(getResourceFileType(InitiatorType.LINK)).toEqual(
             ResourceType.STYLESHEET
         );
+    });
+
+    test('when url host is rum dataplane and suffix match then is PutRumEvents', async () => {
+        const url =
+            'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/265d8f93-d021-44e1-b0c5-41fcc660842f';
+        expect(
+            isPutRumEventsCall(url, 'dataplane.rum.us-west-2.amazonaws.com')
+        ).toBe(true);
+    });
+    test('when url host is proxy and suffix match then is PutRumEvents call', async () => {
+        const url =
+            'https://proxy.com/appmonitors/265d8f93-d021-44e1-b0c5-41fcc660842f';
+        expect(isPutRumEventsCall(url, 'proxy.com')).toBe(true);
+    });
+
+    test('when url host is not endpoint but suffix match then is NOT PutRumEvents call', async () => {
+        const url =
+            'https://invalid.com/appmonitors/265d8f93-d021-44e1-b0c5-41fcc660842f';
+        expect(
+            isPutRumEventsCall(url, 'dataplane.rum.us-west-2.amazonaws.com')
+        ).toBe(false);
+    });
+
+    test('when url host is not endpoint and suffix is invalid then is NOT PutRumEvents call', async () => {
+        const url =
+            'https://invalid.com/notappmonitors/265d8f93-d021-44e1-b0c5-41fcc660842f';
+        expect(isPutRumEventsCall(url, 'proxy.com')).toBe(false);
     });
 });

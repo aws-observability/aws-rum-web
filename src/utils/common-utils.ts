@@ -88,11 +88,15 @@ export const isLongTaskSupported = () => {
     return PerformanceObserver.supportedEntryTypes.includes('longtask');
 };
 
+const isAppMonitorsPath =
+    /^.*\/appmonitors\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 export const isPutRumEventsCall = (url: string, endpointHost: string) => {
-    const pathRegex =
-        /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
     const entryUrl = new URL(url);
-    return entryUrl.host === endpointHost && pathRegex.test(entryUrl.pathname);
+    return (
+        entryUrl.host === endpointHost &&
+        isAppMonitorsPath.test(entryUrl.pathname)
+    );
 };
 
 export const isNavigationSupported = () => {
