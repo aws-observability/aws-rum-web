@@ -1,3 +1,12 @@
+jest.mock('../../../utils/common-utils', () => {
+    const originalModule = jest.requireActual('../../../utils/common-utils');
+    return {
+        __esModule: true,
+        ...originalModule,
+        isNavigationSupported: jest.fn().mockReturnValue(true)
+    };
+});
+
 import {
     navigationEvent,
     performanceEvent,

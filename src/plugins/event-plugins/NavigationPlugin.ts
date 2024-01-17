@@ -6,6 +6,7 @@ import {
     PerformancePluginConfig,
     defaultPerformancePluginConfig
 } from '../utils/performance-utils';
+import { isNavigationSupported } from '../../utils/common-utils';
 
 export const NAVIGATION_EVENT_PLUGIN_ID = 'navigation';
 const NAVIGATION = 'navigation';
@@ -14,6 +15,8 @@ const NAVIGATION = 'navigation';
 export class NavigationPlugin extends InternalPlugin {
     private config: PerformancePluginConfig;
     private po: PerformanceObserver;
+    private readonly isSupported = isNavigationSupported();
+
     constructor(config?: PartialPerformancePluginConfig) {
         super(NAVIGATION_EVENT_PLUGIN_ID);
         this.config = { ...defaultPerformancePluginConfig, ...config };
@@ -94,10 +97,12 @@ export class NavigationPlugin extends InternalPlugin {
     };
 
     private observe() {
-        this.po.observe({
-            type: NAVIGATION,
-            buffered: true
-        });
+        if (this.isSupported) {
+            this.po.observe({
+                type: NAVIGATION,
+                buffered: true
+            });
+        }
     }
 
     protected onload(): void {
