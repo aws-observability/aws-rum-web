@@ -170,10 +170,10 @@ export const createDocumentResource = (url: string) => {
 };
 
 export const putRumEventsDocument = createDocumentResource(
-    'https://dataplane.rum.us-west-2.amazonaws.com/appmonitors/aa17a42c-e737-48f7-adaf-2e0905f48073'
+    'https://dataplane.rum.us-west-2.amazonaws.com/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events'
 );
 export const putRumEventsGammaDocument = createDocumentResource(
-    'https://dataplane.rum.us-west-2.amazonaws.com/gamma/appmonitors/aa17a42c-e737-48f7-adaf-2e0905f48073'
+    'https://dataplane.rum.us-west-2.amazonaws.com/gamma/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events'
 );
 export const dataPlaneDocument = createDocumentResource(
     'https://dataplane.rum.us-west-2.amazonaws.com/user'
