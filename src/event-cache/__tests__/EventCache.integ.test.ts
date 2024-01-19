@@ -75,7 +75,7 @@ describe('EventCache tests', () => {
         });
     });
 
-    test('meta data contains default attributes not overridden from custom attributes', async () => {
+    test('default meta data can be overriden by custom attributes', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const config = {
@@ -88,7 +88,8 @@ describe('EventCache tests', () => {
                     domain: 'overridden.console.aws.amazon.com',
                     browserLanguage: 'en-UK',
                     browserName: 'Chrome',
-                    deviceType: 'Mac'
+                    deviceType: 'Mac',
+                    platformType: 'other'
                 }
             }
         };
@@ -99,10 +100,10 @@ describe('EventCache tests', () => {
             'aws:client': INSTALL_MODULE,
             'aws:clientVersion': WEB_CLIENT_VERSION,
             domain: 'overridden.console.aws.amazon.com',
-            browserLanguage: 'en-US',
-            browserName: 'WebKit',
-            deviceType: 'desktop',
-            platformType: 'web',
+            browserLanguage: 'en-UK',
+            browserName: 'Chrome',
+            deviceType: 'Mac',
+            platformType: 'other',
             pageId: '/console/home'
         };
 

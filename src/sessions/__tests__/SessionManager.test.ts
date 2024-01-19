@@ -810,16 +810,40 @@ describe('SessionManager tests', () => {
     });
 
     test('when domain is in custom session attributes then domain is overridden', async () => {
+        // Init
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG
         });
 
-        sessionManager.addSessionAttributes({
-            domain: 'overridden'
-        });
+        const sessionAttributes = {
+            domain: 'preferred.domain'
+        };
+
+        sessionManager.addSessionAttributes(sessionAttributes);
 
         const actualSessionAttributes = sessionManager.getAttributes();
 
-        expect(actualSessionAttributes.domain).toEqual('overridden');
+        // Assert
+        expect(actualSessionAttributes.domain).toEqual(
+            sessionAttributes.domain
+        );
+    });
+
+    test('when custom session attributes have the same key as built in attributies then custom session attributes are used', async () => {
+        // Init
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG
+        });
+
+        const sessionAttributes = {
+            title: 'override'
+        };
+
+        sessionManager.addSessionAttributes(sessionAttributes);
+
+        const actualSessionAttributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(actualSessionAttributes.title).toEqual(sessionAttributes.title);
     });
 });

@@ -139,9 +139,7 @@ export class SessionManager {
     public addSessionAttributes(sessionAttributes: {
         [k: string]: string | number | boolean;
     }) {
-        this.attributes = { ...sessionAttributes, ...this.attributes };
-        this.attributes.domain =
-            (sessionAttributes.domain as string) || this.attributes.domain;
+        this.attributes = { ...this.attributes, ...sessionAttributes };
     }
 
     public getUserId(): string {
