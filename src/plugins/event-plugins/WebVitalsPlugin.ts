@@ -49,13 +49,13 @@ export class WebVitalsPlugin extends InternalPlugin {
     configure(config: any): void {}
 
     protected onload(): void {
-        this.context.eventBus.subscribe(Topic.EVENT, this.messageHandler); // eslint-disable-line @typescript-eslint/unbound-method
+        this.context.eventBus.subscribe(Topic.EVENT, this.eventHandler); // eslint-disable-line @typescript-eslint/unbound-method
         onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    private messageHandler: Subscriber = (event: ParsedRumEvent) => {
+    private eventHandler: Subscriber = (event: ParsedRumEvent) => {
         switch (event.type) {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
@@ -106,7 +106,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         } as LargestContentfulPaintEvent);
 
         // teardown
-        this.context?.eventBus.unsubscribe(Topic.EVENT, this.messageHandler); // eslint-disable-line
+        this.context?.eventBus.unsubscribe(Topic.EVENT, this.eventHandler); // eslint-disable-line
         this.resourceEventIds.clear();
         this.navigationEventId = undefined;
     }
