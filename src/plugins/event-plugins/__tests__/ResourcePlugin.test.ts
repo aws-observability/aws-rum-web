@@ -1,3 +1,14 @@
+let isResourceSupported = true;
+jest.mock('../../../utils/common-utils', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('../../../utils/common-utils'),
+        isResourceSupported: jest
+            .fn()
+            .mockImplementation(() => isResourceSupported)
+    };
+});
+
 import {
     resourceTiming,
     putRumEventsDocument,
@@ -251,5 +262,20 @@ describe('ResourcePlugin tests', () => {
         plugin.load(context);
 
         expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when resource is not supported then no performance observer is initiated', async () => {
+        // init
+        isResourceSupported = false;
+        const plugin: ResourcePlugin = buildResourcePlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect((plugin as any).resourceObserver).toBeUndefined();
+
+        // restore
+        isResourceSupported = true;
     });
 });

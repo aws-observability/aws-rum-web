@@ -98,3 +98,6 @@ export const isPutRumEventsCall = (url: string, endpointHost: string) => {
 export const isNavigationSupported = () => {
     return PerformanceObserver.supportedEntryTypes.includes('navigation');
 };
+
+export const isResourceSupported = () =>
+    PerformanceObserver.supportedEntryTypes.includes('resource');
