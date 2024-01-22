@@ -41,7 +41,7 @@ export const navigationEvent = {
     secureConnectionStart: 6.495000001450535,
     serverTiming: [],
     startTime: 0,
-    transferSize: 36525,
+    transferSize: 0,
     type: 'navigate',
     unloadEventEnd: 0,
     unloadEventStart: 0,
