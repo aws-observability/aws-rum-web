@@ -253,7 +253,10 @@ export class NavigationPlugin extends InternalPlugin {
 
             duration: entryData.duration,
 
-            headerSize: entryData.transferSize - entryData.encodedBodySize,
+            headerSize:
+                entryData.transferSize > 0
+                    ? entryData.transferSize - entryData.encodedBodySize
+                    : 0,
             transferSize: entryData.transferSize,
             compressionRatio:
                 entryData.encodedBodySize > 0

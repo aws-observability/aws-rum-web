@@ -46,6 +46,23 @@ describe('NavigationPlugin tests', () => {
         );
     });
 
+    test('When transferSize is 0 then headerSize is 0', async () => {
+        const plugin: NavigationPlugin = buildNavigationPlugin();
+        // Run
+        plugin.load(context);
+        window.dispatchEvent(new Event('load'));
+        plugin.disable();
+
+        expect(record.mock.calls[0][0]).toEqual(
+            PERFORMANCE_NAVIGATION_EVENT_TYPE
+        );
+        expect(record.mock.calls[0][1]).toEqual(
+            expect.objectContaining({
+                headerSize: 0
+            })
+        );
+    });
+
     test('When navigation timing level 2 API is not present then navigation timing level 1 API is recorded', async () => {
         jest.useFakeTimers();
         mockPerformanceObjectWith([putRumEventsDocument], [], []);
