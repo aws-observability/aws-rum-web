@@ -67,7 +67,7 @@ import { ErrorHandler } from "@angular/core";
 
 declare function cwr(operation: string, payload: any): void;
 
-export class CwrErrorHandler implements ErrorHandler {
+export class RumErrorHandler implements ErrorHandler {
   handleError(error: any) {
     cwr('recordError', error);
   }
@@ -79,7 +79,6 @@ export class CwrErrorHandler implements ErrorHandler {
 `src/app/app.module.ts`
 ```typescript
 import { RumErrorHandler } from './cwr-error-handler';
-
 @NgModule({
   imports: [
       ...
@@ -93,7 +92,7 @@ import { RumErrorHandler } from './cwr-error-handler';
   providers: [
     {
       provide: ErrorHandler,
-      useClass: CwrErrorHandler
+      useClass: RumErrorHandler
     }
   ]
 })
