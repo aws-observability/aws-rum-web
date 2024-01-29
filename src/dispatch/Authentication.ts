@@ -50,8 +50,8 @@ export abstract class Authentication {
     public ChainAnonymousCredentialsProvider =
         async (): Promise<AwsCredentialIdentity> => {
             return this.AnonymousCredentialsProvider()
-                .catch(this.AnonymousStorageCredentialsProvider) // eslint-disable-line @typescript-eslint/unbound-method
-                .catch(this.AnonymousCognitoCredentialsProvider); // eslint-disable-line @typescript-eslint/unbound-method
+                .catch(this.AnonymousStorageCredentialsProvider)
+                .catch(this.AnonymousCognitoCredentialsProvider);
         };
 
     /**
@@ -108,7 +108,7 @@ export abstract class Authentication {
      *
      * Implements AwsCredentialIdentityProvider = Provider<AwsCredentialIdentity>
      */
-    protected abstract AnonymousCognitoCredentialsProvider(): Promise<AwsCredentialIdentity>;
+    protected abstract AnonymousCognitoCredentialsProvider: () => Promise<AwsCredentialIdentity>;
 
     /**
      * Returns {@code true} when the credentials need to be renewed.
