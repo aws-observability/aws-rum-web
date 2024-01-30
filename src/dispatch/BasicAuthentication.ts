@@ -27,21 +27,27 @@ export class BasicAuthentication extends Authentication {
      */
     protected AnonymousCognitoCredentialsProvider =
         async (): Promise<AwsCredentialIdentity> => {
-            return this.cognitoIdentityClient
-                .getId({
-                    IdentityPoolId: this.config.identityPoolId as string
-                })
-                .then((getIdResponse) =>
-                    this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
-                )
-                .then((getOpenIdTokenResponse) =>
-                    this.stsClient.assumeRoleWithWebIdentity({
-                        RoleArn: this.config.guestRoleArn as string,
-                        RoleSessionName: 'cwr',
-                        WebIdentityToken: getOpenIdTokenResponse.Token
-                    })
-                )
-                .then((credentials: AwsCredentialIdentity) => {
+            let retries = 1;
+
+            while (true) {
+                try {
+                    const getIdResponse =
+                        await this.cognitoIdentityClient.getId({
+                            IdentityPoolId: this.config.identityPoolId as string
+                        });
+
+                    const getOpenIdTokenResponse =
+                        await this.cognitoIdentityClient.getOpenIdToken(
+                            getIdResponse
+                        );
+
+                    const credentials =
+                        await this.stsClient.assumeRoleWithWebIdentity({
+                            RoleArn: this.config.guestRoleArn as string,
+                            RoleSessionName: 'cwr',
+                            WebIdentityToken: getOpenIdTokenResponse.Token
+                        });
+
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
@@ -51,7 +57,15 @@ export class BasicAuthentication extends Authentication {
                     } catch (e) {
                         // Ignore
                     }
+
                     return credentials;
-                });
+                } catch (e) {
+                    if (retries) {
+                        retries--;
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         };
 }
