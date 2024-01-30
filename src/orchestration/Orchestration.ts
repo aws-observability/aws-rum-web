@@ -1,7 +1,7 @@
 import { Plugin } from '../plugins/Plugin';
 import { PluginContext } from '../plugins/types';
 import { InternalPlugin } from '../plugins/InternalPlugin';
-import { Authentication } from '../dispatch/Authentication';
+import { BasicAuthentication } from '../dispatch/BasicAuthentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 import { PluginManager } from '../plugins/PluginManager';
 import {
@@ -15,7 +15,10 @@ import {
 } from '../plugins/event-plugins/JsErrorPlugin';
 import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
-import { CredentialProvider, Credentials } from '@aws-sdk/types';
+import {
+    AwsCredentialIdentityProvider,
+    AwsCredentialIdentity
+} from '@aws-sdk/types';
 import { NavigationPlugin } from '../plugins/event-plugins/NavigationPlugin';
 import { ResourcePlugin } from '../plugins/event-plugins/ResourcePlugin';
 import { WebVitalsPlugin } from '../plugins/event-plugins/WebVitalsPlugin';
@@ -287,7 +290,7 @@ export class Orchestration {
      * @param credentials A provider of AWS credentials.
      */
     public setAwsCredentials(
-        credentials: Credentials | CredentialProvider
+        credentials: AwsCredentialIdentity | AwsCredentialIdentityProvider
     ): void {
         this.dispatchManager.setAwsCredentials(credentials);
     }
@@ -417,7 +420,7 @@ export class Orchestration {
 
         if (this.config.identityPoolId && this.config.guestRoleArn) {
             dispatch.setAwsCredentials(
-                new Authentication(this.config)
+                new BasicAuthentication(this.config)
                     .ChainAnonymousCredentialsProvider
             );
         } else if (this.config.identityPoolId) {

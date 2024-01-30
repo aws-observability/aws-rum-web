@@ -1,5 +1,5 @@
 import { EventCache } from '../event-cache/EventCache';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import {
     Config,
     defaultConfig,
@@ -81,7 +81,7 @@ export const createDefaultEventCacheWithEvents = (): EventCache => {
     return eventCache;
 };
 
-export const createAwsCredentials = (): Credentials => {
+export const createAwsCredentials = (): AwsCredentialIdentity => {
     return {
         accessKeyId: 'abc123',
         secretAccessKey: 'abc123xyz'

@@ -2,7 +2,7 @@ import * as Utils from '../../test-utils/test-utils';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { advanceTo } from 'jest-date-mock';
 import { CognitoIdentityClient } from '../CognitoIdentityClient';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { getReadableStream } from '../../test-utils/test-utils';
 import { IDENTITY_KEY } from '../../utils/constants';
 
@@ -47,9 +47,8 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Run
-        const creds: Credentials = await client.getCredentialsForIdentity(
-            'my-fake-identity-id'
-        );
+        const creds: AwsCredentialIdentity =
+            await client.getCredentialsForIdentity('my-fake-identity-id');
 
         // Assert
         expect(fetchHandler).toHaveBeenCalledTimes(1);

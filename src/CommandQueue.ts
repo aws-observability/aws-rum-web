@@ -1,4 +1,7 @@
-import { CredentialProvider, Credentials } from '@aws-sdk/types';
+import {
+    AwsCredentialIdentity,
+    AwsCredentialIdentityProvider
+} from '@aws-sdk/types';
 import { Plugin } from 'plugins/Plugin';
 import { INSTALL_SCRIPT } from './utils/constants';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
@@ -52,7 +55,7 @@ export class CommandQueue {
 
     private commandHandlerMap: CommandFunctions = {
         setAwsCredentials: (
-            payload: Credentials | CredentialProvider
+            payload: AwsCredentialIdentity | AwsCredentialIdentityProvider
         ): void => {
             this.orchestration.setAwsCredentials(payload);
         },

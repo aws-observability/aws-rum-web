@@ -1,7 +1,7 @@
 import { Dispatch } from '../Dispatch';
 import * as Utils from '../../test-utils/test-utils';
 import { DataPlaneClient } from '../DataPlaneClient';
-import { CredentialProvider } from '@aws-sdk/types';
+import { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { EventCache } from 'event-cache/EventCache';
 
@@ -50,7 +50,7 @@ describe('Dispatch tests', () => {
 
     test('when CredentialProvider is used then credentials are immediately fetched', async () => {
         // Init
-        const credentialProvider: CredentialProvider = jest.fn();
+        const credentialProvider: AwsCredentialIdentityProvider = jest.fn();
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,

@@ -1,4 +1,8 @@
-import { CredentialProvider, Credentials, HttpResponse } from '@aws-sdk/types';
+import {
+    AwsCredentialIdentityProvider,
+    AwsCredentialIdentity,
+    HttpResponse
+} from '@aws-sdk/types';
 import { EventCache } from '../event-cache/EventCache';
 import { DataPlaneClient } from './DataPlaneClient';
 import { BeaconHttpHandler } from './BeaconHttpHandler';
@@ -22,7 +26,7 @@ const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
 export type ClientBuilder = (
     endpoint: URL,
     region: string,
-    credentials: CredentialProvider | Credentials | undefined
+    credentials?: AwsCredentialIdentity | AwsCredentialIdentityProvider
 ) => DataPlaneClient;
 
 export class Dispatch {
@@ -85,7 +89,9 @@ export class Dispatch {
      * @param credentials A set of AWS credentials from the application's authflow.
      */
     public setAwsCredentials(
-        credentialProvider: Credentials | CredentialProvider
+        credentialProvider:
+            | AwsCredentialIdentity
+            | AwsCredentialIdentityProvider
     ): void {
         this.rum = this.buildClient(
             this.endpoint,
@@ -95,7 +101,7 @@ export class Dispatch {
         if (typeof credentialProvider === 'function') {
             // In case a beacon in the first dispatch, we must pre-fetch credentials into a cookie so there is no delay
             // to fetch credentials while the page is closing.
-            (credentialProvider as () => Promise<Credentials>)();
+            (credentialProvider as () => Promise<AwsCredentialIdentity>)();
         }
     }
 
