@@ -100,7 +100,9 @@ export class CognitoIdentityClient {
             const { response } = await this.fetchRequestHandler.handle(
                 tokenRequest
             );
-            return (await responseToJson(response)) as OpenIdTokenResponse;
+            return this.validateOpenIdTokenResponse(
+                await responseToJson(response)
+            );
         } catch (e) {
             throw new Error(
                 `CWR: Failed to retrieve Cognito OpenId token: ${e}`
@@ -120,13 +122,10 @@ export class CognitoIdentityClient {
             const { response } = await this.fetchRequestHandler.handle(
                 credentialRequest
             );
-            const credentialsResponse = (await responseToJson(
-                response
-            )) as CredentialsResponse;
-            this.validateCredenentialsResponse(credentialsResponse);
-            const Credentials = credentialsResponse.Credentials;
             const { AccessKeyId, Expiration, SecretKey, SessionToken } =
-                Credentials;
+                this.validateCredenentialsResponse(
+                    await responseToJson(response)
+                );
             return {
                 accessKeyId: AccessKeyId as string,
                 secretAccessKey: SecretKey as string,
@@ -140,19 +139,37 @@ export class CognitoIdentityClient {
         }
     };
 
-    private validateCredenentialsResponse = (cr: any) => {
-        if (
-            cr &&
-            cr.__type &&
-            (cr.__type === 'ResourceNotFoundException' ||
-                cr.__type === 'ValidationException')
-        ) {
+    private validateOpenIdTokenResponse = (r: any): OpenIdTokenResponse => {
+        if ('IdentityId' in r && 'Token' in r) {
+            return r as OpenIdTokenResponse;
+        } else if (r && '__type' in r && 'message' in r) {
             // The request may have failed because of ValidationException or
             // ResourceNotFoundException, which means the identity Id is bad. In
             // any case, we invalidate the identity Id so the entire process can
             // be re-tried.
             localStorage.removeItem(IDENTITY_KEY);
-            throw new Error(`${cr.__type}: ${cr.message}`);
+            throw new Error(`${r.__type}: ${r.message}`);
+        } else {
+            // We don't recognize ths response format.
+            localStorage.removeItem(IDENTITY_KEY);
+            throw new Error('Unknown OpenIdToken response');
+        }
+    };
+
+    private validateCredenentialsResponse = (r: any): CognitoCredentials => {
+        if ('IdentityId' in r && 'Credentials' in r) {
+            return (r as CredentialsResponse).Credentials;
+        } else if (r && '__type' in r && 'message' in r) {
+            // The request may have failed because of ValidationException or
+            // ResourceNotFoundException, which means the identity Id is bad. In
+            // any case, we invalidate the identity Id so the entire process can
+            // be re-tried.
+            localStorage.removeItem(IDENTITY_KEY);
+            throw new Error(`${r.__type}: ${r.message}`);
+        } else {
+            // We don't recognize ths response format.
+            localStorage.removeItem(IDENTITY_KEY);
+            throw new Error('Unknown Credentials response');
         }
     };
 
