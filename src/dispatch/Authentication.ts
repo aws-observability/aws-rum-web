@@ -50,8 +50,8 @@ export abstract class Authentication {
     public ChainAnonymousCredentialsProvider =
         async (): Promise<AwsCredentialIdentity> => {
             return this.AnonymousCredentialsProvider()
-                .catch(this.AnonymousStorageCredentialsProvider)
-                .catch(this.AnonymousCognitoCredentialsProvider);
+                .catch(this.AnonymousStorageCredentialsProvider) // eslint-disable-line @typescript-eslint/unbound-method
+                .catch(this.AnonymousCognitoCredentialsProvider); // eslint-disable-line @typescript-eslint/unbound-method
         };
 
     /**
