@@ -52,57 +52,6 @@ export type Telemetry = string | (string | object)[];
 
 export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
-export type PartialCookieAttributes = {
-    unique?: boolean;
-    domain?: string;
-    path?: string;
-    sameSite?: string;
-    secure?: boolean;
-};
-
-export type PartialConfig = {
-    allowCookies?: boolean;
-    batchLimit?: number;
-    client?: string;
-    clientBuilder?: ClientBuilder;
-    cookieAttributes?: PartialCookieAttributes;
-    disableAutoPageView?: boolean;
-    dispatchInterval?: number;
-    enableRumClient?: boolean;
-    enableXRay?: boolean;
-    endpoint?: string;
-    eventCacheSize?: number;
-    eventPluginsToLoad?: Plugin[];
-    guestRoleArn?: string;
-    identityPoolId?: string;
-    pageIdFormat?: PageIdFormat;
-    pagesToExclude?: RegExp[];
-    pagesToInclude?: RegExp[];
-    signing?: boolean;
-    recordResourceUrl?: boolean;
-    routeChangeComplete?: number;
-    routeChangeTimeout?: number;
-    sessionAttributes?: { [k: string]: string | number | boolean };
-    sessionEventLimit?: number;
-    sessionLengthSeconds?: number;
-    sessionSampleRate?: number;
-    /**
-     * Application owners think about data collection in terms of the categories
-     * of data being collected. For example, JavaScript errors, page load
-     * performance, user journeys and user interactions are data collection
-     * categories. However, there is not a 1-1 mapping between data collection
-     * categories and plugins.
-     *
-     * This configuration option allows application owners to define the data
-     * categories they want to collect without needing to understand and
-     * instantiate each plugin themselves. The toolkit will instantiate the
-     * plugins which map to the selected categories.
-     */
-    telemetries?: Telemetry[];
-    useBeacon?: boolean;
-    userIdRetentionDays?: number;
-};
-
 export const defaultCookieAttributes = (): CookieAttributes => {
     return {
         unique: false,
@@ -153,7 +102,9 @@ export type CookieAttributes = {
     secure: boolean;
 };
 
-export type Config = {
+export type PartialCookieAttributes = Partial<CookieAttributes>;
+
+export interface Config {
     allowCookies: boolean;
     batchLimit: number;
     client: string;
@@ -190,10 +141,27 @@ export type Config = {
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
+    /**
+     * Application owners think about data collection in terms of the categories
+     * of data being collected. For example, JavaScript errors, page load
+     * performance, user journeys and user interactions are data collection
+     * categories. However, there is not a 1-1 mapping between data collection
+     * categories and plugins.
+     *
+     * This configuration option allows application owners to define the data
+     * categories they want to collect without needing to understand and
+     * instantiate each plugin themselves. The toolkit will instantiate the
+     * plugins which map to the selected categories.
+     */
     telemetries: Telemetry[];
     useBeacon: boolean;
     userIdRetentionDays: number;
-};
+}
+
+export interface PartialConfig
+    extends Omit<Partial<Config>, 'cookieAttributes'> {
+    cookieAttributes?: PartialCookieAttributes;
+}
 
 /**
  * An orchestrator which (1) initializes cwr components and (2) provides the API for the application to interact

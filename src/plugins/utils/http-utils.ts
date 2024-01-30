@@ -13,15 +13,6 @@ for (let i = 0; i < 256; i++) {
 
 export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
 
-export type PartialHttpPluginConfig = {
-    logicalServiceName?: string;
-    urlsToInclude?: RegExp[];
-    urlsToExclude?: RegExp[];
-    stackTraceLength?: number;
-    recordAllRequests?: boolean;
-    addXRayTraceIdHeader?: boolean | RegExp[];
-};
-
 export type HttpPluginConfig = {
     logicalServiceName: string;
     urlsToInclude: RegExp[];

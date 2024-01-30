@@ -2,7 +2,6 @@ import { XRayTraceEvent } from '../../events/xray-trace-event';
 import { HttpEvent } from '../../events/http-event';
 import { MonkeyPatch, MonkeyPatched } from '../MonkeyPatched';
 import {
-    PartialHttpPluginConfig,
     defaultConfig,
     epochTime,
     createXRayTraceEvent,
@@ -99,7 +98,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     private xhrMap: Map<XMLHttpRequest, XhrDetails>;
     private isSyntheticsUA: boolean;
 
-    constructor(config?: PartialHttpPluginConfig) {
+    constructor(config?: Partial<HttpPluginConfig>) {
         super(XHR_PLUGIN_ID);
         this.config = { ...defaultConfig, ...config };
         this.xhrMap = new Map<XMLHttpRequest, XhrDetails>();

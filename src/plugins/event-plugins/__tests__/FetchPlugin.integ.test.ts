@@ -1,6 +1,6 @@
 import { Orchestration } from '../../../orchestration/Orchestration';
 import { createAwsCredentials } from '../../../test-utils/test-utils';
-import { PartialHttpPluginConfig } from '../../utils/http-utils';
+import { HttpPluginConfig } from '../../utils/http-utils';
 import { FetchPlugin } from '../FetchPlugin';
 
 const mockFetch = jest.fn(
@@ -27,7 +27,7 @@ describe('FetchPlugin integ tests', () => {
 
     test('dispatch requests are not recorded by the http plugin', async () => {
         // Init
-        const config: PartialHttpPluginConfig = {
+        const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true
         };
 
