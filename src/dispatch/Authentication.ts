@@ -82,7 +82,7 @@ export abstract class Authentication {
                 try {
                     credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
                 } catch (e) {
-                    // Error decoding or parsing the cookie -- abort
+                    // Error retrieving, decoding or parsing the cred string -- abort
                     return reject();
                 }
                 // The expiration property of Credentials has a date type. Because the date was serialized as a string,
