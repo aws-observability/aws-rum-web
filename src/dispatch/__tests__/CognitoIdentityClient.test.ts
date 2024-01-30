@@ -251,14 +251,34 @@ describe('CognitoIdentityClient tests', () => {
         ).rejects.toEqual(expected);
     });
 
-    test('when getCredentialsForIdentity returns a ResourceNotFoundException then identity id is removed from localStorage ', async () => {
+    test('when getCredentialsForIdentity returns bad response then an error is thrown', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream('{}')
+            }
+        });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve credentials for Cognito identity: Error: Unknown Credentials response`
+        );
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Assert
+        await expect(
+            client.getCredentialsForIdentity('my-fake-identity-id')
+        ).rejects.toEqual(expected);
+    });
+
+    test('when getCredentialsForIdentity returns bad response then identity id is removed from localStorage ', async () => {
         localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
 
         fetchHandler.mockResolvedValueOnce({
             response: {
-                body: getReadableStream(
-                    '{"__type": "ResourceNotFoundException", "message": ""}'
-                )
+                body: getReadableStream('not-json')
             }
         });
 
@@ -271,6 +291,78 @@ describe('CognitoIdentityClient tests', () => {
         // Run
         try {
             await client.getCredentialsForIdentity('my-fake-identity-id');
+        } catch (e) {
+            // Ignore
+        }
+
+        // Assert
+        expect(localStorage.getItem(IDENTITY_KEY)).toBe(null);
+    });
+
+    test('when getOpenIdToken returns a ResourceNotFoundException then an error is thrown', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(
+                    '{"__type": "ResourceNotFoundException", "message": ""}'
+                )
+            }
+        });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve Cognito OpenId token: Error: ResourceNotFoundException: `
+        );
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Assert
+        await expect(
+            client.getOpenIdToken({ IdentityId: 'my-fake-identity-id' })
+        ).rejects.toEqual(expected);
+    });
+
+    test('when getOpenIdToken returns a bad response then an error is thrown', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream('{}')
+            }
+        });
+        const expected: Error = new Error(
+            `CWR: Failed to retrieve Cognito OpenId token: Error: Unknown OpenIdToken response`
+        );
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Assert
+        await expect(
+            client.getOpenIdToken({ IdentityId: 'my-fake-identity-id' })
+        ).rejects.toEqual(expected);
+    });
+
+    test('when getOpenIdToken returns a bad response then identity id is removed from localStorage ', async () => {
+        localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
+
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream('not-json')
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION
+        });
+
+        // Run
+        try {
+            await client.getOpenIdToken({ IdentityId: 'my-fake-identity-id' });
         } catch (e) {
             // Ignore
         }

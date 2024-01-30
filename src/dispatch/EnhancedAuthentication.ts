@@ -17,14 +17,20 @@ export class EnhancedAuthentication extends Authentication {
      */
     protected AnonymousCognitoCredentialsProvider =
         async (): Promise<AwsCredentialIdentity> => {
-            return this.cognitoIdentityClient
-                .getId({ IdentityPoolId: this.config.identityPoolId as string })
-                .then((getIdResponse) =>
-                    this.cognitoIdentityClient.getCredentialsForIdentity(
-                        getIdResponse.IdentityId
-                    )
-                )
-                .then((credentials: AwsCredentialIdentity) => {
+            let retries = 1;
+
+            while (true) {
+                try {
+                    const getIdResponse =
+                        await this.cognitoIdentityClient.getId({
+                            IdentityPoolId: this.config.identityPoolId as string
+                        });
+
+                    const credentials =
+                        await this.cognitoIdentityClient.getCredentialsForIdentity(
+                            getIdResponse.IdentityId
+                        );
+
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
@@ -34,7 +40,15 @@ export class EnhancedAuthentication extends Authentication {
                     } catch (e) {
                         // Ignore
                     }
+
                     return credentials;
-                });
+                } catch (e) {
+                    if (retries) {
+                        retries--;
+                    } else {
+                        throw e;
+                    }
+                }
+            }
         };
 }

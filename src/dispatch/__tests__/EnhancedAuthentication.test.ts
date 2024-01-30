@@ -380,4 +380,31 @@ describe('EnhancedAuthentication tests', () => {
             storageExpiration.getTime()
         );
     });
+
+    test('when getCredentialsForIdentity fails then retry', async () => {
+        // Init
+        mockGetId.mockImplementationOnce(() => {
+            throw new Error('mockGetId error');
+        });
+
+        const auth = new EnhancedAuthentication({
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN
+            }
+        });
+
+        // Run
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
 });
