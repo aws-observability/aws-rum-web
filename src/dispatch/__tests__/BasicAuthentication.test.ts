@@ -407,4 +407,31 @@ describe('BasicAuthentication tests', () => {
             storageExpiration.getTime()
         );
     });
+
+    test('when mockGetIdToken fails then retry', async () => {
+        const e: Error = new Error('mockGetId error');
+        mockGetIdToken.mockImplementationOnce(() => {
+            throw e;
+        });
+        // Init
+        const auth = new BasicAuthentication({
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN
+            }
+        });
+
+        // Run
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
 });
