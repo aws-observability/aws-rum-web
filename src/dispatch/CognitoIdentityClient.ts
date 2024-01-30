@@ -104,6 +104,7 @@ export class CognitoIdentityClient {
                 await responseToJson(response)
             );
         } catch (e) {
+            localStorage.removeItem(IDENTITY_KEY);
             throw new Error(
                 `CWR: Failed to retrieve Cognito OpenId token: ${e}`
             );
@@ -133,6 +134,7 @@ export class CognitoIdentityClient {
                 expiration: new Date(Expiration * 1000)
             };
         } catch (e) {
+            localStorage.removeItem(IDENTITY_KEY);
             throw new Error(
                 `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
             );
@@ -147,11 +149,9 @@ export class CognitoIdentityClient {
             // ResourceNotFoundException, which means the identity Id is bad. In
             // any case, we invalidate the identity Id so the entire process can
             // be re-tried.
-            localStorage.removeItem(IDENTITY_KEY);
             throw new Error(`${r.__type}: ${r.message}`);
         } else {
             // We don't recognize ths response format.
-            localStorage.removeItem(IDENTITY_KEY);
             throw new Error('Unknown OpenIdToken response');
         }
     };
@@ -164,11 +164,9 @@ export class CognitoIdentityClient {
             // ResourceNotFoundException, which means the identity Id is bad. In
             // any case, we invalidate the identity Id so the entire process can
             // be re-tried.
-            localStorage.removeItem(IDENTITY_KEY);
             throw new Error(`${r.__type}: ${r.message}`);
         } else {
             // We don't recognize ths response format.
-            localStorage.removeItem(IDENTITY_KEY);
             throw new Error('Unknown Credentials response');
         }
     };
