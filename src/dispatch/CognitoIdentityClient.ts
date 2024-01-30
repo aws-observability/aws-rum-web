@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
-import { Credentials } from '@aws-sdk/types';
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
 
@@ -13,19 +13,6 @@ const GET_ID_TARGET = 'AWSCognitoIdentityService.GetId';
 const GET_TOKEN_TARGET = 'AWSCognitoIdentityService.GetOpenIdToken';
 const GET_CREDENTIALS_TARGET =
     'AWSCognitoIdentityService.GetCredentialsForIdentity';
-
-interface CognitoProviderParameters {
-    /**
-     * The unique identifier for the identity pool from which an identity should
-     * be retrieved or generated.
-     */
-    identityPoolId: string;
-    /**
-     * The SDK client with which the credential provider will contact the Amazon
-     * Cognito service.
-     */
-    client: CognitoIdentityClient;
-}
 
 interface CognitoCredentials {
     AccessKeyId: string;
@@ -123,7 +110,7 @@ export class CognitoIdentityClient {
 
     public getCredentialsForIdentity = async (
         identityId: string
-    ): Promise<Credentials> => {
+    ): Promise<AwsCredentialIdentity> => {
         try {
             const requestPayload = JSON.stringify({ IdentityId: identityId });
             const credentialRequest = this.getHttpRequest(

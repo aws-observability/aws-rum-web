@@ -1,15 +1,25 @@
 import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
+import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { StsClient } from './StsClient';
 import { CRED_KEY } from '../utils/constants';
 import { Authentication } from './Authentication';
 
-export class EnhancedAuthentication extends Authentication {
+export class BasicAuthentication extends Authentication {
+    private stsClient: StsClient;
+
     constructor(config: Config) {
         super(config);
+        const region: string = config.identityPoolId!.split(':')[0];
+        this.stsClient = new StsClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region
+        });
     }
+
     /**
-     * Provides credentials for an anonymous (guest) user. These credentials are retrieved from Cognito's enhanced
-     * authflow.
+     * Provides credentials for an anonymous (guest) user. These credentials are retrieved from Cognito's basic
+     * (classic) authflow.
      *
      * See https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
      *
@@ -18,11 +28,18 @@ export class EnhancedAuthentication extends Authentication {
     protected AnonymousCognitoCredentialsProvider =
         async (): Promise<AwsCredentialIdentity> => {
             return this.cognitoIdentityClient
-                .getId({ IdentityPoolId: this.config.identityPoolId as string })
+                .getId({
+                    IdentityPoolId: this.config.identityPoolId as string
+                })
                 .then((getIdResponse) =>
-                    this.cognitoIdentityClient.getCredentialsForIdentity(
-                        getIdResponse.IdentityId
-                    )
+                    this.cognitoIdentityClient.getOpenIdToken(getIdResponse)
+                )
+                .then((getOpenIdTokenResponse) =>
+                    this.stsClient.assumeRoleWithWebIdentity({
+                        RoleArn: this.config.guestRoleArn as string,
+                        RoleSessionName: 'cwr',
+                        WebIdentityToken: getOpenIdTokenResponse.Token
+                    })
                 )
                 .then((credentials: AwsCredentialIdentity) => {
                     this.credentials = credentials;
