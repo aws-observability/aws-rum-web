@@ -111,7 +111,7 @@ export abstract class Authentication {
     protected abstract AnonymousCognitoCredentialsProvider(): Promise<AwsCredentialIdentity>;
 
     /**
-     * Checks if credentials should be renewed
+     * Returns {@code true} when the credentials need to be renewed.
      */
     private renewCredentials(): boolean {
         if (!this.credentials || !this.credentials.expiration) {
