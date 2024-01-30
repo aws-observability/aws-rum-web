@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.16.2](https://github.com/aws-observability/aws-rum-web/compare/v1.16.1...v1.16.2) (2024-01-30)
+
+
+### Bug Fixes
+
+* Invalidate cognito identity and re-try ([#498](https://github.com/aws-observability/aws-rum-web/issues/498)) ([afe87e8](https://github.com/aws-observability/aws-rum-web/commit/afe87e8949da1826991591c20139bbf5407e2add))
+* Record 0 for headerSize if transferSize is 0 ([#496](https://github.com/aws-observability/aws-rum-web/issues/496)) ([6773ffa](https://github.com/aws-observability/aws-rum-web/commit/6773ffabdf699b913f712d455db97eabebb7aa4b))
+
 ### [1.16.1](https://github.com/aws-observability/aws-rum-web/compare/v1.16.0...v1.16.1) (2023-12-13)
 
 ### Bug Fixes
