@@ -37,6 +37,8 @@ export class RetryHttpHandler implements HttpHandler {
                 throw response.response.statusCode;
             } catch (e) {
                 if (typeof e === 'number' && !is429(e) && !is5xx(e)) {
+                    // Fail immediately on client errors because they will never succeed.
+                    // Only retry when request is throttled (429) or received server error (5xx).
                     throw new Error(`${e}`);
                 }
 
