@@ -36,7 +36,7 @@ export class RetryHttpHandler implements HttpHandler {
                 }
                 throw response.response.statusCode;
             } catch (e) {
-                if (typeof e === 'number' && !(is5xx(e) || is429(e))) {
+                if (typeof e === 'number' && !is429(e) && !is5xx(e)) {
                     throw new Error(`${e}`);
                 }
 
