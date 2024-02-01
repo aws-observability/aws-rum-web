@@ -6,7 +6,8 @@ import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { EventCache } from 'event-cache/EventCache';
 
 global.fetch = mockFetch;
-const sendFetch = jest.fn(() => Promise.resolve());
+let fetchResponse = { response: { statusCode: 200 } };
+const sendFetch = jest.fn(() => Promise.resolve(fetchResponse));
 const sendBeacon = jest.fn(() => Promise.resolve());
 jest.mock('../DataPlaneClient', () => ({
     DataPlaneClient: jest
@@ -41,7 +42,9 @@ describe('Dispatch tests', () => {
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
 
         // Run
-        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+        await expect(dispatch.dispatchFetch()).resolves.toMatchObject(
+            fetchResponse
+        );
 
         // Assert
         expect(DataPlaneClient).toHaveBeenCalled();
@@ -464,10 +467,40 @@ describe('Dispatch tests', () => {
         );
 
         // Run
-        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+        await expect(dispatch.dispatchFetch()).resolves.toEqual(fetchResponse);
 
         // Assert
         expect(DataPlaneClient).toHaveBeenCalled();
         expect(sendFetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('when dispatch fetch is 403 then renew credentials before retrying once', async () => {
+        // Init
+        const prev = fetchResponse;
+        fetchResponse = { response: { statusCode: 403 } };
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
+            }
+        );
+        const renewCredentials = jest.spyOn(dispatch, 'renewCredentials');
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+        // Run
+        await expect(dispatch.dispatchFetch()).resolves.toMatchObject(
+            fetchResponse
+        );
+
+        // Assert
+        expect(DataPlaneClient).toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalledTimes(2);
+        expect(renewCredentials).toHaveBeenCalledTimes(1);
+
+        // restore
+        fetchResponse = prev;
     });
 });

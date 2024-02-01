@@ -71,6 +71,8 @@ export const is429 = (status: number) => {
     return status === 429;
 };
 
+export const is403 = (status: number) => status === 403;
+
 export const isUrlAllowed = (url: string, config: HttpPluginConfig) => {
     const include = config.urlsToInclude.some((urlPattern) =>
         urlPattern.test(url)

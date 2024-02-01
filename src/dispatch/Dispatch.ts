@@ -11,6 +11,8 @@ import { PutRumEventsRequest } from './dataplane';
 import { Config } from '../orchestration/Orchestration';
 import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
+import { Authentication } from './Authentication';
+import { is403 } from '../plugins/utils/http-utils';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -38,6 +40,8 @@ export class Dispatch {
     private dispatchTimerId: number | undefined;
     private buildClient: ClientBuilder;
     private config: Config;
+    private auth?: Authentication;
+    private credentialsOverride = false; // is true when credentials are manually overridden by customer
 
     constructor(
         region: string,
@@ -82,6 +86,12 @@ export class Dispatch {
         this.enabled = false;
     }
 
+    public setAuthentication(auth: Authentication) {
+        this.auth = auth;
+        this.setAwsCredentials(auth.ChainAnonymousCredentialsProvider);
+        this.credentialsOverride = false;
+    }
+
     /**
      * Set the authentication token that will be used to authenticate with the
      * data plane service (AWS auth).
@@ -93,6 +103,7 @@ export class Dispatch {
             | AwsCredentialIdentity
             | AwsCredentialIdentityProvider
     ): void {
+        this.credentialsOverride = true;
         this.rum = this.buildClient(
             this.endpoint,
             this.region,
@@ -105,6 +116,18 @@ export class Dispatch {
         }
     }
 
+    public async renewCredentials() {
+        if (!this.credentialsOverride && this.auth) {
+            this.auth.clear();
+            this.rum = this.buildClient(
+                this.endpoint,
+                this.region,
+                this.auth.ChainAnonymousCredentialsProvider
+            );
+            return this.auth.ChainAnonymousCredentialsProvider();
+        }
+    }
+
     /**
      * Send meta data and events to the AWS RUM data plane service via fetch.
      */
@@ -112,8 +135,18 @@ export class Dispatch {
         { response: HttpResponse } | undefined
     > => {
         if (this.doRequest()) {
+            const req = this.createRequest();
             return this.rum
-                .sendFetch(this.createRequest())
+                .sendFetch(req)
+                .then(async (e) => {
+                    // On 403, renew credentials and then retry once
+                    if (is403(e.response.statusCode)) {
+                        return this.renewCredentials().then(() =>
+                            this.rum.sendFetch(req)
+                        );
+                    }
+                    return e;
+                })
                 .catch(this.handleReject);
         }
     };

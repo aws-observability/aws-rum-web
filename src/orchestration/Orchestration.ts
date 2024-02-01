@@ -394,15 +394,9 @@ export class Orchestration {
         }
 
         if (this.config.identityPoolId && this.config.guestRoleArn) {
-            dispatch.setAwsCredentials(
-                new BasicAuthentication(this.config)
-                    .ChainAnonymousCredentialsProvider
-            );
+            dispatch.setAuthentication(new BasicAuthentication(this.config));
         } else if (this.config.identityPoolId) {
-            dispatch.setAwsCredentials(
-                new EnhancedAuthentication(this.config)
-                    .ChainAnonymousCredentialsProvider
-            );
+            dispatch.setAuthentication(new EnhancedAuthentication(this.config));
         }
 
         return dispatch;

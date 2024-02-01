@@ -14,12 +14,14 @@ global.fetch = jest.fn();
 const enableDispatch = jest.fn();
 const disableDispatch = jest.fn();
 const setAwsCredentials = jest.fn();
+const setAuthentication = jest.fn();
 
 jest.mock('../../dispatch/Dispatch', () => ({
     Dispatch: jest.fn().mockImplementation(() => ({
         enable: enableDispatch,
         disable: disableDispatch,
-        setAwsCredentials
+        setAwsCredentials,
+        setAuthentication
     }))
 }));
 
@@ -529,7 +531,7 @@ describe('Orchestration tests', () => {
         });
 
         // Assert
-        expect(setAwsCredentials).toHaveBeenCalledTimes(0);
+        expect(setAuthentication).toHaveBeenCalledTimes(0);
 
         // Reset
         samplingDecision = true;
@@ -544,6 +546,6 @@ describe('Orchestration tests', () => {
         });
 
         // Assert
-        expect(setAwsCredentials).toHaveBeenCalledTimes(1);
+        expect(setAuthentication).toHaveBeenCalledTimes(1);
     });
 });

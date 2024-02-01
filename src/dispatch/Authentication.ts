@@ -19,6 +19,20 @@ export abstract class Authentication {
     }
 
     /**
+     *
+     * @returns {boolean} if credentials were purged
+     */
+    clear(): boolean {
+        try {
+            this.credentials = undefined;
+            localStorage.removeItem(CRED_KEY);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    /**
      * A credential provider which provides AWS credentials for an anonymous
      * (guest) user. These credentials are retrieved from the first successful
      * provider in a chain.
