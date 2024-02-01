@@ -223,6 +223,10 @@ export const isLongTaskSupported = () => {
     return PerformanceObserver.supportedEntryTypes.includes('longtask');
 };
 
+export const isNavigationSupported = () => {
+    return PerformanceObserver.supportedEntryTypes.includes('navigation');
+};
+
 /** PutRumEvents regex pattern */
 const putRumEventsPattern =
     /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
