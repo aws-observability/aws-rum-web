@@ -31,7 +31,7 @@ jest.mock('../../sessions/SessionManager', () => ({
     }))
 }));
 
-const WEB_CLIENT_VERSION = '1.16.0';
+const WEB_CLIENT_VERSION = '1.17.0';
 
 describe('EventCache tests', () => {
     beforeAll(() => {
