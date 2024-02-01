@@ -158,6 +158,38 @@ describe('RetryHttpHandler tests', () => {
         expect(response).resolves.toBe(okStatus);
     });
 
+    test('when status code is 429 then request retries', async () => {
+        // Init
+        const badStatus = { response: { statusCode: 429 } };
+        const okStatus = { response: { statusCode: 200 } };
+        fetchHandler
+            .mockReturnValueOnce(Promise.resolve(badStatus))
+            .mockReturnValue(Promise.resolve(okStatus));
+
+        const retries = 1;
+        const retryHandler = new RetryHttpHandler(
+            new FetchHttpHandler(),
+            retries,
+            mockBackoff
+        );
+
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: retryHandler,
+            beaconRequestHandler: undefined,
+            endpoint: Utils.AWS_RUM_ENDPOINT,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        const response: Promise<{ response: HttpResponse }> = client.sendFetch(
+            Utils.PUT_RUM_EVENTS_REQUEST
+        );
+
+        // Assert
+        expect(response).resolves.toBe(okStatus);
+    });
+
     test('when request fails then retry succeeds after backoff', async () => {
         // Init
         jest.useFakeTimers({ legacyFakeTimers: true });
