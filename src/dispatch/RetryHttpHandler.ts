@@ -1,5 +1,5 @@
 import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
-import { is2xx, is5xx } from '../plugins/utils/http-utils';
+import { is2xx, is429, is5xx } from '../plugins/utils/http-utils';
 
 export type BackoffFunction = (retry: number) => number;
 
@@ -57,5 +57,5 @@ export class RetryHttpHandler implements HttpHandler {
     }
 
     private shouldRetry = (status: number) =>
-        status === 429 || (is5xx(status) && !is2xx(status));
+        is429(status) || (is5xx(status) && !is2xx(status));
 }
