@@ -157,16 +157,17 @@ describe('RetryHttpHandler tests', () => {
         expect(response).resolves.toBe(okStatus);
     });
 
-    test('when request fails then retry succeeds after backoff', async () => {
+    test('when request fails then retry succeeds after exponential backoff', async () => {
         // Init
         jest.useFakeTimers({ legacyFakeTimers: true });
         const badStatus = { response: { statusCode: 500 } };
         const okStatus = { response: { statusCode: 200 } };
         fetchHandler
             .mockReturnValueOnce(Promise.resolve(badStatus))
+            .mockReturnValueOnce(Promise.resolve(badStatus))
             .mockReturnValue(Promise.resolve(okStatus));
 
-        const retries = 1;
+        const retries = 2;
         const retryHandler = new RetryHttpHandler(
             new FetchHttpHandler(),
             retries
@@ -187,18 +188,26 @@ describe('RetryHttpHandler tests', () => {
 
         // Yield to the event queue so the handler can advance
         await new Promise((resolve) => process.nextTick(resolve));
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
 
         // Advance the timer so the backoff timeout fires
         jest.advanceTimersByTime(2000);
+        await new Promise((resolve) => process.nextTick(resolve));
+        expect(fetchHandler).toHaveBeenCalledTimes(2);
+
+        // Advance the timer so the backoff timeout fires
+        jest.advanceTimersByTime(4000);
+        await new Promise((resolve) => process.nextTick(resolve));
+        expect(fetchHandler).toHaveBeenCalledTimes(3);
 
         // Yield to the event queue so the handler can advance
         await new Promise((resolve) => process.nextTick(resolve));
-
         // Assert
-        expect(fetchHandler).toHaveBeenCalledTimes(2);
+
         expect(await responsePromise).toBe(okStatus);
-        expect(setTimeout).toHaveBeenCalledTimes(1);
-        expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2000);
+        expect(setTimeout).toHaveBeenCalledTimes(2);
+        expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 2000);
+        expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 4000);
     });
 
     test('when request fails then retry waits for backoff', async () => {
