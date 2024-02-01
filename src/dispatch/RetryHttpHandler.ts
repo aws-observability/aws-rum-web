@@ -36,7 +36,7 @@ export class RetryHttpHandler implements HttpHandler {
                 }
                 throw response.response.statusCode;
             } catch (e) {
-                if (typeof e === 'number' && !this.shouldRetry(e)) {
+                if (typeof e === 'number' && !(is5xx(e) || is429(e))) {
                     throw new Error(`${e}`);
                 }
 
@@ -55,7 +55,4 @@ export class RetryHttpHandler implements HttpHandler {
             setTimeout(resolve, milliseconds)
         );
     }
-
-    private shouldRetry = (status: number) =>
-        is429(status) || (is5xx(status) && !is2xx(status));
 }
