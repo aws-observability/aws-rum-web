@@ -24,6 +24,13 @@ export type RecordSessionInitEvent = (
     eventData: object
 ) => void;
 
+/**
+ * Represents a mapping of RUM event types to their respective session count
+ */
+export type CountByType = {
+    [key: string]: number;
+};
+
 export type Session = {
     sessionId: string;
     record: boolean;
@@ -151,9 +158,14 @@ export class SessionManager {
         this.renewSession();
     }
 
-    public shouldSample(): boolean {
+    public shouldSample(type?: string): boolean {
         if (!this.isSampled()) {
             return false;
+        }
+
+        // Handle events with always record configuration
+        if (type && this.config.sessionEventLimitOverride?.[type] === 0) {
+            return true;
         }
 
         return (

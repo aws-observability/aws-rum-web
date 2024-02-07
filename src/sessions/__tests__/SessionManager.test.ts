@@ -524,6 +524,38 @@ describe('SessionManager tests', () => {
         expect(sessionManager.shouldSample()).toBe(true);
     });
 
+    test('when sessionEventLimitOverride is zero then always sample', async () => {
+        // Until issue #480 is resolved, non-zero overrides such as 'sometimesType' have no effect
+        // https://github.com/aws-observability/aws-rum-web/issues/480
+        const sometimesType = 'sometimes';
+        const alwaysType = 'always';
+
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionSampleRate: 1,
+            allowCookies: true,
+            sessionEventLimit: 2,
+            sessionEventLimitOverride: {
+                [alwaysType]: 0,
+                [sometimesType]: 1
+            }
+        });
+
+        expect(sessionManager.shouldSample()).toBe(true);
+        expect(sessionManager.shouldSample(alwaysType)).toBe(true);
+        expect(sessionManager.shouldSample(sometimesType)).toBe(true);
+
+        sessionManager.countEvent();
+        expect(sessionManager.shouldSample()).toBe(true);
+        expect(sessionManager.shouldSample(alwaysType)).toBe(true);
+        expect(sessionManager.shouldSample(sometimesType)).toBe(true);
+
+        sessionManager.countEvent();
+        expect(sessionManager.shouldSample()).toBe(false);
+        expect(sessionManager.shouldSample(alwaysType)).toBe(true);
+        expect(sessionManager.shouldSample(sometimesType)).toBe(false);
+    });
+
     test('when sessionId is nil then create new session with same sampling decision', async () => {
         mockRandom([0.01]);
         // Init
