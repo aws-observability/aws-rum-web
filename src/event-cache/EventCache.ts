@@ -99,12 +99,10 @@ export class EventCache {
         if (!this.enabled) {
             return;
         }
-
+        this.sessionManager.getSession(); // refresh
         if (this.isCurrentUrlAllowed()) {
-            const session: Session = this.sessionManager.getSession();
             this.sessionManager.incrementSessionEventCount();
-
-            if (this.canRecord(session)) {
+            if (this.sessionManager.shouldSample()) {
                 this.addRecordToCache(type, eventData);
             }
         }
@@ -118,7 +116,6 @@ export class EventCache {
         if (this.isCurrentUrlAllowed()) {
             return this.sessionManager.getSession();
         }
-        return undefined;
     };
 
     /**
@@ -192,17 +189,9 @@ export class EventCache {
 
         this.sessionManager.incrementSessionEventCount();
 
-        if (this.canRecord(session)) {
+        if (this.sessionManager.shouldSample()) {
             this.addRecordToCache(type, eventData);
         }
-    };
-
-    private canRecord = (session: Session): boolean => {
-        return (
-            session.record &&
-            (session.eventCount <= this.config.sessionEventLimit ||
-                this.config.sessionEventLimit <= 0)
-        );
     };
 
     /**

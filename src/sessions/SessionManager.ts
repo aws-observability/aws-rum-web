@@ -112,17 +112,14 @@ export class SessionManager {
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (this.session.sessionId === NIL_UUID) {
-            // The session does not exist. Create a new one.
-            // If it is created before the page view is recorded, the session start event metadata will
-            // not have page attributes as the page does not exist yet.
-            this.createSession();
-        } else if (
-            this.session.sessionId !== NIL_UUID &&
+        if (
+            this.session.sessionId === NIL_UUID ||
             new Date() > this.sessionExpiry
         ) {
-            // The session has expired. Create a new one.
             this.createSession();
+            // The session does not exist or has expired.. Create a new one.
+            // If it is created before the page view is recorded, the session start event metadata will
+            // not have page attributes as the page does not exist yet.
         }
         return this.session;
     }
@@ -152,6 +149,17 @@ export class SessionManager {
     public incrementSessionEventCount() {
         this.session.eventCount++;
         this.renewSession();
+    }
+
+    public shouldSample(): boolean {
+        if (!this.isSampled()) {
+            return false;
+        }
+
+        return (
+            this.session.eventCount <= this.config.sessionEventLimit ||
+            this.config.sessionEventLimit <= 0
+        );
     }
 
     private initializeUser() {

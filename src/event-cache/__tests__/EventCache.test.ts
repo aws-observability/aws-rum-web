@@ -1,7 +1,6 @@
 import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
 import * as Utils from '../../test-utils/test-utils';
-import { SessionManager } from '../../sessions/SessionManager';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
@@ -19,6 +18,7 @@ const getAttributes = jest.fn();
 const incrementSessionEventCount = jest.fn();
 const addSessionAttributes = jest.fn();
 let samplingDecision = true;
+let shouldSample = true;
 const isSampled = jest.fn().mockImplementation(() => samplingDecision);
 jest.mock('../../sessions/SessionManager', () => ({
     SessionManager: jest.fn().mockImplementation(() => ({
@@ -27,7 +27,8 @@ jest.mock('../../sessions/SessionManager', () => ({
         getAttributes,
         incrementSessionEventCount,
         addSessionAttributes,
-        isSampled
+        isSampled,
+        shouldSample: jest.fn().mockImplementation(() => shouldSample)
     }))
 }));
 
@@ -446,92 +447,6 @@ describe('EventCache tests', () => {
         expect(eventCache.isSessionSampled()).toBeTruthy();
     });
 
-    test('when session.record is false then event is not recorded', async () => {
-        // Init
-        const getSession = jest.fn(() => ({ sessionId: 'a', record: true }));
-        const getUserId = jest.fn(() => 'b');
-        const incrementSessionEventCount = jest.fn();
-        (SessionManager as any).mockImplementation(() => ({
-            getSession,
-            getUserId,
-            incrementSessionEventCount
-        }));
-
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const eventCache: EventCache = Utils.createDefaultEventCache();
-
-        // Run
-        eventCache.getEventBatch();
-        eventCache.recordEvent(EVENT1_SCHEMA, {});
-
-        // Assert
-        expect(eventCache.hasEvents()).toBeFalsy();
-    });
-
-    test('when session.record is true then event is recorded', async () => {
-        // Init
-        const getSession = jest.fn(() => ({
-            sessionId: 'a',
-            record: true,
-            eventCount: 1
-        }));
-        const getUserId = jest.fn(() => 'b');
-        const incrementSessionEventCount = jest.fn();
-        (SessionManager as any).mockImplementation(() => ({
-            getSession,
-            getUserId,
-            getAttributes,
-            incrementSessionEventCount
-        }));
-
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const eventCache: EventCache = Utils.createDefaultEventCache();
-
-        // Run
-        eventCache.getEventBatch();
-        eventCache.recordEvent(EVENT1_SCHEMA, {});
-
-        // Assert
-        expect(eventCache.hasEvents()).toBeTruthy();
-    });
-
-    test('when event limit is reached then recordEvent does not record events', async () => {
-        // Init
-        let eventCount = 0;
-        const getSession = jest.fn().mockImplementation(() => {
-            eventCount++;
-            return {
-                sessionId: 'a',
-                record: true,
-                eventCount
-            };
-        });
-        const getUserId = jest.fn(() => 'b');
-        const incrementSessionEventCount = jest.fn();
-        (SessionManager as any).mockImplementation(() => ({
-            getSession,
-            getUserId,
-            getAttributes,
-            incrementSessionEventCount
-        }));
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                sessionEventLimit: 1
-            }
-        };
-        const eventCache: EventCache = Utils.createEventCache(config);
-
-        // Run
-        eventCache.recordEvent(EVENT1_SCHEMA, {});
-        eventCache.recordEvent(EVENT1_SCHEMA, {});
-        eventCache.recordEvent(EVENT1_SCHEMA, {});
-
-        // Assert
-        expect(eventCache.getEventBatch().length).toEqual(1);
-    });
-
     test('when event is recorded then events subscribers are notified with parsed rum event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
@@ -586,31 +501,29 @@ describe('EventCache tests', () => {
         expect(bus.dispatch).not.toHaveBeenCalled(); // eslint-disable-line
     });
 
-    test('when event limit is zero then recordEvent records all events', async () => {
+    test('when session should not sample, then no events are recorded', async () => {
         // Init
-        const eventCount = 0;
-        const getSession = jest.fn(() => ({ sessionId: 'a', record: true }));
-        const getUserId = jest.fn(() => 'b');
-        const incrementSessionEventCount = jest.fn();
-        (SessionManager as any).mockImplementation(() => ({
-            getSession,
-            getUserId,
-            getAttributes,
-            incrementSessionEventCount
-        }));
+        shouldSample = false;
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                sessionEventLimit: 0
-            }
-        };
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG
+        });
 
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
+        expect(eventCache.getEventBatch()).toEqual([]);
 
-        // Assert
-        expect(eventCache.getEventBatch().length).toEqual(1);
+        shouldSample = true;
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        expect(eventCache.getEventBatch()).toHaveLength(2);
+
+        shouldSample = false;
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        expect(eventCache.getEventBatch()).toEqual([]);
+
+        // Restore
+        shouldSample = true;
     });
 });

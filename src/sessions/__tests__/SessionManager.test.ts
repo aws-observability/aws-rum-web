@@ -22,7 +22,6 @@ import {
     DEFAULT_CONFIG,
     mockFetch
 } from '../../test-utils/test-utils';
-import { advanceTo } from 'jest-date-mock';
 
 global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
@@ -379,7 +378,7 @@ describe('SessionManager tests', () => {
         expect(userIdFromTracker).toEqual(NIL_UUID);
     });
 
-    test('when the sessionId cookie expires then a new sessionId is created', async () => {
+    test('when the sessionId cookie expires then a new session is created', async () => {
         // Init
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
@@ -387,11 +386,16 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
+        sessionManager.incrementSessionEventCount();
+        sessionManager.incrementSessionEventCount();
+        sessionManager.incrementSessionEventCount();
+
         await new Promise((resolve) => setTimeout(resolve, 10));
         const sessionTwo = sessionManager.getSession();
 
         // Assert
         expect(sessionOne.sessionId).not.toEqual(sessionTwo.sessionId);
+        expect(sessionTwo.eventCount).toEqual(0);
     });
 
     test('When the sessionId cookie does not expire, sessionId remains the same', async () => {
@@ -459,7 +463,7 @@ describe('SessionManager tests', () => {
         expect(mockRecord).toHaveBeenCalledTimes(0);
     });
 
-    test('when sessionSampleRate is one then session.record is true', async () => {
+    test('when sessionSampleRate is one then should sample', async () => {
         // Init
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
@@ -470,10 +474,10 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(session.record).toBeTruthy();
-        expect(sessionManager.isSampled()).toBeTruthy();
+        expect(sessionManager.isSampled()).toBe(true);
     });
 
-    test('when sessionSampleRate is zero then session.record is false', async () => {
+    test('when sessionSampleRate is zero then should not sample', async () => {
         // Init
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
@@ -484,7 +488,40 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(session.record).toBeFalsy();
-        expect(sessionManager.isSampled()).toBeFalsy();
+        expect(sessionManager.isSampled()).toBe(false);
+        expect(sessionManager.shouldSample()).toBe(false);
+    });
+
+    test('when sessionEventLimit is reached then should not sample ', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionSampleRate: 1,
+            allowCookies: true,
+            sessionEventLimit: 2
+        });
+        expect(sessionManager.shouldSample()).toBe(true);
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.shouldSample()).toBe(true);
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.shouldSample()).toBe(true);
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.shouldSample()).toBe(false);
+    });
+
+    test('when sessionEventLimit is zero then always should sample ', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionSampleRate: 1,
+            allowCookies: true,
+            sessionEventLimit: 0
+        });
+        expect(sessionManager.shouldSample()).toBe(true);
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.shouldSample()).toBe(true);
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.shouldSample()).toBe(true);
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.shouldSample()).toBe(true);
     });
 
     test('when sessionId is nil then create new session with same sampling decision', async () => {
