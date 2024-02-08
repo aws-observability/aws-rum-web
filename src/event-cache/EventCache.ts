@@ -101,7 +101,7 @@ export class EventCache {
         }
         this.sessionManager.getSession(); // refresh
         if (this.isCurrentUrlAllowed()) {
-            this.sessionManager.incrementSessionEventCount();
+            this.sessionManager.countEvent();
             if (this.sessionManager.shouldSample()) {
                 this.addRecordToCache(type, eventData);
             }
@@ -187,7 +187,7 @@ export class EventCache {
             return;
         }
 
-        this.sessionManager.incrementSessionEventCount();
+        this.sessionManager.countEvent();
 
         if (this.sessionManager.shouldSample()) {
             this.addRecordToCache(type, eventData);

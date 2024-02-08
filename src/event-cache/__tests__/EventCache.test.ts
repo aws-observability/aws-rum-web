@@ -15,7 +15,7 @@ const getSession = jest.fn(() => ({
 }));
 const getUserId = jest.fn(() => 'b');
 const getAttributes = jest.fn();
-const incrementSessionEventCount = jest.fn();
+const countEvent = jest.fn();
 const addSessionAttributes = jest.fn();
 let samplingDecision = true;
 let shouldSample = true;
@@ -25,7 +25,7 @@ jest.mock('../../sessions/SessionManager', () => ({
         getSession,
         getUserId,
         getAttributes,
-        incrementSessionEventCount,
+        countEvent,
         addSessionAttributes,
         isSampled,
         shouldSample: jest.fn().mockImplementation(() => shouldSample)
@@ -42,7 +42,7 @@ describe('EventCache tests', () => {
     beforeEach(() => {
         getSession.mockClear();
         getUserId.mockClear();
-        incrementSessionEventCount.mockClear();
+        countEvent.mockClear();
     });
 
     test('record does nothing when cache is disabled', async () => {

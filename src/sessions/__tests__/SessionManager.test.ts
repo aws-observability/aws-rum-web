@@ -386,9 +386,9 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
-        sessionManager.incrementSessionEventCount();
-        sessionManager.incrementSessionEventCount();
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
+        sessionManager.countEvent();
+        sessionManager.countEvent();
 
         await new Promise((resolve) => setTimeout(resolve, 10));
         const sessionTwo = sessionManager.getSession();
@@ -500,11 +500,11 @@ describe('SessionManager tests', () => {
             sessionEventLimit: 2
         });
         expect(sessionManager.shouldSample()).toBe(true);
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(true);
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(true);
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(false);
     });
 
@@ -516,11 +516,11 @@ describe('SessionManager tests', () => {
             sessionEventLimit: 0
         });
         expect(sessionManager.shouldSample()).toBe(true);
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(true);
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(true);
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(true);
     });
 
@@ -625,7 +625,7 @@ describe('SessionManager tests', () => {
         expect(session.eventCount).toEqual(0);
     });
 
-    test('when cookies are allowed then incrementSessionEventCount increments session.eventCount in cookie', async () => {
+    test('when cookies are allowed then countEvent increments session.eventCount in cookie', async () => {
         // Init
         const config = {
             ...DEFAULT_CONFIG,
@@ -641,14 +641,14 @@ describe('SessionManager tests', () => {
         const sessionManager = defaultSessionManager(config);
 
         sessionManager.getSession();
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         const session = JSON.parse(atob(getCookie(SESSION_COOKIE_NAME)));
 
         // Assert
         expect(session.eventCount).toEqual(2);
     });
 
-    test('when cookies are not allowed then incrementSessionEventCount increments session.eventCount in member', async () => {
+    test('when cookies are not allowed then countEvent increments session.eventCount in member', async () => {
         // Init
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
@@ -656,7 +656,7 @@ describe('SessionManager tests', () => {
         });
 
         sessionManager.getSession();
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         const session = sessionManager.getSession();
 
         // Assert
@@ -764,7 +764,7 @@ describe('SessionManager tests', () => {
         sessionManager.getSession();
         const userIdFromCookie1 = getCookie(USER_COOKIE_NAME);
         config.allowCookies = true;
-        sessionManager.incrementSessionEventCount();
+        sessionManager.countEvent();
         const userIdFromCookie2 = getCookie(USER_COOKIE_NAME);
 
         // Assert

@@ -146,7 +146,7 @@ export class SessionManager {
         return NIL_UUID;
     }
 
-    public incrementSessionEventCount() {
+    public countEvent() {
         this.session.eventCount++;
         this.renewSession();
     }
