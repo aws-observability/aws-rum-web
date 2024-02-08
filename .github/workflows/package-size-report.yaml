@@ -23,7 +23,8 @@ jobs:
 
             - name: Package size report
               uses: pkg-size/action@v1
-              hide-files: '!/dist/cwr.js'
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  hide-files: '!/dist/cwr.js'
              
