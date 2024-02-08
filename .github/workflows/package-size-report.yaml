@@ -26,5 +26,5 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  hide-files: '!/dist/cwr.js'
+                  hide-files: '!/build/assets/cwr.js'
              
