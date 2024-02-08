@@ -157,7 +157,7 @@ export class SessionManager {
         }
 
         return (
-            this.session.eventCount <= this.config.sessionEventLimit ||
+            this.session.eventCount < this.config.sessionEventLimit ||
             this.config.sessionEventLimit <= 0
         );
     }

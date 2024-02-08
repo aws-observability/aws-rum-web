@@ -99,11 +99,11 @@ export class EventCache {
         if (!this.enabled) {
             return;
         }
-        this.sessionManager.getSession(); // refresh
+        this.sessionManager.getSession(); // refresh session if needed
         if (this.isCurrentUrlAllowed()) {
-            this.sessionManager.countEvent();
             if (this.sessionManager.shouldSample()) {
                 this.addRecordToCache(type, eventData);
+                this.sessionManager.countEvent();
             }
         }
     };

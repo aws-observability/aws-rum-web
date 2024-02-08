@@ -503,7 +503,7 @@ describe('SessionManager tests', () => {
         sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(true);
         sessionManager.countEvent();
-        expect(sessionManager.shouldSample()).toBe(true);
+        expect(sessionManager.shouldSample()).toBe(false);
         sessionManager.countEvent();
         expect(sessionManager.shouldSample()).toBe(false);
     });
