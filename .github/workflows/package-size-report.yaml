@@ -12,8 +12,6 @@ jobs:
     pkg-size-report:
         name: Package Size Report
         runs-on: ubuntu-latest
-        options:
-            hide-files: '!cwr.js'
         steps:
             - name: Checkout
               uses: actions/checkout@v2
@@ -25,5 +23,7 @@ jobs:
 
             - name: Package size report
               uses: pkg-size/action@v1
+              hide-files: '!/dist/cwr.js'
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+             
