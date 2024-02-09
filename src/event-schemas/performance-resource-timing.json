@@ -1,0 +1,101 @@
+{
+    "$id": "com.amazon.rum.performance_resource_timing",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "PerformanceResourceTimingEvent",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "entryType": {
+            "const": "resource",
+            "type": "string"
+        },
+        "startTime": {
+            "type": "number"
+        },
+        "duration": {
+            "type": "number"
+        },
+        "connectStart": {
+            "type": "number"
+        },
+        "connectEnd": {
+            "type": "number"
+        },
+        "decodedBodySize": {
+            "type": "number"
+        },
+        "domainLookupEnd": {
+            "type": "number"
+        },
+        "domainLookupStart": {
+            "type": "number"
+        },
+        "encodedBodySize": {
+            "type": "number"
+        },
+        "fetchStart": {
+            "type": "number"
+        },
+        "initiatorType": {
+            "type": "string",
+            "enum": [
+                "audio",
+                "beacon",
+                "body",
+                "css",
+                "early-hint",
+                "embed",
+                "fetch",
+                "frame",
+                "iframe",
+                "icon",
+                "image",
+                "img",
+                "input",
+                "link",
+                "navigation",
+                "object",
+                "ping",
+                "script",
+                "track",
+                "video",
+                "xmlhttprequest",
+                "other"
+            ]
+        },
+        "nextHopProtocol": {
+            "type": "string"
+        },
+        "redirectEnd": {
+            "type": "number"
+        },
+        "redirectStart": {
+            "type": "number"
+        },
+        "renderBlockingStatus": {
+            "type": "string"
+        },
+        "requestStart": {
+            "type": "number"
+        },
+        "responseEnd": {
+            "type": "number"
+        },
+        "responseStart": {
+            "type": "number"
+        },
+        "secureConnectionStart": {
+            "type": "number"
+        },
+        "transferSize": {
+            "type": "number"
+        },
+        "workerStart": {
+            "type": "number"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["duration", "entryType", "startTime"]
+}
