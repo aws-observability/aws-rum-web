@@ -4,7 +4,7 @@ export const defaultIgnore = (entry: PerformanceEntry) =>
     entry.entryType === 'resource' &&
     (!/^https?:/.test(entry.name) ||
         /^(fetch|xmlhttprequest)$/.test(
-            (entry as PerformanceResourceTiming).initiatorType
+            (entry as PerformanceResourceTimingPolyfill).initiatorType
         ));
 
 export type PerformancePluginConfig = {
@@ -25,3 +25,9 @@ export const defaultPerformancePluginConfig = {
     ],
     sampleTypes: [ResourceType.IMAGE, ResourceType.OTHER]
 };
+
+/** Field renderBlockingStatus is currently missing from the node runtime and will cause build failures. */
+export interface PerformanceResourceTimingPolyfill
+    extends PerformanceResourceTiming {
+    renderBlockingStatus?: string;
+}

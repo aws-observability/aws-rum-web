@@ -94,6 +94,7 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
+     * @param eventData The RUM Event to be dispatched to PutRumEvents
      */
     public recordEvent = (type: string, eventData: object) => {
         if (!this.enabled) {
@@ -209,6 +210,7 @@ export class EventCache {
      * Add an event to the cache.
      *
      * @param type The event schema.
+     * @param eventData The RUM Event to be dispatched to PutRumEvents
      */
     private addRecordToCache = (type: string, eventData: object) => {
         if (!this.enabled) {
