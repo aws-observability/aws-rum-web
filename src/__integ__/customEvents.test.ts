@@ -127,13 +127,6 @@ test('when a plugin calls recordEvent then the event is recorded', async (t: Tes
 });
 
 test('when a plugin calls recordEvent x times then event is recorded x times', async (t: TestController) => {
-    // This test passes individually, but fails on Edge when run as apart of the suite
-    // Further investigation is needed to determine if flakiness is from RUM or TestCafe
-    if (t.browser.name.includes('Edge')) {
-        // Test is skipped
-        return;
-    }
-
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     // Record event 5 times.
@@ -143,6 +136,7 @@ test('when a plugin calls recordEvent x times then event is recorded x times', a
     }
     await t
         .click(dispatch)
+        .wait(100)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
@@ -167,13 +161,6 @@ test('when a plugin calls recordEvent x times then event is recorded x times', a
 });
 
 test('when plugin recordEvent has empty event_data then RumEvent details is empty', async (t: TestController) => {
-    // This test passes individually, but fails on Edge when run as apart of the suite
-    // Further investigation is needed to determine if flakiness is from RUM or TestCafe
-    if (t.browser.name.includes('Edge')) {
-        // Test is skipped
-        return;
-    }
-
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     await t.wait(300);
@@ -181,6 +168,7 @@ test('when plugin recordEvent has empty event_data then RumEvent details is empt
     await t
         .click(pluginRecordEmptyEvent)
         .click(dispatch)
+        .wait(100)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
