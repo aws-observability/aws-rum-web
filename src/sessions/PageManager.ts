@@ -14,7 +14,6 @@ export type Page = {
 };
 
 export type Attributes = {
-    title: string;
     pageId: string;
     parentPageId?: string;
     interaction?: number;
@@ -187,7 +186,9 @@ export class PageManager {
         customPageAttributes?: PageAttributes
     ) {
         this.attributes = {
-            title: document.title,
+            title: customPageAttributes?.pageAttributes?.title
+                ? customPageAttributes.pageAttributes.title
+                : document.title,
             pageId: page.pageId
         };
 
