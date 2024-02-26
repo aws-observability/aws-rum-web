@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.17.1](https://github.com/aws-observability/aws-rum-web/compare/v1.16.0...v1.17.1) (2024-02-26)
+
+
+### Features
+
+
+### Bug Fixes
+
+* Allow title override in page attributes ([#508](https://github.com/aws-observability/aws-rum-web/issues/508)) ([a6a1ad8](https://github.com/aws-observability/aws-rum-web/commit/a6a1ad833b274627a59e001bed1f19172e63c0d5))
+
+
 ## [1.17.0]((https://github.com/aws-observability/aws-rum-web/compare/v1.16.0...v1.17.0)) (2024-02-01)
 
 
