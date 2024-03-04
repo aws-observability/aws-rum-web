@@ -242,9 +242,10 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         response: Response
     ) => {
         if (this.config.recordAllRequests || !response.ok) {
+            const { status, statusText } = response;
             httpEvent.response = {
-                status: response.status,
-                statusText: response.statusText
+                status,
+                ...(statusText && { statusText })
             };
             this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }

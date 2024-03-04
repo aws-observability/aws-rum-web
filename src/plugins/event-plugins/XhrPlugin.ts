@@ -255,16 +255,17 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         xhr: XMLHttpRequest
     ) {
         this.xhrMap.delete(xhr);
+        const { status, statusText } = xhr;
         const httpEvent: HttpEvent = {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url },
-            response: { status: xhr.status, statusText: xhr.statusText }
+            response: { status, ...(statusText && { statusText }) }
         };
         if (this.isTracingEnabled()) {
             httpEvent.trace_id = xhrDetails.trace!.trace_id;
             httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
         }
-        if (this.config.recordAllRequests || !this.statusOk(xhr.status)) {
+        if (this.config.recordAllRequests || !this.statusOk(status)) {
             this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
     }
