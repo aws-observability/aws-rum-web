@@ -1,17 +1,10 @@
 # Installing as an Embedded Script
 
-The CloudWatch RUM web client can be dynamically loaded into the application
-using a code snippet. The code snippet is a self-executing function created by
-the CloudWatch RUM console. The snippet (1) asynchronously downloads the web
-client from a content delivery network (CDN) or the application server and (2)
-configures the web client for the application it is monitoring.
+The CloudWatch RUM web client can be dynamically loaded into the application using a code snippet. The code snippet is a self-executing function created by the CloudWatch RUM console. The snippet (1) asynchronously downloads the web client from a content delivery network (CDN) or the application server and (2) configures the web client for the application it is monitoring.
 
 ## Generate a code snippet
 
-Use the CloudWatch RUM console to generate a code snippet. See the [CloudWatch
-RUM documentation
-](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html)
-for instructions on how to create an AppMonitor and generate a code snippet.
+Use the CloudWatch RUM console to generate a code snippet. See the [CloudWatch RUM documentation ](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html) for instructions on how to create an AppMonitor and generate a code snippet.
 
 The snippet will look similar to the following:
 
@@ -50,29 +43,20 @@ The snippet will look similar to the following:
 
 ## Instrument the application
 
-Copy the code snippet into the `<head>` tag of each HTML file in the web
-application.
+Copy the code snippet into the `<head>` tag of each HTML file in the web application.
 
 Modify the arguments to match your AppMonitor. See [Arguments](#arguments) for details.
 
 > **:warning: Ad blockers may block the default CDN**
 >
-> For convenience, AWS distributes a copy of the CloudWatch RUM web client
-> through a content delivery network (CDN). The generated code snippet uses this
-> CDN by default. However, ad blockers may block this CDN's domain. This disables
-> application monitoring for users with ad blockers.
+> For convenience, AWS distributes a copy of the CloudWatch RUM web client through a content delivery network (CDN). The generated code snippet uses this CDN by default. However, ad blockers may block this CDN's domain. This disables application monitoring for users with ad blockers.
 >
 > To mitigate this we recommend one of the following:
 >
-> 1. Have the web application host the CloudWatch RUM web client:<br/>
->    a) Copy [`cwr.js`](https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js) to the assets directory of the web application<br/>
->    b) Modify the code snippet to use the copy of `cwr.js` from (a).
+> 1. Have the web application host the CloudWatch RUM web client:<br/> a) Copy [`cwr.js`](https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js) to the assets directory of the web application<br/> b) Modify the code snippet to use the copy of `cwr.js` from (a).
 > 2. Install the CloudWatch RUM web client as a [JavaScript module](https://www.npmjs.com/package/aws-rum-web).
 
-Modify the `config` object to configure how the web client should behave. At a
-minimum, configure the following: (1) how the data will be authenticated, and
-(2) what aspects of the application will be monitored. See
-[Application-specific Configurations](configuration.md) for details.
+Modify the `config` object to configure how the web client should behave. At a minimum, configure the following: (1) how the data will be authenticated, and (2) what aspects of the application will be monitored. See [Application-specific Configurations](configuration.md) for details.
 
 ## Arguments
 
@@ -91,14 +75,14 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
 </script>
 ```
 
-| Position | Argument&nbsp;Name  | Type                              | Description                                                                                                                          |
-| -------- | ------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| 1        | Namespace           | String                            | The name of the global variable that the application will use to execute commands on the web client. This will typically be `'cwr'`. |
-| 2        | AppMonitor ID       | String                            | A globally unique identifier for the CloudWatch RUM AppMonitor which monitors your application.                                      |
-| 3        | Application Version | String                            | Your application's semantic version. If you do not wish to use this field then add any placeholder, such as `'0.0.0'`.               |
-| 4        | Region              | String                            | The AWS region of the AppMonitor. For example, `'us-east-1'` or '`eu-west-2'`.                                                       |
-| 5        | Web Client URL      | String                            | The URL of the web client bundle. For example, `'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js'`                           |
-| 6        | Configuration       | [Configuration](configuration.md) | An application-specific configuration for the web client.                                                                            |
+| Position | Argument&nbsp;Name | Type | Description |
+| --- | --- | --- | --- |
+| 1 | Namespace | String | The name of the global variable that the application will use to execute commands on the web client. This will typically be `'cwr'`. |
+| 2 | AppMonitor ID | String | A globally unique identifier for the CloudWatch RUM AppMonitor which monitors your application. |
+| 3 | Application Version | String | Your application's semantic version. If you do not wish to use this field then add any placeholder, such as `'0.0.0'`. |
+| 4 | Region | String | The AWS region of the AppMonitor. For example, `'us-east-1'` or '`eu-west-2'`. |
+| 5 | Web Client URL | String | The URL of the web client bundle. For example, `'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js'` |
+| 6 | Configuration | [Configuration](configuration.md) | An application-specific configuration for the web client. |
 
 ## Configuring the CloudWatch RUM web client
 

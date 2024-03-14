@@ -4,10 +4,7 @@
 
 > **:warning: The CloudWatch RUM app monitor must have custom events enabled.**
 >
-> To send custom events to a CloudWatch RUM app monitor, you must first
-> configure your app monitor to accept custom events. See
-> [_Send custom events_](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html)
-> in the CloudWatch RUM user guide.
+> To send custom events to a CloudWatch RUM app monitor, you must first configure your app monitor to accept custom events. See [_Send custom events_](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html) in the CloudWatch RUM user guide.
 
 Call `recordEvent` directly from the application when the event occurs on a single page, and does not need to maintain state.
 
@@ -29,20 +26,14 @@ See [Executing Commands: Events](cdn_commands.md#Events).
 
 > **:warning: The CloudWatch RUM app monitor must have custom events enabled.**
 >
-> To send custom events to a CloudWatch RUM app monitor, you must first
-> configure your app monitor to accept custom events. See
-> [_Send custom events_](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html)
-> in the CloudWatch RUM user guide.
+> To send custom events to a CloudWatch RUM app monitor, you must first configure your app monitor to accept custom events. See [_Send custom events_](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html) in the CloudWatch RUM user guide.
 
 Create a plugin when the event being recorded can occur on multiple pages, or needs to maintain state. To record events using a plugin, you must:
 
-1. Create a plugin by implementing the
-   [Plugin](https://github.com/aws-observability/aws-rum-web/blob/main/src/plugins/Plugin.ts)
-   interface.
+1. Create a plugin by implementing the [Plugin](https://github.com/aws-observability/aws-rum-web/blob/main/src/plugins/Plugin.ts) interface.
 2. Install the plugin by adding it to the web client configuration.
 
-**Step 1:** Create a plugin by implementing the
-[Plugin](https://github.com/aws-observability/aws-rum-web/blob/main/src/plugins/Plugin.ts) interface.
+**Step 1:** Create a plugin by implementing the [Plugin](https://github.com/aws-observability/aws-rum-web/blob/main/src/plugins/Plugin.ts) interface.
 
 For example, the following plugin records an event whenever the end-user scrolls.
 
@@ -79,8 +70,7 @@ class MyScrollEventPlugin implements Plugin {
 
 **Step 2:** Install the plugin.
 
-For example, the following code snippet instantiates `MyScrollEventPlugin` and
-installs it in the web client.
+For example, the following code snippet instantiates `MyScrollEventPlugin` and installs it in the web client.
 
 ```typescript
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
@@ -112,9 +102,7 @@ try {
 }
 ```
 
-Alternatively, you can install the plugin after initializing the web client by
-calling `addPlugin`. For example, the following code snippet instantiates
-`MyScrollEventPlugin` and installs it in the web client.
+Alternatively, you can install the plugin after initializing the web client by calling `addPlugin`. For example, the following code snippet instantiates `MyScrollEventPlugin` and installs it in the web client.
 
 ```typescript
 const myScrollEventPlugin: MyScrollEventPlugin = new MyScrollEventPlugin();

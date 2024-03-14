@@ -57,16 +57,9 @@ To install the web client in a React application, add the snippet inside the \<h
 
 ## Instrument Routing to Record Page Views
 
-If your application contains arguments in the URL's path, you likely want to
-record custom page IDs so that the arguments can be removed and the pages will
-be properly aggregated in CloudWatch. For example, if we have two URLs
-`https://amazonaws.com/user/123` and `https://amazonaws.com/user/456`, we likely
-want to remove the user ID from the path so that the page ID is `/user` for both
-URLs.
+If your application contains arguments in the URL's path, you likely want to record custom page IDs so that the arguments can be removed and the pages will be properly aggregated in CloudWatch. For example, if we have two URLs `https://amazonaws.com/user/123` and `https://amazonaws.com/user/456`, we likely want to remove the user ID from the path so that the page ID is `/user` for both URLs.
 
-For React applications, we can use a [React Router
-hook](https://reactrouter.com/web/api/Hooks/uselocation) to record a custom page
-ID:
+For React applications, we can use a [React Router hook](https://reactrouter.com/web/api/Hooks/uselocation) to record a custom page ID:
 
 ```typescript
 import { useLocation } from 'react-router-dom';
@@ -88,11 +81,7 @@ export default Container;
 
 ## Instrument Error Handling to Record Errors
 
-React intercepts uncaught JavaScript errors that originate within the React
-application. Because React intercepts these errors, they will not be recorded by
-the web client. This can be fixed by adding [error
-boundaries](https://reactjs.org/blog/2017/07/26/error-handling-in-react-16.html)
-that record uncaught errors using the web client's `recordError` command:
+React intercepts uncaught JavaScript errors that originate within the React application. Because React intercepts these errors, they will not be recorded by the web client. This can be fixed by adding [error boundaries](https://reactjs.org/blog/2017/07/26/error-handling-in-react-16.html) that record uncaught errors using the web client's `recordError` command:
 
 ```typescript
 declare function cwr(operation: string, payload: any): void;
