@@ -19,27 +19,28 @@ The following code shows an example of how to instrument an application. This co
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
 try {
-  const config: AwsRumConfig = {
-    allowCookies: true,
-    endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
-    identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
-    sessionSampleRate: 1,
-    telemetries: ['errors', 'performance']
-  };
+    const config: AwsRumConfig = {
+        allowCookies: true,
+        endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+        guestRoleArn:
+            'arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth',
+        identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
+        sessionSampleRate: 1,
+        telemetries: ['errors', 'performance']
+    };
 
-  const APPLICATION_ID: string = '00000000-0000-0000-0000-000000000000';
-  const APPLICATION_VERSION: string = '1.0.0';
-  const APPLICATION_REGION: string = 'us-west-2';
+    const APPLICATION_ID: string = '00000000-0000-0000-0000-000000000000';
+    const APPLICATION_VERSION: string = '1.0.0';
+    const APPLICATION_REGION: string = 'us-west-2';
 
-  const awsRum: AwsRum = new AwsRum(
-    APPLICATION_ID,
-    APPLICATION_VERSION,
-    APPLICATION_REGION,
-    config
-  );
+    const awsRum: AwsRum = new AwsRum(
+        APPLICATION_ID,
+        APPLICATION_VERSION,
+        APPLICATION_REGION,
+        config
+    );
 } catch (error) {
-  // Ignore errors thrown during CloudWatch RUM web client initialization
+    // Ignore errors thrown during CloudWatch RUM web client initialization
 }
 ```
 
@@ -52,12 +53,12 @@ and (2) what aspects of the application will be monitored. See
 
 ## Arguments
 
-| Argument&nbsp;Name | Type | Description |
-| --- | --- | --- |
-| AppMonitor ID | String | A globally unique identifier for the CloudWatch RUM AppMonitor which monitors your application. |
-| Application Version | String | The application's semantic version. If you do not wish to use this field then add any placeholder, such as `'0.0.0'`. |
-| Region | String | The AWS region of the AppMonitor. For example, `'us-east-1'` or '`eu-west-2'`. |
-| Configuration | [Configuration](#configuration) | The application-specific configuration for the web client. |
+| Argument&nbsp;Name  | Type                            | Description                                                                                                           |
+| ------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| AppMonitor ID       | String                          | A globally unique identifier for the CloudWatch RUM AppMonitor which monitors your application.                       |
+| Application Version | String                          | The application's semantic version. If you do not wish to use this field then add any placeholder, such as `'0.0.0'`. |
+| Region              | String                          | The AWS region of the AppMonitor. For example, `'us-east-1'` or '`eu-west-2'`.                                        |
+| Configuration       | [Configuration](#configuration) | The application-specific configuration for the web client.                                                            |
 
 ## Configuration
 
@@ -70,9 +71,10 @@ match the resources created when setting up the AppMonitor:
 ```typescript
 const config: AwsRumConfig = {
     allowCookies: true,
-    endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
-    identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
+    endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+    guestRoleArn:
+        'arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth',
+    identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
     sessionSampleRate: 1,
     telemetries: ['errors', 'performance']
 };

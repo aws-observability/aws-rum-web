@@ -5,17 +5,54 @@
 To install the web client in a React application, add the snippet inside the \<head\> tag of `index.html`.
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <script>
-    (function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',{sessionSampleRate:1,guestRoleArn:'arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-0000000000000-Unauth',identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});
-  </script>
-  ...
-</head>
-<body>
-  ...
-</body>
+    <head>
+        <script>
+            (function (n, i, v, r, s, c, u, x, z) {
+                x = window.AwsRumClient = {
+                    q: [],
+                    n: n,
+                    i: i,
+                    v: v,
+                    r: r,
+                    c: c,
+                    u: u
+                };
+                window[n] = function (c, p) {
+                    x.q.push({ c: c, p: p });
+                };
+                z = document.createElement('script');
+                z.async = true;
+                z.src = s;
+                document.head.insertBefore(
+                    z,
+                    document.getElementsByTagName('script')[0]
+                );
+            })(
+                'cwr',
+                '00000000-0000-0000-0000-000000000000',
+                '1.0.0',
+                'us-west-2',
+                'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+                {
+                    sessionSampleRate: 1,
+                    guestRoleArn:
+                        'arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-0000000000000-Unauth',
+                    identityPoolId:
+                        'us-west-2:00000000-0000-0000-0000-000000000000',
+                    endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+                    telemetries: ['errors', 'http', 'performance'],
+                    allowCookies: true
+                }
+            );
+        </script>
+        ...
+    </head>
+    <body>
+        ...
+    </body>
+</html>
 ```
 
 ## Instrument Routing to Record Page Views
@@ -32,28 +69,22 @@ hook](https://reactrouter.com/web/api/Hooks/uselocation) to record a custom page
 ID:
 
 ```typescript
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 declare function cwr(operation: string, payload: any): void;
 
 const Container = () => {
+    let location = useLocation();
+    React.useEffect(() => {
+        console.log(location.pathname);
+        cwr('recordPageView', location.pathname);
+    }, [location]);
 
-  let location = useLocation();
-  React.useEffect(() => {
-    console.log(location.pathname);
-    cwr("recordPageView", location.pathname);
-  }, [location]);
-
-  return (
-    <div>
-      {<MyComponent />}
-    </div>
-  );
+    return <div>{<MyComponent />}</div>;
 };
 
 export default Container;
 ```
-
 
 ## Instrument Error Handling to Record Errors
 
