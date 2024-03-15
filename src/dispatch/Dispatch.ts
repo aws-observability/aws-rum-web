@@ -235,7 +235,9 @@ export class Dispatch {
         // The handler has run out of retries. We adhere to our convention to
         // fail safe by disabling dispatch. This ensures that we will not
         // continue to attempt requests when the problem is not recoverable.
-        this.disable();
+        if (this.config.disableOnFail) {
+            this.disable();
+        }
         throw e;
     };
 

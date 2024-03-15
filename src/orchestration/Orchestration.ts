@@ -72,6 +72,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         client: INSTALL_MODULE,
         cookieAttributes,
         disableAutoPageView: false,
+        disableOnFail: true,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
         enableXRay: false,
@@ -115,6 +116,7 @@ export interface Config {
     cookieAttributes: CookieAttributes;
     sessionAttributes: { [k: string]: string | number | boolean };
     disableAutoPageView: boolean;
+    disableOnFail: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
     enableXRay: boolean;
