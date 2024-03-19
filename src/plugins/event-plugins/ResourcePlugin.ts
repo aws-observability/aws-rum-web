@@ -90,7 +90,15 @@ export class ResourcePlugin extends InternalPlugin {
     }: PerformanceResourceTiming): void => {
         const pathRegex =
             /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-        const entryUrl = new URL(name);
+        let entryUrl: URL;
+        try {
+            entryUrl = new URL(name);
+        } catch {
+            // Ignore failures where an invalid string causes the URL 
+            // construction to fail. Otherwise RUM failures are logged as
+            // an error event.
+            return;
+        }
         if (
             entryUrl.host === this.context.config.endpointUrl.host &&
             pathRegex.test(entryUrl.pathname)
