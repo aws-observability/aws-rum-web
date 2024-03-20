@@ -419,7 +419,7 @@ describe('Dispatch tests', () => {
         );
     });
 
-    test('when a fetch request is rejected and disableOnFaile=true then dispatch is disabled', async () => {
+    test('when a fetch request is rejected then dispatch is disabled', async () => {
         // Init
         const ERROR = 'Something went wrong.';
         const sendFetch = jest.fn(() => Promise.reject(ERROR));
@@ -438,11 +438,7 @@ describe('Dispatch tests', () => {
             eventCache,
             {
                 ...DEFAULT_CONFIG,
-                ...{
-                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
-                    retries: 0,
-                    disableOnFail: true
-                }
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
             }
         );
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
@@ -453,44 +449,6 @@ describe('Dispatch tests', () => {
 
         // Assert
         await expect(dispatch.dispatchFetch()).resolves.toEqual(undefined);
-        expect((dispatch as unknown as any).enabled).toBe(false);
-    });
-
-    test('when a fetch request is rejected and disableOnFail=false then dispatch is not disabled', async () => {
-        // Init
-        const ERROR = 'Something went wrong.';
-        const sendFetch = jest.fn(() => Promise.reject(ERROR));
-        (DataPlaneClient as any).mockImplementation(() => {
-            return {
-                sendFetch
-            };
-        });
-
-        const eventCache: EventCache =
-            Utils.createDefaultEventCacheWithEvents();
-
-        const dispatch = new Dispatch(
-            Utils.AWS_RUM_REGION,
-            Utils.AWS_RUM_ENDPOINT,
-            eventCache,
-            {
-                ...DEFAULT_CONFIG,
-                ...{
-                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
-                    retries: 0,
-                    disableOnFail: false
-                }
-            }
-        );
-        dispatch.setAwsCredentials(Utils.createAwsCredentials());
-
-        // Run
-        await expect(dispatch.dispatchFetch()).rejects.toEqual(ERROR);
-        eventCache.recordEvent('com.amazon.rum.event1', {});
-
-        // Assert
-        await expect(dispatch.dispatchFetch()).rejects.toEqual(ERROR);
-        expect((dispatch as unknown as any).enabled).toBe(true);
     });
 
     test('when signing is disabled then credentials are not needed for dispatch', async () => {
