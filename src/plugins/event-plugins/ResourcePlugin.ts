@@ -94,10 +94,12 @@ export class ResourcePlugin extends InternalPlugin {
         try {
             entryUrl = new URL(name);
         } catch {
-            // Ignore failures where an invalid string causes the URL 
-            // construction to fail. Otherwise RUM failures are logged as
-            // an error event.
-            return;
+            // Throw error if constructing URL for name fails. Log name
+            // value with the error to identify patterns that cause such
+            // failures.
+            throw new Error(
+                `Unable to construct URL from PerformanceResourceTiming name: ${name}`
+            );
         }
         if (
             entryUrl.host === this.context.config.endpointUrl.host &&
