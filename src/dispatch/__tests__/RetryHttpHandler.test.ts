@@ -158,7 +158,6 @@ describe('RetryHttpHandler tests', () => {
         expect(response).resolves.toBe(okStatus);
     });
 
-
     test('when status code is 429 then request retries', async () => {
         // Init
         const badStatus = { response: { statusCode: 429 } };
