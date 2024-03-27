@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0]((https://github.com/aws-observability/aws-rum-web/compare/v1.16.0...v1.17.0)) (2024-02-01)
+
+
+### Features
+* allow customization of default attributes ([#430](https://github.com/aws-observability/aws-rum-web/issues/430)) ([533f0bf](https://github.com/aws-observability/aws-rum-web/commit/533f0bfa771cf2a801cd73c9149d2d35a9cdd0a0))
+
+
+
+### Bug Fixes
+
+* Remove unnecessary import in the TTIPlugin ([#475](https://github.com/aws-observability/aws-rum-web/issues/475)) ([cc7c165](https://github.com/aws-observability/aws-rum-web/commit/cc7c165801d0c5e0a312b717213f5242a8b04f5d))
+* Record 0 for headerSize if transferSize is 0 ([#496](https://github.com/aws-observability/aws-rum-web/issues/496)) ([776915e](https://github.com/aws-observability/aws-rum-web/commit/776915e432067345a859358c48ea08d3dfd5db97))
+* Invalidate cognito identity and re-try ([#498](https://github.com/aws-observability/aws-rum-web/issues/498)) ([90aa77a](https://github.com/aws-observability/aws-rum-web/commit/90aa77afddbacf733a649ab42a18f1d6ccb8de8b))
+
+
 ## [1.16.0](https://github.com/aws-observability/aws-rum-web/compare/v1.15.0...v1.16.0) (2023-11-16)
 
 
