@@ -90,7 +90,17 @@ export class ResourcePlugin extends InternalPlugin {
     }: PerformanceResourceTiming): void => {
         const pathRegex =
             /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-        const entryUrl = new URL(name);
+        let entryUrl: URL;
+        try {
+            entryUrl = new URL(name);
+        } catch {
+            // Throw error if constructing URL for name fails. Log name
+            // value with the error to identify patterns that cause such
+            // failures.
+            throw new Error(
+                `Unable to construct URL from PerformanceResourceTiming name: ${name}`
+            );
+        }
         if (
             entryUrl.host === this.context.config.endpointUrl.host &&
             pathRegex.test(entryUrl.pathname)
