@@ -16,7 +16,7 @@ export class RetryHttpHandler implements HttpHandler {
     public constructor(
         handler: HttpHandler,
         retries: number,
-        backoff: BackoffFunction = (n) => n * 2000
+        backoff: BackoffFunction = (n) => 2000 * Math.pow(2, n - 1)
     ) {
         this.handler = handler;
         this.retries = retries;
