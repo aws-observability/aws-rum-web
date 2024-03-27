@@ -38,7 +38,7 @@ export class Dispatch {
     private dispatchTimerId: number | undefined;
     private buildClient: ClientBuilder;
     private config: Config;
-    private disableCodes = ['403', '404'];
+    private disableCodes = ['401', '403', '404'];
 
     constructor(
         region: string,
