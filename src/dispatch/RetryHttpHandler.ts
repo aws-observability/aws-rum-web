@@ -1,4 +1,5 @@
 import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { is2xx, is429, is5xx } from '../plugins/utils/http-utils';
 
 export type BackoffFunction = (retry: number) => number;
 
@@ -30,14 +31,21 @@ export class RetryHttpHandler implements HttpHandler {
         while (true) {
             try {
                 const response = await this.handler.handle(request);
-                if (this.isStatusCode2xx(response.response.statusCode)) {
+                if (is2xx(response.response.statusCode)) {
                     return response;
                 }
-                throw new Error(`${response.response.statusCode}`);
+                throw response.response.statusCode;
             } catch (e) {
-                if (!retriesLeft) {
+                if (typeof e === 'number' && !is429(e) && !is5xx(e)) {
+                    // Fail immediately on client errors because they will never succeed.
+                    // Only retry when request is throttled (429) or received server error (5xx).
+                    throw new Error(`${e}`);
+                }
+
+                if (retriesLeft <= 0) {
                     throw e;
                 }
+
                 retriesLeft--;
                 await this.sleep(this.backoff(this.retries - retriesLeft));
             }
@@ -49,8 +57,4 @@ export class RetryHttpHandler implements HttpHandler {
             setTimeout(resolve, milliseconds)
         );
     }
-
-    private isStatusCode2xx = (statusCode: number): boolean => {
-        return statusCode >= 200 && statusCode < 300;
-    };
 }

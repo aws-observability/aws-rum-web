@@ -6,7 +6,7 @@ import { RetryHttpHandler } from '../RetryHttpHandler';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 
 const fetchHandler = jest.fn<Promise<Record<string, unknown>>, []>(() =>
-    Promise.resolve({})
+    Promise.resolve({ response: { statusCode: 500 } })
 );
 jest.mock('@aws-sdk/fetch-http-handler', () => ({
     FetchHttpHandler: jest
@@ -93,9 +93,9 @@ describe('RetryHttpHandler tests', () => {
         expect(response).resolves.toBe(success);
     });
 
-    test('when status code is not 2xx then request fails', async () => {
+    test('when status code is 4xx then request fails without retrying', async () => {
         // Init
-        const success = { response: { statusCode: 500 } };
+        const success = { response: { statusCode: 400 } };
         fetchHandler.mockReturnValue(Promise.resolve(success));
 
         const retries = 0;
@@ -118,16 +118,49 @@ describe('RetryHttpHandler tests', () => {
             await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
         } catch (e) {
             // Assert
-            expect(e.message).toEqual('500');
+            expect(e.message).toEqual('400');
             return;
         }
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
 
         fail('Request should fail');
     });
 
-    test('when status code is not 2xx then request retries', async () => {
+    test('when status code is 5xx then request retries', async () => {
         // Init
         const badStatus = { response: { statusCode: 500 } };
+        const okStatus = { response: { statusCode: 200 } };
+        fetchHandler
+            .mockReturnValueOnce(Promise.resolve(badStatus))
+            .mockReturnValue(Promise.resolve(okStatus));
+
+        const retries = 1;
+        const retryHandler = new RetryHttpHandler(
+            new FetchHttpHandler(),
+            retries,
+            mockBackoff
+        );
+
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: retryHandler,
+            beaconRequestHandler: undefined,
+            endpoint: Utils.AWS_RUM_ENDPOINT,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        const response: Promise<{ response: HttpResponse }> = client.sendFetch(
+            Utils.PUT_RUM_EVENTS_REQUEST
+        );
+
+        // Assert
+        expect(response).resolves.toBe(okStatus);
+    });
+
+    test('when status code is 429 then request retries', async () => {
+        // Init
+        const badStatus = { response: { statusCode: 429 } };
         const okStatus = { response: { statusCode: 200 } };
         fetchHandler
             .mockReturnValueOnce(Promise.resolve(badStatus))
