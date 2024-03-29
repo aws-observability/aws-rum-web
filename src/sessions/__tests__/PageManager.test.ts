@@ -390,6 +390,63 @@ describe('PageManager tests', () => {
         );
     });
 
+    test('when title attribute is provided then provided title takes precedence', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        pageManager.recordPageView({
+            pageId: '/rum/home',
+            pageAttributes: {
+                title: 'testingOverride'
+            }
+        });
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            title: 'testingOverride'
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when no title attribute is provided then document.title is used', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true
+            },
+            record
+        );
+
+        pageManager.recordPageView({
+            pageId: '/rum/home'
+        });
+
+        // Assert
+        expect(record.mock.calls[0][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(pageManager.getAttributes()).toMatchObject({
+            pageId: '/rum/home',
+            title: 'Amazon AWS Console'
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
     test('when there is no pageId difference then no pages are created', async () => {
         // Init
         const config: Config = {
