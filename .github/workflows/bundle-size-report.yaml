@@ -2,7 +2,6 @@ name: Bundle Size Report
 
 on:
     pull_request:
-        # types: [opened, ready_for_review]
         branches: [main, release/*]
 
 permissions:
@@ -18,13 +17,7 @@ jobs:
               with:
                   node-version: '18'
 
-            # - name: Checkout aws-rum-web
-            #   uses: actions/checkout@v4
-            #   with:
-            #       ref: ${{ github.ref }}
-
-            # - name: Install dependencies
-            #   run: npm install
-
-            # - name: Build aws-rum-web bundle
-            #   run: npm run build
+            - name: Checkout aws-rum-web
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.ref }}
