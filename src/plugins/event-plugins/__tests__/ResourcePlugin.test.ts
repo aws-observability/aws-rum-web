@@ -1,8 +1,6 @@
 import {
     resourceTiming,
     putRumEventsDocument,
-    putRumEventsGammaDocument,
-    dataPlaneDocument,
     imageResourceEventA,
     imageResourceEventB,
     navigationEvent,
@@ -210,7 +208,7 @@ describe('ResourcePlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
-    test('when entry name is an invalid url then resource is ignored', async () => {
+    test('when entry name is an invalid url then resource event is recorded', async () => {
         // setup
         const invalidEntry = {
             name: 'invalid.com',
@@ -231,6 +229,6 @@ describe('ResourcePlugin tests', () => {
                 invalidEntry as PerformanceResourceTiming
             )
         ).not.toThrowError();
-        expect(record).not.toHaveBeenCalled();
+        expect(record).toHaveBeenCalled();
     });
 });
