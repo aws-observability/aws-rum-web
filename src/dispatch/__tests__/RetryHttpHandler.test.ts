@@ -6,7 +6,7 @@ import { RetryHttpHandler } from '../RetryHttpHandler';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 
 const fetchHandler = jest.fn<Promise<Record<string, unknown>>, []>(() =>
-    Promise.resolve({})
+    Promise.resolve({ response: { statusCode: 500 } })
 );
 jest.mock('@aws-sdk/fetch-http-handler', () => ({
     FetchHttpHandler: jest
@@ -93,9 +93,9 @@ describe('RetryHttpHandler tests', () => {
         expect(response).resolves.toBe(success);
     });
 
-    test('when status code is not 2xx then request fails', async () => {
+    test('when status code is 4xx then request fails without retrying', async () => {
         // Init
-        const success = { response: { statusCode: 500 } };
+        const success = { response: { statusCode: 400 } };
         fetchHandler.mockReturnValue(Promise.resolve(success));
 
         const retries = 0;
@@ -118,14 +118,15 @@ describe('RetryHttpHandler tests', () => {
             await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
         } catch (e) {
             // Assert
-            expect(e.message).toEqual('500');
+            expect(e.message).toEqual('400');
             return;
         }
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
 
         fail('Request should fail');
     });
 
-    test('when status code is not 2xx then request retries', async () => {
+    test('when status code is 5xx then request retries', async () => {
         // Init
         const badStatus = { response: { statusCode: 500 } };
         const okStatus = { response: { statusCode: 200 } };
@@ -157,16 +158,49 @@ describe('RetryHttpHandler tests', () => {
         expect(response).resolves.toBe(okStatus);
     });
 
-    test('when request fails then retry succeeds after backoff', async () => {
+    test('when status code is 429 then request retries', async () => {
         // Init
-        jest.useFakeTimers({ legacyFakeTimers: true });
-        const badStatus = { response: { statusCode: 500 } };
+        const badStatus = { response: { statusCode: 429 } };
         const okStatus = { response: { statusCode: 200 } };
         fetchHandler
             .mockReturnValueOnce(Promise.resolve(badStatus))
             .mockReturnValue(Promise.resolve(okStatus));
 
         const retries = 1;
+        const retryHandler = new RetryHttpHandler(
+            new FetchHttpHandler(),
+            retries,
+            mockBackoff
+        );
+
+        const client: DataPlaneClient = new DataPlaneClient({
+            fetchRequestHandler: retryHandler,
+            beaconRequestHandler: undefined,
+            endpoint: Utils.AWS_RUM_ENDPOINT,
+            region: Utils.AWS_RUM_REGION,
+            credentials: Utils.createAwsCredentials()
+        });
+
+        // Run
+        const response: Promise<{ response: HttpResponse }> = client.sendFetch(
+            Utils.PUT_RUM_EVENTS_REQUEST
+        );
+
+        // Assert
+        expect(response).resolves.toBe(okStatus);
+    });
+
+    test('when request fails then retry succeeds after exponential backoff', async () => {
+        // Init
+        jest.useFakeTimers({ legacyFakeTimers: true });
+        const badStatus = { response: { statusCode: 500 } };
+        const okStatus = { response: { statusCode: 200 } };
+        fetchHandler
+            .mockReturnValueOnce(Promise.resolve(badStatus))
+            .mockReturnValueOnce(Promise.resolve(badStatus))
+            .mockReturnValue(Promise.resolve(okStatus));
+
+        const retries = 2;
         const retryHandler = new RetryHttpHandler(
             new FetchHttpHandler(),
             retries
@@ -187,18 +221,26 @@ describe('RetryHttpHandler tests', () => {
 
         // Yield to the event queue so the handler can advance
         await new Promise((resolve) => process.nextTick(resolve));
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
 
         // Advance the timer so the backoff timeout fires
         jest.advanceTimersByTime(2000);
+        await new Promise((resolve) => process.nextTick(resolve));
+        expect(fetchHandler).toHaveBeenCalledTimes(2);
+
+        // Advance the timer so the backoff timeout fires
+        jest.advanceTimersByTime(4000);
+        await new Promise((resolve) => process.nextTick(resolve));
+        expect(fetchHandler).toHaveBeenCalledTimes(3);
 
         // Yield to the event queue so the handler can advance
         await new Promise((resolve) => process.nextTick(resolve));
-
         // Assert
-        expect(fetchHandler).toHaveBeenCalledTimes(2);
+
         expect(await responsePromise).toBe(okStatus);
-        expect(setTimeout).toHaveBeenCalledTimes(1);
-        expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2000);
+        expect(setTimeout).toHaveBeenCalledTimes(2);
+        expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 2000);
+        expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 4000);
     });
 
     test('when request fails then retry waits for backoff', async () => {
