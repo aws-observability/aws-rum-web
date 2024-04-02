@@ -209,4 +209,28 @@ describe('ResourcePlugin tests', () => {
 
         expect(record).not.toHaveBeenCalled();
     });
+
+    test('when entry name is an invalid url then resource is ignored', async () => {
+        // setup
+        const invalidEntry = {
+            name: 'invalid.com',
+            startTime: 0,
+            duration: 10,
+            entryType: 'resource'
+        } as PerformanceEntry;
+        doMockPerformanceObserver([invalidEntry]);
+
+        // run
+        const plugin = buildResourcePlugin();
+        plugin.load(context);
+
+        // assert
+        expect(() => new URL(invalidEntry.name)).toThrowError();
+        expect(() =>
+            plugin.recordResourceEvent(
+                invalidEntry as PerformanceResourceTiming
+            )
+        ).not.toThrowError();
+        expect(record).not.toHaveBeenCalled();
+    });
 });
