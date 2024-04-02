@@ -1,8 +1,6 @@
 import {
     resourceTiming,
     putRumEventsDocument,
-    putRumEventsGammaDocument,
-    dataPlaneDocument,
     imageResourceEventA,
     imageResourceEventB,
     navigationEvent,
@@ -93,32 +91,6 @@ describe('ResourcePlugin tests', () => {
 
         // Assert
         expect(record).not.toHaveBeenCalled();
-    });
-
-    test('when resource is a PutRumEvents request with a path prefix then resource event is not recorded', async () => {
-        // Setup
-        doMockPerformanceObserver([putRumEventsGammaDocument]);
-
-        const plugin: ResourcePlugin = buildResourcePlugin();
-
-        // Run
-        plugin.load(context);
-
-        // Assert
-        expect(record).not.toHaveBeenCalled();
-    });
-
-    test('when resource is not a PutRumEvents request but has the same host then the resource event is recorded', async () => {
-        // Setup
-        doMockPerformanceObserver([dataPlaneDocument]);
-
-        const plugin: ResourcePlugin = buildResourcePlugin();
-
-        // Run
-        plugin.load(context);
-
-        // Assert
-        expect(record).toHaveBeenCalled();
     });
 
     test('when enabled then events are recorded', async () => {
@@ -234,5 +206,29 @@ describe('ResourcePlugin tests', () => {
         plugin.load(context);
 
         expect(record).not.toHaveBeenCalled();
+    });
+
+    test('when entry name is an invalid url then resource event is recorded', async () => {
+        // setup
+        const invalidEntry = {
+            name: 'invalid.com',
+            startTime: 0,
+            duration: 10,
+            entryType: 'resource'
+        } as PerformanceEntry;
+        doMockPerformanceObserver([invalidEntry]);
+
+        // run
+        const plugin = buildResourcePlugin();
+        plugin.load(context);
+
+        // assert
+        expect(() => new URL(invalidEntry.name)).toThrowError();
+        expect(() =>
+            plugin.recordResourceEvent(
+                invalidEntry as PerformanceResourceTiming
+            )
+        ).not.toThrowError();
+        expect(record).toHaveBeenCalled();
     });
 });
