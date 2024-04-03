@@ -419,15 +419,11 @@ describe('Dispatch tests', () => {
         );
     });
 
-    test('when a fetch request is rejected then dispatch is disabled', async () => {
+    test('when a fetch request is rejected with 429 then dispatch is NOT disabled', async () => {
         // Init
-        const ERROR = 'Something went wrong.';
-        const sendFetch = jest.fn(() => Promise.reject(ERROR));
-        (DataPlaneClient as any).mockImplementation(() => {
-            return {
-                sendFetch
-            };
-        });
+        (DataPlaneClient as any).mockImplementationOnce(() => ({
+            sendFetch: () => Promise.reject(new Error('429'))
+        }));
 
         const eventCache: EventCache =
             Utils.createDefaultEventCacheWithEvents();
@@ -444,11 +440,133 @@ describe('Dispatch tests', () => {
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
 
         // Run
-        await expect(dispatch.dispatchFetch()).rejects.toEqual(ERROR);
         eventCache.recordEvent('com.amazon.rum.event1', {});
 
         // Assert
-        await expect(dispatch.dispatchFetch()).resolves.toEqual(undefined);
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('429')
+        );
+        expect((dispatch as unknown as any).enabled).toBe(true);
+    });
+
+    test('when a fetch request is rejected with 500 then dispatch is NOT disabled', async () => {
+        // Init
+        (DataPlaneClient as any).mockImplementationOnce(() => ({
+            sendFetch: () => Promise.reject(new Error('500'))
+        }));
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('500')
+        );
+        expect((dispatch as unknown as any).enabled).toBe(true);
+    });
+
+    test('when a fetch request is rejected with 401 then dispatch is disabled', async () => {
+        // Init
+        (DataPlaneClient as any).mockImplementationOnce(() => ({
+            sendFetch: () => Promise.reject(new Error('401'))
+        }));
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('401')
+        );
+        expect((dispatch as unknown as any).enabled).toBe(false);
+    });
+
+    test('when a fetch request is rejected with 403 then dispatch is disabled', async () => {
+        // Init
+        (DataPlaneClient as any).mockImplementationOnce(() => ({
+            sendFetch: () => Promise.reject(new Error('403'))
+        }));
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('403')
+        );
+        expect((dispatch as unknown as any).enabled).toBe(false);
+    });
+
+    test('when a fetch request is rejected with 404 then dispatch is disabled', async () => {
+        // Init
+        (DataPlaneClient as any).mockImplementationOnce(() => ({
+            sendFetch: () => Promise.reject(new Error('404'))
+        }));
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('404')
+        );
+        expect((dispatch as unknown as any).enabled).toBe(false);
     });
 
     test('when signing is disabled then credentials are not needed for dispatch', async () => {

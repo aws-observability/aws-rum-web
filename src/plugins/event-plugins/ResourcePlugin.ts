@@ -1,5 +1,9 @@
 import { InternalPlugin } from '../InternalPlugin';
-import { getResourceFileType, shuffle } from '../../utils/common-utils';
+import {
+    getResourceFileType,
+    isPutRumEventsCall,
+    shuffle
+} from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -88,12 +92,8 @@ export class ResourcePlugin extends InternalPlugin {
         duration,
         transferSize
     }: PerformanceResourceTiming): void => {
-        const pathRegex =
-            /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-        const entryUrl = new URL(name);
         if (
-            entryUrl.host === this.context.config.endpointUrl.host &&
-            pathRegex.test(entryUrl.pathname)
+            isPutRumEventsCall(name, this.context.config.endpointUrl.hostname)
         ) {
             // Ignore calls to PutRumEvents (i.e., the CloudWatch RUM data
             // plane), otherwise we end up in an infinite loop of recording
