@@ -158,7 +158,7 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch()[0].type).toEqual(EVENT2_SCHEMA);
     });
 
-    test('when cache size reached, recordEvent drops oldest event', async () => {
+    test('when cache size reached, recordEvent drops the current event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const EVENT2_SCHEMA = 'com.amazon.rum.event2';
@@ -175,7 +175,7 @@ describe('EventCache tests', () => {
             {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
-                type: EVENT2_SCHEMA,
+                type: EVENT1_SCHEMA,
                 metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
                 details: '{}'
             }

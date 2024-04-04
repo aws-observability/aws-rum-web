@@ -216,8 +216,8 @@ export class EventCache {
         }
 
         if (this.events.length === this.config.eventCacheSize) {
-            // Make room in the cache by dropping the oldest event.
-            this.events.shift();
+            // Drop current event, prioritize the older ones
+            return;
         }
 
         // The data plane service model (i.e., LogEvents) does not adhere to the
