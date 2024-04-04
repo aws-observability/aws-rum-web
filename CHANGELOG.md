@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.17.2](https://github.com/aws-observability/aws-rum-web/compare/v1.17.1...v1.17.2) (2024-04-03)
+
+### Bug Fixes
+
+* Record resources with invalid names ([#532](https://github.com/aws-observability/aws-rum-web/issues/532)) ([1da86e7](https://github.com/aws-observability/aws-rum-web/commit/1da86e7b42aa9545f623a5d55ca7859481b81e54))
+
 ### [1.17.1](https://github.com/aws-observability/aws-rum-web/compare/v1.17.0...v1.17.1) (2024-02-26)
 
 
