@@ -222,22 +222,3 @@ export const isFCPSupported = () => {
 export const isLongTaskSupported = () => {
     return PerformanceObserver.supportedEntryTypes.includes('longtask');
 };
-
-/** PutRumEvents regex pattern */
-const putRumEventsPattern =
-    /.*\/application\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/events/;
-
-export const isPutRumEventsCall = (
-    url: string,
-    endpointHost: string
-): boolean => {
-    try {
-        return (
-            new URL(url).hostname === endpointHost &&
-            putRumEventsPattern.test(url)
-        );
-    } catch (_) {
-        // Ignore invalid URLs
-        return false;
-    }
-};

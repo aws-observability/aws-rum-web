@@ -59,8 +59,6 @@ export const defaultConfig: HttpPluginConfig = {
     addXRayTraceIdHeader: false
 };
 
-export const is2xx = (status: number) => 200 <= status && status < 300;
-
 export const is4xx = (status: number) => {
     return Math.floor(status / 100) === 4;
 };
