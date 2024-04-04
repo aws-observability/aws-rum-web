@@ -38,7 +38,6 @@ export class Dispatch {
     private dispatchTimerId: number | undefined;
     private buildClient: ClientBuilder;
     private config: Config;
-    private disableCodes = ['401', '403', '404'];
 
     constructor(
         region: string,
@@ -233,12 +232,10 @@ export class Dispatch {
     }
 
     private handleReject = (e: any): { response: HttpResponse } => {
-        if (e instanceof Error && this.disableCodes.includes(e.message)) {
-            // RUM disables only when dispatch fails and we are certain
-            // that subsequent attempts will not succeed, such as when
-            // credentials are invalid or the app monitor does not exist.
-            this.disable();
-        }
+        // The handler has run out of retries. We adhere to our convention to
+        // fail safe by disabling dispatch. This ensures that we will not
+        // continue to attempt requests when the problem is not recoverable.
+        this.disable();
         throw e;
     };
 

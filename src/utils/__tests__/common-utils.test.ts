@@ -105,33 +105,4 @@ describe('Common utils tests', () => {
             utils.getResourceFileType(resourceUrl, utils.InitiatorType.CSS)
         ).toEqual(utils.ResourceType.STYLESHEET);
     });
-
-    test('when url is has endpoint host and path then it is a PutRumEvents call', async () => {
-        const endpointHost = 'dataplane.rum.us-west-2.amazonaws.com';
-        const resourceUrl =
-            'https://dataplane.rum.us-west-2.amazonaws.com/gamma/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events';
-        expect(utils.isPutRumEventsCall(resourceUrl, endpointHost)).toBe(true);
-    });
-
-    test('when url has endpoint host but wrong path then it is not a PutRumEvents call', async () => {
-        const endpointHost = 'dataplane.rum.us-west-2.amazonaws.com';
-        const resourceUrl =
-            'https://dataplane.rum.us-west-2.amazonaws.com/user';
-        expect(utils.isPutRumEventsCall(resourceUrl, endpointHost)).toBe(false);
-    });
-
-    test('when url has wrong host and wrong path then it is not a PutRumEvents call', async () => {
-        const endpointHost = 'example.com';
-        const resourceUrl =
-            'https://dataplane.rum.us-west-2.amazonaws.com/user';
-        expect(utils.isPutRumEventsCall(resourceUrl, endpointHost)).toBe(false);
-    });
-
-    test('when url is invalid then it is not a PutRumEvents call', async () => {
-        const endpointHost = 'dataplane.rum.us-west-2.amazonaws.com';
-        const resourceUrl =
-            'dataplane.rum.us-west-2.amazonaws.com/gamma/application/aa17a42c-e737-48f7-adaf-2e0905f48073/events';
-        expect(() => new URL(endpointHost)).toThrowError();
-        expect(utils.isPutRumEventsCall(resourceUrl, endpointHost)).toBe(false);
-    });
 });
