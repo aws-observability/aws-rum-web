@@ -216,10 +216,10 @@ export class EventCache {
         }
 
         if (this.events.length === this.config.eventCacheSize) {
-            // Drop current event, prioritize the older ones
+            // Drop newest event and keep the older ones
             // 1. Older events tend to be more relevant, such as session start
             //    or performance entries that are attributed to web vitals
-            // 2. Dropping old events requires linear time
+            // 2. Dropping an old event requires linear time
             return;
         }
 

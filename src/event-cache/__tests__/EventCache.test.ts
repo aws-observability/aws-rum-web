@@ -158,7 +158,7 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch()[0].type).toEqual(EVENT2_SCHEMA);
     });
 
-    test('when cache size reached, recordEvent drops the current event', async () => {
+    test('when cache size reached, recordEvent drops the newest event', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const EVENT2_SCHEMA = 'com.amazon.rum.event2';
