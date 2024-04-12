@@ -5,7 +5,6 @@ let awsRum;
 try {
     const config: AwsRumConfig = {
         sessionSampleRate: 1,
-        guestRoleArn: $GUEST_ARN,
         identityPoolId: $IDENTITY_POOL,
         endpoint: $ENDPOINT,
         telemetries: ['performance', 'errors', 'http', 'interaction'],
