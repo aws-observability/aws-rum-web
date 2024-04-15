@@ -13,7 +13,7 @@ configuration.
 The web client requires AWS credentials to sign RUM payloads. When the RUM web
 client does not have AWS credentials, it will not attempt to send events to
 CloudWatch RUM. Your application must either (1) provide the web client with an
-anonymous Cognito identity using `identityPoolId` and `guestRoleArn`, or (2)
+anonymous Cognito identity using `identityPoolId`, or (2)
 provide the web client with AWS credentials using the `cwr('setAwsCredentials',
 credentials);` command.
 
@@ -152,15 +152,17 @@ When the CloudWatch RUM web client is provided with both `identityPoolId` and `g
 </Error>
 ```
 
-Using the Amazon Cognito console or CLI (i.e, the `aws cognito-identity
+To continue with basic auth flow, using the Amazon Cognito console or CLI (i.e, the `aws cognito-identity
 describe-identity-pool` command), verify that the identity pool
 configuration does **not** contain `AllowClassicFlow: false`. If it does, then
 update the configuration so that it contains `AllowClassicFlow: true`.
 
+Another better option is to use [enhanced (simplified) auth flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html) by removing `guestRoleArn` from web client configs.
+
 See also:
 1. `AllowClassicFlow` in the [update-identity-pool CLI reference](https://docs.aws.amazon.com/cli/latest/reference/cognito-identity/update-identity-pool.html).
 1. [Identity pool (federated identities) authentication flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
-
+1. [aws-rum-web configurations](configuration.md)
 ---
 ## Content security policy blocks the web client
 
@@ -184,7 +186,7 @@ web client will contain the following directives and values:
 A hash of the snippet can be generated from the command line using openssl:
 
 ```bash
-SNIPPET='(function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',{sessionSampleRate:1,guestRoleArn:'arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth',identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});'
+SNIPPET='(function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',{sessionSampleRate:1,identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});'
 echo $SNIPPET | openssl sha256 -binary | openssl base64
 ```
 

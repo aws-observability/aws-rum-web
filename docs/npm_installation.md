@@ -22,7 +22,6 @@ try {
   const config: AwsRumConfig = {
     allowCookies: true,
     endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
     identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
     sessionSampleRate: 1,
     telemetries: ['errors', 'performance']
@@ -61,17 +60,15 @@ and (2) what aspects of the application will be monitored. See
 
 ## Configuration
 
-The application-specific web client configuration is a JavaScript object whose fields are all optional. While these fields are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` and `guestRoleArn` are both required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `awsRum.setAwsCredentials({...});`.
+The application-specific web client configuration is a JavaScript object whose fields are all optional. While these fields are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` is required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `awsRum.setAwsCredentials({...});`.
 
-To get started, we recommend using the following configuration. The
-`guestRoleArn` and `identityPoolId` shown are dummy values. Modify these to
+To get started, we recommend using the following configuration. The `identityPoolId` shown are dummy values. Modify these to
 match the resources created when setting up the AppMonitor:
 
 ```typescript
 const config: AwsRumConfig = {
     allowCookies: true,
     endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
     identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
     sessionSampleRate: 1,
     telemetries: ['errors', 'performance']

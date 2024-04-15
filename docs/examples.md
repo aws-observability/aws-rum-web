@@ -86,7 +86,6 @@ try {
   const myScrollEventPlugin: MyScrollEventPlugin = new MyScrollEventPlugin();
 
   const config: AwsRumConfig = {
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
     identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
     sessionSampleRate: 1,
     telemetries: ['errors', 'performance'],
