@@ -12,10 +12,10 @@ configuration.
 
 The web client requires AWS credentials to sign RUM payloads. When the RUM web
 client does not have AWS credentials, it will not attempt to send events to
-CloudWatch RUM. Your application must either (1) provide the web client with an
-anonymous Cognito identity using `identityPoolId`, or (2)
-provide the web client with AWS credentials using the `cwr('setAwsCredentials',
-credentials);` command.
+CloudWatch RUM. Your application must either (A) provide the web client with an
+anonymous Cognito identity using `identityPoolId`, (B) provide the web client
+with AWS credentials using the `cwr('setAwsCredentials', credentials);` command
+or (C) use a proxy and disable SigV4 signing by setting `signing` to `false`.
 
 ### Event limit is reached for the session
 
@@ -142,7 +142,7 @@ following trust relationship:
 
 ### Cognito's basic authflow is not enabled
 
-When the CloudWatch RUM web client is provided with both `identityPoolId` and `guestRoleArn`, the web client will use Cognito's [basic (classic) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html). If the Cognito `GetCredentialsForIdentity` operation fails, this may be because the basic (classic) authflow is not enabled for the identity pool. In this case, the response may look similar to the following:
+When the CloudWatch RUM web client is provided with both `identityPoolId` and `guestRoleArn`, the web client will use Cognito's [basic (classic) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html). If the Cognito `GetCredentialsForIdentity` operation fails, this may be because the basic (classic) authflow is not enabled in the Cognito identity pool. In this case, the response may look similar to the following:
 
 ```
 <Error>
@@ -152,17 +152,20 @@ When the CloudWatch RUM web client is provided with both `identityPoolId` and `g
 </Error>
 ```
 
-To continue with basic auth flow, using the Amazon Cognito console or CLI (i.e, the `aws cognito-identity
-describe-identity-pool` command), verify that the identity pool
-configuration does **not** contain `AllowClassicFlow: false`. If it does, then
-update the configuration so that it contains `AllowClassicFlow: true`.
+This can be fixed by removing `guestRoleArn` from the [web client
+configuration](configuration.md). After removing `guestRoleArn`, the web client will use Cognito's [enhanced
+(simplified) auth
+flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
 
-Another better option is to use [enhanced (simplified) auth flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html) by removing `guestRoleArn` from web client configs.
+Alternatively, to continue using the basic auth flow, use the Amazon Cognito
+console or CLI (i.e, the `aws cognito-identity describe-identity-pool` command)
+to verify that the identity pool configuration does **not** contain
+`AllowClassicFlow: false`.  If it does, then update the configuration so that it
+contains `AllowClassicFlow: true`.
 
 See also:
 1. `AllowClassicFlow` in the [update-identity-pool CLI reference](https://docs.aws.amazon.com/cli/latest/reference/cognito-identity/update-identity-pool.html).
 1. [Identity pool (federated identities) authentication flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
-1. [aws-rum-web configurations](configuration.md)
 ---
 ## Content security policy blocks the web client
 
