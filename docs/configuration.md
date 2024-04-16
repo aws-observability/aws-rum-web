@@ -9,7 +9,6 @@ For example, the config object may look similar to the following:
 {
     allowCookies: true,
     endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
     identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
     sessionSampleRate: 1,
     telemetries: ['errors', 'performance', 'http']
@@ -28,8 +27,8 @@ For example, the config object may look similar to the following:
 | enableXRay | Boolean | `false` | When this field is `true` **and** the `http` telemetry is used, the web client will record X-Ray traces for HTTP requests.<br/><br/>See the [HTTP telemetry configuration](#http) for more information, including how to connect client-side and server-side traces. |
 | endpoint | String | `'https://dataplane.rum.[region].amazonaws.com'`<br/><br/>`'https://[restapi_id].execute-api.[region].amazonaws.com/[stage_name]/'` | The URL of the CloudWatch RUM API where data will be sent.<br/><br/>You may include a path prefix like `/stage_name/` in the endpoint URL if there is a proxy between your web application and CloudWatch RUM. |
 | eventPluginsToLoad | [Plugin](examples.md#record-custom-events-using-a-plugin)[] | `[]` | The set of custom plugins to load. See [usage examples](examples.md#record-custom-events-using-a-plugin). |
-| guestRoleArn | String | `undefined` | The ARN of the AWS IAM role that will be assumed during anonymous authorization.<br/><br/>When this field is set (along with `identityPoolId`), the web client will attempt to retrieve temporary AWS credentials through Cognito using `AssumeRoleWithWebIdentity`. If this field is not set, you must forward credentials to the web client using the `setAwsCredentials` command. |
-| identityPoolId | String | `undefined` | The Amazon Cognito Identity Pool ID that will be used during anonymous authorization.<br/><br/>When this field is set (along with `guestRoleArn`), the web client will attempt to retrieve temporary AWS credentials through Cognito using `AssumeRoleWithWebIdentity`. If this field is not set, you must forward credentials to the web client using the `setAwsCredentials` command. |
+| guestRoleArn | String | `undefined` | The ARN of the AWS IAM role that will be assumed during anonymous authorization.<br/><br/>When `guestRoleArn` and `identityPoolId` are both set, the web client will use Cognito's [basic (classic) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).<br/><br/>When only `identityPoolId` is set, the web client will use Cognito's [enhanced (simplified) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html) (recommended). |
+| identityPoolId | String | `undefined` | The Amazon Cognito Identity Pool ID that will be used during anonymous authorization.<br/><br/>When `identityPoolId` is set, the web client will use Cognito to retrieve temporary AWS credentials. These credentials authorize the bearer to send data to the CloudWatch RUM app monitor.<br/><br/>When`identityPoolId` is not set, you must either (A) forward credentials to the web client using the `setAwsCredentials` command, or (B) use a proxy and set `signing` to `false`. |
 | pageIdFormat | String | `'PATH'` | The portion of the `window.location` that will be used as the page ID. Options include `PATH`, `HASH` and `PATH_AND_HASH`.<br/><br/>For example, consider the URL `https://amazonaws.com/home?param=true#content`<br/><br/>`PATH`: `/home`<br/>`HASH`: `#content`<br/>`PATH_AND_HASH`: `/home#content` |
 | pagesToInclude | RegExp[] | `[/.*/]` | A list of regular expressions which specify the `window.location` values for which the web client will record data, unless explicitly excluded by `pagesToExclude`. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToInclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be included,  and `https://amazonaws.com/` will not be included. |
 | pagesToExclude | RegExp[] | `[]` | A list of regular expressions which specify the `window.location` values for which the web client will not record data. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToExclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be excluded,  and `https://amazonaws.com/` will not be excluded. |
@@ -163,7 +162,6 @@ const getInteractionId = (event: Event): string => {
 }
 
 const config: AwsRumConfig = {
-    guestRoleArn: "arn:aws:iam::000000000000:role/RUM-Monitor-us-west-2-000000000000-00xx-Unauth",
     identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
     sessionSampleRate: 1,
     telemetries: [
