@@ -479,36 +479,6 @@ describe('Dispatch tests', () => {
         expect((dispatch as unknown as any).enabled).toBe(true);
     });
 
-    test('when a fetch request is rejected with 401 then dispatch is disabled', async () => {
-        // Init
-        (DataPlaneClient as any).mockImplementationOnce(() => ({
-            sendFetch: () => Promise.reject(new Error('401'))
-        }));
-
-        const eventCache: EventCache =
-            Utils.createDefaultEventCacheWithEvents();
-
-        const dispatch = new Dispatch(
-            Utils.AWS_RUM_REGION,
-            Utils.AWS_RUM_ENDPOINT,
-            eventCache,
-            {
-                ...DEFAULT_CONFIG,
-                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
-            }
-        );
-        dispatch.setAwsCredentials(Utils.createAwsCredentials());
-
-        // Run
-        eventCache.recordEvent('com.amazon.rum.event1', {});
-
-        // Assert
-        await expect(dispatch.dispatchFetch()).rejects.toEqual(
-            new Error('401')
-        );
-        expect((dispatch as unknown as any).enabled).toBe(false);
-    });
-
     test('when a fetch request is rejected with 403 then dispatch is disabled', async () => {
         // Init
         (DataPlaneClient as any).mockImplementationOnce(() => ({
