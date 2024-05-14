@@ -216,8 +216,11 @@ export class EventCache {
         }
 
         if (this.events.length === this.config.eventCacheSize) {
-            // Make room in the cache by dropping the oldest event.
-            this.events.shift();
+            // Drop newest event and keep the older ones
+            // 1. Older events tend to be more relevant, such as session start
+            //    or performance entries that are attributed to web vitals
+            // 2. Dropping an old event requires linear time
+            return;
         }
 
         // The data plane service model (i.e., LogEvents) does not adhere to the
