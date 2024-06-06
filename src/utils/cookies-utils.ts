@@ -69,3 +69,14 @@ export const getCookie = (name: string): string => {
     }
     return '';
 };
+
+export const getCookieName = (
+    isUnique: boolean,
+    cookiePrefix: string,
+    appMonitorId: string
+): string => {
+    if (isUnique) {
+        return `${cookiePrefix}_${appMonitorId}`;
+    }
+    return cookiePrefix;
+};

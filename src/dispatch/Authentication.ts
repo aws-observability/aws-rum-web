@@ -3,19 +3,22 @@ import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
+import { getCookieName } from '../utils/cookies-utils';
 
 export abstract class Authentication {
+    protected applicationId: string;
     protected cognitoIdentityClient: CognitoIdentityClient;
     protected config: Config;
     protected credentials: AwsCredentialIdentity | undefined;
 
-    constructor(config: Config) {
+    constructor(config: Config, applicationId: string) {
         const region: string = config.identityPoolId!.split(':')[0];
         this.config = config;
         this.cognitoIdentityClient = new CognitoIdentityClient({
             fetchRequestHandler: new FetchHttpHandler(),
             region
         });
+        this.applicationId = applicationId;
     }
 
     /**
@@ -80,7 +83,15 @@ export abstract class Authentication {
             return new Promise<AwsCredentialIdentity>((resolve, reject) => {
                 let credentials: AwsCredentialIdentity;
                 try {
-                    credentials = JSON.parse(localStorage.getItem(CRED_KEY)!);
+                    credentials = JSON.parse(
+                        localStorage.getItem(
+                            getCookieName(
+                                this.config.cookieAttributes.unique,
+                                CRED_KEY,
+                                this.applicationId
+                            )
+                        )!
+                    );
                 } catch (e) {
                     // Error retrieving, decoding or parsing the cred string -- abort
                     return reject();

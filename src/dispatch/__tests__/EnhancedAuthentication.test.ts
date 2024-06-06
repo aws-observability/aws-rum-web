@@ -1,6 +1,7 @@
 import { CRED_KEY } from '../../utils/constants';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { APPLICATION_ID, DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { getCookieName } from '../../utils/cookies-utils';
 
 const mockGetId = jest.fn();
 const getCredentials = jest.fn();
@@ -41,7 +42,7 @@ describe('EnhancedAuthentication tests', () => {
             }
         };
 
-        const auth = new EnhancedAuthentication(config);
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
 
         localStorage.setItem(
             CRED_KEY,
@@ -76,7 +77,7 @@ describe('EnhancedAuthentication tests', () => {
             }
         };
 
-        const auth = new EnhancedAuthentication(config);
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
 
         localStorage.setItem(CRED_KEY, 'corrupt');
 
@@ -95,12 +96,15 @@ describe('EnhancedAuthentication tests', () => {
 
     test('when credential is not in the store authentication chain retrieves credential from basic authflow', async () => {
         // Init
-        const auth = new EnhancedAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID
-            }
-        });
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -126,7 +130,7 @@ describe('EnhancedAuthentication tests', () => {
             }
         };
 
-        const auth = new EnhancedAuthentication(config);
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
 
         localStorage.setItem(
             CRED_KEY,
@@ -168,13 +172,16 @@ describe('EnhancedAuthentication tests', () => {
                 sessionToken: 'z'
             });
 
-        const auth = new EnhancedAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -197,13 +204,16 @@ describe('EnhancedAuthentication tests', () => {
             throw new Error('mockGetId error');
         });
 
-        const auth = new EnhancedAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         expect((auth: EnhancedAuthentication) => {
@@ -217,13 +227,16 @@ describe('EnhancedAuthentication tests', () => {
             throw new Error('mockGetId error');
         });
 
-        const auth = new EnhancedAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         expect((auth: EnhancedAuthentication) => {
@@ -241,7 +254,7 @@ describe('EnhancedAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new EnhancedAuthentication(config);
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -290,7 +303,7 @@ describe('EnhancedAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new EnhancedAuthentication(config);
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -327,12 +340,15 @@ describe('EnhancedAuthentication tests', () => {
             })
         );
 
-        const auth = new EnhancedAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID
-            }
-        });
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -364,12 +380,15 @@ describe('EnhancedAuthentication tests', () => {
             })
         );
 
-        const auth = new EnhancedAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID
-            }
-        });
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -387,13 +406,76 @@ describe('EnhancedAuthentication tests', () => {
             throw new Error('mockGetId error');
         });
 
-        const auth = new EnhancedAuthentication({
+        const auth = new EnhancedAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
+
+        // Run
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
+
+    test('when unique cookie names are used then cookie name with application id appended is stored', async () => {
+        // Init
+        const config = {
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
+                allowCookies: true,
+                cookieAttributes: {
+                    ...DEFAULT_CONFIG.cookieAttributes,
+                    ...{ unique: true }
+                }
             }
-        });
+        };
+
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
+
+        // Run
+        await auth.ChainAnonymousCredentialsProvider();
+        const credentials = JSON.parse(
+            localStorage.getItem(`${CRED_KEY}_${APPLICATION_ID}`)!
+        );
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
+    test('when unique cookie names are used then cookie name with application id appended is retrieved', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                allowCookies: true,
+                cookieAttributes: {
+                    ...DEFAULT_CONFIG.cookieAttributes,
+                    ...{ unique: true }
+                }
+            }
+        };
+
+        const auth = new EnhancedAuthentication(config, APPLICATION_ID);
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();

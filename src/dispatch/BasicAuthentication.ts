@@ -4,12 +4,13 @@ import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
 import { CRED_KEY } from '../utils/constants';
 import { Authentication } from './Authentication';
+import { getCookieName } from '../utils/cookies-utils';
 
 export class BasicAuthentication extends Authentication {
     private stsClient: StsClient;
 
-    constructor(config: Config) {
-        super(config);
+    constructor(config: Config, applicationId: string) {
+        super(config, applicationId);
         const region: string = config.identityPoolId!.split(':')[0];
         this.stsClient = new StsClient({
             fetchRequestHandler: new FetchHttpHandler(),
@@ -51,7 +52,11 @@ export class BasicAuthentication extends Authentication {
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
-                            CRED_KEY,
+                            getCookieName(
+                                this.config.cookieAttributes.unique,
+                                CRED_KEY,
+                                this.applicationId
+                            ),
                             JSON.stringify(credentials)
                         );
                     } catch (e) {

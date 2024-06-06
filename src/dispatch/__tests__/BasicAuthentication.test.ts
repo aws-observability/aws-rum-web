@@ -1,6 +1,6 @@
 import { BasicAuthentication } from '../BasicAuthentication';
 import { CRED_KEY } from '../../utils/constants';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { APPLICATION_ID, DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 const assumeRole = jest.fn();
 const mockGetId = jest.fn();
@@ -54,7 +54,7 @@ describe('BasicAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         localStorage.setItem(
             CRED_KEY,
@@ -88,7 +88,7 @@ describe('BasicAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         localStorage.setItem(CRED_KEY, 'corrupt');
 
@@ -107,13 +107,16 @@ describe('BasicAuthentication tests', () => {
 
     test('when credential is not in localStorage then authentication chain retrieves credential from basic authflow', async () => {
         // Init
-        const auth = new BasicAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new BasicAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -139,7 +142,7 @@ describe('BasicAuthentication tests', () => {
             }
         };
 
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         localStorage.setItem(
             CRED_KEY,
@@ -181,13 +184,16 @@ describe('BasicAuthentication tests', () => {
                 sessionToken: 'z'
             });
 
-        const auth = new BasicAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new BasicAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -210,13 +216,16 @@ describe('BasicAuthentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new BasicAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new BasicAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         return expect(auth.ChainAnonymousCredentialsProvider()).rejects.toEqual(
@@ -230,13 +239,16 @@ describe('BasicAuthentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new BasicAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new BasicAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         return expect(auth.ChainAnonymousCredentialsProvider()).rejects.toEqual(
@@ -250,13 +262,16 @@ describe('BasicAuthentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new BasicAuthentication({
-            ...DEFAULT_CONFIG,
-            ...{
-                identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
-            }
-        });
+        const auth = new BasicAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         expect(auth.ChainAnonymousCredentialsProvider()).rejects.toEqual(e);
@@ -272,7 +287,7 @@ describe('BasicAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -321,7 +336,7 @@ describe('BasicAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -358,7 +373,7 @@ describe('BasicAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();
@@ -396,7 +411,7 @@ describe('BasicAuthentication tests', () => {
                 guestRoleArn: GUEST_ROLE_ARN
             }
         };
-        const auth = new BasicAuthentication(config);
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         // Run
         await auth.ChainAnonymousCredentialsProvider();
@@ -414,13 +429,77 @@ describe('BasicAuthentication tests', () => {
             throw e;
         });
         // Init
-        const auth = new BasicAuthentication({
+        const auth = new BasicAuthentication(
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    identityPoolId: IDENTITY_POOL_ID,
+                    guestRoleArn: GUEST_ROLE_ARN
+                }
+            },
+            APPLICATION_ID
+        );
+
+        // Run
+        const credentials = await auth.ChainAnonymousCredentialsProvider();
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
+
+    test('when unique cookie names are used then cookie name with application id appended is stored', async () => {
+        // Init
+        const config = {
             ...DEFAULT_CONFIG,
             ...{
                 identityPoolId: IDENTITY_POOL_ID,
-                guestRoleArn: GUEST_ROLE_ARN
+                guestRoleArn: GUEST_ROLE_ARN,
+                allowCookies: true,
+                cookieAttributes: {
+                    ...DEFAULT_CONFIG.cookieAttributes,
+                    ...{ unique: true }
+                }
             }
-        });
+        };
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
+
+        // Run
+        await auth.ChainAnonymousCredentialsProvider();
+        const credentials = JSON.parse(
+            localStorage.getItem(`${CRED_KEY}_${APPLICATION_ID}`)!
+        );
+
+        // Assert
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                accessKeyId: 'x',
+                secretAccessKey: 'y',
+                sessionToken: 'z'
+            })
+        );
+    });
+
+    test('when unique cookie names are used then cookie name with application id appended is retrieved', async () => {
+        // Init
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                identityPoolId: IDENTITY_POOL_ID,
+                guestRoleArn: GUEST_ROLE_ARN,
+                allowCookies: true,
+                cookieAttributes: {
+                    ...DEFAULT_CONFIG.cookieAttributes,
+                    ...{ unique: true }
+                }
+            }
+        };
+        const auth = new BasicAuthentication(config, APPLICATION_ID);
 
         // Run
         const credentials = await auth.ChainAnonymousCredentialsProvider();

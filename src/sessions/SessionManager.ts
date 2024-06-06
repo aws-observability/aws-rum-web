@@ -1,4 +1,4 @@
-import { storeCookie, getCookie } from '../utils/cookies-utils';
+import { storeCookie, getCookie, getCookieName } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
 import { Config } from '../orchestration/Orchestration';
@@ -176,7 +176,11 @@ export class SessionManager {
     private createOrRenewSessionCookie(session: Session, expires: Date) {
         if (btoa) {
             storeCookie(
-                this.sessionCookieName(),
+                getCookieName(
+                    this.config.cookieAttributes.unique,
+                    SESSION_COOKIE_NAME,
+                    this.appMonitorDetails.id!
+                ),
                 btoa(JSON.stringify(session)),
                 this.config.cookieAttributes,
                 undefined,
@@ -201,7 +205,13 @@ export class SessionManager {
 
     private getSessionFromCookie() {
         if (this.useCookies()) {
-            const cookie: string = getCookie(this.sessionCookieName());
+            const cookie: string = getCookie(
+                getCookieName(
+                    this.config.cookieAttributes.unique,
+                    SESSION_COOKIE_NAME,
+                    this.appMonitorDetails.id!
+                )
+            );
 
             if (cookie && atob) {
                 try {
@@ -285,12 +295,5 @@ export class SessionManager {
      */
     private sample(): boolean {
         return Math.random() < this.config.sessionSampleRate;
-    }
-
-    private sessionCookieName(): string {
-        if (this.config.cookieAttributes.unique) {
-            return `${SESSION_COOKIE_NAME}_${this.appMonitorDetails.id}`;
-        }
-        return SESSION_COOKIE_NAME;
     }
 }
