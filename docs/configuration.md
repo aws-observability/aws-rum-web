@@ -52,7 +52,7 @@ For example, the config object may look similar to the following:
 | path | String | `/` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | sameSite | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | secure | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
-| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
+| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s` and the credential cookie name is `cwr_c`. When this field is `true`, the session cookie name is `cwr_s_[AppMonitor Id]` and the credential cookie name is `cwr_c_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
 
 ## MetadataAttributes
 You may add up to 10 custom attributes per event. Custom attributes are
