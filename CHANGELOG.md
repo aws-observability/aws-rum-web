@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0-unique-cred-cookie](https://github.com/aws-observability/aws-rum-web/compare/v1.18.0...v1.19.0-unique-cred-cookie) (2024-06-07)
+
+
+### Features
+
+* support unique credential cookie names ([667519b](https://github.com/aws-observability/aws-rum-web/commit/667519b530195da7b9eb57b5e5d37c4f126d1964))
+
 ## [1.18.0](https://github.com/aws-observability/aws-rum-web/compare/v1.17.0...v1.18.0) (2024-05-29)
 
 
