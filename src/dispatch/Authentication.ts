@@ -87,11 +87,7 @@ export abstract class Authentication {
                 try {
                     credentials = JSON.parse(
                         localStorage.getItem(
-                            getCookieName(
-                                this.config.cookieAttributes.unique,
-                                CRED_KEY,
-                                this.applicationId
-                            )
+                            this.credentialStorageKey
                         )!
                     );
                 } catch (e) {
