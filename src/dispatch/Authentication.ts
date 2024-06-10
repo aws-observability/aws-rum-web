@@ -18,7 +18,9 @@ export abstract class Authentication {
             fetchRequestHandler: new FetchHttpHandler(),
             region
         });
-        this.applicationId = applicationId;
+        this.credentialStorageKey = this.config.cookieAttributes.unique
+            ? `${CRED_KEY}_${this.applicationId}`
+            : CRED_KEY;
     }
 
     /**
