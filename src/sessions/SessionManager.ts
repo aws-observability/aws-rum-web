@@ -176,11 +176,7 @@ export class SessionManager {
     private createOrRenewSessionCookie(session: Session, expires: Date) {
         if (btoa) {
             storeCookie(
-                getCookieName(
-                    this.config.cookieAttributes.unique,
-                    SESSION_COOKIE_NAME,
-                    this.appMonitorDetails.id!
-                ),
+                this.sessionCookieName,
                 btoa(JSON.stringify(session)),
                 this.config.cookieAttributes,
                 undefined,
