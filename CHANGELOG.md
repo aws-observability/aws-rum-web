@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.19.1-unique-cred-cookie](https://github.com/aws-observability/aws-rum-web/compare/v1.18.0...v1.19.1-unique-cred-cookie) (2024-06-11)
+
+
+### Features
+
+* support unique credential cookie names ([667519b](https://github.com/aws-observability/aws-rum-web/commit/667519b530195da7b9eb57b5e5d37c4f126d1964))
+* use unique cookies for identity keys ([9685cb3](https://github.com/aws-observability/aws-rum-web/commit/9685cb36f1e3292ff5a7f3043472dc5b2f98848a))
+
+
+### Bug Fixes
+
+* Pass in uniqueCookie boolean as param to Cognito client ([6b796c0](https://github.com/aws-observability/aws-rum-web/commit/6b796c095b2b360e4fbb41853ce9a15c60cdc26c))
+* Set cookie name in constructor instead of retrieving at runtime ([5c3467e](https://github.com/aws-observability/aws-rum-web/commit/5c3467e4208f0dab1d1527abade5cb65003ea882))
+* Set unique cookie in unit test ([09312e8](https://github.com/aws-observability/aws-rum-web/commit/09312e823064c5827e68bdcdd3ada156708556a7))
+
 ## [1.18.0](https://github.com/aws-observability/aws-rum-web/compare/v1.17.0...v1.18.0) (2024-05-29)
 
 
