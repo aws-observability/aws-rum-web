@@ -42,6 +42,7 @@ describe('BasicAuthentication tests', () => {
             expiration: new Date(new Date().getTime() + 60 * 60 * 1000)
         });
         localStorage.removeItem(CRED_KEY);
+        localStorage.removeItem(`${CRED_KEY}_${APPLICATION_ID}`);
     });
 
     test('when credential is in localStorage then authentication chain retrieves credential from localStorage', async () => {

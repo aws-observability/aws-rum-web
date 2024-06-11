@@ -29,6 +29,7 @@ describe('EnhancedAuthentication tests', () => {
             expiration: new Date(Date.now() + 3600 * 1000)
         });
         localStorage.removeItem(CRED_KEY);
+        localStorage.removeItem(`${CRED_KEY}_${APPLICATION_ID}`);
     });
 
     test('when credential is in localStorage then authentication chain retrieves credential from localStorage', async () => {

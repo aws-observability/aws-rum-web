@@ -39,15 +39,20 @@ interface GetIdResponse {
 export declare type CognitoIdentityClientConfig = {
     fetchRequestHandler: HttpHandler;
     region?: string;
+    uniqueCookies?: boolean;
 };
 
 export class CognitoIdentityClient {
     private fetchRequestHandler: HttpHandler;
     private hostname: string;
+    private identityStorageKey: string;
 
-    constructor(config: CognitoIdentityClientConfig) {
+    constructor(config: CognitoIdentityClientConfig, applicationId: string) {
         this.hostname = `cognito-identity.${config.region}.amazonaws.com`;
         this.fetchRequestHandler = config.fetchRequestHandler;
+        this.identityStorageKey = config.uniqueCookies
+            ? `${IDENTITY_KEY}_${applicationId}`
+            : IDENTITY_KEY;
     }
 
     public getId = async (request: { IdentityPoolId: string }) => {
@@ -55,7 +60,7 @@ export class CognitoIdentityClient {
 
         try {
             getIdResponse = JSON.parse(
-                localStorage.getItem(IDENTITY_KEY)!
+                localStorage.getItem(this.identityStorageKey)!
             ) as GetIdResponse | null;
         } catch (e) {
             // Ignore -- we will get a new identity Id from Cognito
@@ -78,7 +83,7 @@ export class CognitoIdentityClient {
             )) as GetIdResponse;
             try {
                 localStorage.setItem(
-                    IDENTITY_KEY,
+                    this.identityStorageKey,
                     JSON.stringify({ IdentityId: getIdResponse.IdentityId })
                 );
             } catch (e) {
@@ -104,7 +109,7 @@ export class CognitoIdentityClient {
                 await responseToJson(response)
             );
         } catch (e) {
-            localStorage.removeItem(IDENTITY_KEY);
+            localStorage.removeItem(this.identityStorageKey);
             throw new Error(
                 `CWR: Failed to retrieve Cognito OpenId token: ${e}`
             );
@@ -134,7 +139,7 @@ export class CognitoIdentityClient {
                 expiration: new Date(Expiration * 1000)
             };
         } catch (e) {
-            localStorage.removeItem(IDENTITY_KEY);
+            localStorage.removeItem(this.identityStorageKey);
             throw new Error(
                 `CWR: Failed to retrieve credentials for Cognito identity: ${e}`
             );

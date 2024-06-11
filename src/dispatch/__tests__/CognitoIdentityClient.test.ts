@@ -3,13 +3,15 @@ import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { advanceTo } from 'jest-date-mock';
 import { CognitoIdentityClient } from '../CognitoIdentityClient';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { getReadableStream } from '../../test-utils/test-utils';
+import { APPLICATION_ID, getReadableStream } from '../../test-utils/test-utils';
 import { IDENTITY_KEY } from '../../utils/constants';
 
 const mockCredentials =
     '{ "IdentityId": "a", "Credentials": { "AccessKeyId": "x", "SecretKey": "y", "SessionToken": "z" } }';
 const mockToken = '{"IdentityId": "mockId", "Token": "mockToken"}';
 const mockIdCommand = '{"IdentityId": "mockId"}';
+
+const uniqueIdentityCookie = `${IDENTITY_KEY}_${APPLICATION_ID}`;
 
 const fetchHandler = jest.fn();
 
@@ -41,10 +43,14 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Run
         const creds: AwsCredentialIdentity =
@@ -69,10 +75,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         await expect(
@@ -88,10 +98,14 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Run
         const tokenCommand = await client.getOpenIdToken({
@@ -116,10 +130,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         expect(
@@ -137,10 +155,14 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Run
         const idCommand = await client.getId({
@@ -164,10 +186,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         return expect(
@@ -185,10 +211,14 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Run
         await client.getId({ IdentityPoolId: 'my-fake-identity-pool-id' });
@@ -216,10 +246,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         await expect(
@@ -240,10 +274,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         await expect(
@@ -262,10 +300,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         await expect(
@@ -283,10 +325,14 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Run
         try {
@@ -312,10 +358,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         await expect(
@@ -334,10 +384,14 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Assert
         await expect(
@@ -355,10 +409,14 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient({
-            fetchRequestHandler: new FetchHttpHandler(),
-            region: Utils.AWS_RUM_REGION
-        });
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
 
         // Run
         try {
@@ -369,5 +427,128 @@ describe('CognitoIdentityClient tests', () => {
 
         // Assert
         expect(localStorage.getItem(IDENTITY_KEY)).toBe(null);
+    });
+
+    test('when unique cookie names are used then cookie name with application id appended is stored', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(mockIdCommand)
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: true
+            },
+            APPLICATION_ID
+        );
+
+        // Run
+        await client.getId({
+            IdentityPoolId: 'my-fake-identity-pool-id'
+        });
+
+        // Assert
+        const credentials = JSON.parse(
+            localStorage.getItem(uniqueIdentityCookie)!
+        );
+
+        expect(credentials).toEqual(
+            expect.objectContaining({
+                IdentityId: 'mockId'
+            })
+        );
+    });
+
+    test('when unique cookie names are used then cookie name with application id appended is retrieved', async () => {
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream(mockIdCommand)
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: true
+            },
+            APPLICATION_ID
+        );
+
+        // Run
+        const idCommand = await client.getId({
+            IdentityPoolId: 'my-fake-identity-pool-id'
+        });
+
+        // Assert
+        expect(fetchHandler).toHaveBeenCalledTimes(1);
+        expect(idCommand).toMatchObject({
+            IdentityId: 'mockId'
+        });
+    });
+
+    test('when unique cookie names and getOpenIdToken returns a bad response then identity id is removed from localStorage', async () => {
+        localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
+
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream('not-json')
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: true
+            },
+            APPLICATION_ID
+        );
+
+        // Run
+        try {
+            await client.getOpenIdToken({ IdentityId: 'my-fake-identity-id' });
+        } catch (e) {
+            // Ignore
+        }
+
+        // Assert
+        expect(localStorage.getItem(uniqueIdentityCookie)).toBe(null);
+    });
+
+    test('when unique cookie names and getCredentialsForIdentity returns bad response then identity id is removed from localStorage ', async () => {
+        localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
+
+        fetchHandler.mockResolvedValueOnce({
+            response: {
+                body: getReadableStream('not-json')
+            }
+        });
+
+        // Init
+        const client: CognitoIdentityClient = new CognitoIdentityClient(
+            {
+                fetchRequestHandler: new FetchHttpHandler(),
+                region: Utils.AWS_RUM_REGION,
+                uniqueCookies: false
+            },
+            APPLICATION_ID
+        );
+
+        // Run
+        try {
+            await client.getCredentialsForIdentity('my-fake-identity-id');
+        } catch (e) {
+            // Ignore
+        }
+
+        // Assert
+        expect(localStorage.getItem(uniqueIdentityCookie)).toBe(null);
     });
 });

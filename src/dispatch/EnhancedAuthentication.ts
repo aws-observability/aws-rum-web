@@ -1,6 +1,5 @@
 import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { CRED_KEY } from '../utils/constants';
 import { Authentication } from './Authentication';
 
 export class EnhancedAuthentication extends Authentication {
