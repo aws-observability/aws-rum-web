@@ -3,13 +3,12 @@ import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
-import { getCookieName } from '../utils/cookies-utils';
 
 export abstract class Authentication {
-    protected applicationId: string;
     protected cognitoIdentityClient: CognitoIdentityClient;
     protected config: Config;
     protected credentials: AwsCredentialIdentity | undefined;
+    protected credentialStorageKey: string;
 
     constructor(config: Config, applicationId: string) {
         const region: string = config.identityPoolId!.split(':')[0];
@@ -19,7 +18,7 @@ export abstract class Authentication {
             region
         });
         this.credentialStorageKey = this.config.cookieAttributes.unique
-            ? `${CRED_KEY}_${this.applicationId}`
+            ? `${CRED_KEY}_${applicationId}`
             : CRED_KEY;
     }
 
@@ -86,9 +85,7 @@ export abstract class Authentication {
                 let credentials: AwsCredentialIdentity;
                 try {
                     credentials = JSON.parse(
-                        localStorage.getItem(
-                            this.credentialStorageKey
-                        )!
+                        localStorage.getItem(this.credentialStorageKey)!
                     );
                 } catch (e) {
                     // Error retrieving, decoding or parsing the cred string -- abort

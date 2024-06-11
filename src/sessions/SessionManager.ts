@@ -1,4 +1,4 @@
-import { storeCookie, getCookie, getCookieName } from '../utils/cookies-utils';
+import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
 import { Config } from '../orchestration/Orchestration';
@@ -69,6 +69,7 @@ export class SessionManager {
     private config: Config;
     private record: RecordSessionInitEvent;
     private attributes!: Attributes;
+    private sessionCookieName: string;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
@@ -80,6 +81,10 @@ export class SessionManager {
         this.config = config;
         this.record = record;
         this.pageManager = pageManager;
+
+        this.sessionCookieName = this.config.cookieAttributes.unique
+            ? `${SESSION_COOKIE_NAME}_${this.appMonitorDetails.id}`
+            : SESSION_COOKIE_NAME;
 
         // Initialize the session to the nil session
         this.session = {
@@ -201,14 +206,7 @@ export class SessionManager {
 
     private getSessionFromCookie() {
         if (this.useCookies()) {
-            const cookie: string = getCookie(
-                getCookieName(
-                    this.config.cookieAttributes.unique,
-                    SESSION_COOKIE_NAME,
-                    this.appMonitorDetails.id!
-                )
-            );
-
+            const cookie: string = getCookie(this.sessionCookieName);
             if (cookie && atob) {
                 try {
                     this.session = JSON.parse(atob(cookie)) as Session;

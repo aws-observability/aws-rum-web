@@ -2,7 +2,6 @@ import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { CRED_KEY } from '../utils/constants';
 import { Authentication } from './Authentication';
-import { getCookieName } from '../utils/cookies-utils';
 
 export class EnhancedAuthentication extends Authentication {
     constructor(config: Config, applicationId: string) {
@@ -35,11 +34,7 @@ export class EnhancedAuthentication extends Authentication {
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
-                            getCookieName(
-                                this.config.cookieAttributes.unique,
-                                CRED_KEY,
-                                this.applicationId
-                            ),
+                            this.credentialStorageKey,
                             JSON.stringify(credentials)
                         );
                     } catch (e) {

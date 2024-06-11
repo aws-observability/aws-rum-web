@@ -1,7 +1,6 @@
 import { CRED_KEY } from '../../utils/constants';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
 import { APPLICATION_ID, DEFAULT_CONFIG } from '../../test-utils/test-utils';
-import { getCookieName } from '../../utils/cookies-utils';
 
 const mockGetId = jest.fn();
 const getCredentials = jest.fn();
