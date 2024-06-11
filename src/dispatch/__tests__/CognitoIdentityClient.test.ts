@@ -46,9 +46,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -78,9 +78,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -101,9 +101,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -133,9 +133,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -158,9 +158,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -189,9 +189,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -214,9 +214,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -249,9 +249,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -277,9 +277,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -303,9 +303,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -328,9 +328,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -361,9 +361,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -387,9 +387,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -412,9 +412,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            false,
             APPLICATION_ID
         );
 
@@ -440,9 +440,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: true
+                region: Utils.AWS_RUM_REGION
             },
+            true,
             APPLICATION_ID
         );
 
@@ -474,9 +474,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: true
+                region: Utils.AWS_RUM_REGION
             },
+            true,
             APPLICATION_ID
         );
 
@@ -505,9 +505,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: true
+                region: Utils.AWS_RUM_REGION
             },
+            true,
             APPLICATION_ID
         );
 
@@ -535,9 +535,9 @@ describe('CognitoIdentityClient tests', () => {
         const client: CognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION,
-                uniqueCookies: false
+                region: Utils.AWS_RUM_REGION
             },
+            true,
             APPLICATION_ID
         );
 

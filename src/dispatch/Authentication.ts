@@ -16,9 +16,9 @@ export abstract class Authentication {
         this.cognitoIdentityClient = new CognitoIdentityClient(
             {
                 fetchRequestHandler: new FetchHttpHandler(),
-                region,
-                uniqueCookies: this.config.cookieAttributes.unique
+                region
             },
+            this.config.cookieAttributes.unique,
             applicationId
         );
         this.credentialStorageKey = this.config.cookieAttributes.unique

@@ -39,7 +39,6 @@ interface GetIdResponse {
 export declare type CognitoIdentityClientConfig = {
     fetchRequestHandler: HttpHandler;
     region?: string;
-    uniqueCookies?: boolean;
 };
 
 export class CognitoIdentityClient {
@@ -47,10 +46,14 @@ export class CognitoIdentityClient {
     private hostname: string;
     private identityStorageKey: string;
 
-    constructor(config: CognitoIdentityClientConfig, applicationId: string) {
+    constructor(
+        config: CognitoIdentityClientConfig,
+        uniqueCookies: boolean,
+        applicationId: string
+    ) {
         this.hostname = `cognito-identity.${config.region}.amazonaws.com`;
         this.fetchRequestHandler = config.fetchRequestHandler;
-        this.identityStorageKey = config.uniqueCookies
+        this.identityStorageKey = uniqueCookies
             ? `${IDENTITY_KEY}_${applicationId}`
             : IDENTITY_KEY;
     }
