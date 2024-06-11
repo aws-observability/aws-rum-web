@@ -493,7 +493,7 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when unique cookie names and getOpenIdToken returns a bad response then identity id is removed from localStorage', async () => {
-        localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
+        localStorage.setItem(uniqueIdentityCookie, 'my-fake-identity-id');
 
         fetchHandler.mockResolvedValueOnce({
             response: {
@@ -523,7 +523,7 @@ describe('CognitoIdentityClient tests', () => {
     });
 
     test('when unique cookie names and getCredentialsForIdentity returns bad response then identity id is removed from localStorage ', async () => {
-        localStorage.setItem(IDENTITY_KEY, 'my-fake-identity-id');
+        localStorage.setItem(uniqueIdentityCookie, 'my-fake-identity-id');
 
         fetchHandler.mockResolvedValueOnce({
             response: {
