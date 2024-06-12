@@ -124,7 +124,6 @@ jobs:
               env:
                   URL: ${{ secrets.SMOKE_URL }}
                   MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  MONITOR2: ${{ secrets.SMOKE_MONITOR_2 }}
                   ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
                   NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
                   INSTALL_METHOD: 'CDN'
