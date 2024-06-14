@@ -28,6 +28,7 @@ import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
 import { INSTALL_MODULE } from '../utils/constants';
 import EventBus, { Topic } from '../event-bus/EventBus';
+import { CountByType } from '../sessions/SessionManager';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -142,6 +143,7 @@ export interface Config {
     routeChangeComplete: number;
     routeChangeTimeout: number;
     sessionEventLimit: number;
+    sessionEventLimitOverride?: CountByType;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
     /**
