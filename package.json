@@ -145,7 +145,6 @@
         ]
     },
     "browserslist": [
-        "defaults",
-        "ie 11"
+        "defaults"
     ]
 }
