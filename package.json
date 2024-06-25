@@ -123,7 +123,9 @@
         "@aws-sdk/signature-v4": "^3.36.0",
         "@aws-sdk/util-hex-encoding": "^3.36.0",
         "@babel/runtime": "^7.16.0",
+        "@types/stacktrace-js": "^2.0.3",
         "shimmer": "^1.2.1",
+        "stacktrace-js": "^2.0.2",
         "ua-parser-js": "^1.0.33",
         "uuid": "^9.0.0",
         "web-vitals": "^3.0.2"

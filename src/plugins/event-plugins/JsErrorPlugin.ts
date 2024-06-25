@@ -70,10 +70,15 @@ export class JsErrorPlugin extends InternalPlugin {
         }
     };
 
-    private recordJsErrorEvent(error: ErrorEvent) {
+    private async recordJsErrorEvent(error: ErrorEvent) {
         this.context?.record(
             JS_ERROR_EVENT_TYPE,
-            errorEventToJsErrorEvent(error, this.config.stackTraceLength)
+            await errorEventToJsErrorEvent(
+                error,
+                this.config.stackTraceLength,
+                this.context.config.sourceMapsEnabled,
+                this.context.config.sourceMapsFetchFunction
+            )
         );
     }
 

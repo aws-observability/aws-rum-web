@@ -1,4 +1,6 @@
+import * as StackTrace from 'stacktrace-js';
 import { JSErrorEvent } from '../../events/js-error-event';
+import { SourceMapsFetchFunction } from '../../orchestration/Orchestration';
 
 /**
  * Global error object.
@@ -56,11 +58,39 @@ const appendErrorPrimitiveDetails = (
     rumEvent.message = error.toString();
 };
 
-const appendErrorObjectDetails = (
+const appendErrorSourceMaps = async (
+    error: globalThis.Error,
+    fetchFunction?: SourceMapsFetchFunction
+) => {
+    if (error && error.stack) {
+        try {
+            const stackFrames = await StackTrace.fromError(error, {
+                ajax: fetchFunction
+            } as StackTrace.StackTraceOptions);
+            error.stack = stackFrames.join(' \n ');
+            console.log('appendErrorSourceMaps done');
+            console.log(error.stack);
+        } catch (e) {
+            error.stack = `Parsing stack failed: ${e} \n ${error.stack}`;
+            console.log('appendErrorSourceMaps error');
+            console.log(error.stack);
+        }
+    }
+};
+
+const appendErrorObjectDetails = async (
     rumEvent: JSErrorEvent,
     error: Error,
-    stackTraceLength: number
-): void => {
+    stackTraceLength: number,
+    sourceMapsEnabled?: boolean,
+    sourceMapsFetchFunction?: SourceMapsFetchFunction
+): Promise<void> => {
+    if (sourceMapsEnabled) {
+        await appendErrorSourceMaps(
+            error as globalThis.Error,
+            sourceMapsFetchFunction
+        );
+    }
     // error may extend Error here, but it is not guaranteed (i.e., it could
     // be any object)
     if (error.name) {
@@ -90,14 +120,22 @@ export const isErrorPrimitive = (error: any): boolean => {
     return error !== Object(error) && error !== undefined && error !== null;
 };
 
-export const errorEventToJsErrorEvent = (
+export const errorEventToJsErrorEvent = async (
     errorEvent: ErrorEvent,
-    stackTraceLength: number
-): JSErrorEvent => {
+    stackTraceLength: number,
+    sourceMapsEnabled?: boolean,
+    sourceMapsFetchFunction?: SourceMapsFetchFunction
+): Promise<JSErrorEvent> => {
     const rumEvent: JSErrorEvent = buildBaseJsErrorEvent(errorEvent);
     const error = errorEvent.error;
     if (isObject(error)) {
-        appendErrorObjectDetails(rumEvent, error, stackTraceLength);
+        await appendErrorObjectDetails(
+            rumEvent,
+            error,
+            stackTraceLength,
+            sourceMapsEnabled,
+            sourceMapsFetchFunction
+        );
     } else if (isErrorPrimitive(error)) {
         appendErrorPrimitiveDetails(rumEvent, error);
     }
