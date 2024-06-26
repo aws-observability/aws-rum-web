@@ -9,7 +9,7 @@ jobs:
     smoke_test:
         name: Smoke Test
         runs-on: ubuntu-latest
-        environment: cdn-prod-release
+        environment: cdn-gamma-release
         permissions: write-all
         steps:
             - name: Checkout AWS RUM Web Client Repository
