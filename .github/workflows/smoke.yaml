@@ -1,4 +1,4 @@
-name: Smoke Test
+name: Gamma Smoke Test
 
 on:
     workflow_dispatch:
@@ -7,7 +7,7 @@ on:
 
 jobs:
     smoke_test:
-        name: Smoke Test
+        name: Gamma Smoke Test
         runs-on: ubuntu-latest
         environment: cdn-gamma-release
         permissions: write-all
