@@ -1,16 +1,13 @@
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
 const babelLoaderOptions = {
-    presets: [['@babel/preset-env', {}]],
-    plugins: [
-        '@babel/plugin-transform-modules-commonjs',
+    presets: [
         [
-            '@babel/plugin-transform-runtime',
+            '@babel/preset-env',
             {
-                absoluteRuntime: false,
-                corejs: false,
-                helpers: true,
-                regenerator: true
+                modules: false,
+                useBuiltIns: 'usage',
+                corejs: 2
             }
         ]
     ]
