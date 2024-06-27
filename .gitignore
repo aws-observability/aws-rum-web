@@ -18,5 +18,3 @@ tests_output
 logs
 .idea
 app/smoke_local.html
-
-dummy
