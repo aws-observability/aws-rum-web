@@ -4,5 +4,5 @@ dist
 coverage
 src/events
 package-lock.json 
-docs/
 .vscode
+tests_output/
