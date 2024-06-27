@@ -1,9 +1,6 @@
 # Installing as a JavaScript Module
 
-The CloudWatch RUM web client can be built into the application's JavaScript
-bundle using the provided CommonJS or ES modules. The recommended method to
-consume and manage the web client dependency is to use the web client's [NPM
-package](https://www.npmjs.com/package/aws-rum-web).
+The CloudWatch RUM web client can be built into the application's JavaScript bundle using the provided CommonJS or ES modules. The recommended method to consume and manage the web client dependency is to use the web client's [NPM package](https://www.npmjs.com/package/aws-rum-web).
 
 ## Install the package from NPM
 
@@ -19,35 +16,32 @@ The following code shows an example of how to instrument an application. This co
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
 try {
-  const config: AwsRumConfig = {
-    allowCookies: true,
-    endpoint: "https://dataplane.rum.us-west-2.amazonaws.com",
-    identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
-    sessionSampleRate: 1,
-    telemetries: ['errors', 'performance']
-  };
+    const config: AwsRumConfig = {
+        allowCookies: true,
+        endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+        identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
+        sessionSampleRate: 1,
+        telemetries: ['errors', 'performance']
+    };
 
-  const APPLICATION_ID: string = '00000000-0000-0000-0000-000000000000';
-  const APPLICATION_VERSION: string = '1.0.0';
-  const APPLICATION_REGION: string = 'us-west-2';
+    const APPLICATION_ID: string = '00000000-0000-0000-0000-000000000000';
+    const APPLICATION_VERSION: string = '1.0.0';
+    const APPLICATION_REGION: string = 'us-west-2';
 
-  const awsRum: AwsRum = new AwsRum(
-    APPLICATION_ID,
-    APPLICATION_VERSION,
-    APPLICATION_REGION,
-    config
-  );
+    const awsRum: AwsRum = new AwsRum(
+        APPLICATION_ID,
+        APPLICATION_VERSION,
+        APPLICATION_REGION,
+        config
+    );
 } catch (error) {
-  // Ignore errors thrown during CloudWatch RUM web client initialization
+    // Ignore errors thrown during CloudWatch RUM web client initialization
 }
 ```
 
 Modify the `AwsRum` constructor arguments to match your AppMonitor. See [Arguments](#arguments) for details.
 
-Modify the `config` object to configure how the web client should behave. For
-example, you should minimally configure (1) how the data will be authenticated,
-and (2) what aspects of the application will be monitored. See
-[Configuration](#configuration) for details.
+Modify the `config` object to configure how the web client should behave. For example, you should minimally configure (1) how the data will be authenticated, and (2) what aspects of the application will be monitored. See [Configuration](#configuration) for details.
 
 ## Arguments
 
@@ -62,14 +56,12 @@ and (2) what aspects of the application will be monitored. See
 
 The application-specific web client configuration is a JavaScript object whose fields are all optional. While these fields are optional, depending on your application the web client may not function properly if certain fields are omitted. For example, `identityPoolId` is required unless your application performs its own AWS authentication and passes the credentials to the web client using the command `awsRum.setAwsCredentials({...});`.
 
-To get started, we recommend using the following configuration. The
-`identityPoolId` shown is a dummy value. Modify this to match the resources
-created when setting up the AppMonitor:
+To get started, we recommend using the following configuration. The `identityPoolId` shown is a dummy value. Modify this to match the resources created when setting up the AppMonitor:
 
 ```typescript
 const config: AwsRumConfig = {
     allowCookies: true,
-    identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
+    identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
     sessionSampleRate: 1,
     telemetries: ['errors', 'performance']
 };

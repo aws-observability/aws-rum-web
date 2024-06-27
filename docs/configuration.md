@@ -1,10 +1,9 @@
 # Application-specific Configurations
 
-The application being monitored must provided an application-specific
-configuration to the CloudWatch RUM web client. The configuration tells the web
-client what to monitor and how to monitor.
+The application being monitored must provided an application-specific configuration to the CloudWatch RUM web client. The configuration tells the web client what to monitor and how to monitor.
 
 For example, the config object may look similar to the following:
+
 ```javascript
 {
     allowCookies: true,
@@ -21,7 +20,7 @@ For example, the config object may look similar to the following:
 | --- | --- | --- | --- |
 | allowCookies | Boolean | `false` | Enable the web client to set and read two cookies: a session cookie named `cwr_s` and a user cookie named `cwr_u`.<br/><br/>`cwr_s` stores session data including an anonymous session ID (uuid v4) created by the web client. This allows CloudWatch RUM to compute sessionized metrics like errors per session.<br/><br/>`cwr_u` stores an anonymous user ID (uuid v4) created by the web client. This allows CloudWatch RUM to count return visitors.<br/><br/>`true`: the web client will use cookies<br/>`false`: the web client will not use cookies. |
 | cookieAttributes | [CookieAttributes](#cookieattributes) | `{ domain: window.location.hostname, path: '/', sameSite: 'Strict', secure: true, unique: false } ` | Cookie attributes are applied to all cookies stored by the web client, including `cwr_s` and `cwr_u`. |
-| sessionAttributes | [MetadataAttributes](#metadataattributes) | `{}` | Session attributes will be added the metadata of all events in the session.|
+| sessionAttributes | [MetadataAttributes](#metadataattributes) | `{}` | Session attributes will be added the metadata of all events in the session. |
 | disableAutoPageView | Boolean | `false` | When this field is `false`, the web client will automatically record page views.<br/><br/>By default, the web client records page views when (1) the page first loads and (2) the browser's [history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) is called. The page ID is `window.location.pathname`.<br/><br/>In some cases, the web client's instrumentation will not record the desired page ID. In this case, the web client's page view automation must be disabled using the `disableAutoPageView` configuration, and the application must be instrumented to record page views using the `recordPageView` command. |
 | enableRumClient | Boolean | `true` | When this field is `true`, the web client will record and dispatch RUM events. |
 | enableXRay | Boolean | `false` | When this field is `true` **and** the `http` telemetry is used, the web client will record X-Ray traces for HTTP requests.<br/><br/>See the [HTTP telemetry configuration](#http) for more information, including how to connect client-side and server-side traces. |
@@ -30,8 +29,8 @@ For example, the config object may look similar to the following:
 | guestRoleArn | String | `undefined` | The ARN of the AWS IAM role that will be assumed during anonymous authorization.<br/><br/>When `guestRoleArn` and `identityPoolId` are both set, the web client will use Cognito's [basic (classic) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).<br/><br/>When only `identityPoolId` is set, the web client will use Cognito's [enhanced (simplified) authflow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html) (recommended). |
 | identityPoolId | String | `undefined` | The Amazon Cognito Identity Pool ID that will be used during anonymous authorization.<br/><br/>When `identityPoolId` is set, the web client will use Cognito to retrieve temporary AWS credentials. These credentials authorize the bearer to send data to the CloudWatch RUM app monitor.<br/><br/>When`identityPoolId` is not set, you must either (A) forward credentials to the web client using the `setAwsCredentials` command, or (B) use a proxy and set `signing` to `false`. |
 | pageIdFormat | String | `'PATH'` | The portion of the `window.location` that will be used as the page ID. Options include `PATH`, `HASH` and `PATH_AND_HASH`.<br/><br/>For example, consider the URL `https://amazonaws.com/home?param=true#content`<br/><br/>`PATH`: `/home`<br/>`HASH`: `#content`<br/>`PATH_AND_HASH`: `/home#content` |
-| pagesToInclude | RegExp[] | `[/.*/]` | A list of regular expressions which specify the `window.location` values for which the web client will record data, unless explicitly excluded by `pagesToExclude`. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToInclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be included,  and `https://amazonaws.com/` will not be included. |
-| pagesToExclude | RegExp[] | `[]` | A list of regular expressions which specify the `window.location` values for which the web client will not record data. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToExclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be excluded,  and `https://amazonaws.com/` will not be excluded. |
+| pagesToInclude | RegExp[] | `[/.*/]` | A list of regular expressions which specify the `window.location` values for which the web client will record data, unless explicitly excluded by `pagesToExclude`. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToInclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be included, and `https://amazonaws.com/` will not be included. |
+| pagesToExclude | RegExp[] | `[]` | A list of regular expressions which specify the `window.location` values for which the web client will not record data. Pages are matched using the `RegExp.test()` function.<br/><br/>For example, when `pagesToExclude: [ /\/home/ ]`, then data from `https://amazonaws.com/home` will be excluded, and `https://amazonaws.com/` will not be excluded. |
 | recordResourceUrl | Boolean | `true` | When this field is `false`, the web client will not record the URLs of resources downloaded by your application.<br/><br/> Some types of resources (e.g., profile images) may be referenced by URLs which contain PII. If this applies to your application, you must set this field to `false` to comply with CloudWatch RUM's shared responsibility model. |
 | routeChangeComplete | Number | `100` | The interval (in milliseconds) for which when no HTTP or DOM activity has been observed, an active route change is marked as complete. Note that `routeChangeComplete` must be strictly less than `routeChangeTimeout`. |
 | routeChangeTimeout | Number | `10000` | The maximum time (in milliseconds) a route change may take. If a route change does not complete before the timeout, no timing data is recorded for the route change. If your application's route changes may take longer than the default timeout (i.e., more than 10 second), you should increase the value of the timeout. |
@@ -40,7 +39,7 @@ For example, the config object may look similar to the following:
 | signing | Boolean | true | When this field is `true`, the web client signs [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html) using [SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).<br/><br/>When this field is `false`, the web client does not sign [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html).<br/><br/>Set this field to `false` only when sending RUM data to CloudWatch RUM through an unauthenticated proxy. This field **must be `true`** when sending RUM data directly to CloudWatch RUM. |
 | telemetries | [Telemetry Config Array](#telemetry-config-array) | `[]` | See [Telemetry Config Array](#telemetry-config-array) |
 | batchLimit | Number | `100` | The maximum number of events that will be sent in one batch of RUM events. |
-| dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are first cached and then automatically dispatched at this set interval.|
+| dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are first cached and then automatically dispatched at this set interval. |
 | eventCacheSize | Number | `200` | The maximum number of events the cache can contain before dropping events. |
 | sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 
@@ -52,25 +51,21 @@ For example, the config object may look similar to the following:
 | path | String | `/` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | sameSite | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | secure | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
-| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.  |
+| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s`. When this field is `true`, the session cookie name is `cwr_s_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users. |
 
 ## MetadataAttributes
-You may add up to 10 custom attributes per event. Custom attributes are
-key/value pairs. Keys must be a String and contain alphanumeric characters, `_`,
-or `:`. Values may be any primitive type.
+
+You may add up to 10 custom attributes per event. Custom attributes are key/value pairs. Keys must be a String and contain alphanumeric characters, `_`, or `:`. Values may be any primitive type.
 
 The 10 attribute limit applies to the combined total of session attributes and page attributes. Any attributes that exceed this limit will be dropped. For example, 6 custom session attributes + 4 custom page attributes totals 10 custom attributes and falls within the limit. However, 6 custom attributes + 5 custom page attributes total 11 custom attributes and one of these custom attributes will be dropped.
 
-AWS reserves the namespace prefix `aws:` for its attributes. Do not create
-custom attributes with the `aws:` prefix, or they may be overwritten by future
-versions of the CloudWatch RUM web client.
+AWS reserves the namespace prefix `aws:` for its attributes. Do not create custom attributes with the `aws:` prefix, or they may be overwritten by future versions of the CloudWatch RUM web client.
 
-The RUM web client also records a set of [default
-attributes](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/meta-data.json). Overriding default attributes can have unintended consequences in the Cloudwatch RUM console.
+The RUM web client also records a set of [default attributes](https://github.com/aws-observability/aws-rum-web/blob/main/src/event-schemas/meta-data.json). Overriding default attributes can have unintended consequences in the Cloudwatch RUM console.
 
 | Field Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| [key] | String | N/A | An attribute which will be added to the metadata of all events in the session.<br/><br/>Keys must conform to the following regex: `^(?!pageTags)(?!aws:)[a-zA-Z0-9_:]{1,128}$`.<br/><br/>Values can have up to 256 characters and must be of type `string`, `number`, or `boolean`.|
+| [key] | String | N/A | An attribute which will be added to the metadata of all events in the session.<br/><br/>Keys must conform to the following regex: `^(?!pageTags)(?!aws:)[a-zA-Z0-9_:]{1,128}$`.<br/><br/>Values can have up to 256 characters and must be of type `string`, `number`, or `boolean`. |
 
 ## Telemetry Config Array
 
@@ -79,21 +74,23 @@ You must configure the types of RUM telemetry you wish to perform on your applic
 The telemetry config array is an array of telemetry configurations. A telemetry configuration is either (1) a string containing the telemetry's name, or (2) an array containing the telemetry's name in position 0 and an object containing the telemetry's configuration in position 1.
 
 For example, the following telemetry config arrays are both valid. The one on the top uses default configurations while the one on the bottom provides partial configurations for the `'errors'` and `'http'` telemetries.
+
 ```javascript
-telemetries: [ 'errors', 'performance', 'http' ]
+telemetries: ['errors', 'performance', 'http'];
 ```
+
 ```javascript
 telemetries: [
-    [ 'errors', { stackTraceLength: 500 } ],
+    ['errors', { stackTraceLength: 500 }],
     'performance',
-    [ 'http', { stackTraceLength: 500, addXRayTraceIdHeader: true } ]
-]
+    ['http', { stackTraceLength: 500, addXRayTraceIdHeader: true }]
+];
 ```
 
 | Telemetry&nbsp;Name | Description |
-| ----------- | ----------- |
+| --- | --- |
 | errors | Record JavaScript errors. By default, this telemetry will only record unhandled JavaScript errors. See [Errors](#errors). |
-| http | Record HTTP requests. By default, this telemetry will only record failed requests; i.e., requests that have network failures, or whose responses contain a non-2xx status code. See [HTTP](#http) <br/><br/> This telemetry is required to enable  X-Ray tracing. |
+| http | Record HTTP requests. By default, this telemetry will only record failed requests; i.e., requests that have network failures, or whose responses contain a non-2xx status code. See [HTTP](#http) <br/><br/> This telemetry is required to enable X-Ray tracing. |
 | interaction | Record DOM events. By default, this telemetry will not record data. The telemetry must be configured to record specific DOM events. See [Interaction](#interaction) |
 | performance | Record performance data including page load timing, web vitals, and resource load timing. See [Performance](#performance) |
 
@@ -123,7 +120,7 @@ telemetries: [
     ],
     'performance',
     'http'
-]
+];
 ```
 
 ## HTTP
@@ -134,21 +131,17 @@ telemetries: [
 | urlsToExclude | RegExp[] | `[]` | A list of HTTP request (`XMLHttpRequest` or `fetch`) URLs. These requests will not be recorded. |
 | stackTraceLength | Number | `1000 ` | The number of characters to record from a JavaScript error's stack trace (if available). |
 | recordAllRequests | boolean | `false` | By default, only HTTP failed requests (i.e., those with network errors or status codes which are not 2xx) are recorded. When this field is `true`, the http telemetry will record all requests, including those with successful 2xx status codes. <br/><br/>This field does **does not apply** to X-Ray traces, where all requests are recorded. |
-| addXRayTraceIdHeader | boolean or RegExp[] | `false` | By default, the `X-Amzn-Trace-Id` header will not be added to the HTTP request. This means that the client-side trace and server-side trace will **not be linked** in X-Ray or the ServiceLens graph.<br/><br/> When this field is `true`, the `X-Amzn-Trace-Id` header will be added to HTTP requests (`XMLHttpRequest` or `fetch`).<br/><br/> When this field is an array of regular expressions (RegExp[]), the `X-Amzn-Trace-Id` header will be added only to HTTP requests that contain an URL matching one or more of the regular expressions.<br/><br/>**Adding the `X-Amzn-Trace-Id` header can cause CORS failures. Test your application before enabling this feature in a production environment.**
+| addXRayTraceIdHeader | boolean or RegExp[] | `false` | By default, the `X-Amzn-Trace-Id` header will not be added to the HTTP request. This means that the client-side trace and server-side trace will **not be linked** in X-Ray or the ServiceLens graph.<br/><br/> When this field is `true`, the `X-Amzn-Trace-Id` header will be added to HTTP requests (`XMLHttpRequest` or `fetch`).<br/><br/> When this field is an array of regular expressions (RegExp[]), the `X-Amzn-Trace-Id` header will be added only to HTTP requests that contain an URL matching one or more of the regular expressions.<br/><br/>**Adding the `X-Amzn-Trace-Id` header can cause CORS failures. Test your application before enabling this feature in a production environment.** |
 
 ## Interaction
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | enableMutationObserver | Boolean | `false` | When `false`, the web client will record events on only DOM elements that existed when the `window.load` event was fired.<br/><br/>When `true`, the web client will record events on all DOM elements, including those added to the DOM after the `window.load` event was fired. The web client does this by using a [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) to listen for changes to the DOM. Using this feature does not typically have a perceptible impact on application performance, but may have a small impact when (1) the plugin is listening for an unusually large number DOM events (i.e., multiple thousands), or (2) the number and size of the DOM mutations are unusually large (i.e., multiple thousands). |
-| events | Array | `[]` | An array of target DOM events to record. Each DOM event is defined by an *event* and a *selector*. The event must be a [DOM event](https://www.w3schools.com/jsref/dom_obj_event.asp). The selector must be one of (1) `cssLocator`, (2) `elementId` or (3) `element`.<br/><br/>When two or more selectors are provided for a target DOM event, only one selector will be used. The selectors will be honored with the following precedence: (1) `cssLocator`, (2) `elementId` or (3) `element`. For example, if both `cssLocator` and `elementId` are provided, only the `cssLocator` selector will be used.<br/><br/>**Examples:**<br/>Record all elements identified by CSS selector `[label="label1"]`:<br/> `[{ event: 'click', cssLocator: '[label="label1"]' }]`<br/><br/>Record a single element with ID `mybutton`:<br/>`[{ event: 'click', elementId: 'mybutton' }]`<br/><br/>Record a complete clickstream<br/>`[{ event: 'click', element: document }]`. |
-| interactionId | Function | `() => undefined` | A function to generate a custom ID for the DOM event. <br/><br/>**Example:**<br/> Retrieve custom ID stored in the `data-rum-id` attribute of a DOM element. <br/> `(element) => element.target.getAttribute('data-rum-id')`|
+| events | Array | `[]` | An array of target DOM events to record. Each DOM event is defined by an _event_ and a _selector_. The event must be a [DOM event](https://www.w3schools.com/jsref/dom_obj_event.asp). The selector must be one of (1) `cssLocator`, (2) `elementId` or (3) `element`.<br/><br/>When two or more selectors are provided for a target DOM event, only one selector will be used. The selectors will be honored with the following precedence: (1) `cssLocator`, (2) `elementId` or (3) `element`. For example, if both `cssLocator` and `elementId` are provided, only the `cssLocator` selector will be used.<br/><br/>**Examples:**<br/>Record all elements identified by CSS selector `[label="label1"]`:<br/> `[{ event: 'click', cssLocator: '[label="label1"]' }]`<br/><br/>Record a single element with ID `mybutton`:<br/>`[{ event: 'click', elementId: 'mybutton' }]`<br/><br/>Record a complete clickstream<br/>`[{ event: 'click', element: document }]`. |
+| interactionId | Function | `() => undefined` | A function to generate a custom ID for the DOM event. <br/><br/>**Example:**<br/> Retrieve custom ID stored in the `data-rum-id` attribute of a DOM element. <br/> `(element) => element.target.getAttribute('data-rum-id')` |
 
-For example, the following code snippet identifies DOM events by the value of
-the attribute `data-rum-id` in the nearest ancestor of the event's target
-element. The snippet defines a function `getInteractionId` which reads the
-`data-rum-id` attribute, and passes this function as the value of the
-`interactionId` property in the `interaction` configuration.
+For example, the following code snippet identifies DOM events by the value of the attribute `data-rum-id` in the nearest ancestor of the event's target element. The snippet defines a function `getInteractionId` which reads the `data-rum-id` attribute, and passes this function as the value of the `interactionId` property in the `interaction` configuration.
 
 ```typescript
 const getInteractionId = (event: Event): string => {
@@ -159,14 +152,15 @@ const getInteractionId = (event: Event): string => {
         }
     }
     return '';
-}
+};
 
 const config: AwsRumConfig = {
-    identityPoolId: "us-west-2:00000000-0000-0000-0000-000000000000",
+    identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
     sessionSampleRate: 1,
     telemetries: [
         [
-            'interaction', {
+            'interaction',
+            {
                 events: [{ event: 'click', element: document }],
                 interactionId: getInteractionId
             }
@@ -206,6 +200,6 @@ telemetries: [
                 return entry.entryType === 'resource';
             }
         }
-    ],
-]
+    ]
+];
 ```
