@@ -107,6 +107,11 @@ export type CookieAttributes = {
 
 export type PartialCookieAttributes = Partial<CookieAttributes>;
 
+export type SourceMapsFetchFunction = (
+    input: RequestInfo,
+    init?: RequestInit
+) => Promise<string>;
+
 export interface Config {
     allowCookies: boolean;
     batchLimit: number;
@@ -159,6 +164,15 @@ export interface Config {
     telemetries: Telemetry[];
     useBeacon: boolean;
     userIdRetentionDays: number;
+    /**
+     * Apply source maps to error stacks. Enabling this feature will make fetch calls
+     * for javascript source and map files. If these files are cross domain then CORS
+     * headers must be included in their responses. If credentials or other headers are
+     * required then provide a configured fetch function that returns the response as
+     * a string promise.
+     */
+    sourceMapsEnabled?: boolean;
+    sourceMapsFetchFunction?: SourceMapsFetchFunction;
 }
 
 export interface PartialConfig

@@ -269,7 +269,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         }
     }
 
-    private recordHttpEventWithError(
+    private async recordHttpEventWithError(
         xhrDetails: XhrDetails,
         xhr: XMLHttpRequest,
         error: Error | string | number | boolean | undefined | null
@@ -278,12 +278,14 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const httpEvent: HttpEvent = {
             version: '1.0.0',
             request: { method: xhrDetails.method, url: xhrDetails.url },
-            error: errorEventToJsErrorEvent(
+            error: await errorEventToJsErrorEvent(
                 {
                     type: 'error',
                     error
                 } as ErrorEvent,
-                this.config.stackTraceLength
+                this.config.stackTraceLength,
+                this.context.config.sourceMapsEnabled,
+                this.context.config.sourceMapsFetchFunction
             )
         };
         if (this.isTracingEnabled()) {
