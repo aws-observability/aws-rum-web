@@ -3,7 +3,11 @@ import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { advanceTo } from 'jest-date-mock';
 import { CognitoIdentityClient } from '../CognitoIdentityClient';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { APPLICATION_ID, getReadableStream } from '../../test-utils/test-utils';
+import {
+    APPLICATION_ID,
+    getReadableStream,
+    DEFAULT_CONFIG
+} from '../../test-utils/test-utils';
 import { IDENTITY_KEY } from '../../utils/constants';
 
 const mockCredentials =
@@ -43,14 +47,17 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         const creds: AwsCredentialIdentity =
@@ -75,14 +82,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         await expect(
@@ -98,14 +108,17 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         const tokenCommand = await client.getOpenIdToken({
@@ -130,14 +143,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         expect(
@@ -155,14 +171,17 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         const idCommand = await client.getId({
@@ -186,14 +205,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         return expect(
@@ -211,14 +233,17 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         await client.getId({ IdentityPoolId: 'my-fake-identity-pool-id' });
@@ -246,14 +271,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         await expect(
@@ -274,14 +302,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         await expect(
@@ -300,14 +331,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         await expect(
@@ -325,14 +359,17 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         try {
@@ -358,14 +395,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         await expect(
@@ -384,14 +424,17 @@ describe('CognitoIdentityClient tests', () => {
         );
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Assert
         await expect(
@@ -409,14 +452,17 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: false
+                }
             },
-            false,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         try {
@@ -437,14 +483,21 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: true,
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        ...{ unique: true }
+                    }
+                }
             },
-            true,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         await client.getId({
@@ -471,14 +524,21 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: true,
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        ...{ unique: true }
+                    }
+                }
             },
-            true,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         const idCommand = await client.getId({
@@ -502,14 +562,21 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: true,
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        ...{ unique: true }
+                    }
+                }
             },
-            true,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         try {
@@ -532,14 +599,21 @@ describe('CognitoIdentityClient tests', () => {
         });
 
         // Init
-        const client: CognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region: Utils.AWS_RUM_REGION
+        const client: CognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region: Utils.AWS_RUM_REGION,
+            clientConfig: {
+                ...DEFAULT_CONFIG,
+                ...{
+                    allowCookies: true,
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        ...{ unique: true }
+                    }
+                }
             },
-            true,
-            APPLICATION_ID
-        );
+            applicationId: APPLICATION_ID
+        });
 
         // Run
         try {

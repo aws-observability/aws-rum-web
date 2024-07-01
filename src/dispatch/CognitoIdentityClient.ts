@@ -3,6 +3,7 @@ import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
+import { Config } from 'orchestration/Orchestration';
 
 const METHOD = 'POST';
 const CONTENT_TYPE = 'application/x-amz-json-1.1';
@@ -39,6 +40,8 @@ interface GetIdResponse {
 export declare type CognitoIdentityClientConfig = {
     fetchRequestHandler: HttpHandler;
     region?: string;
+    clientConfig?: Config;
+    applicationId?: string;
 };
 
 export class CognitoIdentityClient {
@@ -46,15 +49,11 @@ export class CognitoIdentityClient {
     private hostname: string;
     private identityStorageKey: string;
 
-    constructor(
-        config: CognitoIdentityClientConfig,
-        uniqueCookies: boolean,
-        applicationId: string
-    ) {
+    constructor(config: CognitoIdentityClientConfig) {
         this.hostname = `cognito-identity.${config.region}.amazonaws.com`;
         this.fetchRequestHandler = config.fetchRequestHandler;
-        this.identityStorageKey = uniqueCookies
-            ? `${IDENTITY_KEY}_${applicationId}`
+        this.identityStorageKey = config.clientConfig?.cookieAttributes.unique
+            ? `${IDENTITY_KEY}_${config.applicationId}`
             : IDENTITY_KEY;
     }
 

@@ -13,14 +13,12 @@ export abstract class Authentication {
     constructor(config: Config, applicationId: string) {
         const region: string = config.identityPoolId!.split(':')[0];
         this.config = config;
-        this.cognitoIdentityClient = new CognitoIdentityClient(
-            {
-                fetchRequestHandler: new FetchHttpHandler(),
-                region
-            },
-            this.config.cookieAttributes.unique,
+        this.cognitoIdentityClient = new CognitoIdentityClient({
+            fetchRequestHandler: new FetchHttpHandler(),
+            region,
+            clientConfig: config,
             applicationId
-        );
+        });
         this.credentialStorageKey = this.config.cookieAttributes.unique
             ? `${CRED_KEY}_${applicationId}`
             : CRED_KEY;
