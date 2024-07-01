@@ -3,7 +3,7 @@ import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
-import { Config } from 'orchestration/Orchestration';
+import { Config } from '../orchestration/Orchestration';
 
 const METHOD = 'POST';
 const CONTENT_TYPE = 'application/x-amz-json-1.1';
