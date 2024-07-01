@@ -1,12 +1,12 @@
 // @ts-nocheck
-import { AwsRum, AwsRumConfig } from 'aws-rum-web';
+const { AwsRum, AwsRumConfig } = require('aws-rum-web');
 
 let awsRum;
 
 try {
     const config: AwsRumConfig = {
         sessionSampleRate: 1,
-        identityPoolId: $IDENTITY_POOL,
+        identityPoolId: $IDENTITY_POOL_2,
         endpoint: $ENDPOINT,
         telemetries: ['performance', 'errors', 'http', 'interaction'],
         allowCookies: true,
@@ -16,7 +16,7 @@ try {
         }
     };
 
-    const APPLICATION_ID: string = $MONITOR_ID;
+    const APPLICATION_ID: string = $MONITOR_ID_2;
     const APPLICATION_VERSION: string = '1.0.0';
     const APPLICATION_REGION: string = $REGION;
 

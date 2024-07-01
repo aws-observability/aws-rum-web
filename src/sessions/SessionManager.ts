@@ -69,6 +69,7 @@ export class SessionManager {
     private config: Config;
     private record: RecordSessionInitEvent;
     private attributes!: Attributes;
+    private sessionCookieName: string;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
@@ -80,6 +81,10 @@ export class SessionManager {
         this.config = config;
         this.record = record;
         this.pageManager = pageManager;
+
+        this.sessionCookieName = this.config.cookieAttributes.unique
+            ? `${SESSION_COOKIE_NAME}_${this.appMonitorDetails.id}`
+            : SESSION_COOKIE_NAME;
 
         // Initialize the session to the nil session
         this.session = {
@@ -176,7 +181,7 @@ export class SessionManager {
     private createOrRenewSessionCookie(session: Session, expires: Date) {
         if (btoa) {
             storeCookie(
-                this.sessionCookieName(),
+                this.sessionCookieName,
                 btoa(JSON.stringify(session)),
                 this.config.cookieAttributes,
                 undefined,
@@ -201,8 +206,7 @@ export class SessionManager {
 
     private getSessionFromCookie() {
         if (this.useCookies()) {
-            const cookie: string = getCookie(this.sessionCookieName());
-
+            const cookie: string = getCookie(this.sessionCookieName);
             if (cookie && atob) {
                 try {
                     this.session = JSON.parse(atob(cookie)) as Session;
@@ -285,12 +289,5 @@ export class SessionManager {
      */
     private sample(): boolean {
         return Math.random() < this.config.sessionSampleRate;
-    }
-
-    private sessionCookieName(): string {
-        if (this.config.cookieAttributes.unique) {
-            return `${SESSION_COOKIE_NAME}_${this.appMonitorDetails.id}`;
-        }
-        return SESSION_COOKIE_NAME;
     }
 }

@@ -8,6 +8,19 @@
         <title>RUM Smoke Test</title>
 
         <script type="text/javascript" src="./loader_npm_rum_tmp.js"></script>
+        <script>
+            function loadScriptWithDelay() {
+                setTimeout(function () {
+                    var script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = './loader_npm_rum_tmp_2.js';
+                    document.head.appendChild(script);
+                }, 10000); // 10 seconds
+            }
+
+            // Call the function to load the script with a delay
+            loadScriptWithDelay();
+        </script>
 
         <link
             rel="icon"

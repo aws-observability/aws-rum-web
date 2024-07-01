@@ -10,7 +10,10 @@ try {
         endpoint: $ENDPOINT,
         telemetries: ['performance', 'errors', 'http', 'interaction'],
         allowCookies: true,
-        enableXRay: true
+        enableXRay: true,
+        cookieAttributes: {
+            unique: true
+        }
     };
 
     const APPLICATION_ID: string = $MONITOR_ID;

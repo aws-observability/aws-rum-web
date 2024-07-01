@@ -14,12 +14,14 @@ import {
 // Environment variables set through CLI command
 const ENDPOINT = process.env.ENDPOINT;
 const MONITOR_ID = process.env.MONITOR;
+const MONITOR_ID_2 = process.env.MONITOR_ID_2;
 const TEST_URL = getUrl(
     process.env.URL,
     process.env.VERSION,
     process.env.INSTALL_METHOD
 );
 const TARGET_URL = ENDPOINT + MONITOR_ID;
+const TARGET_URL_2 = ENDPOINT + MONITOR_ID_2;
 
 test('when web client calls PutRumEvents then the response code is 200', async ({
     page
@@ -30,6 +32,18 @@ test('when web client calls PutRumEvents then the response code is 200', async (
     // Test will timeout if no successful dataplane request is found
     await page.waitForResponse(async (response) =>
         isDataPlaneRequest(response, TARGET_URL)
+    );
+});
+
+test('when cookies are unique and web client calls PutRumEvents then the response code for second app monitor is 200', async ({
+    page
+}) => {
+    // Open page
+    await page.goto(TEST_URL);
+
+    // Test will timeout if no successful dataplane request is found
+    await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL_2)
     );
 });
 

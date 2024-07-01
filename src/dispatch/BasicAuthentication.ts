@@ -2,14 +2,13 @@ import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
 import { StsClient } from './StsClient';
-import { CRED_KEY } from '../utils/constants';
 import { Authentication } from './Authentication';
 
 export class BasicAuthentication extends Authentication {
     private stsClient: StsClient;
 
-    constructor(config: Config) {
-        super(config);
+    constructor(config: Config, applicationId: string) {
+        super(config, applicationId);
         const region: string = config.identityPoolId!.split(':')[0];
         this.stsClient = new StsClient({
             fetchRequestHandler: new FetchHttpHandler(),
@@ -51,7 +50,7 @@ export class BasicAuthentication extends Authentication {
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
-                            CRED_KEY,
+                            this.credentialStorageKey,
                             JSON.stringify(credentials)
                         );
                     } catch (e) {
