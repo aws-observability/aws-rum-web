@@ -68,12 +68,8 @@ const appendErrorSourceMaps = async (
                 ajax: fetchFunction
             } as StackTrace.StackTraceOptions);
             error.stack = stackFrames.join(' \n ');
-            console.log('appendErrorSourceMaps done');
-            console.log(error.stack);
         } catch (e) {
             error.stack = `Parsing stack failed: ${e} \n ${error.stack}`;
-            console.log('appendErrorSourceMaps error');
-            console.log(error.stack);
         }
     }
 };
