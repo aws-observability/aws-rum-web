@@ -1,11 +1,10 @@
 import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { CRED_KEY } from '../utils/constants';
 import { Authentication } from './Authentication';
 
 export class EnhancedAuthentication extends Authentication {
-    constructor(config: Config) {
-        super(config);
+    constructor(config: Config, applicationId: string) {
+        super(config, applicationId);
     }
     /**
      * Provides credentials for an anonymous (guest) user. These credentials are retrieved from Cognito's enhanced
@@ -34,7 +33,7 @@ export class EnhancedAuthentication extends Authentication {
                     this.credentials = credentials;
                     try {
                         localStorage.setItem(
-                            CRED_KEY,
+                            this.credentialStorageKey,
                             JSON.stringify(credentials)
                         );
                     } catch (e) {

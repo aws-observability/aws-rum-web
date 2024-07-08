@@ -22,7 +22,8 @@ module.exports = {
     devtool: 'inline-source-map',
     target: ['web', 'es5'],
     entry: {
-        loader_npm_rum_tmp: './src/loader-npm-rum-tmp.ts'
+        loader_npm_rum_tmp: './src/loader-npm-rum-tmp.ts',
+        loader_npm_rum_tmp_2: './src/loader-npm-rum-tmp-2.ts'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']
