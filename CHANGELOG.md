@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0](https://github.com/aws-observability/aws-rum-web/compare/v1.18.0...v1.19.0) (2024-07-09)
+
+
+### Features
+
+* support unique credential cookie names ([#560](https://github.com/aws-observability/aws-rum-web/issues/560)) ([a440016](https://github.com/aws-observability/aws-rum-web/commit/a440016e402ed03e5fb463e13d1bdde13dfe5f40))
+
+
+### Bug Fixes
+
+* reduce CDN size by tree shaking ([#563](https://github.com/aws-observability/aws-rum-web/issues/563)) ([c2da86e](https://github.com/aws-observability/aws-rum-web/commit/c2da86e8e92b8ca294f32de1d8ed8ded654762ca))
+
 ## [1.18.0](https://github.com/aws-observability/aws-rum-web/compare/v1.17.0...v1.18.0) (2024-05-29)
 
 
