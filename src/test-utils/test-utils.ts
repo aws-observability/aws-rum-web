@@ -3,7 +3,8 @@ import { AwsCredentialIdentity } from '@aws-sdk/types';
 import {
     Config,
     defaultConfig,
-    defaultCookieAttributes
+    defaultCookieAttributes,
+    SourceMapsFetchFunction
 } from '../orchestration/Orchestration';
 import {
     GetSession,
@@ -110,6 +111,9 @@ export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     eventCount: 0
 }));
 
+export const sourceMapsFetchFunction: jest.MockedFunction<SourceMapsFetchFunction> =
+    jest.fn();
+
 export const context: PluginContext = {
     applicationId: 'b',
     applicationVersion: '1.0',
@@ -128,6 +132,19 @@ export const xRayOffContext: PluginContext = {
 export const xRayOnContext: PluginContext = {
     ...context,
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
+};
+
+export const sourceMapsOnContext: PluginContext = {
+    ...context,
+    config: { ...DEFAULT_CONFIG, ...{ sourceMapsEnabled: true } }
+};
+
+export const sourceMapsFetchFunctionContext: PluginContext = {
+    ...context,
+    config: {
+        ...DEFAULT_CONFIG,
+        ...{ sourceMapsEnabled: true, sourceMapsFetchFunction }
+    }
 };
 
 export const stringToUtf16 = (inputString: string) => {
@@ -208,3 +225,11 @@ export const mockFetchWithErrorObjectAndStack = jest.fn(
             stack: 'stack trace'
         })
 );
+
+export const waitForTick = () => {
+    return new Promise((resolve) => {
+        process.nextTick(() => {
+            resolve('');
+        });
+    });
+};

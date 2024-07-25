@@ -250,16 +250,18 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         }
     };
 
-    private recordHttpEventWithError = (
+    private recordHttpEventWithError = async (
         httpEvent: HttpEvent,
         error: Error | string | number | boolean | undefined | null
     ) => {
-        httpEvent.error = errorEventToJsErrorEvent(
+        httpEvent.error = await errorEventToJsErrorEvent(
             {
                 type: 'error',
                 error
             } as ErrorEvent,
-            this.config.stackTraceLength
+            this.config.stackTraceLength,
+            this.context.config.sourceMapsEnabled,
+            this.context.config.sourceMapsFetchFunction
         );
         this.context.record(HTTP_EVENT_TYPE, httpEvent);
     };
@@ -295,9 +297,9 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                 this.recordHttpEventWithResponse(httpEvent, response);
                 return response;
             })
-            .catch((error: Error) => {
+            .catch(async (error: Error) => {
                 this.endTrace(trace, undefined, error);
-                this.recordHttpEventWithError(httpEvent, error);
+                await this.recordHttpEventWithError(httpEvent, error);
                 throw error;
             });
     };
