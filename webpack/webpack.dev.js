@@ -30,7 +30,8 @@ module.exports = merge(common, {
             './src/loader/loader-post-load-command-queue-test.js',
         loader_remote_config: './src/loader/loader-remote-config.js',
         loader_spa: './src/loader/loader-spa.js',
-        loader_custom_events: './src/loader/loader-custom-events.js'
+        loader_custom_events: './src/loader/loader-custom-events.js',
+        loader_alias: './src/loader/loader-alias.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']

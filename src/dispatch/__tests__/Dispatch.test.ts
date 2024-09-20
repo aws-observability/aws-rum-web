@@ -558,4 +558,57 @@ describe('Dispatch tests', () => {
         expect(DataPlaneClient).toHaveBeenCalled();
         expect(sendFetch).toHaveBeenCalledTimes(1);
     });
+
+    test('When valid alias is provided then PutRumEvents request containing alias is sent', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    signing: false,
+                    alias: 'test123'
+                }
+            }
+        );
+
+        // Run
+        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+
+        // Assert
+        expect(dispatch['createRequest']()['Alias']).toBeDefined();
+        expect(dispatch['createRequest']()['Alias']).toBe('test123');
+
+        expect(DataPlaneClient).toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('When no alias is provided then PutRumEvents request does not contain an alias', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    signing: false
+                }
+            }
+        );
+
+        // Run
+        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+
+        // Assert
+
+        expect(dispatch['createRequest']()['Alias']).toBeUndefined();
+
+        expect(DataPlaneClient).toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalledTimes(1);
+    });
 });
