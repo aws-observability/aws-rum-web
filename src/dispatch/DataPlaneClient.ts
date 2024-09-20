@@ -35,6 +35,7 @@ declare type SerializedPutRumEventsRequest = {
     AppMonitorDetails: AppMonitorDetails;
     UserDetails: UserDetails;
     RumEvents: SerializedRumEvent[];
+    Alias?: string;
 };
 
 export declare type DataPlaneClientConfig = {
@@ -147,12 +148,15 @@ const serializeRequest = (
     request.RumEvents.forEach((e) =>
         serializedRumEvents.push(serializeEvent(e))
     );
-    const serializedRequest: SerializedPutRumEventsRequest = {
+    let serializedRequest: SerializedPutRumEventsRequest = {
         BatchId: request.BatchId,
         AppMonitorDetails: request.AppMonitorDetails,
         UserDetails: request.UserDetails,
         RumEvents: serializedRumEvents
     };
+    if (request.Alias) {
+        serializedRequest = { ...serializedRequest, Alias: request.Alias };
+    }
     return serializedRequest;
 };
 

@@ -12,6 +12,7 @@ export interface PutRumEventsRequest {
     AppMonitorDetails: AppMonitorDetails;
     UserDetails: UserDetails;
     RumEvents: RumEvent[];
+    Alias?: string;
 }
 
 export interface AppMonitorDetails {
