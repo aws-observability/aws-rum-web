@@ -1,0 +1,64 @@
+{
+    "$id": "com.amazon.rum.csp_violation_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "CspViolationEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "blockedURI": {
+            "type": "string",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/blockedURI"
+        },
+        "columnNumber": {
+            "type": "number",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/columnNumber"
+        },
+        "disposition": {
+            "type": "string",
+            "enum": ["enforce", "report"],
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/disposition"
+        },
+        "documentURI": {
+            "type": "string",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/documentURI"
+        },
+        "effectiveDirective": {
+            "type": "string",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/effectiveDirective"
+        },
+        "lineNumber": {
+            "type": "number",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/lineNumber"
+        },
+        "originalPolicy": {
+            "type": "string",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/originalPolicy"
+        },
+        "referrer": {
+            "type": ["string", "null"],
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/referrer"
+        },
+        "sample": {
+            "type": "string",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/sample"
+        },
+        "sourceFile": {
+            "type": ["string", "null"],
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/sourceFile"
+        },
+        "statusCode": {
+            "type": "number",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/statusCode"
+        },
+        "violatedDirective": {
+            "type": "string",
+            "description": "https://developer.mozilla.org/docs/Web/API/SecurityPolicyViolationEvent/violatedDirective"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version"]
+}
