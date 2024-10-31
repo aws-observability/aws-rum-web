@@ -27,7 +27,7 @@ The snippet will look similar to the following:
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/1.19.0/cwr.js',
         {
             sessionSampleRate: 1,
             identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
