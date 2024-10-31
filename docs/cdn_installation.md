@@ -27,7 +27,7 @@ The snippet will look similar to the following:
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
         {
             sessionSampleRate: 1,
             identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
@@ -67,7 +67,7 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
         { /* configuration */ }
     );
 </script>
@@ -79,7 +79,7 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
 | 2 | AppMonitor ID | String | A globally unique identifier for the CloudWatch RUM AppMonitor which monitors your application. |
 | 3 | Application Version | String | Your application's semantic version. If you do not wish to use this field then add any placeholder, such as `'0.0.0'`. |
 | 4 | Region | String | The AWS region of the AppMonitor. For example, `'us-east-1'` or '`eu-west-2'`. |
-| 5 | Web Client URL | String | The URL of the web client bundle. For example, `'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js'` |
+| 5 | Web Client URL | String | The URL of the web client bundle. For example, `'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js'` |
 | 6 | Configuration | [Configuration](configuration.md) | An application-specific configuration for the web client. |
 
 ## Configuring the CloudWatch RUM web client
@@ -95,7 +95,7 @@ The snippet below shows several configuration options with the body of the snipp
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
         {
             sessionSampleRate:1,
             identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',

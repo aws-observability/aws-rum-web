@@ -145,7 +145,7 @@ The hash method is the recommended method for adding the RUM web client installa
 A hash of the snippet can be generated from the command line using openssl:
 
 ```bash
-SNIPPET='(function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',{sessionSampleRate:1,identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});'
+SNIPPET='(function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',{sessionSampleRate:1,identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});'
 echo $SNIPPET | openssl sha256 -binary | openssl base64
 ```
 
@@ -174,7 +174,7 @@ To connect client-side and server-side traces, you must set the `addXRayTraceIdH
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
         {
             enableXRay: true,
             telemetries: [
