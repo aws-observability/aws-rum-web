@@ -1,11 +1,19 @@
+let isNavigationSupported = true;
+jest.mock('../../../utils/common-utils', () => {
+    const originalModule = jest.requireActual('../../../utils/common-utils');
+    return {
+        __esModule: true,
+        ...originalModule,
+        isNavigationSupported: jest
+            .fn()
+            .mockImplementation(() => isNavigationSupported)
+    };
+});
+
 import {
     navigationEvent,
     performanceEvent,
-    performanceEventNotLoaded,
-    mockPerformanceObserver,
-    MockPerformanceTiming,
-    mockPerformanceObjectWith,
-    putRumEventsDocument
+    performanceEventNotLoaded
 } from '../../../test-utils/mock-data';
 import { NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
@@ -34,64 +42,44 @@ describe('NavigationPlugin tests', () => {
         window.dispatchEvent(new Event('load'));
         plugin.disable();
 
-        expect(record.mock.calls[0][0]).toEqual(
-            PERFORMANCE_NAVIGATION_EVENT_TYPE
-        );
-        expect(record.mock.calls[0][1]).toEqual(
-            expect.objectContaining({
-                duration: navigationEvent.duration,
-                startTime: navigationEvent.startTime,
-                navigationType: navigationEvent.type
-            })
-        );
-    });
-
-    test('When transferSize is 0 then headerSize is 0', async () => {
-        const plugin: NavigationPlugin = buildNavigationPlugin();
-        // Run
-        plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
+        const e = navigationEvent;
 
         expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_NAVIGATION_EVENT_TYPE
         );
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                headerSize: 0
-            })
-        );
-    });
-
-    test('When navigation timing level 2 API is not present then navigation timing level 1 API is recorded', async () => {
-        jest.useFakeTimers();
-        mockPerformanceObjectWith([putRumEventsDocument], [], []);
-        mockPerformanceObserver();
-
-        const plugin: NavigationPlugin = buildNavigationPlugin();
-
-        plugin.load(context);
-        window.dispatchEvent(new Event('load'));
-        plugin.disable();
-
-        jest.runAllTimers();
-
-        expect(record).toHaveBeenCalledTimes(1);
-        expect(record.mock.calls[0][0]).toEqual(
-            PERFORMANCE_NAVIGATION_EVENT_TYPE
-        );
-
-        expect(record.mock.calls[0][1]).toEqual(
-            expect.objectContaining({
-                domComplete:
-                    MockPerformanceTiming.domComplete -
-                    MockPerformanceTiming.navigationStart,
-                responseStart:
-                    MockPerformanceTiming.responseStart -
-                    MockPerformanceTiming.navigationStart,
-                initiatorType: 'navigation',
-                redirectStart: MockPerformanceTiming.redirectStart,
-                navigationTimingLevel: 1
+                name: e.name,
+                entryType: 'navigation',
+                startTime: e.startTime,
+                duration: e.duration,
+                initiatorType: e.initiatorType,
+                nextHopProtocol: e.nextHopProtocol,
+                workerStart: e.workerStart,
+                redirectStart: e.redirectStart,
+                redirectEnd: e.redirectEnd,
+                fetchStart: e.fetchStart,
+                domainLookupStart: e.domainLookupStart,
+                domainLookupEnd: e.domainLookupEnd,
+                connectStart: e.connectStart,
+                connectEnd: e.connectEnd,
+                secureConnectionStart: e.secureConnectionStart,
+                requestStart: e.requestStart,
+                responseStart: e.responseStart,
+                responseEnd: e.responseEnd,
+                transferSize: e.transferSize,
+                encodedBodySize: e.encodedBodySize,
+                decodedBodySize: e.decodedBodySize,
+                domComplete: e.domComplete,
+                domContentLoadedEventEnd: e.domContentLoadedEventEnd,
+                domContentLoadedEventStart: e.domContentLoadedEventStart,
+                domInteractive: e.domInteractive,
+                loadEventEnd: e.loadEventEnd,
+                loadEventStart: e.loadEventStart,
+                redirectCount: e.redirectCount,
+                type: e.type,
+                unloadEventEnd: e.unloadEventEnd,
+                unloadEventStart: e.unloadEventStart
             })
         );
     });
@@ -123,7 +111,7 @@ describe('NavigationPlugin tests', () => {
         // Assert
         expect(record).toHaveBeenCalledTimes(0);
     });
-    test('when entry is ignored then level 2 navigation is not recorded', async () => {
+    test('when entry is ignored then navigation is not recorded', async () => {
         // enables plugin by default
         const plugin: NavigationPlugin = buildNavigationPlugin({
             ignore: (event) => true
@@ -141,15 +129,16 @@ describe('NavigationPlugin tests', () => {
         // Setting up new mocked window that has not loaded
         (window as any).performance = performanceEventNotLoaded.performance();
 
-        // enables plugin by default and loads
+        // run
         const plugin: NavigationPlugin = buildNavigationPlugin();
         plugin.load(context);
-        // assert that the plugin did not fire
-        expect(record).toHaveBeenCalledTimes(0);
-
-        // now that the page has loaded, we should fire
         window.dispatchEvent(new Event('load'));
-        expect(record).toHaveBeenCalledTimes(1);
+
+        // assert
+        expect(record).toHaveBeenCalledWith(
+            PERFORMANCE_NAVIGATION_EVENT_TYPE,
+            expect.anything()
+        );
     });
 
     test('when window.load fires before plugin loads then navigation timing is recorded', async () => {
@@ -160,6 +149,27 @@ describe('NavigationPlugin tests', () => {
         // so when we load the plugin now, it should still record event
         plugin.load(context);
         // Assert
-        expect(record).toHaveBeenCalled();
+        expect(record).toHaveBeenCalledWith(
+            PERFORMANCE_NAVIGATION_EVENT_TYPE,
+            expect.anything()
+        );
+    });
+
+    test('when PerformanceNavigationTiming is not supported, then the NavigationPlugin does not initialize an observer', async () => {
+        // init
+        isNavigationSupported = false;
+        // jest.mock('../NavigationPlugin');
+
+        // enables plugin by default
+        const plugin: NavigationPlugin = buildNavigationPlugin();
+
+        // window by default has already loaded before the plugin
+        // so when we load the plugin now, it should still record event
+        plugin.load(context);
+        // Assert
+        expect((plugin as any).po).toBeUndefined();
+
+        // restore
+        isNavigationSupported = true;
     });
 });

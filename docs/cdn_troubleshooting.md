@@ -4,70 +4,45 @@
 
 ### Session sample rate is less than one
 
-If `sessionSampleRate` is less than `1`, events may or may not be emitted for a
-given session. Try setting `sessionSampleRate: 1` in the web client
-configuration.
+If `sessionSampleRate` is less than `1`, events may or may not be emitted for a given session. Try setting `sessionSampleRate: 1` in the web client configuration.
 
 ### No AWS Credentials
 
-The web client requires AWS credentials to sign RUM payloads. When the RUM web
-client does not have AWS credentials, it will not attempt to send events to
-CloudWatch RUM. Your application must either (A) provide the web client with an
-anonymous Cognito identity using `identityPoolId`, (B) provide the web client
-with AWS credentials using the `cwr('setAwsCredentials', credentials);` command
-or (C) use a proxy and disable SigV4 signing by setting `signing` to `false`.
+The web client requires AWS credentials to sign RUM payloads. When the RUM web client does not have AWS credentials, it will not attempt to send events to CloudWatch RUM. Your application must either (A) provide the web client with an anonymous Cognito identity using `identityPoolId`, (B) provide the web client with AWS credentials using the `cwr('setAwsCredentials', credentials);` command or (C) use a proxy and disable SigV4 signing by setting `signing` to `false`.
 
 ### Event limit is reached for the session
 
-If the the web client initially sends data, but stops sending data after a
-period of time, the likely cause is that the session event limit has been
-reached. By default, the web client limits the number of recorded events to 200
-per session.
+If the the web client initially sends data, but stops sending data after a period of time, the likely cause is that the session event limit has been reached. By default, the web client limits the number of recorded events to 200 per session.
 
-The configuration field [`sessionEventLimit`](configuration.md) controls this
-limit. If you wish to remove this limit completely, set `sessionEventLimit: 0`.
+The configuration field [`sessionEventLimit`](configuration.md) controls this limit. If you wish to remove this limit completely, set `sessionEventLimit: 0`.
 
 ```typescript
 const config: AwsRumConfig = {
-  // Record an unlimited number of events per session
-  sessionEventLimit: 0
-}
+    // Record an unlimited number of events per session
+    sessionEventLimit: 0
+};
 ```
 
 ---
+
 ## CloudWatch RUM returns 403
 
-CloudWatch RUM's `PutRumEvents` API returns 403 when authentication or
-authorization has failed. Since the web client has made the request, we know
-that either (a) the Cognito and STS calls have succeeded, (b) the `cwr_c`
-localStorage key contains AWS credentials, or (3) the application has forwarded
-credentials to the web client using the `cwr('setAwsCredentials', credentials);`
-command.
+CloudWatch RUM's `PutRumEvents` API returns 403 when authentication or authorization has failed. Since the web client has made the request, we know that either (a) the Cognito and STS calls have succeeded, (b) the `cwr_c` localStorage key contains AWS credentials, or (3) the application has forwarded credentials to the web client using the `cwr('setAwsCredentials', credentials);` command.
 
 ### Incorrect AWS region
 
-Data must be sent to the same region as the CloudWatch RUM AppMonitor was
-created. For example, if the AppMonitor was created in `us-east-1`, but the web
-client is configured to send data to the endpoint
-`'https://dataplane.rum.us-west-2.amazonaws.com'`, authentication will fail.
-Verify that (1) the region argument is correct and (2) the `endpoint`
-configuration option, if set, is correct.
+Data must be sent to the same region as the CloudWatch RUM AppMonitor was created. For example, if the AppMonitor was created in `us-east-1`, but the web client is configured to send data to the endpoint `'https://dataplane.rum.us-west-2.amazonaws.com'`, authentication will fail. Verify that (1) the region argument is correct and (2) the `endpoint` configuration option, if set, is correct.
 
 ### Credentials stored in localStorage are for a different AppMonitor
 
-When anonymous authorization is used, the web client stores credentials in
-localStorage. If multiple AppMonitors are used within the same domain,
-authorization will fail when navigating between pages with different
-AppMonitors.
+When anonymous authorization is used, the web client stores credentials in localStorage. If multiple AppMonitors are used within the same domain, authorization will fail when navigating between pages with different AppMonitors.
 
 ### IAM role is not authorized to call PutRumEvents on AppMonitor
 
-If a new AppMonitor is created and re-uses an existing Cognito Identity Pool and
-IAM Role, the IAM Role will not automatically have permissions to call
-PutRumEvents on the new AppMonitor. 
+If a new AppMonitor is created and re-uses an existing Cognito Identity Pool and IAM Role, the IAM Role will not automatically have permissions to call PutRumEvents on the new AppMonitor.
 
 Verify the IAM role has the following permission:
- 
+
 ```json
 {
     "Version": "2012-10-17",
@@ -83,20 +58,16 @@ Verify the IAM role has the following permission:
 
 ### Missing authentication token
 
-Data sent to CloudWatch RUM **must be signed** with
-[SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
-When RUM data is not signed, CloudWatch RUM will return the following exception in
-the `x-amzn-ErrorType` HTTP header.
+Data sent to CloudWatch RUM **must be signed** with [SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html). When RUM data is not signed, CloudWatch RUM will return the following exception in the `x-amzn-ErrorType` HTTP header.
 
 ```
 MissingAuthenticationTokenException
 ```
+
 Verify that signing is enabled.
 
-The configuration option [`signing`](configuration.md) controls whether or not
-the web client signs RUM data. Signing is
-enabled by default, so if this configuration option is not present, then signing
-is enabled.
+The configuration option [`signing`](configuration.md) controls whether or not the web client signs RUM data. Signing is enabled by default, so if this configuration option is not present, then signing is enabled.
+
 ```
 const config: AwsRumConfig = {
   // Sign RUM data with SigV4 -- required unless using a proxy
@@ -105,38 +76,35 @@ const config: AwsRumConfig = {
 ```
 
 ---
+
 ## AWS token vending (Cognito or STS) fails
 
-The CloudWatch RUM web client has a default authorization mechanism that uses a
-a token vended by an unauthenticated Cognito identity to retrieve temporary AWS
-credentials from STS.
+The CloudWatch RUM web client has a default authorization mechanism that uses a a token vended by an unauthenticated Cognito identity to retrieve temporary AWS credentials from STS.
 
 ### Cognito is not authorized to assume IAM role
 
-If the STS `AssumeRoleWithWebIdentity` operation fails, the Cognito identity may
-not have permission to assume the IAM role. Verify the IAM role has the
-following trust relationship:
+If the STS `AssumeRoleWithWebIdentity` operation fails, the Cognito identity may not have permission to assume the IAM role. Verify the IAM role has the following trust relationship:
 
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "cognito-identity.amazonaws.com"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "cognito-identity.amazonaws.com:aud": "[cognito identity pool id]"
-        },
-        "ForAnyValue:StringLike": {
-          "cognito-identity.amazonaws.com:amr": "unauthenticated"
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "cognito-identity.amazonaws.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "cognito-identity.amazonaws.com:aud": "[cognito identity pool id]"
+                },
+                "ForAnyValue:StringLike": {
+                    "cognito-identity.amazonaws.com:amr": "unauthenticated"
+                }
+            }
         }
-      }
-    }
-  ]
+    ]
 }
 ```
 
@@ -152,34 +120,22 @@ When the CloudWatch RUM web client is provided with both `identityPoolId` and `g
 </Error>
 ```
 
-This can be fixed by removing `guestRoleArn` from the [web client
-configuration](configuration.md). After removing `guestRoleArn`, the web client will use Cognito's [enhanced
-(simplified) auth
-flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
+This can be fixed by removing `guestRoleArn` from the [web client configuration](configuration.md). After removing `guestRoleArn`, the web client will use Cognito's [enhanced (simplified) auth flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
 
-Alternatively, to continue using the basic auth flow, use the Amazon Cognito
-console or CLI (i.e, the `aws cognito-identity describe-identity-pool` command)
-to verify that the identity pool configuration does **not** contain
-`AllowClassicFlow: false`.  If it does, then update the configuration so that it
-contains `AllowClassicFlow: true`.
+Alternatively, to continue using the basic auth flow, use the Amazon Cognito console or CLI (i.e, the `aws cognito-identity describe-identity-pool` command) to verify that the identity pool configuration does **not** contain `AllowClassicFlow: false`. If it does, then update the configuration so that it contains `AllowClassicFlow: true`.
 
 See also:
+
 1. `AllowClassicFlow` in the [update-identity-pool CLI reference](https://docs.aws.amazon.com/cli/latest/reference/cognito-identity/update-identity-pool.html).
 1. [Identity pool (federated identities) authentication flow](https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html).
+
 ---
+
 ## Content security policy blocks the web client
 
-If your web application uses a content security policy, it likely needs to be
-amended to support the RUM web client. By default, a content security policy
-blocks unsafe inline scripts such as the code snippet used to install the RUM
-web client. You can use a hash or an nonce to allow the snippet. See [MDN Web
-Docs: CSP:
-script-src](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#sources)
-for more information.
+If your web application uses a content security policy, it likely needs to be amended to support the RUM web client. By default, a content security policy blocks unsafe inline scripts such as the code snippet used to install the RUM web client. You can use a hash or an nonce to allow the snippet. See [MDN Web Docs: CSP: script-src](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#sources) for more information.
 
-The hash method is the recommended method for adding the RUM web client
-installation snippet to the `script-src` directive. A complete CSP for the rum
-web client will contain the following directives and values:
+The hash method is the recommended method for adding the RUM web client installation snippet to the `script-src` directive. A complete CSP for the rum web client will contain the following directives and values:
 
 | Directive | Value |
 | --- | --- |
@@ -189,33 +145,27 @@ web client will contain the following directives and values:
 A hash of the snippet can be generated from the command line using openssl:
 
 ```bash
-SNIPPET='(function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',{sessionSampleRate:1,identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});'
+SNIPPET='(function(n,i,v,r,s,c,u,x,z){x=window.AwsRumClient={q:[],n:n,i:i,v:v,r:r,c:c,u:u};window[n]=function(c,p){x.q.push({c:c,p:p});};z=document.createElement('script');z.async=true;z.src=s;document.head.insertBefore(z,document.getElementsByTagName('script')[0]);})('cwr','00000000-0000-0000-0000-000000000000','1.0.0','us-west-2','https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',{sessionSampleRate:1,identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',endpoint:'https://dataplane.rum.us-west-2.amazonaws.com',telemetries:['errors','http','performance'],allowCookies:true});'
 echo $SNIPPET | openssl sha256 -binary | openssl base64
 ```
 
 In this case, the output of this command is the following, however the output for your snippet will differ:
+
 ```
 dhFqvDHwFpO34BJSlFlEdnhKI/jmMD2Yl50PvxjyLN0=
 ```
-Place the hash in the `'sha256-[snippet hash]'` directive value above. In this
-case, the directive will be `script-src
-sha256-dhFqvDHwFpO34BJSlFlEdnhKI/jmMD2Yl50PvxjyLN0=`.
+
+Place the hash in the `'sha256-[snippet hash]'` directive value above. In this case, the directive will be `script-src sha256-dhFqvDHwFpO34BJSlFlEdnhKI/jmMD2Yl50PvxjyLN0=`.
 
 ---
+
 ## X-Ray tracing does not connect client-side trace with server-side trace
 
-To connect client-side and server-side traces, you must set the
-`addXRayTraceIdHeader` to `true` in the `http` telemetry configuration. The web
-client will then add the `X-Amzn-Trace-Id` header in each HTTP request. The
-example below shows what this configuration looks like, with all other
-configurations removed for readability.
+To connect client-side and server-side traces, you must set the `addXRayTraceIdHeader` to `true` in the `http` telemetry configuration. The web client will then add the `X-Amzn-Trace-Id` header in each HTTP request. The example below shows what this configuration looks like, with all other configurations removed for readability.
 
 > **:warning: Enabling `addXRayTraceIdHeader` may cause HTTP requests to fail.**
 >
-> Enabling `addXRayTraceIdHeader` adds a header to HTTP requests. Adding headers
-can modify CORS behavior, including causing the request to fail. Adding headers
-may also alter  the request signature, causing the request to fail. Test your
-application before enabling this option in a production environment.
+> Enabling `addXRayTraceIdHeader` adds a header to HTTP requests. Adding headers can modify CORS behavior, including causing the request to fail. Adding headers may also alter the request signature, causing the request to fail. Test your application before enabling this option in a production environment.
 
 ```html
 <script>
@@ -224,10 +174,10 @@ application before enabling this option in a production environment.
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.0.2/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
         {
             enableXRay: true,
-            telemetries: [ 
+            telemetries: [
                 [ 'http', { addXRayTraceIdHeader: true } ]
             ]
         }

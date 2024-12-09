@@ -1,8 +1,8 @@
 import { toHex } from '@aws-sdk/util-hex-encoding';
 import { SignatureV4 } from '@aws-sdk/signature-v4';
 import {
-    CredentialProvider,
-    Credentials,
+    AwsCredentialIdentityProvider,
+    AwsCredentialIdentity,
     HttpResponse,
     RequestPresigningArguments
 } from '@aws-sdk/types';
@@ -42,7 +42,10 @@ export declare type DataPlaneClientConfig = {
     beaconRequestHandler: HttpHandler;
     endpoint: URL;
     region: string;
-    credentials: CredentialProvider | Credentials | undefined;
+    credentials:
+        | AwsCredentialIdentityProvider
+        | AwsCredentialIdentity
+        | undefined;
 };
 
 export class DataPlaneClient {

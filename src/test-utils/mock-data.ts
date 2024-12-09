@@ -1,4 +1,7 @@
 /* eslint-disable max-classes-per-file */
+
+import { PerformanceResourceTimingPolyfill } from 'plugins/utils/performance-utils';
+
 export const firstPaintEvent = {
     name: 'first-paint',
     duration: 0,
@@ -85,7 +88,7 @@ export const navigationEventNotLoaded = {
     navigationTimingLevel: 2
 };
 
-export const resourceTiming: PerformanceResourceTiming = {
+export const resourceTiming: PerformanceResourceTimingPolyfill = {
     connectEnd: 0,
     connectStart: 0,
     decodedBodySize: 0,
@@ -100,6 +103,7 @@ export const resourceTiming: PerformanceResourceTiming = {
     nextHopProtocol: 'h2',
     redirectEnd: 0,
     redirectStart: 0,
+    renderBlockingStatus: 'blocking',
     requestStart: 0,
     responseEnd: 795.9950000004028,
     responseStart: 0,
@@ -211,7 +215,7 @@ export const imageResourceEventA = {
     encodedBodySize: 79,
     entryType: 'resource',
     fetchStart: 386.37999998172745,
-    initiatorType: 'script',
+    initiatorType: 'image',
     name: 'http://localhost:9000/pictureA.jpg',
     nextHopProtocol: 'http/1.1',
     redirectEnd: 0,
@@ -237,7 +241,7 @@ export const imageResourceEventB = {
     encodedBodySize: 79,
     entryType: 'resource',
     fetchStart: 386.37999998172745,
-    initiatorType: 'script',
+    initiatorType: 'img',
     name: 'http://localhost:9000/pictureB.jpg',
     nextHopProtocol: 'http/1.1',
     redirectEnd: 0,

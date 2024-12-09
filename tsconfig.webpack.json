@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "module": "es2020",
-        "outDir": "./dist/webpack"
+        "outDir": "./dist/webpack",
+        "sourceMap": true
     },
     "include": ["src/index-browser.ts"],
     "extends": "./tsconfig"

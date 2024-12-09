@@ -54,14 +54,13 @@
         "preinteg:local:nightwatch:firefox": "http-server ./build/dev -s &",
         "integ:local:nightwatch:firefox": "nightwatch -e firefox",
         "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
-        "smoke:local:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version npx playwright test --config=playwright.local.config.ts",
-        "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version npx playwright test --config=playwright.local.config.ts --headed",
-        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version INSTALL_METHOD=$INSTALL_METHOD npx playwright test --config=playwright.config.ts",
+        "smoke:local:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version MONITOR_ID_2=$MONITOR_ID_2 npx playwright test --config=playwright.local.config.ts",
+        "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version MONITOR_ID_2=$MONITOR_ID_2 npx playwright test --config=playwright.local.config.ts --headed",
+        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version INSTALL_METHOD=$INSTALL_METHOD MONITOR_ID_2=$MONITOR_ID_2 npx playwright test --config=playwright.config.ts",
         "prepare": "husky install"
     },
     "devDependencies": {
         "@aws-sdk/client-rum": "^3.76.0",
-        "@babel/plugin-transform-modules-commonjs": "^7.21.2",
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.20.2",
         "@playwright/test": "^1.21.1",
@@ -148,7 +147,6 @@
         ]
     },
     "browserslist": [
-        "defaults",
-        "ie 11"
+        "defaults"
     ]
 }

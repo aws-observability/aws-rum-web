@@ -252,7 +252,7 @@ export class Orchestration {
             applicationVersion
         );
 
-        this.dispatchManager = this.initDispatch(region);
+        this.dispatchManager = this.initDispatch(region, applicationId);
         this.pluginManager = this.initPluginManager(
             applicationId,
             applicationVersion
@@ -392,7 +392,7 @@ export class Orchestration {
         );
     }
 
-    private initDispatch(region: string) {
+    private initDispatch(region: string, applicationId: string) {
         const dispatch: Dispatch = new Dispatch(
             region,
             this.config.endpointUrl,
@@ -409,12 +409,12 @@ export class Orchestration {
 
         if (this.config.identityPoolId && this.config.guestRoleArn) {
             dispatch.setAwsCredentials(
-                new BasicAuthentication(this.config)
+                new BasicAuthentication(this.config, applicationId)
                     .ChainAnonymousCredentialsProvider
             );
         } else if (this.config.identityPoolId) {
             dispatch.setAwsCredentials(
-                new EnhancedAuthentication(this.config)
+                new EnhancedAuthentication(this.config, applicationId)
                     .ChainAnonymousCredentialsProvider
             );
         }
