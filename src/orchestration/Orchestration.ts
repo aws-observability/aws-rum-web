@@ -109,6 +109,7 @@ export type PartialCookieAttributes = Partial<CookieAttributes>;
 
 export interface Config {
     allowCookies: boolean;
+    'aws:releaseId'?: string;
     batchLimit: number;
     client: string;
     clientBuilder?: ClientBuilder;

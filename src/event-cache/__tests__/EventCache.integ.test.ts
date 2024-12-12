@@ -118,6 +118,49 @@ describe('EventCache tests', () => {
         });
     });
 
+    test('when aws:releaseId exists then it is added to event metadata', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{
+                allowCookies: false,
+                sessionLengthSeconds: 0
+            },
+            'aws:releaseId': '5.2.1'
+        };
+
+        const eventCache: EventCache = Utils.createEventCache(config);
+
+        // Run
+        eventCache.recordPageView('/console/home');
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+
+        // Assert
+        const events = eventCache.getEventBatch();
+        events.forEach((event) => {
+            expect(JSON.parse(event.metadata)).toMatchObject({
+                'aws:releaseId': '5.2.1'
+            });
+        });
+    });
+
+    test('when aws:releaseId does NOT exist then it is NOT added to event metadata', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const eventCache: EventCache = Utils.createEventCache(DEFAULT_CONFIG);
+
+        // Run
+        eventCache.recordPageView('/console/home');
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+
+        // Assert
+        const events = eventCache.getEventBatch();
+        events.forEach((event) => {
+            expect(JSON.parse(event.metadata)['aws:releaseId']).toBeUndefined();
+        });
+    });
+
     test('when a session is not sampled then return false', async () => {
         // Init
         const config = {
