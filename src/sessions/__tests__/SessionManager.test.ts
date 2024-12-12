@@ -851,7 +851,7 @@ describe('SessionManager tests', () => {
         const awsReleaseId = '2.1.7';
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            'aws:releaseId': awsReleaseId
+            awsReleaseId
         });
 
         const actualSessionAttributes = sessionManager.getAttributes();
