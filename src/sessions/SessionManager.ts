@@ -32,6 +32,8 @@ export type Session = {
 };
 
 export type Attributes = {
+    // The custom release id, to match a source map
+    'aws:releaseId'?: string;
     browserLanguage: string;
     browserName: string;
     browserVersion: string;
@@ -45,8 +47,8 @@ export type Attributes = {
     platformType: string;
     // The fully qualified domain name (i.e., host name + domain name)
     domain: string;
-    // Custom attribute value types are restricted to the types: string | number | boolean
-    [k: string]: string | number | boolean;
+    // Custom attribute value types are restricted to the types: string | number | boolean | undefined
+    [k: string]: string | number | boolean | undefined;
 };
 
 /**
@@ -273,7 +275,8 @@ export class SessionManager {
             deviceType: ua.device.type ? ua.device.type : DESKTOP_DEVICE_TYPE,
             // This client is used exclusively in web applications.
             platformType: WEB_PLATFORM_TYPE,
-            domain: window.location.hostname
+            domain: window.location.hostname,
+            'aws:releaseId': this.config['aws:releaseId']
         };
     }
 
