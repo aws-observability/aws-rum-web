@@ -127,7 +127,7 @@ describe('EventCache tests', () => {
                 allowCookies: false,
                 sessionLengthSeconds: 0
             },
-            'aws:releaseId': '5.2.1'
+            releaseId: '5.2.1'
         };
 
         const eventCache: EventCache = Utils.createEventCache(config);
