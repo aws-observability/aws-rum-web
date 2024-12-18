@@ -193,6 +193,28 @@ describe('DataPlaneClient tests', () => {
         );
     });
 
+    test('when the endpoint does not contain port then the fetch request url also contains no  port', async () => {
+        // Init
+        const endpoint = Utils.AWS_RUM_ENDPOINT;
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint
+        });
+
+        // Run
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (
+            fetchHandler.mock.calls[0] as any
+        )[0];
+        expect(signedRequest.port).toBeUndefined();
+        expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
+        expect(signedRequest.path).toEqual(
+            `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
+        );
+    });
+
     test('when the endpoint contains a path then the beacon request url contains the path prefix', async () => {
         // Init
         const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
@@ -253,6 +275,29 @@ describe('DataPlaneClient tests', () => {
 
         expect(signedRequest.port).toEqual(8080);
         expect(signedRequest.hostname).toEqual('localhost');
+        expect(signedRequest.path).toEqual(
+            `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
+        );
+    });
+
+    test('when the endpoint does not contain port then the beacon request url also does not contains  port', async () => {
+        // Init
+        const endpoint = Utils.AWS_RUM_ENDPOINT;
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint
+        });
+
+        // Run
+        await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (
+            beaconHandler.mock.calls[0] as any
+        )[0];
+
+        expect(signedRequest.port).toBeUndefined();
+        expect(signedRequest.hostname).toEqual(Utils.AWS_RUM_ENDPOINT.hostname);
         expect(signedRequest.path).toEqual(
             `${endpoint.pathname.replace(/\/$/, '')}/appmonitors/application123`
         );

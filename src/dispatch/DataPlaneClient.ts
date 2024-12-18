@@ -114,11 +114,7 @@ export class DataPlaneClient {
         const options = {
             method: METHOD,
             protocol: this.config.endpoint.protocol,
-            port:
-                !this.config.endpoint.port ||
-                isNaN(parseInt(this.config.endpoint.port, 10))
-                    ? undefined
-                    : parseInt(this.config.endpoint.port, 10),
+            port: Number(this.config.endpoint.port) || undefined,
             headers: {
                 'content-type': contentType,
                 host: this.config.endpoint.host
