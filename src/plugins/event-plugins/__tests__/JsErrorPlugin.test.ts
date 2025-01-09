@@ -1,5 +1,14 @@
+import * as StackTrace from 'stacktrace-js';
 import { JsErrorPlugin } from '../JsErrorPlugin';
-import { context, getSession, record } from '../../../test-utils/test-utils';
+import {
+    context,
+    getSession,
+    record,
+    sourceMapsOnContext,
+    sourceMapsFetchFunctionContext,
+    sourceMapsFetchFunction,
+    waitForTick
+} from '../../../test-utils/test-utils';
 import { JS_ERROR_EVENT_TYPE } from '../../utils/constant';
 
 declare global {
@@ -28,10 +37,21 @@ expect.extend({
     }
 });
 
+jest.mock('stacktrace-js', () => ({
+    fromError: jest.fn(() =>
+        Promise.resolve([
+            'at onclick (/path/to/feedback.js:6:6)',
+            'at invokeTheCallbackFunction (/path/to/EventHandlerNonNull.js:14:28)',
+            'at anonymous (/path/to/create-event-accessor.js:35:32)'
+        ])
+    )
+}));
+
 describe('JsErrorPlugin tests', () => {
     beforeEach(() => {
         record.mockClear();
         getSession.mockClear();
+        jest.clearAllMocks();
     });
 
     test('when a TypeError is thrown then the plugin records the name, message and stack', async () => {
@@ -46,6 +66,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -70,6 +91,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -106,6 +128,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -131,6 +154,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect((record.mock.calls[0][1] as any).stack).toEqual(undefined);
@@ -150,6 +174,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
@@ -177,6 +202,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
@@ -201,6 +227,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
@@ -225,6 +252,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
             version: '1.0.0',
@@ -254,6 +282,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(0);
     });
 
@@ -278,6 +307,7 @@ describe('JsErrorPlugin tests', () => {
         );
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(0);
     });
 
@@ -295,6 +325,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
     });
 
@@ -308,6 +339,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -329,6 +361,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -358,6 +391,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -382,6 +416,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -409,6 +444,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -443,6 +479,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -474,6 +511,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -509,6 +547,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject(
@@ -536,6 +575,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalled();
         expect(mockIgnore).not.toHaveBeenCalled();
     });
@@ -554,6 +594,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalled();
     });
 
@@ -580,6 +621,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalled();
     });
 
@@ -599,6 +641,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).not.toHaveBeenCalled();
     });
 
@@ -627,6 +670,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).not.toHaveBeenCalled();
     });
 
@@ -646,6 +690,7 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalled();
     });
 
@@ -674,6 +719,69 @@ describe('JsErrorPlugin tests', () => {
         plugin.disable();
 
         // Assert
+        await waitForTick();
         expect(record).toHaveBeenCalled();
+    });
+
+    test('when a TypeError is thrown then the plugin records the name, message and stack using source maps', async (): Promise<void> => {
+        // Init
+        document.body.innerHTML =
+            '<button id="createJSError" onclick="null.foo">  Create JS Error </button>';
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(sourceMapsOnContext);
+        document.getElementById('createJSError').click();
+        plugin.disable();
+
+        // Assert
+        await waitForTick();
+        expect(StackTrace.fromError).toHaveBeenCalled();
+        expect(StackTrace.fromError).toHaveBeenCalledWith(expect.any(Error), {
+            ajax: undefined
+        });
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'TypeError',
+                message: expect.stringContaining('Cannot read'),
+                stack: expect.stringContaining(
+                    'at invokeTheCallbackFunction (/path/to/EventHandlerNonNull.js:14:28)'
+                )
+            })
+        );
+    });
+
+    test('when a TypeError is thrown then the plugin records the name, message and stack using source maps function', async () => {
+        // Init
+        document.body.innerHTML =
+            '<button id="createJSError" onclick="null.foo">  Create JS Error </button>';
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(sourceMapsFetchFunctionContext);
+        document.getElementById('createJSError').click();
+        plugin.disable();
+
+        // Assert
+        await waitForTick();
+        expect(StackTrace.fromError).toHaveBeenCalled();
+        expect(StackTrace.fromError).toHaveBeenCalledWith(expect.any(Error), {
+            ajax: sourceMapsFetchFunction
+        });
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                version: '1.0.0',
+                type: 'TypeError',
+                message: expect.stringContaining('Cannot read'),
+                stack: expect.stringContaining(
+                    'at invokeTheCallbackFunction (/path/to/EventHandlerNonNull.js:14:28)'
+                )
+            })
+        );
     });
 });
