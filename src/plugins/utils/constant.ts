@@ -29,3 +29,6 @@ export const SESSION_START_EVENT_TYPE = `${RUM_AMZ_PREFIX}.session_start_event`;
 
 // Time to interactive event
 export const TIME_TO_INTERACTIVE_EVENT_TYPE = `${RUM_AMZ_PREFIX}.time_to_interactive_event`;
+
+// CSP violation event schemas
+export const CSP_VIOLATION_EVENT_TYPE = `${RUM_AMZ_PREFIX}.csp_violation_event`;
