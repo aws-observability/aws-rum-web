@@ -115,7 +115,7 @@
         "xhr-mock": "^2.5.1"
     },
     "dependencies": {
-        "@aws-crypto/sha256-js": "^2.0.2",
+        "@aws-crypto/sha256-js": "^3.0.0",
         "@aws-sdk/fetch-http-handler": "^3.36.0",
         "@aws-sdk/protocol-http": "^3.36.0",
         "@aws-sdk/querystring-builder": "^3.36.0",
