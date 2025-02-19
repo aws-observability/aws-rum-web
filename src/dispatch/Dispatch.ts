@@ -224,20 +224,12 @@ export class Dispatch {
     }
 
     private createRequest(): PutRumEventsRequest {
-        if (this.config.alias) {
-            return {
-                BatchId: v4(),
-                AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
-                UserDetails: this.eventCache.getUserDetails(),
-                RumEvents: this.eventCache.getEventBatch(),
-                Alias: this.config.alias
-            };
-        }
         return {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
-            RumEvents: this.eventCache.getEventBatch()
+            RumEvents: this.eventCache.getEventBatch(),
+            Alias: this.config.alias
         };
     }
 
