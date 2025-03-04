@@ -228,7 +228,8 @@ export class Dispatch {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
-            RumEvents: this.eventCache.getEventBatch()
+            RumEvents: this.eventCache.getEventBatch(),
+            Alias: this.config.alias
         };
     }
 

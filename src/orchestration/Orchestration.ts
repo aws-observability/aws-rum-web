@@ -159,6 +159,7 @@ export interface Config {
     telemetries: Telemetry[];
     useBeacon: boolean;
     userIdRetentionDays: number;
+    alias?: string;
 }
 
 export interface PartialConfig
