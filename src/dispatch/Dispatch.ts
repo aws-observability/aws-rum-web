@@ -39,6 +39,7 @@ export class Dispatch {
     private buildClient: ClientBuilder;
     private config: Config;
     private disableCodes = ['403', '404'];
+    private headers: any;
 
     constructor(
         region: string,
@@ -52,6 +53,7 @@ export class Dispatch {
         this.enabled = true;
         this.buildClient = config.clientBuilder || this.defaultClientBuilder;
         this.config = config;
+        this.headers = config.headers;
         this.startDispatchTimer();
         if (config.signing) {
             this.rum = {
@@ -265,7 +267,8 @@ export class Dispatch {
             beaconRequestHandler: new BeaconHttpHandler(),
             endpoint,
             region,
-            credentials
+            credentials,
+            headers: this.headers
         });
     };
 }
