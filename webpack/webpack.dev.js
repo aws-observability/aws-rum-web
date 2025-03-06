@@ -31,7 +31,8 @@ module.exports = merge(common, {
         loader_remote_config: './src/loader/loader-remote-config.js',
         loader_spa: './src/loader/loader-spa.js',
         loader_custom_events: './src/loader/loader-custom-events.js',
-        loader_alias: './src/loader/loader-alias.js'
+        loader_alias: './src/loader/loader-alias.js',
+        loader_custom_headers: './src/loader/loader-custom-headers.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']
