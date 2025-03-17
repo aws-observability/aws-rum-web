@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.21.0](https://github.com/aws-observability/aws-rum-web/compare/v1.18.0...v1.21.0) (2025-03-17)
+
+
+### Features
+
+* add metadata field "aws:releaseId" ([#592](https://github.com/aws-observability/aws-rum-web/issues/592)) ([42f986a](https://github.com/aws-observability/aws-rum-web/commit/42f986ae8b5fd98d338a40d44563e7a818482fef))
+
 ## 1.20.0 (2025-03-03)
 
 ### Features
