@@ -29,8 +29,7 @@ jest.mock('../../utils/common-utils', () => {
         __esModule: true,
         ...originalModule,
         isLCPSupported: jest.fn().mockReturnValue(true),
-        isNavigationSupported: jest.fn().mockReturnValue(true),
-        isResourceSupported: jest.fn().mockReturnValue(true)
+        isNavigationSupported: jest.fn().mockReturnValue(true)
     };
 });
 
