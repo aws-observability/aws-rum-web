@@ -18,16 +18,16 @@ import {
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../utils/constant';
-import { Subscriber, Topic } from '../../event-bus/EventBus';
+import { Topic } from '../../event-bus/EventBus';
 import { ParsedRumEvent } from '../../dispatch/dataplane';
+import { ResourceEvent } from '../../events/resource-event';
 import {
+    HasLatency,
     ResourceType,
     performanceKey,
     RumLCPAttribution,
-    isLCPSupported,
-    getResourceFileType
+    isLCPSupported
 } from '../../utils/common-utils';
-import { PerformanceResourceTimingEvent } from '../../events/performance-resource-timing';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
@@ -55,19 +55,17 @@ export class WebVitalsPlugin extends InternalPlugin {
         onCLS((metric) => this.handleCLS(metric));
     }
 
-    private handleEvent: Subscriber = (event: ParsedRumEvent) => {
+    private handleEvent = (event: ParsedRumEvent) => {
         switch (event.type) {
             // lcp resource is either image or text
             case PERFORMANCE_RESOURCE_EVENT_TYPE:
-                const details = event.details as PerformanceResourceTimingEvent;
+                const details = event.details as ResourceEvent;
                 if (
                     this.cacheLCPCandidates &&
-                    details.initiatorType &&
-                    getResourceFileType(details.initiatorType) ===
-                        ResourceType.IMAGE
+                    details.fileType === ResourceType.IMAGE
                 ) {
                     this.resourceEventIds.set(
-                        performanceKey(details.startTime, details.duration),
+                        performanceKey(event.details as HasLatency),
                         event.id
                     );
                 }
@@ -89,12 +87,8 @@ export class WebVitalsPlugin extends InternalPlugin {
             elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {
-            attribution.lcpResourceEntry = this.resourceEventIds.get(
-                performanceKey(
-                    a.lcpResourceEntry.startTime,
-                    a.lcpResourceEntry.duration
-                )
-            );
+            const key = performanceKey(a.lcpResourceEntry as HasLatency);
+            attribution.lcpResourceEntry = this.resourceEventIds.get(key);
         }
         if (this.navigationEventId) {
             attribution.navigationEntry = this.navigationEventId;

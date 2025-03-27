@@ -1,14 +1,3 @@
-let isResourceSupported = true;
-jest.mock('../../../utils/common-utils', () => {
-    return {
-        __esModule: true,
-        ...jest.requireActual('../../../utils/common-utils'),
-        isResourceSupported: jest
-            .fn()
-            .mockImplementation(() => isResourceSupported)
-    };
-});
-
 import {
     resourceTiming,
     putRumEventsDocument,
@@ -27,7 +16,7 @@ import {
     record
 } from '../../../test-utils/test-utils';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../../utils/constant';
-import { PerformanceResourceTimingEvent } from '../../../events/performance-resource-timing';
+import { ResourceEvent } from '../../../events/resource-event';
 import { PerformancePluginConfig } from 'plugins/utils/performance-utils';
 
 const buildResourcePlugin = (config?: Partial<PerformancePluginConfig>) => {
@@ -47,42 +36,25 @@ describe('ResourcePlugin tests', () => {
     test('When resource event is present then event is recorded', async () => {
         // Setup
         mockRandom(0); // Retain order in shuffle
+
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
         plugin.load(context);
 
         // Assert
-        expect(record.mock.calls[1][0]).toEqual(
+        expect(record.mock.calls[0][0]).toEqual(
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
-        const r = resourceTiming;
-        expect(
-            record.mock.calls[1][1] as PerformanceResourceTimingEvent
-        ).toEqual(
+        expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                name: r.name,
-                entryType: 'resource',
-                startTime: r.startTime,
-                duration: r.duration,
-                connectStart: r.connectStart,
-                connectEnd: r.connectEnd,
-                decodedBodySize: r.decodedBodySize,
-                domainLookupEnd: r.domainLookupEnd,
-                domainLookupStart: r.domainLookupStart,
-                fetchStart: r.fetchStart,
-                encodedBodySize: r.encodedBodySize,
-                initiatorType: r.initiatorType,
-                nextHopProtocol: r.nextHopProtocol,
-                redirectEnd: r.redirectEnd,
-                redirectStart: r.redirectStart,
-                renderBlockingStatus: r.renderBlockingStatus,
-                requestStart: r.requestStart,
-                responseEnd: r.responseEnd,
-                responseStart: r.responseStart,
-                secureConnectionStart: r.secureConnectionStart,
-                transferSize: r.transferSize,
-                workerStart: r.workerStart
+                version: '1.0.0',
+                fileType: 'script',
+                startTime: resourceTiming.startTime,
+                duration: resourceTiming.duration,
+                transferSize: resourceTiming.transferSize,
+                targetUrl: resourceTiming.name,
+                initiatorType: resourceTiming.initiatorType
             })
         );
     });
@@ -104,7 +76,7 @@ describe('ResourcePlugin tests', () => {
             PERFORMANCE_RESOURCE_EVENT_TYPE
         );
         expect(
-            (record.mock.calls[0][1] as PerformanceResourceTimingEvent).name
+            (record.mock.calls[0][1] as ResourceEvent).targetUrl
         ).toBeUndefined();
     });
 
@@ -183,37 +155,37 @@ describe('ResourcePlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(3);
     });
 
-    test('sampled events are first N in sequence', async () => {
+    test('sampled events are randomized', async () => {
         // Setup
-        const images = [];
-        for (let i = 0; i < 5; i++) {
-            images.push({
-                ...imageResourceEventA,
-                name: `http://localhost:9000/picture-${i}.jpg`
-            });
-        }
-        doMockPerformanceObserver(images);
+        doMockPerformanceObserver([imageResourceEventA, imageResourceEventB]);
 
-        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 3 });
+        const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 4 });
 
         // Run
+        mockRandom(0.99); // Retain order in shuffle
+        plugin.load(context);
+        mockRandom(0); // Reverse order in shuffle
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(3);
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                name: `http://localhost:9000/picture-0.jpg`
+                targetUrl: imageResourceEventB.name
             })
         );
         expect(record.mock.calls[1][1]).toEqual(
             expect.objectContaining({
-                name: `http://localhost:9000/picture-1.jpg`
+                targetUrl: imageResourceEventA.name
             })
         );
         expect(record.mock.calls[2][1]).toEqual(
             expect.objectContaining({
-                name: `http://localhost:9000/picture-2.jpg`
+                targetUrl: imageResourceEventA.name
+            })
+        );
+        expect(record.mock.calls[3][1]).toEqual(
+            expect.objectContaining({
+                targetUrl: imageResourceEventB.name
             })
         );
     });
@@ -234,21 +206,6 @@ describe('ResourcePlugin tests', () => {
         plugin.load(context);
 
         expect(record).not.toHaveBeenCalled();
-    });
-
-    test('when resource is not supported then no performance observer is initiated', async () => {
-        // init
-        isResourceSupported = false;
-        const plugin: ResourcePlugin = buildResourcePlugin();
-
-        // Run
-        plugin.load(context);
-
-        // Assert
-        expect((plugin as any).resourceObserver).toBeUndefined();
-
-        // restore
-        isResourceSupported = true;
     });
 
     test('when entry name is an invalid url then resource event is recorded', async () => {
