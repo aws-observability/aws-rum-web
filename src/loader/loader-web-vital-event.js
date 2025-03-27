@@ -9,9 +9,7 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     eventPluginsToLoad: [
         new ResourcePlugin(),
         new NavigationPlugin(),
-        new WebVitalsPlugin({
-            reportAllCLS: true
-        })
+        new WebVitalsPlugin()
     ],
     telemetries: [],
     clientBuilder: showRequestClientBuilder
