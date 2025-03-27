@@ -159,6 +159,26 @@ export class Dispatch {
         return this.dispatchBeacon().catch(() => {});
     };
 
+    private flushSync: EventListener = () => {
+        if (document.visibilityState === 'hidden') {
+            if (this.doRequest()) {
+                let flush = this.rum.sendBeacon;
+                let backup = this.rum.sendFetch;
+
+                if (!this.config.useBeacon) {
+                    [flush, backup] = [backup, flush];
+                }
+
+                const req = this.createRequest();
+                flush(req)
+                    .catch(() => backup(req))
+                    .catch(() => {
+                        // fail silent
+                    });
+            }
+        }
+    };
+
     /**
      * Automatically dispatch cached events.
      */
@@ -177,19 +197,12 @@ export class Dispatch {
             //
             // A third option is to send both, however this would increase
             // bandwitch and require deduping server side.
-            this.config.useBeacon
-                ? this.dispatchBeaconFailSilent
-                : this.dispatchFetchFailSilent
+            this.flushSync
         );
         // Using 'pagehide' is redundant most of the time (visibilitychange is
         // always fired before pagehide) but older browsers may support
         // 'pagehide' but not 'visibilitychange'.
-        document.addEventListener(
-            'pagehide',
-            this.config.useBeacon
-                ? this.dispatchBeaconFailSilent
-                : this.dispatchFetchFailSilent
-        );
+        document.addEventListener('pagehide', this.flushSync);
         if (this.config.dispatchInterval <= 0 || this.dispatchTimerId) {
             return;
         }
@@ -203,18 +216,8 @@ export class Dispatch {
      * Stop automatically dispatching cached events.
      */
     public stopDispatchTimer() {
-        document.removeEventListener(
-            'visibilitychange',
-            this.config.useBeacon
-                ? this.dispatchBeaconFailSilent
-                : this.dispatchFetchFailSilent
-        );
-        document.removeEventListener(
-            'pagehide',
-            this.config.useBeacon
-                ? this.dispatchBeaconFailSilent
-                : this.dispatchFetchFailSilent
-        );
+        document.removeEventListener('visibilitychange', this.flushSync);
+        document.removeEventListener('pagehide', this.flushSync);
         if (this.dispatchTimerId) {
             window.clearInterval(this.dispatchTimerId);
             this.dispatchTimerId = undefined;
