@@ -28,18 +28,12 @@ import {
     RumLCPAttribution,
     isLCPSupported
 } from '../../utils/common-utils';
-import {
-    defaultPerformancePluginConfig,
-    PerformancePluginConfig
-} from '../../plugins/utils/performance-utils';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
 
 export class WebVitalsPlugin extends InternalPlugin {
-    private config: PerformancePluginConfig;
-    constructor(config?: Partial<PerformancePluginConfig>) {
+    constructor() {
         super(WEB_VITAL_EVENT_PLUGIN_ID);
-        this.config = { ...defaultPerformancePluginConfig, ...config };
     }
     private resourceEventIds = new Map<string, string>();
     private navigationEventId?: string;
@@ -51,15 +45,14 @@ export class WebVitalsPlugin extends InternalPlugin {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     disable(): void {}
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    configure(config: any): void {}
+
     protected onload(): void {
         this.context.eventBus.subscribe(Topic.EVENT, this.handleEvent); // eslint-disable-line @typescript-eslint/unbound-method
-        onLCP((metric) => this.handleLCP(metric), {
-            reportAllChanges: this.config.reportAllLCP
-        });
+        onLCP((metric) => this.handleLCP(metric));
         onFID((metric) => this.handleFID(metric));
-        onCLS((metric) => this.handleCLS(metric), {
-            reportAllChanges: this.config.reportAllCLS
-        });
+        onCLS((metric) => this.handleCLS(metric));
     }
 
     private handleEvent = (event: ParsedRumEvent) => {
@@ -90,7 +83,7 @@ export class WebVitalsPlugin extends InternalPlugin {
             url: a.url,
             timeToFirstByte: a.timeToFirstByte,
             resourceLoadDelay: a.resourceLoadDelay,
-            resourceLoadTime: a.resourceLoadDuration,
+            resourceLoadTime: a.resourceLoadTime,
             elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {

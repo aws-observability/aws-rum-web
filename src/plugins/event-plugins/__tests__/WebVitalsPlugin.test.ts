@@ -18,11 +18,6 @@ import { context, record } from '../../../test-utils/test-utils';
 import { Topic } from '../../../event-bus/EventBus';
 import { WebVitalsPlugin } from '../WebVitalsPlugin';
 import { navigationEvent } from '../../../test-utils/mock-data';
-import {
-    CLSMetricWithAttribution,
-    FIDMetricWithAttribution,
-    LCPMetricWithAttribution
-} from 'web-vitals';
 
 const mockLCPData = {
     delta: 239.51,
@@ -34,10 +29,10 @@ const mockLCPData = {
         url: 'example.com/source.png',
         timeToFirstByte: 1000,
         resourceLoadDelay: 250,
-        resourceLoadDuration: 1000,
+        resourceLoadTime: 1000,
         elementRenderDelay: 250
     }
-} as LCPMetricWithAttribution;
+};
 
 const mockFIDData = {
     delta: 1.2799999676644802,
@@ -50,7 +45,7 @@ const mockFIDData = {
         eventType: 'keydown',
         loadState: 'dom-interactive'
     }
-} as FIDMetricWithAttribution;
+};
 
 const mockCLSData = {
     delta: 0,
@@ -63,7 +58,7 @@ const mockCLSData = {
         largestShiftTime: 3447485.600000024,
         loadState: 'dom-interactive'
     }
-} as CLSMetricWithAttribution;
+};
 
 // only need hasLatency fields
 const imagePerformanceEntry = {
@@ -133,8 +128,7 @@ describe('WebVitalsPlugin tests', () => {
                     timeToFirstByte: mockLCPData.attribution.timeToFirstByte,
                     resourceLoadDelay:
                         mockLCPData.attribution.resourceLoadDelay,
-                    resourceLoadTime:
-                        mockLCPData.attribution.resourceLoadDuration,
+                    resourceLoadTime: mockLCPData.attribution.resourceLoadTime,
                     elementRenderDelay:
                         mockLCPData.attribution.elementRenderDelay
                 })

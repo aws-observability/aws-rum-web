@@ -493,7 +493,7 @@ export class Orchestration {
                 return [
                     new NavigationPlugin(config),
                     new ResourcePlugin(config),
-                    new WebVitalsPlugin(config)
+                    new WebVitalsPlugin()
                 ];
             },
             [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {

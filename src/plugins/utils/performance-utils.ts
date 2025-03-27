@@ -12,8 +12,6 @@ export type PerformancePluginConfig = {
     ignore: (event: PerformanceEntry) => any;
     recordAllTypes: ResourceType[];
     sampleTypes: ResourceType[];
-    reportAllLCP: boolean;
-    reportAllCLS: boolean;
 };
 
 export const defaultPerformancePluginConfig = {
@@ -25,7 +23,5 @@ export const defaultPerformancePluginConfig = {
         ResourceType.STYLESHEET,
         ResourceType.FONT
     ],
-    sampleTypes: [ResourceType.IMAGE, ResourceType.OTHER],
-    reportAllLCP: false,
-    reportAllCLS: false
+    sampleTypes: [ResourceType.IMAGE, ResourceType.OTHER]
 };
