@@ -42,6 +42,7 @@ For example, the config object may look similar to the following:
 | batchLimit | Number | `100` | The maximum number of events that will be sent in one batch of RUM events. |
 | dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are first cached and then automatically dispatched at this set interval. |
 | eventCacheSize | Number | `200` | The maximum number of events the cache can contain before dropping events. |
+| candidatesCacheSize | Number | `5` | The maximum number of event candidates the cache can contain before dropping candidates. |
 | sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 | headers | Object | `{}` | The **headers** configuration is optional and allows you to include custom headers in an HTTP request. For example, you can use it to pass `Authorization` and `x-api-key` headers.<br/><br/>For more details, see: [MDN - Request Headers](https://developer.mozilla.org/en-US/docs/Glossary/Request_header). |
 
@@ -188,6 +189,11 @@ const awsRum: AwsRum = new AwsRum(
 | --- | --- | --- | --- |
 | eventLimit | Number | `10` | The maximum number of resources to record load timing. <br/><br/>There may be many similar resources on a page (e.g., images) and recording all resources may add expense without adding value. The web client records all HTML files and JavaScript files, while recording a sample of stylesheets, images and fonts. Increasing the event limit increases the maximum number of sampled resources. |
 | ignore | Function(event: PerformanceEntry) : any | `(entry: PerformanceEntry) => entry.entryType === 'resource' && !/^https?:/.test(entry.name)` | A function which accepts a [PerformanceEntry](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEntry) and returns a value that coerces to true when the PerformanceEntry should be ignored.</br></br> By default, [PerformanceResourceTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) entries with URLs that do not have http(s) schemes are ignored. This causes resources loaded by browser extensions to be ignored. |
+| recordAllTypes | String[] | ['document', 'script', 'stylesheet', 'font'] | A list of resource types that are always recorded, no matter if the resource event limit has been reached. Possible values are 'other', 'stylesheet', 'document', 'script', 'image', and 'font'. |
+| sampleTypes | String[] | ['image', 'other'] | A list of resource types that are only recorded if the resource event limit has not been reached. Possible values are 'other', 'stylesheet', 'document', 'script', 'image', and 'font'. |
+| reportAllLCP | boolean | FALSE | If true, then all increases to LCP are recorded. |
+| reportAllCLS | boolean | FALSE | If true, then all increases to CLS are recorded. |
+| reportAllINP | boolean | FALSE | If true, then all increases to INP are recorded. |
 
 For example, the following telemetry config array causes the web client to ignore all resource entries.
 
@@ -196,12 +202,14 @@ telemetries: [
     [
         'errors',
         'http',
-        'performance',
-        {
-            ignore: (entry: PerformanceEntry) => {
-                return entry.entryType === 'resource';
+        [
+            'performance',
+            {
+                ignore: (entry: PerformanceEntry) => {
+                    return entry.entryType === 'resource';
+                }
             }
-        }
+        ]
     ]
 ];
 ```

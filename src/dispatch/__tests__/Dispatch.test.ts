@@ -267,7 +267,7 @@ describe('Dispatch tests', () => {
         expect(sendFetch).toHaveBeenCalled();
     });
 
-    test('when visibilitychange event is triggered then beacon dispatch runs', async () => {
+    test('when visibilitychange event is triggered then beacon flushes events and candidates', async () => {
         // Init
         visibilityState = 'hidden';
         const dispatch = new Dispatch(
@@ -333,6 +333,29 @@ describe('Dispatch tests', () => {
         // Assert
         expect(sendBeacon).not.toHaveBeenCalled();
         expect(sendFetch).toHaveBeenCalled();
+    });
+
+    test('when useBeacon is true then pagehide uses beacon dispatch', async () => {
+        // Init
+        visibilityState = 'hidden';
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: 1, useBeacon: true }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('pagehide'));
+
+        // Assert
+        expect(sendFetch).not.toHaveBeenCalled();
+        expect(sendBeacon).toHaveBeenCalled();
     });
 
     test('when plugin is disabled then beacon dispatch does not run', async () => {
