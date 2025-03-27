@@ -1,4 +1,4 @@
-import { PerformanceNavigationTimingEvent } from '../events/performance-navigation-timing';
+import { NavigationEvent } from '../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
 import { MonkeyPatched } from '../plugins/MonkeyPatched';
 import { Config } from '../orchestration/Orchestration';
@@ -200,7 +200,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
      * Checks whether the virtual page is still being loaded.
      * If completed:
      * (1) Clear the timers
-     * (2) Record data using PerformanceNavigationTimingEvent
+     * (2) Record data using NavigationEvent
      * (3) Indicate current page has finished loading
      */
     private checkLoadStatus = () => {
@@ -240,12 +240,13 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     };
 
     private recordRouteChangeNavigationEvent(page: Page) {
-        const virtualPageNavigationEvent = {
+        const virtualPageNavigationEvent: NavigationEvent = {
+            version: '1.0.0',
             initiatorType: 'route_change',
-            type: 'navigate',
+            navigationType: 'navigate',
             startTime: page.start,
             duration: this.latestEndTime - page.start
-        } as PerformanceNavigationTimingEvent;
+        };
         if (this.record) {
             this.record(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,

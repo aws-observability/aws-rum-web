@@ -1,0 +1,120 @@
+{
+    "$id": "com.amazon.rum.performance_navigation_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "NavigationEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "initiatorType": {
+            "type": "string",
+            "enum": ["navigation", "route_change"]
+        },
+        "navigationType": {
+            "description": "An unsigned short which indicates how the navigation to this page was done. Possible values are:TYPE_NAVIGATE (0), TYPE_RELOAD (1), TYPE_BACK_FORWARD (2), TYPE_RESERVED (255)",
+            "type": "string",
+            "enum": ["navigate", "reload", "back_forward", "reserved"]
+        },
+        "startTime": {
+            "type": "number"
+        },
+        "unloadEventStart": {
+            "type": "number"
+        },
+        "promptForUnload": {
+            "type": "number"
+        },
+        "redirectCount": {
+            "type": "integer"
+        },
+        "redirectStart": {
+            "type": "number"
+        },
+        "redirectTime": {
+            "type": "number"
+        },
+        "workerStart": {
+            "type": "number"
+        },
+        "workerTime": {
+            "type": "number"
+        },
+        "fetchStart": {
+            "type": "number"
+        },
+        "domainLookupStart": {
+            "type": "number"
+        },
+        "dns": {
+            "type": "number"
+        },
+        "nextHopProtocol": {
+            "type": "string"
+        },
+        "connectStart": {
+            "type": "number"
+        },
+        "connect": {
+            "type": "number"
+        },
+        "secureConnectionStart": {
+            "type": "number"
+        },
+        "tlsTime": {
+            "type": "number"
+        },
+        "requestStart": {
+            "type": "number"
+        },
+        "timeToFirstByte": {
+            "type": "number"
+        },
+        "responseStart": {
+            "type": "number"
+        },
+        "responseTime": {
+            "type": "number"
+        },
+        "domInteractive": {
+            "type": "number"
+        },
+        "domContentLoadedEventStart": {
+            "type": "number"
+        },
+        "domContentLoaded": {
+            "type": "number"
+        },
+        "domComplete": {
+            "type": "number"
+        },
+        "domProcessingTime": {
+            "type": "number"
+        },
+        "loadEventStart": {
+            "type": "number"
+        },
+        "loadEventTime": {
+            "type": "number"
+        },
+        "duration": {
+            "type": "number"
+        },
+        "headerSize": {
+            "type": "number"
+        },
+        "transferSize": {
+            "type": "number"
+        },
+        "compressionRatio": {
+            "type": "number"
+        },
+        "navigationTimingLevel": {
+            "type": "number"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "initiatorType", "startTime", "duration"]
+}

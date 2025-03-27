@@ -1,13 +1,3 @@
-jest.mock('../../utils/common-utils', () => {
-    const originalModule = jest.requireActual('../../utils/common-utils');
-    return {
-        __esModule: true,
-        ...originalModule,
-        isLCPSupported: jest.fn().mockReturnValue(true),
-        isNavigationSupported: jest.fn().mockReturnValue(true)
-    };
-});
-
 import {
     Attributes,
     NIL_UUID,
@@ -32,6 +22,7 @@ import {
     DEFAULT_CONFIG,
     mockFetch
 } from '../../test-utils/test-utils';
+import { advanceTo } from 'jest-date-mock';
 
 global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
