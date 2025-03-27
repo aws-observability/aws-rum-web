@@ -1,5 +1,5 @@
-import { toHex } from '@aws-sdk/util-hex-encoding';
-import { SignatureV4 } from '@aws-sdk/signature-v4';
+import { toHex } from '@smithy/util-hex-encoding';
+import { SignatureV4 } from '@smithy/signature-v4';
 import {
     AwsCredentialIdentityProvider,
     AwsCredentialIdentity,
@@ -8,7 +8,7 @@ import {
     HeaderBag
 } from '@aws-sdk/types';
 import { Sha256 } from '@aws-crypto/sha256-js';
-import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import {
     AppMonitorDetails,
     PutRumEventsRequest,

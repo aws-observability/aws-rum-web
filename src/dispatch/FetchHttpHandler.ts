@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { buildQueryString } from '@aws-sdk/querystring-builder';
 import { HeaderBag, HttpHandlerOptions } from '@aws-sdk/types';
 
@@ -134,5 +134,13 @@ export class FetchHttpHandler implements HttpHandler {
             );
         }
         return Promise.race(raceOfPromises);
+    }
+
+    updateHttpClientConfig(_key: never, _value: never): void {
+        // No-op: Customize if needed
+    }
+
+    httpHandlerConfigs(): Record<string, never> {
+        return {};
     }
 }

@@ -1,7 +1,7 @@
 import { CognitoIdentityClient } from './CognitoIdentityClient';
 import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
 export abstract class Authentication {

@@ -1,5 +1,5 @@
 import * as Utils from '../../test-utils/test-utils';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { advanceTo } from 'jest-date-mock';
 import { CognitoIdentityClient } from '../CognitoIdentityClient';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
@@ -19,7 +19,7 @@ const uniqueIdentityCookie = `${IDENTITY_KEY}_${APPLICATION_ID}`;
 
 const fetchHandler = jest.fn();
 
-jest.mock('@aws-sdk/fetch-http-handler', () => ({
+jest.mock('@smithy/fetch-http-handler', () => ({
     FetchHttpHandler: jest
         .fn()
         .mockImplementation(() => ({ handle: fetchHandler }))
