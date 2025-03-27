@@ -42,6 +42,7 @@ For example, the config object may look similar to the following:
 | batchLimit | Number | `100` | The maximum number of events that will be sent in one batch of RUM events. |
 | dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are first cached and then automatically dispatched at this set interval. |
 | eventCacheSize | Number | `200` | The maximum number of events the cache can contain before dropping events. |
+| candidatesCacheSize | Number | `5` | The maximum number of event candidates the cache can contain before dropping candidates. |
 | sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 | headers | Object | `{}` | The **headers** configuration is optional and allows you to include custom headers in an HTTP request. For example, you can use it to pass `Authorization` and `x-api-key` headers.<br/><br/>For more details, see: [MDN - Request Headers](https://developer.mozilla.org/en-US/docs/Glossary/Request_header). |
 
