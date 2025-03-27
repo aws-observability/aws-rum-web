@@ -1,7 +1,7 @@
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
 import { DataPlaneClient } from '../DataPlaneClient';
-import { HttpHandler, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpResponse } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
 
 const sendBeacon = jest.fn(() => true);

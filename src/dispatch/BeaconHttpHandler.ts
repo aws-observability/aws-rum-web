@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { buildQueryString } from '@aws-sdk/querystring-builder';
 
 export class BeaconHttpHandler implements HttpHandler {
@@ -13,6 +13,14 @@ export class BeaconHttpHandler implements HttpHandler {
                 reject();
             }
         });
+    }
+
+    updateHttpClientConfig(_key: never, _value: never): void {
+        // No-op: Customize if needed
+    }
+
+    httpHandlerConfigs(): Record<string, never> {
+        return {};
     }
 
     private sendBeacon(signedRequest: HttpRequest) {

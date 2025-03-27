@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { ClientBuilder } from '../dispatch/Dispatch';
 import { DataPlaneClient } from '../dispatch/DataPlaneClient';
 import { logRequestToPage, logResponseToPage } from './http-handler-utils';
@@ -37,5 +37,13 @@ class ShowMockRequestHandler implements HttpHandler {
         logRequestToPage(request);
         logResponseToPage(response);
         return Promise.resolve({ response });
+    }
+
+    updateHttpClientConfig(_key: never, _value: never): void {
+        // No-op: Customize if needed
+    }
+
+    httpHandlerConfigs(): Record<string, never> {
+        return {};
     }
 }

@@ -1,6 +1,6 @@
 import * as Utils from '../../test-utils/test-utils';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { advanceTo } from 'jest-date-mock';
 import { getReadableStream } from '../../test-utils/test-utils';
 import { StsClient } from '../StsClient';
@@ -10,7 +10,7 @@ const mockCredentials =
 
 const fetchHandler = jest.fn();
 
-jest.mock('@aws-sdk/fetch-http-handler', () => ({
+jest.mock('@smithy/fetch-http-handler', () => ({
     FetchHttpHandler: jest
         .fn()
         .mockImplementation(() => ({ handle: fetchHandler }))

@@ -1,8 +1,8 @@
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { DataPlaneClient } from '../DataPlaneClient';
-import { HttpRequest } from '@aws-sdk/protocol-http';
+import { HttpRequest } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
 import { HeaderBag } from '@aws-sdk/types';
 
@@ -13,7 +13,7 @@ jest.mock('../BeaconHttpHandler', () => ({
         .mockImplementation(() => ({ handle: beaconHandler }))
 }));
 const fetchHandler = jest.fn(() => Promise.resolve());
-jest.mock('@aws-sdk/fetch-http-handler', () => ({
+jest.mock('@smithy/fetch-http-handler', () => ({
     FetchHttpHandler: jest
         .fn()
         .mockImplementation(() => ({ handle: fetchHandler }))
