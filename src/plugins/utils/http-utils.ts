@@ -168,10 +168,17 @@ export const addAmznTraceIdHeaderToInit = (
     if (!init.headers) {
         init.headers = {};
     }
-    (init.headers as any)[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
-        traceId,
-        segmentId
-    );
+    if ((init.headers as any).set) {
+        (init.headers as any).set(
+            X_AMZN_TRACE_ID,
+            getAmznTraceIdHeaderValue(traceId, segmentId)
+        );
+    } else {
+        (init.headers as any)[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
+            traceId,
+            segmentId
+        );
+    }
 };
 
 export const addAmznTraceIdHeaderToHeaders = (
