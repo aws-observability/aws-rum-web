@@ -10,6 +10,7 @@ import { ResourceType } from '../../../utils/common-utils';
 import {
     CLS_EVENT_TYPE,
     FID_EVENT_TYPE,
+    INP_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE
@@ -19,6 +20,7 @@ import { Topic } from '../../../event-bus/EventBus';
 import { WebVitalsPlugin } from '../WebVitalsPlugin';
 import { navigationEvent } from '../../../test-utils/mock-data';
 import {
+    INPMetricWithAttribution,
     CLSMetricWithAttribution,
     FIDMetricWithAttribution,
     LCPMetricWithAttribution
@@ -65,6 +67,20 @@ const mockCLSData = {
     }
 } as CLSMetricWithAttribution;
 
+const mockINPData = {
+    value: 0,
+    attribution: {
+        interactionTarget: 'body',
+        interactionTime: 5,
+        nextPaintTime: 100,
+        interactionType: 'pointer',
+        inputDelay: 25,
+        processingDuration: 50,
+        presentationDelay: 25,
+        loadState: 'complete'
+    }
+} as INPMetricWithAttribution;
+
 // only need hasLatency fields
 const imagePerformanceEntry = {
     duration: 50,
@@ -103,7 +119,10 @@ jest.mock('web-vitals/attribution', () => {
         onFID: jest
             .fn()
             .mockImplementation((callback) => callback(mockFIDData)),
-        onCLS: jest.fn().mockImplementation((callback) => callback(mockCLSData))
+        onCLS: jest
+            .fn()
+            .mockImplementation((callback) => callback(mockCLSData)),
+        onINP: jest.fn().mockImplementation((callback) => callback(mockINPData))
     };
 });
 
@@ -120,10 +139,10 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(3);
+        expect(record).toHaveBeenCalledTimes(4);
 
-        expect(record.mock.calls[0][0]).toEqual(LCP_EVENT_TYPE);
-        expect(record.mock.calls[0][1]).toEqual(
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
             expect.objectContaining({
                 version: '1.0.0',
                 value: mockLCPData.value,
@@ -150,10 +169,9 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(3);
-
-        expect(record.mock.calls[1][0]).toEqual(FID_EVENT_TYPE);
-        expect(record.mock.calls[1][1]).toEqual(
+        expect(record).toHaveBeenCalledTimes(4);
+        expect(record).toHaveBeenCalledWith(
+            FID_EVENT_TYPE,
             expect.objectContaining({
                 version: '1.0.0',
                 value: mockFIDData.value,
@@ -175,10 +193,10 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(3);
+        expect(record).toHaveBeenCalledTimes(4);
 
-        expect(record.mock.calls[2][0]).toEqual(CLS_EVENT_TYPE);
-        expect(record.mock.calls[2][1]).toEqual(
+        expect(record).toHaveBeenCalledWith(
+            CLS_EVENT_TYPE,
             expect.objectContaining({
                 version: '1.0.0',
                 value: mockCLSData.value,
@@ -190,6 +208,80 @@ describe('WebVitalsPlugin tests', () => {
                     largestShiftTime: mockCLSData.attribution.largestShiftTime,
                     loadState: mockCLSData.attribution.loadState
                 }
+            })
+        );
+    });
+
+    test('When web vitals are present and reportAllINP=false then INP is cached as candidate with attribution', async () => {
+        // Setup
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(4);
+
+        expect(record).toHaveBeenCalledWith(
+            INP_EVENT_TYPE,
+            expect.objectContaining({
+                version: '1.0.0',
+                value: mockINPData.value,
+                attribution: {
+                    interactionTarget:
+                        mockINPData.attribution.interactionTarget,
+                    interactionTime: mockINPData.attribution.interactionTime,
+                    nextPaintTime: mockINPData.attribution.nextPaintTime,
+                    interactionType: mockINPData.attribution.interactionType,
+                    inputDelay: mockINPData.attribution.inputDelay,
+                    processingDuration:
+                        mockINPData.attribution.processingDuration,
+                    presentationDelay:
+                        mockINPData.attribution.presentationDelay,
+                    loadState: mockINPData.attribution.loadState
+                }
+            }),
+            expect.objectContaining({
+                isCandidate: true,
+                replaceFirstMatch: true
+            })
+        );
+    });
+
+    test('When web vitals are present and reportAllINP=true then INP is recorded as event with attribution', async () => {
+        // Setup
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin({
+            reportAllINP: true
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(4);
+
+        expect(record).toHaveBeenCalledWith(
+            INP_EVENT_TYPE,
+            expect.objectContaining({
+                version: '1.0.0',
+                value: mockINPData.value,
+                attribution: {
+                    interactionTarget:
+                        mockINPData.attribution.interactionTarget,
+                    interactionTime: mockINPData.attribution.interactionTime,
+                    nextPaintTime: mockINPData.attribution.nextPaintTime,
+                    interactionType: mockINPData.attribution.interactionType,
+                    inputDelay: mockINPData.attribution.inputDelay,
+                    processingDuration:
+                        mockINPData.attribution.processingDuration,
+                    presentationDelay:
+                        mockINPData.attribution.presentationDelay,
+                    loadState: mockINPData.attribution.loadState
+                }
+            }),
+            expect.objectContaining({
+                isCandidate: false,
+                replaceFirstMatch: false
             })
         );
     });
