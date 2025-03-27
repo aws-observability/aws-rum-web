@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## 1.20.0 (2025-03-03)
+## [1.21.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.20.x...release/1.21.x) (2025-03-17)
+
+
+### Features
+
+* add metadata field "aws:releaseId" ([#592](https://github.com/aws-observability/aws-rum-web/issues/592)) ([42f986a](https://github.com/aws-observability/aws-rum-web/commit/42f986ae8b5fd98d338a40d44563e7a818482fef))
+
+## [1.20.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.19.x...release/1.20.x) (2025-03-03)
 
 ### Features
 * Support use of alias field ([0f403f5](https://github.com/aws-observability/aws-rum-web/commit/0f403f55ba911dc39088ef08aa7729d44486e2f6))
