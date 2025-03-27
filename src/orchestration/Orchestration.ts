@@ -1,5 +1,5 @@
 import { Plugin } from '../plugins/Plugin';
-import { PluginContext } from '../plugins/types';
+import { defaultRecordEventOptions, PluginContext } from '../plugins/types';
 import { InternalPlugin } from '../plugins/InternalPlugin';
 import { BasicAuthentication } from '../dispatch/BasicAuthentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
@@ -79,6 +79,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         endpoint: DEFAULT_ENDPOINT,
         endpointUrl: new URL(DEFAULT_ENDPOINT),
         eventCacheSize: 200,
+        candidatesCacheSize: 5,
         eventPluginsToLoad: [],
         pageIdFormat: PageIdFormatEnum.Path,
         pagesToExclude: [],
@@ -122,6 +123,7 @@ export interface Config {
     endpoint: string;
     endpointUrl: URL;
     eventCacheSize: number;
+    candidatesCacheSize: number;
     eventPluginsToLoad: Plugin[];
     /*
      * We must remember the fetch function before the HttpFetch plugin
@@ -362,9 +364,14 @@ export class Orchestration {
      *
      * @param type A unique name for the type of event being recorded.
      * @param eventData A JSON object containing the event's attributes.
+     * @param options RecordEventOptions to specify how the event should be cached before the next batch interval.
      */
-    public recordEvent(eventType: string, eventData: object) {
-        this.eventCache.recordEvent(eventType, eventData);
+    public recordEvent(
+        eventType: string,
+        eventData: object,
+        options = defaultRecordEventOptions
+    ) {
+        this.eventCache.recordEvent(eventType, eventData, options);
     }
 
     private initEventCache(
