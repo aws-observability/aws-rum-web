@@ -14,6 +14,7 @@ interface CommandFunctions {
     addSessionAttributes: CommandFunction;
     recordPageView: CommandFunction;
     recordError: CommandFunction;
+    recordCspViolation: CommandFunction;
     registerDomEvents: CommandFunction;
     recordEvent: CommandFunction;
     dispatch: CommandFunction;
@@ -67,6 +68,9 @@ export class CommandQueue {
         },
         recordError: (payload: any): void => {
             this.orchestration.recordError(payload);
+        },
+        recordCspViolation: (payload: any): void => {
+            this.orchestration.recordCspViolation(payload);
         },
         registerDomEvents: (payload: any): void => {
             this.orchestration.registerDomEvents(payload);

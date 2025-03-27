@@ -13,6 +13,11 @@ import {
     JsErrorPlugin,
     JS_ERROR_EVENT_PLUGIN_ID
 } from '../plugins/event-plugins/JsErrorPlugin';
+import {
+    CspViolationPlugin,
+    CSP_VIOLATION_EVENT_PLUGIN_ID
+} from '../plugins/event-plugins/CspViolationPlugin';
+
 import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
 import {
@@ -344,6 +349,20 @@ export class Orchestration {
     }
 
     /**
+     * Record an SecurityPolicyViolationEvent using the CSP Violation plugin.
+     *
+     * @param securityPolicyViolationEvent a SecurityPolicyViolationEvent.
+     */
+    public recordCspViolation(
+        securityPolicyViolationEvent: SecurityPolicyViolationEvent
+    ) {
+        this.pluginManager.record(
+            CSP_VIOLATION_EVENT_PLUGIN_ID,
+            securityPolicyViolationEvent
+        );
+    }
+
+    /**
      * Update DOM plugin to record the (additional) provided DOM events.
      *
      * @param events
@@ -465,7 +484,6 @@ export class Orchestration {
                 ];
             }
         });
-
         return plugins;
     }
 
@@ -485,7 +503,10 @@ export class Orchestration {
     private telemetryFunctor(): TelemetriesFunctor {
         return {
             [TelemetryEnum.Errors]: (config: object): InternalPlugin[] => {
-                return [new JsErrorPlugin(config)];
+                return [
+                    new JsErrorPlugin(config),
+                    new CspViolationPlugin(config)
+                ];
             },
             [TelemetryEnum.Performance]: (config: object): InternalPlugin[] => {
                 return [
