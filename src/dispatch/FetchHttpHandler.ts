@@ -88,37 +88,38 @@ export class FetchHttpHandler implements HttpHandler {
 
         const fetchRequest = new Request(url, requestOptions);
         const raceOfPromises = [
-            this.fetchFunction!.apply(window, [fetchRequest]).then(
-                (response) => {
-                    const fetchHeaders: any = response.headers;
-                    const transformedHeaders: HeaderBag = {};
+            this.fetchFunction!.apply(window, [
+                fetchRequest,
+                { keepalive: true }
+            ]).then((response) => {
+                const fetchHeaders: any = response.headers;
+                const transformedHeaders: HeaderBag = {};
 
-                    for (const pair of fetchHeaders.entries() as string[][]) {
-                        transformedHeaders[pair[0]] = pair[1];
-                    }
+                for (const pair of fetchHeaders.entries() as string[][]) {
+                    transformedHeaders[pair[0]] = pair[1];
+                }
 
-                    const hasReadableStream = response.body !== undefined;
+                const hasReadableStream = response.body !== undefined;
 
-                    // Return the response with buffered body
-                    if (!hasReadableStream) {
-                        return response.blob().then((body) => ({
-                            response: new HttpResponse({
-                                headers: transformedHeaders,
-                                statusCode: response.status,
-                                body
-                            })
-                        }));
-                    }
-                    // Return the response with streaming body
-                    return {
+                // Return the response with buffered body
+                if (!hasReadableStream) {
+                    return response.blob().then((body) => ({
                         response: new HttpResponse({
                             headers: transformedHeaders,
                             statusCode: response.status,
-                            body: response.body
+                            body
                         })
-                    };
+                    }));
                 }
-            ),
+                // Return the response with streaming body
+                return {
+                    response: new HttpResponse({
+                        headers: transformedHeaders,
+                        statusCode: response.status,
+                        body: response.body
+                    })
+                };
+            }),
             requestTimeout(requestTimeoutInMs)
         ];
         if (abortSignal) {
