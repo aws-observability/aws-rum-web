@@ -185,7 +185,7 @@ describe('WebVitalsPlugin tests', () => {
         );
     });
 
-    test('When web vitals are present then CLS is recorded with attribution', async () => {
+    test('When web vitals are present with reportAllCLS=false then CLS is recorded with attribution as event candidate', async () => {
         // Setup
         const plugin: WebVitalsPlugin = new WebVitalsPlugin();
 
@@ -208,6 +208,43 @@ describe('WebVitalsPlugin tests', () => {
                     largestShiftTime: mockCLSData.attribution.largestShiftTime,
                     loadState: mockCLSData.attribution.loadState
                 }
+            }),
+            expect.objectContaining({
+                isCandidate: true,
+                replaceFirstMatch: true
+            })
+        );
+    });
+
+    test('When web vitals are present with reportAllCLS=true then CLS is recorded with attribution as regular event', async () => {
+        // Setup
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin({
+            reportAllCLS: true
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(4);
+
+        expect(record).toHaveBeenCalledWith(
+            CLS_EVENT_TYPE,
+            expect.objectContaining({
+                version: '1.0.0',
+                value: mockCLSData.value,
+                attribution: {
+                    largestShiftTarget:
+                        mockCLSData.attribution.largestShiftTarget,
+                    largestShiftValue:
+                        mockCLSData.attribution.largestShiftValue,
+                    largestShiftTime: mockCLSData.attribution.largestShiftTime,
+                    loadState: mockCLSData.attribution.loadState
+                }
+            }),
+            expect.objectContaining({
+                isCandidate: false,
+                replaceFirstMatch: false
             })
         );
     });

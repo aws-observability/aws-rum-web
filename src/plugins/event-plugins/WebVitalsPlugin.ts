@@ -119,16 +119,23 @@ export class WebVitalsPlugin extends InternalPlugin {
 
     private handleCLS(metric: CLSMetricWithAttribution | Metric) {
         const a = (metric as CLSMetricWithAttribution).attribution;
-        this.context?.record(CLS_EVENT_TYPE, {
-            version: '1.0.0',
-            value: metric.value,
-            attribution: {
-                largestShiftTarget: a.largestShiftTarget,
-                largestShiftValue: a.largestShiftValue,
-                largestShiftTime: a.largestShiftTime,
-                loadState: a.loadState
+        this.context?.record(
+            CLS_EVENT_TYPE,
+            {
+                version: '1.0.0',
+                value: metric.value,
+                attribution: {
+                    largestShiftTarget: a.largestShiftTarget,
+                    largestShiftValue: a.largestShiftValue,
+                    largestShiftTime: a.largestShiftTime,
+                    loadState: a.loadState
+                }
+            } as CumulativeLayoutShiftEvent,
+            {
+                isCandidate: !this.config.reportAllCLS,
+                replaceFirstMatch: !this.config.reportAllCLS
             }
-        } as CumulativeLayoutShiftEvent);
+        );
     }
 
     private handleFID(metric: FIDMetricWithAttribution | Metric) {
