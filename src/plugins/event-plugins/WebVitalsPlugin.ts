@@ -90,7 +90,7 @@ export class WebVitalsPlugin extends InternalPlugin {
             url: a.url,
             timeToFirstByte: a.timeToFirstByte,
             resourceLoadDelay: a.resourceLoadDelay,
-            resourceLoadTime: a.resourceLoadDuration,
+            resourceLoadTime: a.resourceLoadTime,
             elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {
