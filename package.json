@@ -116,8 +116,6 @@
     },
     "dependencies": {
         "@aws-crypto/sha256-js": "^3.0.0",
-        "@aws-sdk/fetch-http-handler": "^3.36.0",
-        "@aws-sdk/protocol-http": "^3.36.0",
         "@aws-sdk/querystring-builder": "^3.36.0",
         "@babel/runtime": "^7.16.0",
         "@smithy/fetch-http-handler": "^4.1.0",
