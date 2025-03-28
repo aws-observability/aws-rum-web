@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.22.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.21.x...release/1.22.x) (2025-03-27)
+
+
+### Features
+
+* fetch with keepalive ([#618](https://github.com/aws-observability/aws-rum-web/issues/618)) ([ade3e4d](https://github.com/aws-observability/aws-rum-web/commit/ade3e4d52cf993d0001c8c6a6766847dd79d47fe))
+* custom headers ([#610](https://github.com/aws-observability/aws-rum-web/issues/610)) ([986fc17](https://github.com/aws-observability/aws-rum-web/commit/986fc17c08fd44aab0bee72eb88d939e0b25437c))
+
+
+### Bug Fixes
+
+* call sendBeacon synchronously ([#631](https://github.com/aws-observability/aws-rum-web/issues/631)) ([26aad1c](https://github.com/aws-observability/aws-rum-web/commit/26aad1c27db7237741dd58f3422e5f4b4c07c717))
+* Use port from endpoint url to create HttpRequestOptions ([#595](https://github.com/aws-observability/aws-rum-web/issues/595)) ([b2d08c3](https://github.com/aws-observability/aws-rum-web/commit/b2d08c31b25494ee139683736befbd90d024b187))
+
 ## [1.21.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.20.x...release/1.21.x) (2025-03-17)
 
 
