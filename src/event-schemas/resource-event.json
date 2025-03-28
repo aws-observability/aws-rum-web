@@ -1,0 +1,88 @@
+{
+    "$id": "com.amazon.rum.performance_resource_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "ResourceEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "targetUrl": {
+            "description": "Page URL",
+            "type": "string"
+        },
+        "initiatorType": {
+            "type": "string"
+        },
+        "startTime": {
+            "type": "number"
+        },
+        "redirectStart": {
+            "type": "number"
+        },
+        "redirectTime": {
+            "type": "number"
+        },
+        "workerStart": {
+            "type": "number"
+        },
+        "workerTime": {
+            "type": "number"
+        },
+        "fetchStart": {
+            "type": "number"
+        },
+        "domainLookupStart": {
+            "type": "number"
+        },
+        "dns": {
+            "type": "number"
+        },
+        "nextHopProtocol": {
+            "type": "string"
+        },
+        "connectStart": {
+            "type": "number"
+        },
+        "connect": {
+            "type": "number"
+        },
+        "secureConnectionStart": {
+            "type": "number"
+        },
+        "tlsTime": {
+            "type": "number"
+        },
+        "requestStart": {
+            "type": "number"
+        },
+        "timeToFirstByte": {
+            "type": "number"
+        },
+        "responseStart": {
+            "type": "number"
+        },
+        "responseTime": {
+            "type": "number"
+        },
+        "duration": {
+            "type": "number"
+        },
+        "headerSize": {
+            "type": "number"
+        },
+        "transferSize": {
+            "type": "number"
+        },
+        "compressionRatio": {
+            "type": "number"
+        },
+        "fileType": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "initiatorType", "duration", "fileType"]
+}

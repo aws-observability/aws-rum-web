@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { FetchHttpHandler } from '../dispatch/FetchHttpHandler';
 import { HttpHandlerOptions } from '@aws-sdk/types';
 import { ClientBuilder } from '../dispatch/Dispatch';
@@ -48,5 +48,13 @@ class ShowIntegRequestHandler implements HttpHandler {
             logResponseToPage(response.response);
             return response;
         });
+    }
+
+    updateHttpClientConfig(_key: never, _value: never): void {
+        // No-op: Customize if needed
+    }
+
+    httpHandlerConfigs(): Record<string, never> {
+        return {};
     }
 }

@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';

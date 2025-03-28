@@ -6,7 +6,7 @@ import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
 import { INSTALL_MODULE } from '../../utils/constants';
 
-const WEB_CLIENT_VERSION = '1.18.0';
+const WEB_CLIENT_VERSION = '1.21.0';
 
 global.fetch = mockFetch;
 describe('EventCache tests', () => {
@@ -84,6 +84,7 @@ describe('EventCache tests', () => {
                 allowCookies: false,
                 sessionLengthSeconds: 0,
                 sessionAttributes: {
+                    version: '2.0.0',
                     domain: 'overridden.console.aws.amazon.com',
                     browserLanguage: 'en-UK',
                     browserName: 'Chrome',

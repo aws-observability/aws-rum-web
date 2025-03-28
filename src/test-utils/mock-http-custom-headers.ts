@@ -10,6 +10,8 @@ import { logRequestToPage, logResponseToPage } from './http-handler-utils';
  * @param region  Service region.
  * @param credentials AWS credentials.
  */
+const token =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 export const showRequestClientBuilder: ClientBuilder = (
     endpoint,
     region,
@@ -20,7 +22,12 @@ export const showRequestClientBuilder: ClientBuilder = (
         beaconRequestHandler: new ShowMockRequestHandler(),
         endpoint,
         region,
-        credentials
+        credentials,
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'x-api-key': 'a1b2c3d4e5f6',
+            'content-type': 'application/json'
+        }
     });
 };
 

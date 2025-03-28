@@ -2,6 +2,8 @@
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
 let awsRum;
+const token =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
 try {
     const config: AwsRumConfig = {
@@ -13,6 +15,11 @@ try {
         enableXRay: true,
         cookieAttributes: {
             unique: true
+        },
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'x-api-key': 'a1b2c3d4e5f6',
+            'content-type': 'application/json'
         }
     };
 

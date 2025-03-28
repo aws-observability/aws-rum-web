@@ -1,9 +1,10 @@
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { DataPlaneClient } from '../DataPlaneClient';
-import { HttpRequest } from '@aws-sdk/protocol-http';
+import { HttpRequest } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
+import { HeaderBag } from '@aws-sdk/types';
 
 const beaconHandler = jest.fn(() => Promise.resolve());
 jest.mock('../BeaconHttpHandler', () => ({
@@ -12,7 +13,7 @@ jest.mock('../BeaconHttpHandler', () => ({
         .mockImplementation(() => ({ handle: beaconHandler }))
 }));
 const fetchHandler = jest.fn(() => Promise.resolve());
-jest.mock('@aws-sdk/fetch-http-handler', () => ({
+jest.mock('@smithy/fetch-http-handler', () => ({
     FetchHttpHandler: jest
         .fn()
         .mockImplementation(() => ({ handle: fetchHandler }))
@@ -21,6 +22,7 @@ jest.mock('@aws-sdk/fetch-http-handler', () => ({
 interface Config {
     signing: boolean;
     endpoint: URL;
+    headers?: HeaderBag;
 }
 
 const defaultConfig = { signing: true, endpoint: Utils.AWS_RUM_ENDPOINT };
@@ -33,7 +35,8 @@ const createDataPlaneClient = (
         beaconRequestHandler: new BeaconHttpHandler(),
         endpoint: config.endpoint,
         region: Utils.AWS_RUM_REGION,
-        credentials: config.signing ? Utils.createAwsCredentials() : undefined
+        credentials: config.signing ? Utils.createAwsCredentials() : undefined,
+        headers: config.headers ? config.headers : undefined
     });
 };
 
@@ -344,5 +347,36 @@ describe('DataPlaneClient tests', () => {
         expect(signedRequest.query['X-Amz-Expires']).toEqual(undefined);
         expect(signedRequest.query['X-Amz-SignedHeaders']).toEqual(undefined);
         expect(signedRequest.query['X-Amz-Signature']).toEqual(undefined);
+    });
+
+    test('when the headers contains in config', async () => {
+        // Init
+        const endpoint = new URL(`${Utils.AWS_RUM_ENDPOINT}${'prod'}`);
+        const headers = {
+            Authorization: `Bearer token`,
+            'x-api-key': 'a1b2c3d4e5f6',
+            'content-type': 'application/json'
+        };
+        const client: DataPlaneClient = createDataPlaneClient({
+            ...defaultConfig,
+            endpoint,
+            headers,
+            signing: false
+        });
+
+        // Run
+        await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+        // Assert
+        const signedRequest: HttpRequest = (
+            fetchHandler.mock.calls[0] as any
+        )[0];
+        console.log('signedRequest :>> ', signedRequest);
+        expect(signedRequest.headers['Authorization']).toEqual(
+            headers['Authorization']
+        );
+        expect(signedRequest.headers['x-api-key']).toEqual(
+            headers['x-api-key']
+        );
     });
 });

@@ -17,7 +17,8 @@ import { EventCache } from '../event-cache/EventCache';
 import { ClientBuilder, Dispatch } from '../dispatch/Dispatch';
 import {
     AwsCredentialIdentityProvider,
-    AwsCredentialIdentity
+    AwsCredentialIdentity,
+    HeaderBag
 } from '@aws-sdk/types';
 import { NavigationPlugin } from '../plugins/event-plugins/NavigationPlugin';
 import { ResourcePlugin } from '../plugins/event-plugins/ResourcePlugin';
@@ -159,6 +160,8 @@ export interface Config {
     telemetries: Telemetry[];
     useBeacon: boolean;
     userIdRetentionDays: number;
+    alias?: string;
+    headers?: HeaderBag;
 }
 
 export interface PartialConfig

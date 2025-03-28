@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import { CognitoIdentityClientConfig } from './CognitoIdentityClient';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToString } from './utils';

@@ -14,10 +14,17 @@ jest.mock('../DataPlaneClient', () => ({
         .mockImplementation(() => ({ sendFetch, sendBeacon }))
 }));
 
+let visibilityState = 'visible';
+Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: () => visibilityState
+});
+
 describe('Dispatch tests', () => {
     beforeEach(() => {
         sendFetch.mockClear();
         sendBeacon.mockClear();
+        visibilityState = 'visible';
 
         (DataPlaneClient as any).mockImplementation(() => {
             return {
@@ -262,6 +269,7 @@ describe('Dispatch tests', () => {
 
     test('when visibilitychange event is triggered then beacon dispatch runs', async () => {
         // Init
+        visibilityState = 'hidden';
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
@@ -283,6 +291,7 @@ describe('Dispatch tests', () => {
 
     test('when useBeacon is false then visibilitychange uses fetch dispatch', async () => {
         // Init
+        visibilityState = 'hidden';
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
@@ -305,6 +314,7 @@ describe('Dispatch tests', () => {
 
     test('when useBeacon is false then pagehide uses fetch dispatch', async () => {
         // Init
+        visibilityState = 'hidden';
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
@@ -555,6 +565,59 @@ describe('Dispatch tests', () => {
         await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
 
         // Assert
+        expect(DataPlaneClient).toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('When valid alias is provided then PutRumEvents request containing alias is sent', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    signing: false,
+                    alias: 'test123'
+                }
+            }
+        );
+
+        // Run
+        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+
+        // Assert
+        expect(dispatch['createRequest']()['Alias']).toBeDefined();
+        expect(dispatch['createRequest']()['Alias']).toBe('test123');
+
+        expect(DataPlaneClient).toHaveBeenCalled();
+        expect(sendFetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('When no alias is provided then PutRumEvents request does not contain an alias', async () => {
+        // Init
+        const dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    signing: false
+                }
+            }
+        );
+
+        // Run
+        await expect(dispatch.dispatchFetch()).resolves.toBe(undefined);
+
+        // Assert
+
+        expect(dispatch['createRequest']()['Alias']).toBeUndefined();
+
         expect(DataPlaneClient).toHaveBeenCalled();
         expect(sendFetch).toHaveBeenCalledTimes(1);
     });

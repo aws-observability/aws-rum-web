@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { is2xx, is429, is5xx } from '../plugins/utils/http-utils';
 
 export type BackoffFunction = (retry: number) => number;
@@ -56,5 +56,13 @@ export class RetryHttpHandler implements HttpHandler {
         return new Promise<void>((resolve) =>
             setTimeout(resolve, milliseconds)
         );
+    }
+
+    updateHttpClientConfig(_key: never, _value: never): void {
+        // No-op: Customize if needed
+    }
+
+    httpHandlerConfigs(): Record<string, never> {
+        return {};
     }
 }

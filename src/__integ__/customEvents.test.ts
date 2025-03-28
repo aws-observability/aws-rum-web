@@ -18,8 +18,8 @@ fixture('Custom Events API & Plugin').page(
 const removeUnwantedEvents = (json: any) => {
     const newEventsList = json.RumEvents.filter(
         (e) =>
-            /custom_event_api/.test(e.type) ||
-            /custom_event_plugin/.test(e.type)
+            /(custom_event_api)/.test(e.type) ||
+            /(custom_event_plugin)/.test(e.type)
     );
 
     json.RumEvents = newEventsList;
@@ -136,7 +136,6 @@ test('when a plugin calls recordEvent x times then event is recorded x times', a
     }
     await t
         .click(dispatch)
-        .wait(100)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
@@ -168,14 +167,12 @@ test('when plugin recordEvent has empty event_data then RumEvent details is empt
     await t
         .click(pluginRecordEmptyEvent)
         .click(dispatch)
-        .wait(100)
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
     const json = removeUnwantedEvents(
         JSON.parse(await REQUEST_BODY.textContent)
     );
-
     await t
         .expect(json.RumEvents.length)
         .eql(1)
