@@ -1,4 +1,9 @@
-import { X_AMZN_TRACE_ID, getTraceHeader } from '../http-utils';
+import {
+    X_AMZN_TRACE_ID,
+    getTraceHeader,
+    addAmznTraceIdHeaderToInit,
+    getAmznTraceIdHeaderValue
+} from '../http-utils';
 
 const Request = function (input: RequestInfo, init?: RequestInit) {
     if (typeof input === 'string') {
@@ -49,5 +54,42 @@ describe('http-utils', () => {
 
         expect(traceHeader.traceId).toEqual(undefined);
         expect(traceHeader.segmentId).toEqual(undefined);
+    });
+
+    test('when headers object has set method then trace header is added using set method', async () => {
+        const traceId = '1-0-000000000000000000000001';
+        const segmentId = '0000000000000001';
+
+        const headersWithSetMethod = {
+            set: jest.fn()
+        };
+
+        const init: RequestInit = {
+            headers: headersWithSetMethod as any
+        };
+
+        addAmznTraceIdHeaderToInit(init, traceId, segmentId);
+
+        expect(headersWithSetMethod.set).toHaveBeenCalledWith(
+            X_AMZN_TRACE_ID,
+            getAmznTraceIdHeaderValue(traceId, segmentId)
+        );
+    });
+
+    test('when headers object does not have set method then trace header is added as property', async () => {
+        const traceId = '1-0-000000000000000000000001';
+        const segmentId = '0000000000000001';
+
+        const headersWithoutSetMethod = {} as any;
+
+        const init: RequestInit = {
+            headers: headersWithoutSetMethod
+        };
+
+        addAmznTraceIdHeaderToInit(init, traceId, segmentId);
+
+        expect(headersWithoutSetMethod[X_AMZN_TRACE_ID]).toEqual(
+            getAmznTraceIdHeaderValue(traceId, segmentId)
+        );
     });
 });
