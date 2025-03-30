@@ -1,17 +1,18 @@
 import * as Utils from '../../test-utils/test-utils';
 import { DataPlaneClient } from '../DataPlaneClient';
-import { HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpResponse } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
 import { RetryHttpHandler } from '../RetryHttpHandler';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 
 const fetchHandler = jest.fn<Promise<Record<string, unknown>>, []>(() =>
     Promise.resolve({ response: { statusCode: 500 } })
 );
-jest.mock('@aws-sdk/fetch-http-handler', () => ({
-    FetchHttpHandler: jest
-        .fn()
-        .mockImplementation(() => ({ handle: fetchHandler }))
+
+jest.mock('@smithy/fetch-http-handler', () => ({
+    FetchHttpHandler: jest.fn().mockImplementation(() => ({
+        handle: fetchHandler
+    }))
 }));
 
 const mockBackoff = () => 0;
@@ -21,7 +22,7 @@ describe('RetryHttpHandler tests', () => {
         jest.useRealTimers();
         advanceTo(0);
         fetchHandler.mockClear();
-        (FetchHttpHandler as jest.Mock).mockImplementation(() => {
+        (FetchHttpHandler as unknown as jest.Mock).mockImplementation(() => {
             return {
                 handle: fetchHandler
             };

@@ -1,6 +1,6 @@
 import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { FetchHttpHandler } from '@aws-sdk/fetch-http-handler';
+import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { StsClient } from './StsClient';
 import { Authentication } from './Authentication';
 

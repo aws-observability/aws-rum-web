@@ -17,15 +17,15 @@ jobs:
         permissions: read-all
         steps:
             - name: Checkout AWS RUM Web Client Repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup Node
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: '20.x'
 
             - name: Cache NPM modules
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ~/.npm
                   key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -56,15 +56,15 @@ jobs:
 
         steps:
             - name: Checkout AWS RUM Web Client Repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Setup Node
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: '20.x'
 
             - name: Cache NPM modules
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ~/.npm
                   key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}

@@ -1,4 +1,4 @@
-import { HttpRequest, HttpResponse } from '@aws-sdk/protocol-http';
+import { HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { HeaderBag } from '@aws-sdk/types';
 
 const setElementText = (name: string, text: string) => {

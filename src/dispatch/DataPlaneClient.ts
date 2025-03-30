@@ -1,13 +1,14 @@
-import { toHex } from '@aws-sdk/util-hex-encoding';
-import { SignatureV4 } from '@aws-sdk/signature-v4';
+import { toHex } from '@smithy/util-hex-encoding';
+import { SignatureV4 } from '@smithy/signature-v4';
 import {
     AwsCredentialIdentityProvider,
     AwsCredentialIdentity,
     HttpResponse,
-    RequestPresigningArguments
+    RequestPresigningArguments,
+    HeaderBag
 } from '@aws-sdk/types';
 import { Sha256 } from '@aws-crypto/sha256-js';
-import { HttpHandler, HttpRequest } from '@aws-sdk/protocol-http';
+import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import {
     AppMonitorDetails,
     PutRumEventsRequest,
@@ -47,6 +48,7 @@ export declare type DataPlaneClientConfig = {
         | AwsCredentialIdentityProvider
         | AwsCredentialIdentity
         | undefined;
+    headers?: HeaderBag;
 };
 
 export class DataPlaneClient {
@@ -118,7 +120,8 @@ export class DataPlaneClient {
             port: Number(this.config.endpoint.port) || undefined,
             headers: {
                 'content-type': contentType,
-                host: this.config.endpoint.host
+                host: this.config.endpoint.host,
+                ...this.config.headers
             },
             hostname: this.config.endpoint.hostname,
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,

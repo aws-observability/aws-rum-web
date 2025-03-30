@@ -14,10 +14,17 @@ jest.mock('../DataPlaneClient', () => ({
         .mockImplementation(() => ({ sendFetch, sendBeacon }))
 }));
 
+let visibilityState = 'visible';
+Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: () => visibilityState
+});
+
 describe('Dispatch tests', () => {
     beforeEach(() => {
         sendFetch.mockClear();
         sendBeacon.mockClear();
+        visibilityState = 'visible';
 
         (DataPlaneClient as any).mockImplementation(() => {
             return {
@@ -262,6 +269,7 @@ describe('Dispatch tests', () => {
 
     test('when visibilitychange event is triggered then beacon dispatch runs', async () => {
         // Init
+        visibilityState = 'hidden';
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
@@ -283,6 +291,7 @@ describe('Dispatch tests', () => {
 
     test('when useBeacon is false then visibilitychange uses fetch dispatch', async () => {
         // Init
+        visibilityState = 'hidden';
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
@@ -305,6 +314,7 @@ describe('Dispatch tests', () => {
 
     test('when useBeacon is false then pagehide uses fetch dispatch', async () => {
         // Init
+        visibilityState = 'hidden';
         const dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
