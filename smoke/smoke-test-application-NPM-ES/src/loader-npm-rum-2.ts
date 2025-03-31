@@ -13,7 +13,8 @@ try {
         enableXRay: true,
         cookieAttributes: {
             unique: true
-        }
+        },
+        useBeacon: false
     };
 
     const APPLICATION_ID: string = $MONITOR_ID_2;
