@@ -21,7 +21,8 @@ try {
             'x-api-key': 'a1b2c3d4e5f6',
             'content-type': 'application/json'
         },
-        useBeacon: false
+        useBeacon: false,
+        releaseId: '2.1.7'
     };
 
     const APPLICATION_ID: string = $MONITOR_ID;

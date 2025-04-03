@@ -846,4 +846,22 @@ describe('SessionManager tests', () => {
         // Assert
         expect(actualSessionAttributes.title).toEqual(sessionAttributes.title);
     });
+
+    test('when initiated with aws:releaseId then it is in the attributes', async () => {
+        const releaseId = '2.1.7';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            releaseId
+        });
+
+        const actualSessionAttributes = sessionManager.getAttributes();
+        expect(actualSessionAttributes['aws:releaseId']).toBe(releaseId);
+    });
+
+    test('when initiated without aws:releaseId then it is NOT in the attributes', async () => {
+        const sessionManager = defaultSessionManager(DEFAULT_CONFIG);
+
+        const actualSessionAttributes = sessionManager.getAttributes();
+        expect(actualSessionAttributes['aws:releaseId']).toBeUndefined();
+    });
 });

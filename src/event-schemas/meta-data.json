@@ -9,6 +9,9 @@
             "type": "string",
             "description": "Schema version."
         },
+        "aws:releaseId": {
+            "type": "string"
+        },
         "browserLanguage": {
             "type": "string"
         },

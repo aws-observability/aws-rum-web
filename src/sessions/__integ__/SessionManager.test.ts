@@ -26,6 +26,7 @@ const OS_NAME = 'osName';
 const OS_VERSION = 'osVersion';
 const DEVICE_TYPE = 'deviceType';
 const PLATFORM_TYPE = 'platformType';
+const AWS_RELEASE_ID = 'aws:releaseId';
 
 const button1: Selector = Selector(`#${BUTTON_ID_1}`);
 
@@ -106,7 +107,9 @@ test('UserAgentMetaDataPlugin records user agent metadata', async (t: TestContro
         .expect(REQUEST_BODY.textContent)
         .contains(PLATFORM_TYPE)
         .expect(RESPONSE_STATUS.textContent)
-        .eql(STATUS_202.toString());
+        .eql(STATUS_202.toString())
+        .expect(REQUEST_BODY.textContent)
+        .notContains(AWS_RELEASE_ID);
 });
 
 test('When custom attribute set at init, custom attribute recorded in event metadata', async (t: TestController) => {
