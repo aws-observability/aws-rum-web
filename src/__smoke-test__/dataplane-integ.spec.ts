@@ -70,3 +70,42 @@ test('when web client calls PutRumEvents then the payload contains all events', 
     expect(navigation.length).toEqual(NAVIGATION_COUNT);
     expect(resource.length).toEqual(RESOURCE_EVENT_COUNT);
 });
+
+test('when web client is used in Nuxt3 environment then X-Ray trace ID is added to HTTP requests', async ({
+    page
+}) => {
+    // Mock Nuxt3 environment
+    await page.addInitScript(() => {
+        // Override fetch to simulate Nuxt3's ofetch behavior
+        const originalFetch = window.fetch;
+        window.fetch = function (input, init) {
+            if (!init) {
+                init = {};
+            }
+            if (!init.headers) {
+                // Create Headers object with set method
+                init.headers = new Headers();
+            }
+            return originalFetch(input, init);
+        };
+    });
+
+    // Open page
+    await page.goto(TEST_URL);
+
+    // Trigger a fetch request
+    await page.evaluate(() => {
+        fetch('/api/test');
+    });
+
+    // Verify that the X-Ray trace ID header was added
+    const request = await page.waitForRequest(
+        (request) =>
+            request.url().includes('/api/test') &&
+            request.headers()['x-amzn-trace-id'] !== undefined
+    );
+
+    expect(request.headers()['x-amzn-trace-id']).toMatch(
+        /Root=1-[0-9a-f]{8}-[0-9a-f]{24};Parent=[0-9a-f]{16};Sampled=1/
+    );
+});
