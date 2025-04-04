@@ -7,7 +7,7 @@ import { INSTALL_SCRIPT } from './utils/constants';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 
-export type CommandFunction = (payload?: any) => void;
+export type CommandFunction = (payload?: any, options?: any) => void;
 
 interface CommandFunctions {
     setAwsCredentials: CommandFunction;
@@ -71,13 +71,17 @@ export class CommandQueue {
         registerDomEvents: (payload: any): void => {
             this.orchestration.registerDomEvents(payload);
         },
-        recordEvent: (payload: any) => {
+        recordEvent: (payload: any, options?: any) => {
             if (
                 typeof payload === 'object' &&
                 typeof payload.type === 'string' &&
                 typeof payload.data === 'object'
             ) {
-                this.orchestration.recordEvent(payload.type, payload.data);
+                this.orchestration.recordEvent(
+                    payload.type,
+                    payload.data,
+                    options
+                );
             } else {
                 throw new Error('IncorrectParametersException');
             }

@@ -9,6 +9,7 @@ import {
     RumEvent
 } from '../dispatch/dataplane';
 import EventBus, { Topic } from '../event-bus/EventBus';
+import { defaultRecordEventOptions, RecordEvent } from '../plugins/types';
 
 const webClientVersion = '1.22.0';
 
@@ -24,6 +25,7 @@ export class EventCache {
     private config: Config;
 
     private events: RumEvent[] = [];
+    private candidates: RumEvent[] = [];
 
     private sessionManager: SessionManager;
     private pageManager: PageManager;
@@ -95,7 +97,11 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent: RecordEvent = (
+        type: string,
+        eventData: object,
+        options = defaultRecordEventOptions
+    ) => {
         if (!this.enabled) {
             return;
         }
@@ -105,7 +111,7 @@ export class EventCache {
             this.sessionManager.incrementSessionEventCount();
 
             if (this.canRecord(session)) {
-                this.addRecordToCache(type, eventData);
+                this.addRecordToCache(type, eventData, options);
             }
         }
     };
@@ -129,25 +135,47 @@ export class EventCache {
     }
 
     /**
+     * Returns true if there are one or more event candidates in the cache.
+     */
+    public hasCandidates() {
+        return this.candidates.length !== 0;
+    }
+
+    /**
      * Removes and returns the next batch of events.
      */
-    public getEventBatch(): RumEvent[] {
-        let rumEvents: RumEvent[] = [];
+    public getEventBatch(flushCandidates = false): RumEvent[] {
+        let batch: RumEvent[] = [];
 
-        if (this.events.length === 0) {
-            return rumEvents;
+        // Prioritize candidates into the next batch.
+        if (flushCandidates) {
+            if (this.candidates.length <= this.config.batchLimit) {
+                batch = this.candidates;
+                this.candidates = [];
+            } else {
+                batch.push(
+                    ...this.candidates.splice(0, this.config.batchLimit)
+                );
+            }
         }
 
-        if (this.events.length <= this.config.batchLimit) {
-            // Return all events.
-            rumEvents = this.events;
-            this.events = [];
-        } else {
-            // Dispatch the front of the array and retain the back of the array.
-            rumEvents = this.events.splice(0, this.config.batchLimit);
+        // Use remaining capacity for regular events.
+        if (this.events.length) {
+            if (this.events.length <= this.config.batchLimit - batch.length) {
+                batch.push(...this.events);
+                this.events = [];
+            } else {
+                // Dispatch the front of the array and retain the back of the array.
+                batch.push(
+                    ...this.events.splice(
+                        0,
+                        this.config.batchLimit - batch.length
+                    )
+                );
+            }
         }
 
-        return rumEvents;
+        return batch;
     }
 
     /**
@@ -210,12 +238,21 @@ export class EventCache {
      *
      * @param type The event schema.
      */
-    private addRecordToCache = (type: string, eventData: object) => {
+    private addRecordToCache: RecordEvent = (
+        type: string,
+        eventData: object,
+        { isCandidate, replaceFirstMatch } = defaultRecordEventOptions
+    ) => {
         if (!this.enabled) {
             return;
         }
 
-        if (this.events.length === this.config.eventCacheSize) {
+        const cache = isCandidate ? this.candidates : this.events;
+        const cacheLimit = isCandidate
+            ? this.config.candidatesCacheSize
+            : this.config.eventCacheSize;
+
+        if (!replaceFirstMatch && cache.length >= cacheLimit) {
             // Drop newest event and keep the older ones
             // 1. Older events tend to be more relevant, such as session start
             //    or performance entries that are attributed to web vitals
@@ -240,16 +277,39 @@ export class EventCache {
             timestamp: new Date(),
             type
         };
+
+        // Dispatch raw event for subscribers in other plugins.
         this.eventBus.dispatch(Topic.EVENT, {
             ...partialEvent,
             details: eventData,
             metadata: metaData
         });
-        this.events.push({
+
+        // Final event with stringifed payload
+        const event = {
             ...partialEvent,
             details: JSON.stringify(eventData),
             metadata: JSON.stringify(metaData)
-        });
+        };
+
+        // Replace the first matching type in the cache, if any.
+        if (replaceFirstMatch) {
+            const prev = cache.findIndex((e) => e.type === type);
+
+            // Update first matching event
+            if (prev >= 0) {
+                cache[prev] = event;
+                return;
+            }
+
+            // Break if there is no match and the cache is full
+            if (prev > -1 && cache.length === this.config.eventCacheSize) {
+                return;
+            }
+        }
+
+        // Otherwise, just add event to cache.
+        cache.push(event);
     };
 
     /**

@@ -1,4 +1,4 @@
-import { PluginContext } from './types';
+import { PluginContext, RecordEventOptions } from './types';
 
 export interface Plugin<UpdateType = unknown> {
     /**
@@ -30,7 +30,7 @@ export interface Plugin<UpdateType = unknown> {
      *
      * @param data Data that the plugin will use to create an event.
      */
-    record?<D>(data: D): void;
+    record?<D>(data: D, options?: RecordEventOptions): void;
 
     /**
      * Update the plugin.

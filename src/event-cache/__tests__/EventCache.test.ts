@@ -119,6 +119,185 @@ describe('EventCache tests', () => {
         expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
     });
 
+    test('recordEvent appends candidates', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT2_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+        eventCache.recordEvent(EVENT2_SCHEMA, {}, { isCandidate: true });
+
+        // Assert
+        const eventBatch: RumEvent[] = eventCache.getEventBatch(true);
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('candidates are not pulled during getEventBatch() unless flushed', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+        expect(eventCache.getEventBatch()).toEqual([]);
+        eventCache.recordEvent(EVENT2_SCHEMA, {}, { isCandidate: false });
+        expect(eventCache.getEventBatch()).toEqual(
+            expect.arrayContaining([
+                {
+                    id: expect.stringMatching(/[0-9a-f\-]+/),
+                    timestamp: new Date(),
+                    type: EVENT2_SCHEMA,
+                    metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                    details: '{}'
+                }
+            ])
+        );
+        expect(eventCache.getEventBatch(true)).toEqual(
+            expect.arrayContaining([
+                {
+                    id: expect.stringMatching(/[0-9a-f\-]+/),
+                    timestamp: new Date(),
+                    type: EVENT1_SCHEMA,
+                    metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                    details: '{}'
+                }
+            ])
+        );
+    });
+
+    test('recordEvent can the first matching event', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT2_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{"foo":"bar"}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT2_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        eventCache.recordEvent(EVENT2_SCHEMA, {});
+        eventCache.recordEvent(EVENT2_SCHEMA, {});
+        eventCache.recordEvent(
+            EVENT2_SCHEMA,
+            { foo: 'bar' },
+            { replaceFirstMatch: true }
+        );
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+
+        // Assert
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('when recordEvent() has no events to update, then the event is appended', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT2_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{"foo":"bar"}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        eventCache.recordEvent(
+            EVENT2_SCHEMA,
+            { foo: 'bar' },
+            { replaceFirstMatch: true }
+        );
+        const eventBatch: RumEvent[] = eventCache.getEventBatch();
+
+        // Assert
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('recordEvent can update the first matching candidate', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{"hello":"world"}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+        eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+        eventCache.recordEvent(
+            EVENT1_SCHEMA,
+            { hello: 'world' },
+            { isCandidate: true, replaceFirstMatch: true }
+        );
+
+        // Assert
+        const eventBatch: RumEvent[] = eventCache.getEventBatch(true);
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
     test('getEventBatch limits number of events to batchLimit', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
@@ -139,6 +318,26 @@ describe('EventCache tests', () => {
         expect(eventCache.getEventBatch().length).toEqual(0);
     });
 
+    test('getEventBatch limits candidates to batchLimit', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const BATCH_LIMIT = 1;
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG,
+            ...{ batchLimit: BATCH_LIMIT }
+        });
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+        eventCache.recordEvent(EVENT2_SCHEMA, {}, { isCandidate: true });
+
+        // Assert
+        expect(eventCache.getEventBatch(true).length).toEqual(BATCH_LIMIT);
+        expect(eventCache.getEventBatch(true).length).toEqual(BATCH_LIMIT);
+        expect(eventCache.getEventBatch(true).length).toEqual(0);
+    });
+
     test('getEventBatch returns events in FIFO order', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
@@ -156,6 +355,98 @@ describe('EventCache tests', () => {
         // Assert
         expect(eventCache.getEventBatch()[0].type).toEqual(EVENT1_SCHEMA);
         expect(eventCache.getEventBatch()[0].type).toEqual(EVENT2_SCHEMA);
+    });
+
+    test('getEventBatch pulls candidates with higher priority than regular events', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const EVENT3_SCHEMA = 'com.amazon.rum.event3';
+        const eventCache: EventCache = Utils.createDefaultEventCache();
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT3_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            },
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT2_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        // Candidates 1 and 3 should show up before 2
+        eventCache.recordEvent(EVENT2_SCHEMA, {}, { isCandidate: false });
+        eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+        eventCache.recordEvent(EVENT3_SCHEMA, {}, { isCandidate: true });
+        const eventBatch: RumEvent[] = eventCache.getEventBatch(true);
+
+        // Assert
+        expect(eventBatch).toEqual(expect.arrayContaining(expectedEvents));
+    });
+
+    test('getEventBatch does not drop candidates or regular events that remain in the cache', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG,
+            ...{
+                batchLimit: 3,
+                eventCacheSize: 5,
+                candidatesCacheSize: 5
+            }
+        });
+
+        // Run
+        // Candidates 1 and 3 should show up before 2
+        for (let i = 0; i < 5; i++) {
+            eventCache.recordEvent(EVENT1_SCHEMA, {}, { isCandidate: true });
+            eventCache.recordEvent(EVENT2_SCHEMA, {}, { isCandidate: false });
+        }
+
+        // Assert
+        // Flush candidates
+        expect(eventCache.getEventBatch(true).map((x) => x.type)).toEqual(
+            expect.arrayContaining([
+                EVENT1_SCHEMA,
+                EVENT1_SCHEMA,
+                EVENT1_SCHEMA
+            ])
+        );
+        // Do a regular batch
+        expect(eventCache.getEventBatch(false).map((x) => x.type)).toEqual(
+            expect.arrayContaining([
+                EVENT2_SCHEMA,
+                EVENT2_SCHEMA,
+                EVENT2_SCHEMA
+            ])
+        );
+        // Flush candidates again
+        expect(eventCache.getEventBatch(true).map((x) => x.type)).toEqual(
+            expect.arrayContaining([
+                EVENT1_SCHEMA,
+                EVENT1_SCHEMA,
+                EVENT2_SCHEMA
+            ])
+        );
+        // Flush candidates, but there are no remaining
+        expect(eventCache.getEventBatch(true).map((x) => x.type)).toEqual(
+            expect.arrayContaining([EVENT2_SCHEMA])
+        );
     });
 
     test('when cache size reached, recordEvent drops the newest event', async () => {
@@ -190,6 +481,41 @@ describe('EventCache tests', () => {
             expect.arrayContaining(expectedEvents)
         );
         expect(eventCache.hasEvents()).toBeFalsy();
+    });
+
+    test('when candidate cache size reached, recordEvent drops the newest candidate', async () => {
+        // Init
+        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+        const EVENT2_SCHEMA = 'com.amazon.rum.event2';
+        const BATCH_LIMIT = 20;
+        const CANDIDATES_LIMIT = 1;
+        const eventCache: EventCache = Utils.createEventCache({
+            ...DEFAULT_CONFIG,
+            ...{
+                batchLimit: BATCH_LIMIT,
+                candidatesCacheSize: CANDIDATES_LIMIT
+            }
+        });
+        const expectedEvents: RumEvent[] = [
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                details: '{}'
+            }
+        ];
+
+        // Run
+        eventCache.recordEvent(EVENT1_SCHEMA, {});
+        eventCache.recordEvent(EVENT2_SCHEMA, {});
+        eventCache.recordEvent(EVENT2_SCHEMA, {}, { replaceFirstMatch: true });
+
+        // Assert
+        expect(eventCache.getEventBatch(true)).toEqual(
+            expect.arrayContaining(expectedEvents)
+        );
+        expect(eventCache.hasCandidates()).toBe(false);
     });
 
     test('when page is denied, recordEvent does not record the event', async () => {

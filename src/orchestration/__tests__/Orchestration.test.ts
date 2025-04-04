@@ -182,6 +182,7 @@ describe('Orchestration tests', () => {
                 'https://dataplane.rum.us-west-2.amazonaws.com'
             ),
             eventCacheSize: 200,
+            candidatesCacheSize: 5,
             eventPluginsToLoad: [],
             pageIdFormat: PageIdFormatEnum.Path,
             pagesToExclude: [],
