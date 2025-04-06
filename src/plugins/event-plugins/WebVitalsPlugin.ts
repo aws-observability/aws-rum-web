@@ -2,18 +2,22 @@ import { InternalPlugin } from '../InternalPlugin';
 import { LargestContentfulPaintEvent } from '../../events/largest-contentful-paint-event';
 import { CumulativeLayoutShiftEvent } from '../../events/cumulative-layout-shift-event';
 import { FirstInputDelayEvent } from '../../events/first-input-delay-event';
+import { InteractionToNextPaintEvent } from '../../events/interaction-to-next-paint';
 import {
     CLSMetricWithAttribution,
     FIDMetricWithAttribution,
+    INPMetricWithAttribution,
     LCPMetricWithAttribution,
     Metric,
     onCLS,
     onFID,
-    onLCP
+    onLCP,
+    onINP
 } from 'web-vitals/attribution';
 import {
     CLS_EVENT_TYPE,
     FID_EVENT_TYPE,
+    INP_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE
@@ -29,8 +33,8 @@ import {
     isLCPSupported
 } from '../../utils/common-utils';
 import {
-    defaultPerformancePluginConfig,
-    PerformancePluginConfig
+    PerformancePluginConfig,
+    defaultPerformancePluginConfig
 } from '../../plugins/utils/performance-utils';
 
 export const WEB_VITAL_EVENT_PLUGIN_ID = 'web-vitals';
@@ -60,6 +64,7 @@ export class WebVitalsPlugin extends InternalPlugin {
         onCLS((metric) => this.handleCLS(metric), {
             reportAllChanges: this.config.reportAllCLS
         });
+        onINP((metric) => this.handleINP(metric), { reportAllChanges: true });
     }
 
     private handleEvent = (event: ParsedRumEvent) => {
@@ -145,5 +150,24 @@ export class WebVitalsPlugin extends InternalPlugin {
                 loadState: a.loadState
             }
         } as FirstInputDelayEvent);
+    }
+
+    private handleINP(metric: INPMetricWithAttribution | Metric) {
+        const a = (metric as INPMetricWithAttribution).attribution;
+        const { record, recordCandidate } = this.context;
+        (this.config.reportAllINP ? record : recordCandidate)(INP_EVENT_TYPE, {
+            version: '1.0.0',
+            value: metric.value,
+            attribution: {
+                interactionTarget: a.interactionTarget,
+                interactionTime: a.interactionTime,
+                nextPaintTime: a.nextPaintTime,
+                interactionType: a.interactionType,
+                inputDelay: a.inputDelay,
+                processingDuration: a.processingDuration,
+                presentationDelay: a.presentationDelay,
+                loadState: a.loadState
+            }
+        } as InteractionToNextPaintEvent);
     }
 }
