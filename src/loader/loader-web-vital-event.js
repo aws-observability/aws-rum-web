@@ -10,7 +10,8 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
         new ResourcePlugin(),
         new NavigationPlugin(),
         new WebVitalsPlugin({
-            reportAllCLS: true
+            reportAllCLS: true,
+            reportAllINP: true
         })
     ],
     telemetries: [],

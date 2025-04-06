@@ -14,6 +14,7 @@ export type PerformancePluginConfig = {
     sampleTypes: ResourceType[];
     reportAllLCP: boolean;
     reportAllCLS: boolean;
+    reportAllINP: boolean;
 };
 
 export const defaultPerformancePluginConfig = {
@@ -27,5 +28,6 @@ export const defaultPerformancePluginConfig = {
     ],
     sampleTypes: [ResourceType.IMAGE, ResourceType.OTHER],
     reportAllLCP: false,
-    reportAllCLS: false
+    reportAllCLS: false,
+    reportAllINP: false
 };

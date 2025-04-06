@@ -193,6 +193,7 @@ const awsRum: AwsRum = new AwsRum(
 | sampleTypes | String[] | ['image', 'other'] | A list of resource types that are only recorded if the resource event limit has not been reached. Possible values are 'other', 'stylesheet', 'document', 'script', 'image', and 'font'. |
 | reportAllLCP | Boolean | `false` | If true, then all increases to LCP are recorded. |
 | reportAllCLS | Boolean | `false` | If true, then all increases to CLS are recorded. |
+| reportAllINP | boolean | `false` | If true, then all increases to INP are recorded. |
 
 For example, the following telemetry config array causes the web client to ignore all resource entries.
 
@@ -201,12 +202,14 @@ telemetries: [
     [
         'errors',
         'http',
-        'performance',
-        {
-            ignore: (entry: PerformanceEntry) => {
-                return entry.entryType === 'resource';
+        [
+            'performance',
+            {
+                ignore: (entry: PerformanceEntry) => {
+                    return entry.entryType === 'resource';
+                }
             }
-        }
+        ]
     ]
 ];
 ```
