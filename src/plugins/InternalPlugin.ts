@@ -1,6 +1,6 @@
 import { RUM_AWS_PREFIX } from './utils/constant';
 import { Plugin } from './Plugin';
-import { PluginContext } from './types';
+import { InternalPluginContext } from './types';
 
 export abstract class InternalPlugin<UpdateType = unknown>
     implements Plugin<UpdateType>
@@ -8,7 +8,7 @@ export abstract class InternalPlugin<UpdateType = unknown>
     static idPrefix = RUM_AWS_PREFIX;
 
     protected enabled = true;
-    protected context!: PluginContext;
+    protected context!: InternalPluginContext;
     private readonly pluginId: string;
 
     constructor(name: string) {
@@ -19,7 +19,7 @@ export abstract class InternalPlugin<UpdateType = unknown>
         return `${InternalPlugin.idPrefix}.${name}`;
     }
 
-    load(context: PluginContext): void {
+    load(context: InternalPluginContext): void {
         this.context = context;
         this.onload?.();
     }

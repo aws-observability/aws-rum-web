@@ -27,6 +27,7 @@ export class EventCache {
     private config: Config;
 
     private events: RumEvent[] = [];
+    private candidates = new Map<string, RumEvent>();
 
     private sessionManager: SessionManager;
     private pageManager: PageManager;
@@ -117,6 +118,39 @@ export class EventCache {
     };
 
     /**
+     * Adds a candidate to the cache and reset session timer
+     *
+     * @param eventType The event schema.
+     * @param eventData The event data.
+     */
+    public recordCandidate: RecordEvent = (
+        eventType: string,
+        eventData: object
+    ) => {
+        const session = this.sessionManager.getSession();
+        if (!this.enabled || !this.isCurrentUrlAllowed() || !session.record) {
+            return;
+        }
+
+        const [event] = this.createEvent(eventType, eventData);
+
+        // Update candidate if exists
+        if (this.candidates.has(eventType)) {
+            this.candidates.set(eventType, event);
+            return;
+        }
+
+        // Record new candidate only if limits have not been reached
+        if (
+            this.candidates.size < this.config.candidatesCacheSize &&
+            !this.sessionManager.isLimitExceeded()
+        ) {
+            this.candidates.set(eventType, event);
+            this.sessionManager.incrementSessionEventCount();
+        }
+    };
+
+    /**
      * Returns the current session (1) if a session exists and (2) if the
      * current URL is allowed. Returns undefined otherwise.
      */
@@ -135,25 +169,57 @@ export class EventCache {
     }
 
     /**
+     * Returns true if there are one or more event candidates in the cache.
+     */
+    public hasCandidates() {
+        return this.candidates.size !== 0;
+    }
+
+    /**
      * Removes and returns the next batch of events.
      */
-    public getEventBatch(): RumEvent[] {
-        let rumEvents: RumEvent[] = [];
+    public getEventBatch(flushCandidates = false): RumEvent[] {
+        let batch: RumEvent[] = [];
 
-        if (this.events.length === 0) {
-            return rumEvents;
+        // Prioritize candidates in the next event batch
+        if (flushCandidates && this.hasCandidates()) {
+            // Pull all candidates if they fit in the batch
+            if (this.candidates.size <= this.config.batchLimit) {
+                batch = Array.from(this.candidates.values());
+                this.candidates.clear();
+            } else {
+                // Pull candidates in FIFO order until batch limit is reached
+                let i = 0;
+                for (const key of Array.from(this.candidates.keys())) {
+                    if (i++ >= this.config.batchLimit) {
+                        break;
+                    }
+                    const event = this.candidates.get(key);
+                    if (event) {
+                        batch.push(event);
+                        this.candidates.delete(key);
+                    }
+                }
+            }
         }
 
-        if (this.events.length <= this.config.batchLimit) {
-            // Return all events.
-            rumEvents = this.events;
-            this.events = [];
-        } else {
-            // Dispatch the front of the array and retain the back of the array.
-            rumEvents = this.events.splice(0, this.config.batchLimit);
+        // Use remaining capacity for regular events.
+        if (this.events.length) {
+            if (this.events.length <= this.config.batchLimit - batch.length) {
+                batch.push(...this.events);
+                this.events = [];
+            } else {
+                // Dispatch the front of the array and retain the back of the array.
+                batch.push(
+                    ...this.events.splice(
+                        0,
+                        this.config.batchLimit - batch.length
+                    )
+                );
+            }
         }
 
-        return rumEvents;
+        return batch;
     }
 
     /**

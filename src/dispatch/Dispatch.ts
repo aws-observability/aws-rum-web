@@ -161,7 +161,7 @@ export class Dispatch {
 
     private flushSync: EventListener = () => {
         if (document.visibilityState === 'hidden') {
-            if (this.doRequest()) {
+            if (this.doRequest(true)) {
                 let flush = this.rum.sendBeacon;
                 let backup = this.rum.sendFetch;
 
@@ -169,7 +169,7 @@ export class Dispatch {
                     [flush, backup] = [backup, flush];
                 }
 
-                const req = this.createRequest();
+                const req = this.createRequest(true);
                 flush(req)
                     .catch(() => backup(req))
                     .catch(() => {
@@ -224,16 +224,24 @@ export class Dispatch {
         }
     }
 
-    private doRequest(): boolean {
-        return this.enabled && this.eventCache.hasEvents();
+    private doRequest(flushCandidates = false): boolean {
+        if (!this.enabled) {
+            return false;
+        }
+
+        if (flushCandidates && this.eventCache.hasCandidates()) {
+            return true;
+        }
+
+        return this.eventCache.hasEvents();
     }
 
-    private createRequest(): PutRumEventsRequest {
+    private createRequest(flushCandidates = false): PutRumEventsRequest {
         return {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
-            RumEvents: this.eventCache.getEventBatch(),
+            RumEvents: this.eventCache.getEventBatch(flushCandidates),
             Alias: this.config.alias
         };
     }

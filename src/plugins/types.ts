@@ -15,3 +15,8 @@ export type PluginContext = {
     getSession: GetSession;
     eventBus: EventBus<Topic>;
 };
+
+/** Private configs used by InternalPlugins */
+export interface InternalPluginContext extends PluginContext {
+    recordCandidate: RecordEvent;
+}
