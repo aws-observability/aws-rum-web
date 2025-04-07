@@ -126,7 +126,8 @@ export class WebVitalsPlugin extends InternalPlugin {
 
     private handleCLS(metric: CLSMetricWithAttribution | Metric) {
         const a = (metric as CLSMetricWithAttribution).attribution;
-        this.context?.record(CLS_EVENT_TYPE, {
+        const { record, recordCandidate } = this.context;
+        (this.config.reportAllCLS ? record : recordCandidate)(CLS_EVENT_TYPE, {
             version: '1.0.0',
             value: metric.value,
             attribution: {

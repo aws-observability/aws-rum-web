@@ -187,14 +187,50 @@ describe('WebVitalsPlugin tests', () => {
         );
     });
 
-    test('When web vitals are present then CLS is recorded with attribution', async () => {
+    test('When web vitals are present with reportAllCLS=false then CLS is recorded with attribution as event candidate', async () => {
         // Setup
-        const plugin: WebVitalsPlugin = new WebVitalsPlugin();
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin({
+            reportAllCLS: false
+        });
 
         // Run
         plugin.load(context);
 
         // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        expect(recordCandidate).toHaveBeenCalledWith(
+            CLS_EVENT_TYPE,
+            expect.objectContaining({
+                version: '1.0.0',
+                value: mockCLSData.value,
+                attribution: {
+                    largestShiftTarget:
+                        mockCLSData.attribution.largestShiftTarget,
+                    largestShiftValue:
+                        mockCLSData.attribution.largestShiftValue,
+                    largestShiftTime: mockCLSData.attribution.largestShiftTime,
+                    loadState: mockCLSData.attribution.loadState
+                }
+            })
+        );
+        expect(record).not.toHaveBeenCalledWith(
+            CLS_EVENT_TYPE,
+            expect.anything()
+        );
+    });
+
+    test('When web vitals are present with reportAllCLS=true then CLS is recorded with attribution as regular event', async () => {
+        // Setup
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin({
+            reportAllCLS: true
+        });
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(3);
+
         expect(record).toHaveBeenCalledWith(
             CLS_EVENT_TYPE,
             expect.objectContaining({
@@ -209,6 +245,11 @@ describe('WebVitalsPlugin tests', () => {
                     loadState: mockCLSData.attribution.loadState
                 }
             })
+        );
+
+        expect(recordCandidate).not.toHaveBeenCalledWith(
+            CLS_EVENT_TYPE,
+            expect.anything()
         );
     });
 
@@ -349,6 +390,7 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
+        expect(record).toHaveBeenCalledTimes(2);
         expect(recordCandidate).toHaveBeenCalledWith(
             INP_EVENT_TYPE,
             expect.objectContaining({
@@ -385,6 +427,7 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
+        expect(record).toHaveBeenCalledTimes(3);
         expect(record).toHaveBeenCalledWith(
             INP_EVENT_TYPE,
             expect.objectContaining({
