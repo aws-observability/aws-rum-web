@@ -425,7 +425,9 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(mockRecord).toHaveBeenCalledTimes(1);
-        expect(mockRecord.mock.calls[0][1]).toEqual(SESSION_START_EVENT_TYPE);
+        expect(mockRecord).toHaveBeenCalledWith(SESSION_START_EVENT_TYPE, {
+            version: '1.0.0'
+        });
     });
 
     test('when a session is resumed then the session start event is not emitted', async () => {
