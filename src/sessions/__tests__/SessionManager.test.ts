@@ -86,7 +86,7 @@ describe('SessionManager tests', () => {
         navigatorCookieEnabled = true;
         removeCookie(SESSION_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
         removeCookie(USER_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
-        jest.useRealTimers();
+        jest.useRealTimers(); // This avoids stack overflow to document.location.toString() in jest's mock browser environment
         mockRecord.mockClear();
     });
 
