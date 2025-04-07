@@ -83,7 +83,14 @@ export class WebVitalsPlugin extends InternalPlugin {
             url: a.url,
             timeToFirstByte: a.timeToFirstByte,
             resourceLoadDelay: a.resourceLoadDelay,
-            resourceLoadTime: a.resourceLoadTime,
+            /**
+             * `resourceLoadTime` was renamed to `resourceLoadDuration` in web-vitals 4.x
+             * This is a cosmetic change, and does not affect the underlying value.
+             * We can update the name to `resourceLoadDuration` in RUM's next major version.
+             * (See https://github.com/GoogleChrome/web-vitals/pull/450)
+             */
+            resourceLoadTime: a.resourceLoadDuration,
+            // See https://github.com/GoogleChrome/web-vitals/pull/450
             elementRenderDelay: a.elementRenderDelay
         };
         if (a.lcpResourceEntry) {
