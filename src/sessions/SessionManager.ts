@@ -124,7 +124,7 @@ export class SessionManager {
             this.createSession();
         } else if (
             this.session.sessionId !== NIL_UUID &&
-            new Date() > this.sessionExpiry
+            new Date() >= this.sessionExpiry
         ) {
             // The session has expired. Create a new one.
             this.createSession();

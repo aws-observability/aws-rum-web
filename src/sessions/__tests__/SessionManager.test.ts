@@ -22,7 +22,6 @@ import {
     DEFAULT_CONFIG,
     mockFetch
 } from '../../test-utils/test-utils';
-import { advanceTo } from 'jest-date-mock';
 
 global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
@@ -67,8 +66,14 @@ const defaultSessionManager = (config) => {
     );
 };
 
+let navigatorCookieEnabled = true;
+Object.defineProperty(window.navigator, 'cookieEnabled', {
+    configurable: true,
+    get: () => navigatorCookieEnabled
+});
+
 describe('SessionManager tests', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         window.performance.getEntriesByType = jest
             .fn()
             .mockImplementation((type) => {
@@ -78,20 +83,12 @@ describe('SessionManager tests', () => {
             });
 
         // cookie enabled
-        setNavigatorCookieEnabled(true);
-
+        navigatorCookieEnabled = true;
         removeCookie(SESSION_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
         removeCookie(USER_COOKIE_NAME, DEFAULT_CONFIG.cookieAttributes);
-
+        jest.useRealTimers();
         mockRecord.mockClear();
     });
-
-    const setNavigatorCookieEnabled = (isEnabled: boolean) => {
-        Object.defineProperty(window.navigator, 'cookieEnabled', {
-            writable: true,
-            value: isEnabled
-        });
-    };
 
     test('When sessionId does not exist in cookie, then new sessionId is assigned', async () => {
         // Init
@@ -196,7 +193,6 @@ describe('SessionManager tests', () => {
 
         const sessionA = sessionManager.getSession();
         config.allowCookies = false;
-        await new Promise((resolve) => setTimeout(resolve, 0));
         const sessionB = sessionManager.getSession();
 
         // Assert
@@ -214,7 +210,6 @@ describe('SessionManager tests', () => {
 
         const sessionA = sessionManager.getSession();
         config.allowCookies = true;
-        await new Promise((resolve) => setTimeout(resolve, 0));
         const sessionB = sessionManager.getSession();
 
         // Assert
@@ -248,7 +243,7 @@ describe('SessionManager tests', () => {
 
     test('When cookie is disabled, then sessionId is assigned from sessionManager', async () => {
         // Init
-        setNavigatorCookieEnabled(false);
+        navigatorCookieEnabled = false;
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
@@ -333,7 +328,7 @@ describe('SessionManager tests', () => {
 
     test('When cookie is disabled, then userId is assigned from sessionManager', async () => {
         // Init
-        setNavigatorCookieEnabled(false);
+        navigatorCookieEnabled = false;
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{ userIdRetentionDays: 90 }
@@ -387,7 +382,6 @@ describe('SessionManager tests', () => {
         });
 
         const sessionOne = sessionManager.getSession();
-        await new Promise((resolve) => setTimeout(resolve, 10));
         const sessionTwo = sessionManager.getSession();
 
         // Assert
