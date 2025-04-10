@@ -177,7 +177,7 @@ export const expectEvents = async (
     return true;
 };
 
-/** Returns true when expected custom attributes are found */
+/** Returns true when expected metadata attributes are found */
 export const expectValidAttributes = async (
     ingestedEvents: Map<string, string[]>,
     eventIds: string[],
@@ -192,7 +192,7 @@ export const expectValidAttributes = async (
     return true;
 };
 
-/** Returns true when no invalid custom attributes are found */
+/** Returns true when no invalid metadata attributes are found */
 export const expectInvalidAttributes = async (
     ingestedEvents: Map<string, string[]>,
     eventIds: string[],

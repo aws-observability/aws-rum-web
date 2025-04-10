@@ -422,6 +422,19 @@ test('when event with custom attributes is sent then the event is ingested', asy
     const pageViews = getEventsByType(requestBody, PAGE_VIEW_EVENT_TYPE);
     const eventIds = getEventIds(pageViews);
 
+    const customAttributes = [
+        'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
+        'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
+        'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
+        'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
+    ];
+
+    const additionalMetadataAttributes = ['aws:releaseId=2.1.7'];
+    const expectedMetadataAttributes = [
+        ...customAttributes,
+        ...additionalMetadataAttributes
+    ];
+
     // One initial load, one route change
     expect(eventIds.length).toEqual(2);
     const isIngestionCompleted = await verifyIngestionWithRetry(
@@ -430,12 +443,7 @@ test('when event with custom attributes is sent then the event is ingested', asy
         timestamp,
         MONITOR_NAME,
         5,
-        [
-            'customAttributeKeyAtRuntime1=customAttributeValueAtRuntime1',
-            'customAttributeKeyAtRuntime2=customAttributeValueAtRuntime2',
-            'custom_attribute_key_at_runtime=customAttributeValueAtRuntime',
-            'valid:customAttributeKeyAtRuntime=customAttributeValueAtRuntime'
-        ]
+        expectedMetadataAttributes
     );
     expect(isIngestionCompleted).toEqual(true);
 });
