@@ -5,8 +5,18 @@
 
         <script>
             window.fetch = function (request, init) {
-                document.getElementById('fetchRequestHeaders').innerText =
-                    init.headers['X-Amzn-Trace-Id'];
+                // Display the trace header for debugging
+                if (init && init.headers) {
+                    if (init.headers instanceof Headers) {
+                        document.getElementById(
+                            'fetchRequestHeaders'
+                        ).innerText = init.headers.get('X-Amzn-Trace-Id');
+                    } else {
+                        document.getElementById(
+                            'fetchRequestHeaders'
+                        ).innerText = init.headers['X-Amzn-Trace-Id'];
+                    }
+                }
                 return Promise.resolve({
                     status: 200,
                     headers: new Headers({ 'Content-Length': 125 }),
@@ -41,6 +51,12 @@
             // Specific to X-Ray Fetch plugin
             function sendFetchRequest() {
                 fetch('https://aws.amazon.com');
+            }
+
+            // Headers object has a set method by default
+            function sendFetchRequestWithHeadersObject() {
+                const headers = new Headers();
+                fetch('https://aws.amazon.com', { headers });
             }
 
             function sendDataPlaneRequest() {
@@ -88,6 +104,13 @@
         <button id="dispatch" onclick="dispatch()">Dispatch</button>
         <button id="clearRequestResponse" onclick="clearRequestResponse()">
             Clear
+        </button>
+        <!-- Button for testing headers with set method -->
+        <button
+            id="sendFetchRequestWithHeadersObject"
+            onclick="sendFetchRequestWithHeadersObject()"
+        >
+            Send Fetch Request with Headers Object
         </button>
         <hr />
         <span id="request"></span>
