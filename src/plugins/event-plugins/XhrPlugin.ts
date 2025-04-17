@@ -250,14 +250,27 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         return status >= 200 && status < 300;
     }
 
+    private createHttpEvent(xhrDetails: XhrDetails): HttpEvent {
+        const url = xhrDetails.url;
+
+        const normalizedUrl =
+            typeof this.config.eventURLNormalizer === 'function'
+                ? this.config.eventURLNormalizer(url)
+                : url;
+
+        return {
+            version: '1.0.0',
+            request: { method: xhrDetails.method, url: normalizedUrl }
+        };
+    }
+
     private recordHttpEventWithResponse(
         xhrDetails: XhrDetails,
         xhr: XMLHttpRequest
     ) {
         this.xhrMap.delete(xhr);
         const httpEvent: HttpEvent = {
-            version: '1.0.0',
-            request: { method: xhrDetails.method, url: xhrDetails.url },
+            ...this.createHttpEvent(xhrDetails),
             response: { status: xhr.status, statusText: xhr.statusText }
         };
         if (this.isTracingEnabled()) {
@@ -276,8 +289,7 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     ) {
         this.xhrMap.delete(xhr);
         const httpEvent: HttpEvent = {
-            version: '1.0.0',
-            request: { method: xhrDetails.method, url: xhrDetails.url },
+            ...this.createHttpEvent(xhrDetails),
             error: errorEventToJsErrorEvent(
                 {
                     type: 'error',
