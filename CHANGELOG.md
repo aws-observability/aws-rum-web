@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.22.1](https://github.com/aws-observability/aws-rum-web/compare/v1.22.0...v1.22.1) (2025-04-18)
+
 ## [1.22.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.21.x...release/1.22.x) (2025-03-27)
 
 
