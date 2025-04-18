@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.22.1](https://github.com/aws-observability/aws-rum-web/compare/v1.22.0...v1.22.1) (2025-04-18)
+
+### Bug Fixes
+
+* Revert "feat: fetch with keepalive ([#651](https://github.com/aws-observability/aws-rum-web/pull/651)) ([96d36c0](https://github.com/aws-observability/aws-rum-web/commit/96d36c0615c1e2a375f32c83c7bdd932618a4b0b))
+
 ## [1.22.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.21.x...release/1.22.x) (2025-03-27)
 
 
