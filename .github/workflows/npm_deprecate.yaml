@@ -24,6 +24,6 @@ jobs:
                   node-version: '20.x'
                   registry-url: 'https://registry.npmjs.org'
             - name: Deprecate Version
-              run: npm deprecate aws-rum-web@${{ github.event.inputs.version }} ${{ github.event.inputs.message }}
+              run: npm deprecate aws-rum-web@${{ github.event.inputs.version }} "${{ github.event.inputs.message }}"
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
