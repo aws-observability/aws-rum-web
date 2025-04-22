@@ -6,9 +6,12 @@ import { PageAttributes, PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
     UserDetails,
-    RumEvent
+    RumEvent,
+    ParsedRumEvent
 } from '../dispatch/dataplane';
 import EventBus, { Topic } from '../event-bus/EventBus';
+import { RecordEvent } from '../plugins/types';
+import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
 
 const webClientVersion = '1.22.0';
 
@@ -50,7 +53,7 @@ export class EventCache {
         this.sessionManager = new SessionManager(
             applicationDetails,
             config,
-            this.recordSessionInitEvent,
+            this.recordEvent,
             this.pageManager
         );
         this.installationMethod = config.client;
@@ -94,17 +97,20 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
+     * @param eventData The event data.
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent: RecordEvent = (type: string, eventData: object) => {
         if (!this.enabled) {
             return;
         }
-
         if (this.isCurrentUrlAllowed()) {
-            const session: Session = this.sessionManager.getSession();
-            this.sessionManager.incrementSessionEventCount();
-
-            if (this.canRecord(session)) {
+            if (type !== SESSION_START_EVENT_TYPE) {
+                // Only refresh session if not session start event
+                // to avoid recursive loop.
+                this.sessionManager.getSession();
+            }
+            if (this.sessionManager.canRecord()) {
+                this.sessionManager.incrementSessionEventCount();
                 this.addRecordToCache(type, eventData);
             }
         }
@@ -179,33 +185,6 @@ export class EventCache {
     }
 
     /**
-     * Add a session start event to the cache.
-     */
-    private recordSessionInitEvent = (
-        session: Session,
-        type: string,
-        eventData: object
-    ) => {
-        if (!this.enabled) {
-            return;
-        }
-
-        this.sessionManager.incrementSessionEventCount();
-
-        if (this.canRecord(session)) {
-            this.addRecordToCache(type, eventData);
-        }
-    };
-
-    private canRecord = (session: Session): boolean => {
-        return (
-            session.record &&
-            (session.eventCount <= this.config.sessionEventLimit ||
-                this.config.sessionEventLimit <= 0)
-        );
-    };
-
-    /**
      * Add an event to the cache.
      *
      * @param type The event schema.
@@ -223,33 +202,46 @@ export class EventCache {
             return;
         }
 
+        const [event, parsedEvent] = this.createEvent(type, eventData);
+        this.eventBus.dispatch(Topic.EVENT, parsedEvent);
+        this.events.push(event);
+    };
+
+    /** Creates a RumEvent and a ParsedRumEvent from a type and details. */
+    private createEvent = (
+        type: string,
+        details: object
+    ): [RumEvent, ParsedRumEvent] => {
         // The data plane service model (i.e., LogEvents) does not adhere to the
         // RUM agent data model, where sessions and pages are first class
         // objects with their own attribute sets. Instead, we store session
         // attributes and page attributes together as 'meta data'.
-        const metaData: MetaData = {
+        const metadata = {
             ...this.sessionManager.getAttributes(),
             ...this.pageManager.getAttributes(),
             version: '1.0.0',
             'aws:client': this.installationMethod,
             'aws:clientVersion': webClientVersion
-        };
+        } as MetaData;
 
         const partialEvent = {
             id: v4(),
             timestamp: new Date(),
             type
         };
-        this.eventBus.dispatch(Topic.EVENT, {
-            ...partialEvent,
-            details: eventData,
-            metadata: metaData
-        });
-        this.events.push({
-            ...partialEvent,
-            details: JSON.stringify(eventData),
-            metadata: JSON.stringify(metaData)
-        });
+
+        return [
+            {
+                ...partialEvent,
+                details: JSON.stringify(details),
+                metadata: JSON.stringify(metadata)
+            } as RumEvent,
+            {
+                ...partialEvent,
+                details,
+                metadata
+            } as ParsedRumEvent
+        ];
     };
 
     /**

@@ -1,4 +1,4 @@
-import { SESSION_START_EVENT_TYPE } from '../sessions/SessionManager';
+import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
 import { Selector } from 'testcafe';
 import { REQUEST_BODY } from '../test-utils/integ-test-utils';
 

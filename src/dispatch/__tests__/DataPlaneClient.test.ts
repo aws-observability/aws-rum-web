@@ -371,7 +371,6 @@ describe('DataPlaneClient tests', () => {
         const signedRequest: HttpRequest = (
             fetchHandler.mock.calls[0] as any
         )[0];
-        console.log('signedRequest :>> ', signedRequest);
         expect(signedRequest.headers['Authorization']).toEqual(
             headers['Authorization']
         );

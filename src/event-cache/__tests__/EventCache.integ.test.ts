@@ -1,9 +1,9 @@
 import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
-import * as Utils from '../../test-utils/test-utils';
+import { createEventCache } from '../../test-utils/test-utils';
 import { RumEvent } from '../../dispatch/dataplane';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
-import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
+import { SESSION_START_EVENT_TYPE } from '../../plugins/utils/constant';
 import { INSTALL_MODULE } from '../../utils/constants';
 
 const WEB_CLIENT_VERSION = '1.22.0';
@@ -25,11 +25,10 @@ describe('EventCache tests', () => {
             }
         };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache(config);
 
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
-        advanceTo(1);
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
@@ -46,12 +45,11 @@ describe('EventCache tests', () => {
         const config = {
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: false,
-                sessionLengthSeconds: 0
+                allowCookies: false
             }
         };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache(config);
         const expectedMetaData = {
             version: '1.0.0',
             'aws:client': INSTALL_MODULE,
@@ -82,7 +80,6 @@ describe('EventCache tests', () => {
             ...DEFAULT_CONFIG,
             ...{
                 allowCookies: false,
-                sessionLengthSeconds: 0,
                 sessionAttributes: {
                     version: '2.0.0',
                     domain: 'overridden.console.aws.amazon.com',
@@ -94,7 +91,7 @@ describe('EventCache tests', () => {
             }
         };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache(config);
         const expectedMetaData = {
             version: '1.0.0',
             'aws:client': INSTALL_MODULE,
@@ -124,13 +121,12 @@ describe('EventCache tests', () => {
         const config = {
             ...DEFAULT_CONFIG,
             ...{
-                allowCookies: false,
-                sessionLengthSeconds: 0
+                allowCookies: false
             },
             releaseId: '5.2.1'
         };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache(config);
 
         // Run
         eventCache.recordPageView('/console/home');
@@ -148,7 +144,7 @@ describe('EventCache tests', () => {
     test('when aws:releaseId does NOT exist then it is NOT added to event metadata', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const eventCache: EventCache = Utils.createEventCache(DEFAULT_CONFIG);
+        const eventCache = createEventCache(DEFAULT_CONFIG);
 
         // Run
         eventCache.recordPageView('/console/home');
@@ -170,7 +166,7 @@ describe('EventCache tests', () => {
             }
         };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache(config);
 
         // Assert
         expect(eventCache.isSessionSampled()).toBeFalsy();
@@ -182,7 +178,7 @@ describe('EventCache tests', () => {
             ...DEFAULT_CONFIG
         };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache(config);
 
         // Assert
         expect(eventCache.isSessionSampled()).toBeTruthy();

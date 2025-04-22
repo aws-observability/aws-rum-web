@@ -11,7 +11,7 @@ import {
     RESPONSE_STATUS
 } from '../../test-utils/integ-test-utils';
 
-import { SESSION_START_EVENT_TYPE } from '../SessionManager';
+import { SESSION_START_EVENT_TYPE } from '../../plugins/utils/constant';
 
 const randomSessionClickButton: Selector = Selector('#randomSessionClick');
 const disallowCookiesClickButton: Selector = Selector('#disallowCookies');
