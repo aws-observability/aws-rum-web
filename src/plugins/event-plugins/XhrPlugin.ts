@@ -7,6 +7,8 @@ import {
     createXRayTraceEvent,
     getAmznTraceIdHeaderValue,
     X_AMZN_TRACE_ID,
+    W3C_TRACEPARENT_HEADER_NAME,
+    getW3CTraceIdHeaderValue,
     isUrlAllowed,
     HttpPluginConfig,
     createXRaySubsegment,
@@ -307,7 +309,8 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
         const startTime = epochTime();
         xhrDetails.trace = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime
+            startTime,
+            this.context.config.enableW3CTraceId
         );
         xhrDetails.trace.subsegments!.push(
             createXRaySubsegment(
@@ -346,13 +349,23 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                         self.addXRayTraceIdHeader(xhrDetails.url) &&
                         self.isSessionRecorded()
                     ) {
-                        this.setRequestHeader(
-                            X_AMZN_TRACE_ID,
-                            getAmznTraceIdHeaderValue(
-                                xhrDetails.trace!.trace_id,
-                                xhrDetails.trace!.subsegments![0].id
-                            )
-                        );
+                        if (self.context.config.enableW3CTraceId) {
+                            this.setRequestHeader(
+                                W3C_TRACEPARENT_HEADER_NAME,
+                                getW3CTraceIdHeaderValue(
+                                    xhrDetails.trace!.trace_id,
+                                    xhrDetails.trace!.subsegments![0].id
+                                )
+                            );
+                        } else {
+                            this.setRequestHeader(
+                                X_AMZN_TRACE_ID,
+                                getAmznTraceIdHeaderValue(
+                                    xhrDetails.trace!.trace_id,
+                                    xhrDetails.trace!.subsegments![0].id
+                                )
+                            );
+                        }
                     }
                 }
                 return original.apply(this, arguments);

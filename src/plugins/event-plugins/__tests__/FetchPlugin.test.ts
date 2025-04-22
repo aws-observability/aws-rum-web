@@ -1,11 +1,17 @@
 import { FetchPlugin } from '../FetchPlugin';
-import { HttpPluginConfig, X_AMZN_TRACE_ID } from '../../utils/http-utils';
+import {
+    HttpPluginConfig,
+    X_AMZN_TRACE_ID,
+    W3C_TRACEPARENT_HEADER_NAME,
+    W3C_TRACESTATE_HEADER_NAME
+} from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
     getSession,
     record,
     xRayOffContext,
     xRayOnContext,
+    w3cTraceIdOnContext,
     mockFetch,
     mockFetchWith500,
     mockFetchWithError,
@@ -26,9 +32,15 @@ const URL = 'https://aws.amazon.com';
 const TRACE_ID =
     'Root=1-0-000000000000000000000000;Parent=0000000000000000;Sampled=1';
 
+const W3C_TRACE_ID = '00-00000000000000000000000000000000-0000000000000000-01';
+
 const existingTraceId = '1-0-000000000000000000000001';
 const existingSegmentId = '0000000000000001';
 const existingTraceHeaderValue = `Root=${existingTraceId};Parent=${existingSegmentId};Sampled=1`;
+
+const existingW3CTraceId = '00000000000000000000000000000001';
+const existingW3CTraceHeaderValue = `00-${existingW3CTraceId}-${existingSegmentId}-01`;
+const existingW3CTraceStateHeaderValue = `rojo=0000000000000001`;
 
 const Headers = function (init?: Record<string, string>) {
     const headers = init ? init : {};
@@ -209,7 +221,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when fetch is called then the plugin records a trace', async () => {
+    test('when fetch is called then the plugin records a trace with xray trace id format', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -253,7 +265,51 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when fetch throws an error then the plugin adds the error to the trace', async () => {
+    test('when fetch is called then the plugin records a trace with w3c trace id format', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        const tmp = record.mock.calls[0][1];
+        expect(record.mock.calls[0][1]).toMatchObject({
+            name: 'sample.rum.aws.amazon.com',
+            id: '0000000000000000',
+            start_time: 0,
+            trace_id: '00000000000000000000000000000000',
+            end_time: 0,
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: 'aws.amazon.com',
+                    start_time: 0,
+                    end_time: 0,
+                    namespace: 'remote',
+                    http: {
+                        request: {
+                            method: 'GET',
+                            url: URL,
+                            traced: true
+                        },
+                        response: { status: 200, content_length: 125 }
+                    }
+                }
+            ]
+        });
+    });
+
+    test('when fetch throws an error then the plugin adds the error to the trace with w3c format disabled', async () => {
         // Init
         global.fetch = mockFetchWithError;
         const config: Partial<HttpPluginConfig> = {
@@ -279,6 +335,60 @@ describe('FetchPlugin tests', () => {
             id: '0000000000000000',
             start_time: 0,
             trace_id: '1-0-000000000000000000000000',
+            end_time: 0,
+            fault: true,
+            subsegments: [
+                {
+                    id: '0000000000000000',
+                    name: 'aws.amazon.com',
+                    start_time: 0,
+                    end_time: 0,
+                    http: {
+                        request: {
+                            method: 'GET',
+                            url: URL,
+                            traced: true
+                        }
+                    },
+                    fault: true,
+                    cause: {
+                        exceptions: [
+                            {
+                                type: 'Timeout'
+                            }
+                        ]
+                    }
+                }
+            ]
+        });
+    });
+
+    test('when fetch throws an error then the plugin adds the error to the trace with w3c format enabled', async () => {
+        // Init
+        global.fetch = mockFetchWithError;
+        const config: Partial<HttpPluginConfig> = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        // Run
+        await fetch(URL).catch((error) => {
+            // Expected
+        });
+        plugin.disable();
+        global.fetch = mockFetch;
+
+        // Assert
+        expect(mockFetchWithError).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            name: 'sample.rum.aws.amazon.com',
+            id: '0000000000000000',
+            start_time: 0,
+            trace_id: '00000000000000000000000000000000',
             end_time: 0,
             fault: true,
             subsegments: [
@@ -453,7 +563,7 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
     });
 
-    test('when addXRayTraceIdHeader is true then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+    test('when addXRayTraceIdHeader is true and w3c format disabled then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: true
@@ -470,6 +580,28 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls[0][1]).toMatchObject({
             headers: {
                 [X_AMZN_TRACE_ID]: TRACE_ID
+            }
+        });
+    });
+
+    test('when addXRayTraceIdHeader is true and w3c format enabled then traceparent header is added to the HTTP request', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID,
+                [W3C_TRACESTATE_HEADER_NAME]: ''
             }
         });
     });
@@ -492,7 +624,7 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
     });
 
-    test('when url matches some regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+    test('when url matches some regex in addXRayTraceIdHeader and w3c format disabled then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: [/noMatch/, new RegExp(URL)]
@@ -515,7 +647,31 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when url matches no regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+    test('when url matches some regex in addXRayTraceIdHeader and w3c format enabled then traceparent header is added to the HTTP request', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: [/noMatch/, new RegExp(URL)]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        const init: RequestInit = {};
+
+        // Run
+        await fetch(URL, init);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID,
+                [W3C_TRACESTATE_HEADER_NAME]: ''
+            }
+        });
+    });
+
+    test('when url matches no regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: [/noMatch/]
@@ -551,7 +707,7 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
     });
 
-    test('when init object is provided then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
+    test('when init object is provided with w3c trace disabled then X-Amzn-Trace-Id header is added to the HTTP request', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: true
@@ -576,6 +732,36 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls[0][1]).toMatchObject({
             headers: {
                 [X_AMZN_TRACE_ID]: TRACE_ID
+            }
+        });
+    });
+
+    test('when init object is provided with w3c trace enabled then traceparent header is added to the HTTP request', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        const init: RequestInit = {
+            method: 'POST',
+            headers: {
+                x: 'y'
+            }
+        };
+
+        // Run
+        await fetch(URL, Object.assign({}, init));
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toMatchObject({
+            headers: {
+                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID,
+                [W3C_TRACESTATE_HEADER_NAME]: ''
             }
         });
     });
@@ -916,7 +1102,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when fetch uses request object then trace headers are added to the request object', async () => {
+    test('when fetch uses request object with w3c format disabled then trace headers are added to the request object', async () => {
         // Init
         const SIGN_HEADER_KEY = 'x-amzn-security-token';
         const SIGN_HEADER_VAL = 'abc123';
@@ -943,6 +1129,38 @@ describe('FetchPlugin tests', () => {
 
         // Assert
         expect(request.headers.get(X_AMZN_TRACE_ID)).toEqual(TRACE_ID);
+        expect(request.headers.get(SIGN_HEADER_KEY)).toEqual(SIGN_HEADER_VAL);
+    });
+
+    test('when fetch uses request object with w3c format enabled then trace headers are added to the request object', async () => {
+        // Init
+        const SIGN_HEADER_KEY = 'x-amzn-security-token';
+        const SIGN_HEADER_VAL = 'abc123';
+
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: true,
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        const init: RequestInit = {
+            headers: {
+                [SIGN_HEADER_KEY]: SIGN_HEADER_VAL
+            }
+        };
+
+        const request: Request = new Request(URL, init);
+
+        // Run
+        await fetch(request);
+        plugin.disable();
+
+        // Assert
+        expect(request.headers.get(W3C_TRACEPARENT_HEADER_NAME)).toEqual(
+            W3C_TRACE_ID
+        );
         expect(request.headers.get(SIGN_HEADER_KEY)).toEqual(SIGN_HEADER_VAL);
     });
 
@@ -978,7 +1196,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when tracing is enabled then the trace id is added to the http event', async () => {
+    test('when tracing is enabled and w3c format disabled then the trace id is added to the http event', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -998,6 +1216,30 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[1][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[1][1]).toMatchObject({
             trace_id: '1-0-000000000000000000000000',
+            segment_id: '0000000000000000'
+        });
+    });
+
+    test('when tracing is enabled and w3c format enabled then the trace id is added to the http event', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(2);
+        expect(record.mock.calls[1][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            trace_id: '00000000000000000000000000000000',
             segment_id: '0000000000000000'
         });
     });
@@ -1027,7 +1269,7 @@ describe('FetchPlugin tests', () => {
             segment_id: expect.anything()
         });
     });
-    test('when fetch is called and request has existing trace header then existing trace data is added to the http event', async () => {
+    test('when fetch is called and request has existing trace header with xray trace format then existing trace data is added to the http event', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -1057,6 +1299,44 @@ describe('FetchPlugin tests', () => {
             trace_id: existingTraceId,
             segment_id: existingSegmentId
         });
+    });
+
+    test('when fetch is called and request has existing trace header with w3c format then existing trace data is added to the http event and segment id is updated', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/aws\.amazon\.com/],
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        const init: RequestInit = {
+            headers: {
+                [W3C_TRACEPARENT_HEADER_NAME]: existingW3CTraceHeaderValue,
+                [W3C_TRACESTATE_HEADER_NAME]: existingW3CTraceStateHeaderValue
+            }
+        };
+
+        const request: Request = new Request(URL, init);
+
+        // Run
+        await fetch(request);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            trace_id: existingW3CTraceId
+        });
+        expect(record.mock.calls[0][1]).not.toMatchObject({
+            segment_id: existingSegmentId
+        });
+        expect(request.headers.get(W3C_TRACESTATE_HEADER_NAME)).toEqual(
+            existingW3CTraceStateHeaderValue
+        );
     });
 
     test('when the url does not match urlsToInclude then the plugin does not record a trace', async () => {

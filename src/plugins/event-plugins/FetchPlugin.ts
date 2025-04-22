@@ -90,7 +90,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         const http: Http = createXRayTraceEventHttp(input, init, true);
         const xRayTraceEvent: XRayTraceEvent = createXRayTraceEvent(
             this.config.logicalServiceName,
-            startTime
+            startTime,
+            this.context.config.enableW3CTraceId
         );
         const subsegment: Subsegment = createXRaySubsegment(
             requestInfoToHostname(input),
@@ -121,7 +122,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
             return addAmznTraceIdHeaderToHeaders(
                 (input as Request).headers,
                 xRayTraceEvent.trace_id,
-                xRayTraceEvent.subsegments![0].id
+                xRayTraceEvent.subsegments![0].id,
+                this.context.config.enableW3CTraceId
             );
         }
 
@@ -133,7 +135,8 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         addAmznTraceIdHeaderToInit(
             init,
             xRayTraceEvent.trace_id,
-            xRayTraceEvent.subsegments![0].id
+            xRayTraceEvent.subsegments![0].id,
+            this.context.config.enableW3CTraceId
         );
     };
 
@@ -277,7 +280,10 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         if (!isUrlAllowed(resourceToUrlString(input), this.config)) {
             return original.apply(thisArg, argsArray as any);
         }
-        const traceHeader = getTraceHeader((input as Request).headers);
+        const traceHeader = getTraceHeader(
+            (input as Request).headers,
+            this.context.config.enableW3CTraceId
+        );
 
         if (traceHeader.traceId && traceHeader.segmentId) {
             httpEvent.trace_id = traceHeader.traceId;

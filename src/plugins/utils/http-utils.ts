@@ -12,6 +12,8 @@ for (let i = 0; i < 256; i++) {
 }
 
 export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
+export const W3C_TRACEPARENT_HEADER_NAME = 'traceparent';
+export const W3C_TRACESTATE_HEADER_NAME = 'tracestate';
 
 export type HttpPluginConfig = {
     logicalServiceName: string;
@@ -105,6 +107,7 @@ export const createXRayTraceEventHttp = (
 export const createXRayTraceEvent = (
     name: string,
     startTime: number,
+    w3cTraceId: boolean,
     http?: Http
 ): XRayTraceEvent => {
     const traceEvent: XRayTraceEvent = {
@@ -113,7 +116,7 @@ export const createXRayTraceEvent = (
         origin: 'AWS::RUM::AppMonitor',
         id: generateSegmentId(),
         start_time: startTime,
-        trace_id: generateTraceId(),
+        trace_id: w3cTraceId ? generateW3CTraceId() : generateTraceId(),
         end_time: undefined,
         subsegments: [],
         in_progress: false
@@ -163,23 +166,42 @@ export const requestInfoToHostname = (request: Request | URL | string) => {
 export const addAmznTraceIdHeaderToInit = (
     init: RequestInit,
     traceId: string,
-    segmentId: string
+    segmentId: string,
+    w3cTraceIdEnabled: boolean
 ) => {
     if (!init.headers) {
         init.headers = {};
     }
-    (init.headers as any)[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
-        traceId,
-        segmentId
-    );
+    if (w3cTraceIdEnabled) {
+        (init.headers as any)[W3C_TRACEPARENT_HEADER_NAME] =
+            getW3CTraceIdHeaderValue(traceId, segmentId);
+        (init.headers as any)[W3C_TRACESTATE_HEADER_NAME] = '';
+    } else {
+        (init.headers as any)[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
+            traceId,
+            segmentId
+        );
+    }
 };
 
 export const addAmznTraceIdHeaderToHeaders = (
     headers: Headers,
     traceId: string,
-    segmentId: string
+    segmentId: string,
+    w3cTraceIdEnabled: boolean
 ) => {
-    headers.set(X_AMZN_TRACE_ID, getAmznTraceIdHeaderValue(traceId, segmentId));
+    if (w3cTraceIdEnabled) {
+        headers.set(
+            W3C_TRACEPARENT_HEADER_NAME,
+            getW3CTraceIdHeaderValue(traceId, segmentId)
+        );
+        headers.set(W3C_TRACESTATE_HEADER_NAME, '');
+    } else {
+        headers.set(
+            X_AMZN_TRACE_ID,
+            getAmznTraceIdHeaderValue(traceId, segmentId)
+        );
+    }
 };
 
 export const getAmznTraceIdHeaderValue = (
@@ -189,14 +211,46 @@ export const getAmznTraceIdHeaderValue = (
     return 'Root=' + traceId + ';Parent=' + segmentId + ';Sampled=1';
 };
 
-export const getTraceHeader = (headers: Headers) => {
+export const getW3CTraceIdHeaderValue = (
+    traceId: string,
+    segmentId: string
+) => {
+    return '00-' + traceId + '-' + segmentId + '-01';
+};
+
+export const isValidW3CHeader = (headerComponents: string[]) => {
+    return (
+        headerComponents?.length === 4 &&
+        headerComponents[0].length === 2 &&
+        headerComponents[1].length === 32 &&
+        headerComponents[2].length === 16 &&
+        (headerComponents[3] === '00' || headerComponents[3] === '01')
+    );
+};
+
+export const getTraceHeader = (
+    headers: Headers,
+    w3cTraceIdEnabled: boolean
+) => {
     const traceHeader: TraceHeader = {};
 
     if (headers) {
-        const headerComponents = headers.get(X_AMZN_TRACE_ID)?.split(';');
-        if (headerComponents?.length === 3) {
-            traceHeader.traceId = headerComponents[0].split('Root=')[1];
-            traceHeader.segmentId = headerComponents[1].split('Parent=')[1];
+        if (w3cTraceIdEnabled) {
+            const headerComponents = headers
+                .get(W3C_TRACEPARENT_HEADER_NAME)
+                ?.split('-');
+            if (headerComponents && isValidW3CHeader(headerComponents)) {
+                traceHeader.traceId = headerComponents[1];
+                traceHeader.segmentId = generateSegmentId();
+            } else {
+                headers.set(W3C_TRACESTATE_HEADER_NAME, '');
+            }
+        } else {
+            const headerComponents = headers.get(X_AMZN_TRACE_ID)?.split(';');
+            if (headerComponents?.length === 3) {
+                traceHeader.traceId = headerComponents[0].split('Root=')[1];
+                traceHeader.segmentId = headerComponents[1].split('Parent=')[1];
+            }
         }
     }
     return traceHeader;
@@ -219,6 +273,12 @@ export const resourceToUrlString = (resource: Request | URL | string) => {
  */
 const generateTraceId = (): string => {
     return `1-${hexTime()}-${guid()}`;
+};
+
+const generateW3CTraceId = (): string => {
+    const randomBytes = new Uint8Array(16);
+    getRandomValues(randomBytes);
+    return `${uint8ArrayToHexString(randomBytes)}`;
 };
 
 /**
