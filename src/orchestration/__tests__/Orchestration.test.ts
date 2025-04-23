@@ -4,10 +4,10 @@ import { EventCache } from '../../event-cache/EventCache';
 import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
 import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
 import { PluginManager } from '../../plugins/PluginManager';
-import { PageIdFormatEnum } from '../Orchestration';
 import { PageAttributes } from '../../sessions/PageManager';
-import { INSTALL_MODULE, INSTALL_SCRIPT } from '../../utils/constants';
+import { INSTALL_SCRIPT } from '../../utils/constants';
 import { performanceEvent } from '../../test-utils/mock-data';
+import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
 
 global.fetch = jest.fn();
 
@@ -150,6 +150,21 @@ describe('Orchestration tests', () => {
         expect(actual.sort()).toEqual(expected.sort());
     });
 
+    test('when candidatesCacheSize is used then it is overriden to default', async () => {
+        // Init
+        new Orchestration('a', undefined, undefined, {
+            candidatesCacheSize: Number.MAX_SAFE_INTEGER
+        });
+
+        // Assert
+        expect(EventCache).toHaveBeenCalledTimes(1);
+        expect((EventCache as any).mock.calls[0][1]).toEqual({
+            ...DEFAULT_CONFIG,
+            candidatesCacheSize: 10,
+            fetchFunction: fetch
+        });
+    });
+
     test('when config is not provided then defaults are used', async () => {
         // Init
         const orchestration = new Orchestration(
@@ -162,41 +177,7 @@ describe('Orchestration tests', () => {
         // Assert
         expect(EventCache).toHaveBeenCalledTimes(1);
         expect((EventCache as any).mock.calls[0][1]).toEqual({
-            allowCookies: false,
-            batchLimit: 100,
-            client: INSTALL_MODULE,
-            cookieAttributes: {
-                unique: false,
-                domain: window.location.hostname,
-                path: '/',
-                sameSite: 'Strict',
-                secure: true
-            },
-            sessionAttributes: {},
-            telemetries: [],
-            disableAutoPageView: false,
-            dispatchInterval: 5000,
-            enableXRay: false,
-            endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
-            endpointUrl: new URL(
-                'https://dataplane.rum.us-west-2.amazonaws.com'
-            ),
-            eventCacheSize: 200,
-            eventPluginsToLoad: [],
-            pageIdFormat: PageIdFormatEnum.Path,
-            pagesToExclude: [],
-            pagesToInclude: [/.*/],
-            signing: true,
-            recordResourceUrl: true,
-            retries: 2,
-            routeChangeComplete: 100,
-            routeChangeTimeout: 10000,
-            sessionEventLimit: 200,
-            sessionLengthSeconds: 1800,
-            sessionSampleRate: 1,
-            userIdRetentionDays: 30,
-            enableRumClient: true,
-            useBeacon: true,
+            ...DEFAULT_CONFIG,
             fetchFunction: fetch
         });
     });

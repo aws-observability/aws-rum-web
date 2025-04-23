@@ -7,7 +7,7 @@ import {
 } from '../orchestration/Orchestration';
 import {
     GetSession,
-    PluginContext,
+    InternalPluginContext,
     RecordEvent,
     RecordPageView
 } from '../plugins/types';
@@ -18,10 +18,12 @@ import {
 } from '../dispatch/dataplane';
 import { ReadableStream } from 'web-streams-polyfill';
 import EventBus from '../event-bus/EventBus';
+import { INSTALL_MODULE } from '../utils/constants';
 
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'
 );
+export const WEB_CLIENT_VERSION = '1.22.0';
 export const AWS_RUM_REGION = 'us-west-2';
 export const APPLICATION_ID = 'application123';
 export const APPLICATION_VERSION = '1.2';
@@ -66,10 +68,14 @@ export const createDefaultEventCache = (): EventCache => {
 };
 
 export const createEventCache = (
-    config: Config,
+    config: Partial<Config> = {},
     bus?: EventBus
 ): EventCache => {
-    return new EventCache(APP_MONITOR_DETAILS, config, bus);
+    return new EventCache(
+        APP_MONITOR_DETAILS,
+        { ...DEFAULT_CONFIG, ...config },
+        bus
+    );
 };
 
 export const createDefaultEventCacheWithEvents = (): EventCache => {
@@ -103,6 +109,7 @@ export const sleep = (ms: number) => {
 };
 
 export const record: jest.MockedFunction<RecordEvent> = jest.fn();
+export const recordCandidate: jest.MockedFunction<RecordEvent> = jest.fn();
 export const recordPageView: jest.MockedFunction<RecordPageView> = jest.fn();
 export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     sessionId: 'abc123',
@@ -110,22 +117,23 @@ export const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
     eventCount: 0
 }));
 
-export const context: PluginContext = {
+export const context: InternalPluginContext = {
     applicationId: 'b',
     applicationVersion: '1.0',
     config: DEFAULT_CONFIG,
     record,
+    recordCandidate,
     recordPageView,
     getSession,
     eventBus: new EventBus()
 };
 
-export const xRayOffContext: PluginContext = {
+export const xRayOffContext: InternalPluginContext = {
     ...context,
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: false } }
 };
 
-export const xRayOnContext: PluginContext = {
+export const xRayOnContext: InternalPluginContext = {
     ...context,
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
 };
@@ -208,3 +216,28 @@ export const mockFetchWithErrorObjectAndStack = jest.fn(
             stack: 'stack trace'
         })
 );
+
+export const createExpectedEvents = (types: string[], expect: any) =>
+    types.map((type) => ({
+        id: expect.stringMatching(/[0-9a-f\-]+/),
+        timestamp: new Date(),
+        type,
+        metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+        details: '{}'
+    }));
+
+export const testMetaData = {
+    version: '1.0.0',
+    'aws:client': INSTALL_MODULE,
+    'aws:clientVersion': WEB_CLIENT_VERSION,
+    domain: 'us-east-1.console.aws.amazon.com',
+    browserLanguage: 'en-US',
+    browserName: 'WebKit',
+    browserVersion: '537.36',
+    osName: 'unknown',
+    osVersion: 'unknown',
+    deviceType: 'desktop',
+    platformType: 'web',
+    pageId: '/console/home',
+    title: ''
+};

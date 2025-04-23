@@ -1,35 +1,30 @@
-import { EventCache } from '../EventCache';
 import { advanceTo } from 'jest-date-mock';
-import * as Utils from '../../test-utils/test-utils';
-import { RumEvent } from '../../dispatch/dataplane';
-import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
-import { SESSION_START_EVENT_TYPE } from '../../sessions/SessionManager';
-import { INSTALL_MODULE } from '../../utils/constants';
-
-const WEB_CLIENT_VERSION = '1.22.0';
+import {
+    createDefaultEventCache,
+    createEventCache,
+    testMetaData,
+    mockFetch
+} from '../../test-utils/test-utils';
+import type { RumEvent } from '../../dispatch/dataplane';
+import { SESSION_START_EVENT_TYPE } from '../../plugins/utils/constant';
 
 global.fetch = mockFetch;
 describe('EventCache tests', () => {
+    const EVENT1_SCHEMA = 'com.amazon.rum.event1';
+    const EVENT2_SCHEMA = 'com.amazon.rum.event2';
     beforeAll(() => {
         advanceTo(0);
     });
 
     test('when a session expires then a new session is created', async () => {
         // Init
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                allowCookies: true,
-                sessionLengthSeconds: 0
-            }
-        };
-
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache({
+            allowCookies: true,
+            sessionLengthSeconds: 0
+        });
 
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
-        advanceTo(1);
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
@@ -42,70 +37,41 @@ describe('EventCache tests', () => {
 
     test('meta data contains domain, user agent and page ID', async () => {
         // Init
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                allowCookies: false,
-                sessionLengthSeconds: 0
-            }
-        };
-
-        const eventCache: EventCache = Utils.createEventCache(config);
-        const expectedMetaData = {
-            version: '1.0.0',
-            'aws:client': INSTALL_MODULE,
-            'aws:clientVersion': WEB_CLIENT_VERSION,
-            domain: 'us-east-1.console.aws.amazon.com',
-            browserLanguage: 'en-US',
-            browserName: 'WebKit',
-            deviceType: 'desktop',
-            platformType: 'web',
-            pageId: '/console/home'
-        };
+        const eventCache = createEventCache({
+            allowCookies: false,
+            sessionLengthSeconds: 0
+        });
 
         // Run
         eventCache.recordPageView('/console/home');
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        const events: RumEvent[] = eventCache.getEventBatch();
+        const events = eventCache.getEventBatch();
         events.forEach((event) => {
-            expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
+            expect(JSON.parse(event.metadata)).toEqual({
+                ...testMetaData,
+                osName: expect.any(String), // osName depends on platform
+                osVersion: expect.any(String) // osVersion depends on platform
+            });
         });
     });
 
-    test('default meta data can be overriden by custom attributes', async () => {
+    test('default meta data can be overriden by custom attributes except version', async () => {
         // Init
-        const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                allowCookies: false,
-                sessionLengthSeconds: 0,
-                sessionAttributes: {
-                    version: '2.0.0',
-                    domain: 'overridden.console.aws.amazon.com',
-                    browserLanguage: 'en-UK',
-                    browserName: 'Chrome',
-                    deviceType: 'Mac',
-                    platformType: 'other'
-                }
-            }
-        };
-
-        const eventCache: EventCache = Utils.createEventCache(config);
-        const expectedMetaData = {
-            version: '1.0.0',
-            'aws:client': INSTALL_MODULE,
-            'aws:clientVersion': WEB_CLIENT_VERSION,
+        const sessionAttributes = {
+            version: '2.0.0',
             domain: 'overridden.console.aws.amazon.com',
             browserLanguage: 'en-UK',
             browserName: 'Chrome',
             deviceType: 'Mac',
-            platformType: 'other',
-            pageId: '/console/home'
+            platformType: 'other'
         };
+        const eventCache = createEventCache({
+            allowCookies: false,
+            sessionLengthSeconds: 0,
+            sessionAttributes
+        });
 
         // Run
         eventCache.recordPageView('/console/home');
@@ -114,23 +80,22 @@ describe('EventCache tests', () => {
         // Assert
         const events: RumEvent[] = eventCache.getEventBatch();
         events.forEach((event) => {
-            expect(JSON.parse(event.metadata)).toMatchObject(expectedMetaData);
+            expect(JSON.parse(event.metadata)).toEqual({
+                ...testMetaData,
+                ...sessionAttributes,
+                version: '1.0.0', // Version cannnot be overriden
+                osName: expect.any(String), // osName depends on platform
+                osVersion: expect.any(String) // osVersion depends on platform
+            });
         });
     });
 
     test('when aws:releaseId exists then it is added to event metadata', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                allowCookies: false,
-                sessionLengthSeconds: 0
-            },
+        const eventCache = createEventCache({
             releaseId: '5.2.1'
-        };
-
-        const eventCache: EventCache = Utils.createEventCache(config);
+        });
 
         // Run
         eventCache.recordPageView('/console/home');
@@ -148,7 +113,7 @@ describe('EventCache tests', () => {
     test('when aws:releaseId does NOT exist then it is NOT added to event metadata', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
-        const eventCache: EventCache = Utils.createEventCache(DEFAULT_CONFIG);
+        const eventCache = createEventCache();
 
         // Run
         eventCache.recordPageView('/console/home');
@@ -163,14 +128,8 @@ describe('EventCache tests', () => {
 
     test('when a session is not sampled then return false', async () => {
         // Init
-        const config = {
-            ...DEFAULT_CONFIG,
-            ...{
-                sessionSampleRate: 0
-            }
-        };
 
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createEventCache({ sessionSampleRate: 0 });
 
         // Assert
         expect(eventCache.isSessionSampled()).toBeFalsy();
@@ -178,13 +137,38 @@ describe('EventCache tests', () => {
 
     test('when a session is sampled then return true', async () => {
         // Init
-        const config = {
-            ...DEFAULT_CONFIG
-        };
-
-        const eventCache: EventCache = Utils.createEventCache(config);
+        const eventCache = createDefaultEventCache();
 
         // Assert
-        expect(eventCache.isSessionSampled()).toBeTruthy();
+        expect(eventCache.isSessionSampled()).toBe(true);
+    });
+
+    test('WHEN session event limit is reached THEN new candidate cannot be added', async () => {
+        // init
+        const eventCache = createEventCache({ sessionEventLimit: 1 });
+
+        // rum
+        eventCache.recordCandidate(EVENT1_SCHEMA, {});
+        eventCache.recordCandidate(EVENT2_SCHEMA, {});
+
+        // assert
+        const batch = eventCache.getEventBatch(true);
+        expect(batch).toHaveLength(1);
+        expect(batch[0].type).toEqual(SESSION_START_EVENT_TYPE);
+    });
+
+    test('WHEN session event limit is reached THEN existing candidate can still be updated', async () => {
+        // init
+        const eventCache = createEventCache({ sessionEventLimit: 2 });
+
+        // rum
+        eventCache.recordCandidate(EVENT1_SCHEMA, { data: 1 });
+        eventCache.recordCandidate(EVENT1_SCHEMA, { data: 2 });
+
+        // assert
+        const batch = eventCache.getEventBatch(true);
+        expect(batch).toHaveLength(2);
+        expect(batch[0].type).toEqual(EVENT1_SCHEMA);
+        expect(JSON.parse(batch[0].details)).toEqual({ data: 2 });
     });
 });

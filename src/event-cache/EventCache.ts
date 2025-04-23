@@ -6,9 +6,12 @@ import { PageAttributes, PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,
     UserDetails,
-    RumEvent
+    RumEvent,
+    ParsedRumEvent
 } from '../dispatch/dataplane';
 import EventBus, { Topic } from '../event-bus/EventBus';
+import { RecordEvent } from '../plugins/types';
+import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
 
 const webClientVersion = '1.22.0';
 
@@ -24,6 +27,7 @@ export class EventCache {
     private config: Config;
 
     private events: RumEvent[] = [];
+    private candidates = new Map<string, RumEvent>();
 
     private sessionManager: SessionManager;
     private pageManager: PageManager;
@@ -50,7 +54,7 @@ export class EventCache {
         this.sessionManager = new SessionManager(
             applicationDetails,
             config,
-            this.recordSessionInitEvent,
+            this.recordEvent,
             this.pageManager
         );
         this.installationMethod = config.client;
@@ -94,19 +98,55 @@ export class EventCache {
      * If the session is not being recorded, the event will not be recorded.
      *
      * @param type The event schema.
+     * @param eventData The event data.
      */
-    public recordEvent = (type: string, eventData: object) => {
+    public recordEvent: RecordEvent = (type: string, eventData: object) => {
         if (!this.enabled) {
             return;
         }
-
         if (this.isCurrentUrlAllowed()) {
-            const session: Session = this.sessionManager.getSession();
-            this.sessionManager.incrementSessionEventCount();
-
-            if (this.canRecord(session)) {
+            if (type !== SESSION_START_EVENT_TYPE) {
+                // Only refresh session if not session start event
+                // to avoid recursive loop.
+                this.sessionManager.getSession();
+            }
+            if (this.sessionManager.canRecord()) {
+                this.sessionManager.incrementSessionEventCount();
                 this.addRecordToCache(type, eventData);
             }
+        }
+    };
+
+    /**
+     * Adds a candidate to the cache and reset session timer
+     *
+     * @param eventType The event schema.
+     * @param eventData The event data.
+     */
+    public recordCandidate: RecordEvent = (
+        eventType: string,
+        eventData: object
+    ) => {
+        const session = this.sessionManager.getSession();
+        if (!this.enabled || !this.isCurrentUrlAllowed() || !session.record) {
+            return;
+        }
+
+        const [event] = this.createEvent(eventType, eventData);
+
+        // Update candidate if exists
+        if (this.candidates.has(eventType)) {
+            this.candidates.set(eventType, event);
+            return;
+        }
+
+        // Record new candidate only if limits have not been reached
+        if (
+            this.candidates.size < this.config.candidatesCacheSize &&
+            !this.sessionManager.isLimitExceeded()
+        ) {
+            this.candidates.set(eventType, event);
+            this.sessionManager.incrementSessionEventCount();
         }
     };
 
@@ -129,25 +169,57 @@ export class EventCache {
     }
 
     /**
+     * Returns true if there are one or more event candidates in the cache.
+     */
+    public hasCandidates() {
+        return this.candidates.size !== 0;
+    }
+
+    /**
      * Removes and returns the next batch of events.
      */
-    public getEventBatch(): RumEvent[] {
-        let rumEvents: RumEvent[] = [];
+    public getEventBatch(flushCandidates = false): RumEvent[] {
+        let batch: RumEvent[] = [];
 
-        if (this.events.length === 0) {
-            return rumEvents;
+        // Prioritize candidates in the next event batch
+        if (flushCandidates && this.hasCandidates()) {
+            // Pull all candidates if they fit in the batch
+            if (this.candidates.size <= this.config.batchLimit) {
+                batch = Array.from(this.candidates.values());
+                this.candidates.clear();
+            } else {
+                // Pull candidates in FIFO order until batch limit is reached
+                let i = 0;
+                for (const key of Array.from(this.candidates.keys())) {
+                    if (i++ >= this.config.batchLimit) {
+                        break;
+                    }
+                    const event = this.candidates.get(key);
+                    if (event) {
+                        batch.push(event);
+                        this.candidates.delete(key);
+                    }
+                }
+            }
         }
 
-        if (this.events.length <= this.config.batchLimit) {
-            // Return all events.
-            rumEvents = this.events;
-            this.events = [];
-        } else {
-            // Dispatch the front of the array and retain the back of the array.
-            rumEvents = this.events.splice(0, this.config.batchLimit);
+        // Use remaining capacity for regular events.
+        if (this.events.length) {
+            if (this.events.length <= this.config.batchLimit - batch.length) {
+                batch.push(...this.events);
+                this.events = [];
+            } else {
+                // Dispatch the front of the array and retain the back of the array.
+                batch.push(
+                    ...this.events.splice(
+                        0,
+                        this.config.batchLimit - batch.length
+                    )
+                );
+            }
         }
 
-        return rumEvents;
+        return batch;
     }
 
     /**
@@ -179,33 +251,6 @@ export class EventCache {
     }
 
     /**
-     * Add a session start event to the cache.
-     */
-    private recordSessionInitEvent = (
-        session: Session,
-        type: string,
-        eventData: object
-    ) => {
-        if (!this.enabled) {
-            return;
-        }
-
-        this.sessionManager.incrementSessionEventCount();
-
-        if (this.canRecord(session)) {
-            this.addRecordToCache(type, eventData);
-        }
-    };
-
-    private canRecord = (session: Session): boolean => {
-        return (
-            session.record &&
-            (session.eventCount <= this.config.sessionEventLimit ||
-                this.config.sessionEventLimit <= 0)
-        );
-    };
-
-    /**
      * Add an event to the cache.
      *
      * @param type The event schema.
@@ -223,33 +268,46 @@ export class EventCache {
             return;
         }
 
+        const [event, parsedEvent] = this.createEvent(type, eventData);
+        this.eventBus.dispatch(Topic.EVENT, parsedEvent);
+        this.events.push(event);
+    };
+
+    /** Creates a RumEvent and a ParsedRumEvent from a type and details. */
+    private createEvent = (
+        type: string,
+        details: object
+    ): [RumEvent, ParsedRumEvent] => {
         // The data plane service model (i.e., LogEvents) does not adhere to the
         // RUM agent data model, where sessions and pages are first class
         // objects with their own attribute sets. Instead, we store session
         // attributes and page attributes together as 'meta data'.
-        const metaData: MetaData = {
+        const metadata = {
             ...this.sessionManager.getAttributes(),
             ...this.pageManager.getAttributes(),
             version: '1.0.0',
             'aws:client': this.installationMethod,
             'aws:clientVersion': webClientVersion
-        };
+        } as MetaData;
 
         const partialEvent = {
             id: v4(),
             timestamp: new Date(),
             type
         };
-        this.eventBus.dispatch(Topic.EVENT, {
-            ...partialEvent,
-            details: eventData,
-            metadata: metaData
-        });
-        this.events.push({
-            ...partialEvent,
-            details: JSON.stringify(eventData),
-            metadata: JSON.stringify(metaData)
-        });
+
+        return [
+            {
+                ...partialEvent,
+                details: JSON.stringify(details),
+                metadata: JSON.stringify(metadata)
+            } as RumEvent,
+            {
+                ...partialEvent,
+                details,
+                metadata
+            } as ParsedRumEvent
+        ];
     };
 
     /**

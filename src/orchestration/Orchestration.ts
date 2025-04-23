@@ -1,5 +1,5 @@
 import { Plugin } from '../plugins/Plugin';
-import { PluginContext } from '../plugins/types';
+import { InternalPluginContext } from '../plugins/types';
 import { InternalPlugin } from '../plugins/InternalPlugin';
 import { BasicAuthentication } from '../dispatch/BasicAuthentication';
 import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
@@ -94,8 +94,13 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionSampleRate: 1,
         telemetries: [],
         useBeacon: true,
-        userIdRetentionDays: 30
+        userIdRetentionDays: 30,
+        ...internalConfigOverrides
     };
+};
+
+const internalConfigOverrides = {
+    candidatesCacheSize: 10
 };
 
 export type CookieAttributes = {
@@ -123,6 +128,7 @@ export interface Config {
     endpoint: string;
     endpointUrl: URL;
     eventCacheSize: number;
+    candidatesCacheSize: number;
     eventPluginsToLoad: Plugin[];
     /*
      * We must remember the fetch function before the HttpFetch plugin
@@ -225,7 +231,8 @@ export class Orchestration {
         this.config = {
             ...{ fetchFunction: fetch },
             ...defaultConfig(cookieAttributes),
-            ...partialConfig
+            ...partialConfig,
+            ...internalConfigOverrides
         } as Config;
 
         this.config.endpoint = this.getDataPlaneEndpoint(region, partialConfig);
@@ -359,7 +366,7 @@ export class Orchestration {
     }
 
     /**
-     * Records a custom event.
+     * Records a custom event, which is dispatched at the next interval.
      *
      * @param type A unique name for the type of event being recorded.
      * @param eventData A JSON object containing the event's attributes.
@@ -423,11 +430,12 @@ export class Orchestration {
             ...this.config.eventPluginsToLoad
         ];
 
-        const pluginContext: PluginContext = {
+        const pluginContext: InternalPluginContext = {
             applicationId,
             applicationVersion,
             config: this.config,
             record: this.eventCache.recordEvent,
+            recordCandidate: this.eventCache.recordCandidate,
             recordPageView: this.eventCache.recordPageView,
             getSession: this.eventCache.getSession,
             eventBus: this.eventBus
@@ -494,7 +502,7 @@ export class Orchestration {
                 return [
                     new NavigationPlugin(config),
                     new ResourcePlugin(config),
-                    new WebVitalsPlugin()
+                    new WebVitalsPlugin(config)
                 ];
             },
             [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {

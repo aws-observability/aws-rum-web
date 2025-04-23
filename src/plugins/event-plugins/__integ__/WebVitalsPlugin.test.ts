@@ -6,6 +6,7 @@ import {
 import { Selector } from 'testcafe';
 import {
     CLS_EVENT_TYPE,
+    INP_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE
@@ -50,7 +51,7 @@ test('when lcp image resource is recorded then it is attributed to lcp', async (
 // "FID is not reported if the user never interacts with the page."
 // It doesn't seem like TestCafe actions are registered as user interactions, so cannot test FID
 
-test('WebVitalEvent records lcp and cls events on chrome', async (t: TestController) => {
+test('WebVitalEvent records lcp, cls, and inp events on chrome', async (t: TestController) => {
     // If we click too soon, the client/event collector plugin will not be loaded and will not record the click.
     // This could be a symptom of an issue with RUM web client load speed, or prioritization of script execution.
     const browser = t.browser.name;
@@ -61,6 +62,16 @@ test('WebVitalEvent records lcp and cls events on chrome', async (t: TestControl
     await t
         .wait(300)
         // Interact with page to trigger lcp event
+        // Click repeatedly to trigger a slow interaction for INP
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
+        .click(testButton)
         .click(testButton)
         .click(makePageHidden)
         .expect(RESPONSE_STATUS.textContent)
@@ -79,6 +90,19 @@ test('WebVitalEvent records lcp and cls events on chrome', async (t: TestControl
         (e) => e.type === CLS_EVENT_TYPE
     );
     const clsEventDetails = JSON.parse(clsEvents[0].details);
+
+    if (t.browser.os.name !== 'Ubuntu') {
+        // INP is flaky on ubuntu, at least via TestCafe.
+        const inpEvents = JSON.parse(content).RumEvents.filter(
+            (e) => e.type === INP_EVENT_TYPE
+        );
+        const inpEventDetails = JSON.parse(inpEvents[0].details);
+        await t
+            .expect(inpEventDetails.value)
+            .typeOf('number')
+            .expect(inpEventDetails.attribution)
+            .typeOf('object');
+    }
 
     await t
         .expect(lcpEventDetails.value)

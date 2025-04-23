@@ -7,6 +7,8 @@ import { Page, PageManager } from './PageManager';
 import { UAParser } from 'ua-parser-js';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
+import { RecordEvent } from '../plugins/types';
+import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
 
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -14,15 +16,8 @@ export const UNKNOWN = 'unknown';
 export const DESKTOP_DEVICE_TYPE = 'desktop';
 export const WEB_PLATFORM_TYPE = 'web';
 
-export const SESSION_START_EVENT_TYPE = 'com.amazon.rum.session_start_event';
 export const RUM_SESSION_START = 'rum_session_start';
 export const RUM_SESSION_EXPIRE = 'rum_session_expire';
-
-export type RecordSessionInitEvent = (
-    session: Session,
-    type: string,
-    eventData: object
-) => void;
 
 export type Session = {
     sessionId: string;
@@ -69,19 +64,19 @@ export class SessionManager {
     private userId!: string;
     private session: Session;
     private config: Config;
-    private record: RecordSessionInitEvent;
+    private recordEvent: RecordEvent;
     private attributes!: Attributes;
     private sessionCookieName: string;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
         config: Config,
-        record: RecordSessionInitEvent,
+        recordEvent: RecordEvent,
         pageManager: PageManager
     ) {
         this.appMonitorDetails = appMonitorDetails;
         this.config = config;
-        this.record = record;
+        this.recordEvent = recordEvent;
         this.pageManager = pageManager;
 
         this.sessionCookieName = this.config.cookieAttributes.unique
@@ -159,6 +154,17 @@ export class SessionManager {
     public incrementSessionEventCount() {
         this.session.eventCount++;
         this.renewSession();
+    }
+
+    public isLimitExceeded() {
+        return (
+            this.session.eventCount >= this.config.sessionEventLimit &&
+            this.config.sessionEventLimit > 0
+        );
+    }
+
+    public canRecord() {
+        return this.session.record && !this.isLimitExceeded();
     }
 
     private initializeUser() {
@@ -248,7 +254,7 @@ export class SessionManager {
             new Date().getTime() + this.config.sessionLengthSeconds * 1000
         );
         this.storeSessionAsCookie();
-        this.record(this.session, SESSION_START_EVENT_TYPE, {
+        this.recordEvent(SESSION_START_EVENT_TYPE, {
             version: '1.0.0'
         });
     }

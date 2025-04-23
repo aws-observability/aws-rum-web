@@ -21,22 +21,23 @@ Object.defineProperty(document, 'visibilityState', {
 });
 
 describe('Dispatch tests', () => {
+    let dispatch: Dispatch;
+
     beforeEach(() => {
         sendFetch.mockClear();
         sendBeacon.mockClear();
         visibilityState = 'visible';
+    });
 
-        (DataPlaneClient as any).mockImplementation(() => {
-            return {
-                sendFetch,
-                sendBeacon
-            };
-        });
+    afterEach(() => {
+        // Clear all event listeners to visibilitychange and pagehide
+        // to avoid polluting sendFetch and sendBeacon
+        dispatch.stopDispatchTimer();
     });
 
     test('dispatch() sends data through client', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -58,7 +59,7 @@ describe('Dispatch tests', () => {
     test('when CredentialProvider is used then credentials are immediately fetched', async () => {
         // Init
         const credentialProvider: AwsCredentialIdentityProvider = jest.fn();
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -77,16 +78,11 @@ describe('Dispatch tests', () => {
 
     test('dispatch() throws exception when send fails', async () => {
         // Init
-        const sendFetch = jest.fn(() =>
+        sendFetch.mockImplementationOnce(() =>
             Promise.reject('Something went wrong.')
         );
-        (DataPlaneClient as any).mockImplementation(() => {
-            return {
-                sendFetch
-            };
-        });
 
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -106,7 +102,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() does nothing when disabled', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -128,7 +124,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() sends when disabled then enabled', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -151,7 +147,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() automatically dispatches when interval > 0', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -174,7 +170,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() does not automatically  dispatch when interval = 0', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -197,7 +193,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() does not automatically  dispatch when interval < 0', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -220,7 +216,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() does not automatically dispatch when dispatch is disabled', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -244,7 +240,7 @@ describe('Dispatch tests', () => {
 
     test('dispatch() resumes when disabled and enabled', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -267,16 +263,46 @@ describe('Dispatch tests', () => {
         expect(sendFetch).toHaveBeenCalled();
     });
 
-    test('when visibilitychange event is triggered then beacon dispatch runs', async () => {
+    test('ON visibilitychange and WHEN useBeacon is false THEN flush event batch with sendFetch', async () => {
         // Init
         visibilityState = 'hidden';
-        const dispatch = new Dispatch(
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
+        const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
-            Utils.createDefaultEventCacheWithEvents(),
+            eventCache,
             {
                 ...DEFAULT_CONFIG,
-                ...{ dispatchInterval: 1 }
+                dispatchInterval: Number.MAX_SAFE_INTEGER,
+                useBeacon: false
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('visibilitychange'));
+
+        // Assert
+        expect(sendFetch).toHaveBeenCalled();
+        expect(sendBeacon).not.toHaveBeenCalled();
+        expect(getEventBatch).toHaveBeenCalledWith(true);
+    });
+
+    test('ON visibilitychange and WHEN useBeacon is true THEN flush event batch with sendBeacon', async () => {
+        // Init
+        visibilityState = 'hidden';
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
+        const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
+        dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                dispatchInterval: Number.MAX_SAFE_INTEGER,
+                useBeacon: true
             }
         );
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
@@ -287,41 +313,23 @@ describe('Dispatch tests', () => {
 
         // Assert
         expect(sendBeacon).toHaveBeenCalled();
+        expect(sendFetch).not.toHaveBeenCalled();
+        expect(getEventBatch).toHaveBeenCalledWith(true);
     });
 
-    test('when useBeacon is false then visibilitychange uses fetch dispatch', async () => {
+    test('ON pagehide and WHEN useBeacon is false THEN flush event batch with sendFetch', async () => {
         // Init
         visibilityState = 'hidden';
-        const dispatch = new Dispatch(
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
+        const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
-            Utils.createDefaultEventCacheWithEvents(),
+            eventCache,
             {
                 ...DEFAULT_CONFIG,
-                ...{ dispatchInterval: 1, useBeacon: false }
-            }
-        );
-        dispatch.setAwsCredentials(Utils.createAwsCredentials());
-        dispatch.startDispatchTimer();
-
-        // Run
-        document.dispatchEvent(new Event('visibilitychange'));
-
-        // Assert
-        expect(sendBeacon).not.toHaveBeenCalled();
-        expect(sendFetch).toHaveBeenCalled();
-    });
-
-    test('when useBeacon is false then pagehide uses fetch dispatch', async () => {
-        // Init
-        visibilityState = 'hidden';
-        const dispatch = new Dispatch(
-            Utils.AWS_RUM_REGION,
-            Utils.AWS_RUM_ENDPOINT,
-            Utils.createDefaultEventCacheWithEvents(),
-            {
-                ...DEFAULT_CONFIG,
-                ...{ dispatchInterval: 1, useBeacon: false }
+                dispatchInterval: Number.MAX_SAFE_INTEGER,
+                useBeacon: false
             }
         );
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
@@ -333,11 +341,107 @@ describe('Dispatch tests', () => {
         // Assert
         expect(sendBeacon).not.toHaveBeenCalled();
         expect(sendFetch).toHaveBeenCalled();
+        expect(getEventBatch).toHaveBeenCalledWith(true);
+    });
+
+    test('ON pagehide and WHEN useBeacon is true THEN flush event batch with sendBeacon', async () => {
+        // Init
+        visibilityState = 'hidden';
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
+        const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
+        dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                dispatchInterval: Number.MAX_SAFE_INTEGER,
+                useBeacon: true
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('pagehide'));
+
+        // Assert
+        expect(sendFetch).not.toHaveBeenCalled();
+        expect(sendBeacon).toHaveBeenCalled();
+        expect(getEventBatch).toHaveBeenCalledWith(true);
+    });
+
+    test('WHEN flush with useBeacon fails THEN use fetch', async () => {
+        // Init
+        sendBeacon.mockImplementationOnce(() => Promise.reject());
+        visibilityState = 'hidden';
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
+        const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
+        dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                dispatchInterval: Number.MAX_SAFE_INTEGER,
+                useBeacon: true
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('pagehide'));
+
+        // Wait for promises to resolve
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Assert
+        expect(getEventBatch).toHaveBeenCalledWith(true);
+        expect(sendBeacon).toHaveBeenCalled();
+
+        // Wait for sendBeacon promise to resolve
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(sendFetch).toHaveBeenCalled();
+    });
+
+    test('WHEN flush with fetch fails THEN use sendBeacon', async () => {
+        // Init
+        sendFetch.mockImplementationOnce(() => Promise.reject());
+        visibilityState = 'hidden';
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
+        const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
+        dispatch = new Dispatch(
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                dispatchInterval: Number.MAX_SAFE_INTEGER,
+                useBeacon: false
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        dispatch.startDispatchTimer();
+
+        // Run
+        document.dispatchEvent(new Event('pagehide'));
+
+        // Wait for promises to resolve
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Assert
+        expect(getEventBatch).toHaveBeenCalledWith(true);
+        expect(sendFetch).toHaveBeenCalled();
+
+        // Wait for sendFetch promise to resolve
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(sendBeacon).toHaveBeenCalled();
     });
 
     test('when plugin is disabled then beacon dispatch does not run', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -359,7 +463,7 @@ describe('Dispatch tests', () => {
 
     test('when dispatch does not have AWS credentials then dispatchFetch throws an error', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -377,7 +481,7 @@ describe('Dispatch tests', () => {
 
     test('when dispatch does not have AWS credentials then dispatchBeacon throws an error', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -395,7 +499,7 @@ describe('Dispatch tests', () => {
 
     test('when dispatch does not have AWS credentials then dispatchFetchFailSilent fails silently', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -413,7 +517,7 @@ describe('Dispatch tests', () => {
 
     test('when dispatch does not have AWS credentials then dispatchBeaconFailSilent fails silently', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -431,14 +535,13 @@ describe('Dispatch tests', () => {
 
     test('when a fetch request is rejected with 429 then dispatch is NOT disabled', async () => {
         // Init
-        (DataPlaneClient as any).mockImplementationOnce(() => ({
-            sendFetch: () => Promise.reject(new Error('429'))
-        }));
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('429'))
+        );
 
-        const eventCache: EventCache =
-            Utils.createDefaultEventCacheWithEvents();
+        const eventCache = Utils.createDefaultEventCacheWithEvents();
 
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -461,14 +564,14 @@ describe('Dispatch tests', () => {
 
     test('when a fetch request is rejected with 500 then dispatch is NOT disabled', async () => {
         // Init
-        (DataPlaneClient as any).mockImplementationOnce(() => ({
-            sendFetch: () => Promise.reject(new Error('500'))
-        }));
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('500'))
+        );
 
         const eventCache: EventCache =
             Utils.createDefaultEventCacheWithEvents();
 
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -491,14 +594,14 @@ describe('Dispatch tests', () => {
 
     test('when a fetch request is rejected with 403 then dispatch is disabled', async () => {
         // Init
-        (DataPlaneClient as any).mockImplementationOnce(() => ({
-            sendFetch: () => Promise.reject(new Error('403'))
-        }));
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('403'))
+        );
 
         const eventCache: EventCache =
             Utils.createDefaultEventCacheWithEvents();
 
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -521,14 +624,14 @@ describe('Dispatch tests', () => {
 
     test('when a fetch request is rejected with 404 then dispatch is disabled', async () => {
         // Init
-        (DataPlaneClient as any).mockImplementationOnce(() => ({
-            sendFetch: () => Promise.reject(new Error('404'))
-        }));
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('404'))
+        );
 
         const eventCache: EventCache =
             Utils.createDefaultEventCacheWithEvents();
 
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -551,7 +654,7 @@ describe('Dispatch tests', () => {
 
     test('when signing is disabled then credentials are not needed for dispatch', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -571,7 +674,7 @@ describe('Dispatch tests', () => {
 
     test('When valid alias is provided then PutRumEvents request containing alias is sent', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -598,7 +701,7 @@ describe('Dispatch tests', () => {
 
     test('When no alias is provided then PutRumEvents request does not contain an alias', async () => {
         // Init
-        const dispatch = new Dispatch(
+        dispatch = new Dispatch(
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
