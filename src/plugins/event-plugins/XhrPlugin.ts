@@ -349,23 +349,15 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
                         self.addXRayTraceIdHeader(xhrDetails.url) &&
                         self.isSessionRecorded()
                     ) {
-                        if (self.context.config.enableW3CTraceId) {
-                            this.setRequestHeader(
-                                W3C_TRACEPARENT_HEADER_NAME,
-                                getW3CTraceIdHeaderValue(
-                                    xhrDetails.trace!.trace_id,
-                                    xhrDetails.trace!.subsegments![0].id
-                                )
-                            );
-                        } else {
-                            this.setRequestHeader(
-                                X_AMZN_TRACE_ID,
-                                getAmznTraceIdHeaderValue(
-                                    xhrDetails.trace!.trace_id,
-                                    xhrDetails.trace!.subsegments![0].id
-                                )
-                            );
-                        }
+                        this.setRequestHeader(
+                            self.context.config.enableW3CTraceId
+                                ? W3C_TRACEPARENT_HEADER_NAME
+                                : X_AMZN_TRACE_ID,
+                            getW3CTraceIdHeaderValue(
+                                xhrDetails.trace!.trace_id,
+                                xhrDetails.trace!.subsegments![0].id
+                            )
+                        );
                     }
                 }
                 return original.apply(this, arguments);
