@@ -221,7 +221,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when fetch is called then the plugin records a trace with xray trace id format', async () => {
+    test('when fetch is called with w3c format disabled then the plugin records a trace with xray trace id format', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -265,7 +265,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when fetch is called then the plugin records a trace with w3c trace id format', async () => {
+    test('when fetch is called with w3c format enabled then the plugin records a trace with w3c trace id format', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             logicalServiceName: 'sample.rum.aws.amazon.com',
@@ -671,7 +671,7 @@ describe('FetchPlugin tests', () => {
         });
     });
 
-    test('when url matches no regex in addXRayTraceIdHeader then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
+    test('when url matches no regex in addXRayTraceIdHeader with w3c format enabled then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: [/noMatch/]
@@ -689,7 +689,25 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
     });
 
-    test('when addXRayTraceIdHeader is an empty array then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
+    test('when url matches no regex in addXRayTraceIdHeader with w3c format disabled then traceparent header is not added to the HTTP request', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: [/noMatch/]
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
+    });
+
+    test('when addXRayTraceIdHeader is an empty array with w3c format disabled then X-Amzn-Trace-Id header is not added to the HTTP request', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             addXRayTraceIdHeader: []
@@ -697,6 +715,24 @@ describe('FetchPlugin tests', () => {
 
         const plugin: FetchPlugin = new FetchPlugin(config);
         plugin.load(xRayOnContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch.mock.calls.length).toEqual(1);
+        expect(mockFetch.mock.calls[0][1]).toEqual(undefined);
+    });
+
+    test('when addXRayTraceIdHeader is an empty array with w3c format enabled then traceparent header is not added to the HTTP request', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            addXRayTraceIdHeader: []
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(w3cTraceIdOnContext);
 
         // Run
         await fetch(URL);
