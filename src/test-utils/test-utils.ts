@@ -138,7 +138,7 @@ export const xRayOnContext: InternalPluginContext = {
     config: { ...DEFAULT_CONFIG, ...{ enableXRay: true } }
 };
 
-export const w3cTraceIdOnContext: PluginContext = {
+export const w3cTraceIdOnContext: InternalPluginContext = {
     ...context,
     config: {
         ...DEFAULT_CONFIG,
