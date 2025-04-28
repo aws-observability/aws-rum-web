@@ -175,7 +175,6 @@ export const addAmznTraceIdHeaderToInit = (
     if (w3cTraceIdEnabled) {
         (init.headers as any)[W3C_TRACEPARENT_HEADER_NAME] =
             getW3CTraceIdHeaderValue(traceId, segmentId);
-        (init.headers as any)[W3C_TRACESTATE_HEADER_NAME] = '';
     } else {
         (init.headers as any)[X_AMZN_TRACE_ID] = getAmznTraceIdHeaderValue(
             traceId,
@@ -195,7 +194,6 @@ export const addAmznTraceIdHeaderToHeaders = (
             W3C_TRACEPARENT_HEADER_NAME,
             getW3CTraceIdHeaderValue(traceId, segmentId)
         );
-        headers.set(W3C_TRACESTATE_HEADER_NAME, '');
     } else {
         headers.set(
             X_AMZN_TRACE_ID,

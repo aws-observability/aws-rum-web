@@ -600,8 +600,7 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch.mock.calls[0][1]).toMatchObject({
             headers: {
-                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID,
-                [W3C_TRACESTATE_HEADER_NAME]: ''
+                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID
             }
         });
     });
@@ -665,8 +664,7 @@ describe('FetchPlugin tests', () => {
         // Assert
         expect(mockFetch.mock.calls[0][1]).toMatchObject({
             headers: {
-                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID,
-                [W3C_TRACESTATE_HEADER_NAME]: ''
+                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID
             }
         });
     });
@@ -796,8 +794,7 @@ describe('FetchPlugin tests', () => {
         expect(mockFetch.mock.calls.length).toEqual(1);
         expect(mockFetch.mock.calls[0][1]).toMatchObject({
             headers: {
-                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID,
-                [W3C_TRACESTATE_HEADER_NAME]: ''
+                [W3C_TRACEPARENT_HEADER_NAME]: W3C_TRACE_ID
             }
         });
     });
