@@ -23,7 +23,9 @@ module.exports = {
     target: ['web', 'es5'],
     entry: {
         loader_npm_rum_tmp: './src/loader-npm-rum-tmp.ts',
-        loader_npm_rum_tmp_2: './src/loader-npm-rum-tmp-2.ts'
+        loader_npm_rum_tmp_2: './src/loader-npm-rum-tmp-2.ts',
+        loader_npm_rum_tmp_w3c_trace_format:
+            './src/loader-npm-rum-w3c-trace-format.ts'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']

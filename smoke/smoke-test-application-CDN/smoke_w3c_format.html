@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src *; script-src client.rum.us-east-1.amazonaws.com 'nonce-smokeTest'; style-src 'nonce-smokeTest';"
+        /> -->
+        <title>RUM Smoke Test</title>
+        <script>
+            (function (n, i, v, r, s, c, x, z) {
+                x = window.AwsRumClient = {
+                    q: [],
+                    n: n,
+                    i: i,
+                    v: v,
+                    r: r,
+                    c: c
+                };
+                window[n] = function (c, p) {
+                    x.q.push({ c: c, p: p });
+                };
+                z = document.createElement('script');
+                z.async = true;
+                z.src = s;
+                document.head.insertBefore(
+                    z,
+                    document.getElementsByTagName('script')[0]
+                );
+            })('cwr', $MONITOR_ID, '1.0.0', $REGION, $CDN, {
+                sessionSampleRate: 1,
+                guestRoleArn: $GUEST_ARN,
+                identityPoolId: $IDENTITY_POOL,
+                endpoint: $ENDPOINT,
+                telemetries: ['performance', 'errors', 'http', 'interaction'],
+                allowCookies: true,
+                enableXRay: true,
+                headers: {
+                    Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
+                    'x-api-key': 'a1b2c3d4e5f6',
+                    'content-type': 'application/json'
+                },
+                useBeacon: false,
+                releaseId: '2.1.7',
+                enableW3CTraceId: true
+            });
+        </script>
+
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+
+        <script nonce="smokeTest">
+            function httpStatFetch500() {
+                fetch('https://httpstat.us/500');
+            }
+
+            function httpStatFetch200() {
+                fetch('https://httpstat.us/200');
+            }
+
+            function httpStatXhr500() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/500', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+
+            function httpStatXhr200() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/200', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+        </script>
+
+        <style nonce="smokeTest">
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <p id="welcome">This application is used for RUM smoke testing.</p>
+        <hr />
+        <button id="httpStatFetch200" onclick="httpStatFetch200()">
+            httpstat fetch 200
+        </button>
+        <button id="httpStatFetch500" onclick="httpStatFetch500()">
+            httpstat fetch 500
+        </button>
+        <button id="httpStatXhr200" onclick="httpStatXhr200()">
+            httpstat xhr 200
+        </button>
+        <button id="httpStatXhr500" onclick="httpStatXhr500()">
+            httpstat xhr 500
+        </button>
+        <hr />
+    </body>
+</html>

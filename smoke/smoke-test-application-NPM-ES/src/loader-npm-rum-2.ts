@@ -15,8 +15,7 @@ try {
             unique: true
         },
         useBeacon: false,
-        releaseId: '2.1.7',
-        enableW3CTraceId: true
+        releaseId: '2.1.7'
     };
 
     const APPLICATION_ID: string = $MONITOR_ID_2;
