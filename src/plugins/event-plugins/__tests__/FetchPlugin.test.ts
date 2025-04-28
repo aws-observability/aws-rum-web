@@ -2,8 +2,7 @@ import { FetchPlugin } from '../FetchPlugin';
 import {
     HttpPluginConfig,
     X_AMZN_TRACE_ID,
-    W3C_TRACEPARENT_HEADER_NAME,
-    W3C_TRACESTATE_HEADER_NAME
+    W3C_TRACEPARENT_HEADER_NAME
 } from '../../utils/http-utils';
 import { advanceTo } from 'jest-date-mock';
 import {
@@ -40,7 +39,6 @@ const existingTraceHeaderValue = `Root=${existingTraceId};Parent=${existingSegme
 
 const existingW3CTraceId = '00000000000000000000000000000001';
 const existingW3CTraceHeaderValue = `00-${existingW3CTraceId}-${existingSegmentId}-01`;
-const existingW3CTraceStateHeaderValue = `rojo=0000000000000001`;
 
 const Headers = function (init?: Record<string, string>) {
     const headers = init ? init : {};
@@ -1347,8 +1345,7 @@ describe('FetchPlugin tests', () => {
 
         const init: RequestInit = {
             headers: {
-                [W3C_TRACEPARENT_HEADER_NAME]: existingW3CTraceHeaderValue,
-                [W3C_TRACESTATE_HEADER_NAME]: existingW3CTraceStateHeaderValue
+                [W3C_TRACEPARENT_HEADER_NAME]: existingW3CTraceHeaderValue
             }
         };
 
@@ -1367,9 +1364,6 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][1]).toMatchObject({
             segment_id: existingSegmentId
         });
-        expect(request.headers.get(W3C_TRACESTATE_HEADER_NAME)).toEqual(
-            existingW3CTraceStateHeaderValue
-        );
     });
 
     test('when the url does not match urlsToInclude then the plugin does not record a trace', async () => {

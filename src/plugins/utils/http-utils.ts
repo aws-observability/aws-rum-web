@@ -13,7 +13,6 @@ for (let i = 0; i < 256; i++) {
 
 export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
 export const W3C_TRACEPARENT_HEADER_NAME = 'traceparent';
-export const W3C_TRACESTATE_HEADER_NAME = 'tracestate';
 
 export type HttpPluginConfig = {
     logicalServiceName: string;
