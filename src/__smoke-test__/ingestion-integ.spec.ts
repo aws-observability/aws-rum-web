@@ -34,7 +34,7 @@ const W3C_TEST_URL = getUrl(
     process.env.URL,
     process.env.VERSION,
     process.env.INSTALL_METHOD,
-    'smoke_w3c_format'
+    'smoke_w3c_format_enabled'
 );
 const MONITOR_NAME = process.env.NAME;
 const REGION = ENDPOINT.split('.')[2];
