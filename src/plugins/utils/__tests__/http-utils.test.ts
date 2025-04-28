@@ -79,7 +79,7 @@ describe('http-utils', () => {
         const traceHeader = getTraceHeader(request.headers, true);
 
         expect(traceHeader.traceId).toEqual(existingTraceId);
-        expect(traceHeader.segmentId).not.toEqual(existingSegmentId);
+        expect(traceHeader.segmentId).toEqual(existingSegmentId);
     });
 
     test('when request header contains w3c trace header then returned traceId and segmentId are undefined with w3cTraceId disabled', async () => {

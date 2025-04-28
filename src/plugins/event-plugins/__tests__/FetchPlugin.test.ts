@@ -1364,7 +1364,7 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][1]).toMatchObject({
             trace_id: existingW3CTraceId
         });
-        expect(record.mock.calls[0][1]).not.toMatchObject({
+        expect(record.mock.calls[0][1]).toMatchObject({
             segment_id: existingSegmentId
         });
         expect(request.headers.get(W3C_TRACESTATE_HEADER_NAME)).toEqual(

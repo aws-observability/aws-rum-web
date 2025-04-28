@@ -239,9 +239,7 @@ export const getTraceHeader = (
                 ?.split('-');
             if (headerComponents && isValidW3CHeader(headerComponents)) {
                 traceHeader.traceId = headerComponents[1];
-                traceHeader.segmentId = generateSegmentId();
-            } else {
-                headers.set(W3C_TRACESTATE_HEADER_NAME, '');
+                traceHeader.segmentId = headerComponents[2];
             }
         } else {
             const headerComponents = headers.get(X_AMZN_TRACE_ID)?.split(';');
