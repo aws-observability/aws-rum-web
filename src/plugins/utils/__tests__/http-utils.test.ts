@@ -1,4 +1,8 @@
-import { X_AMZN_TRACE_ID, getTraceHeader } from '../http-utils';
+import {
+    X_AMZN_TRACE_ID,
+    W3C_TRACEPARENT_HEADER_NAME,
+    getTraceHeader
+} from '../http-utils';
 
 const Request = function (input: RequestInfo, init?: RequestInit) {
     if (typeof input === 'string') {
@@ -24,7 +28,7 @@ const Request = function (input: RequestInfo, init?: RequestInit) {
 };
 
 describe('http-utils', () => {
-    test('when request header contains trace header then return traceId and segmentId', async () => {
+    test('when request header contains xray trace header then return traceId and segmentId with w3cTraceId disabled', async () => {
         const existingTraceId = '1-0-000000000000000000000001';
         const existingSegmentId = '0000000000000001';
         const existingTraceHeaderValue = `Root=${existingTraceId};Parent=${existingSegmentId};Sampled=1`;
@@ -36,16 +40,79 @@ describe('http-utils', () => {
         };
         const request: Request = new Request('https://aws.amazon.com', init);
 
-        const traceHeader = getTraceHeader(request.headers);
+        const traceHeader = getTraceHeader(request.headers, false);
 
         expect(traceHeader.traceId).toEqual(existingTraceId);
         expect(traceHeader.segmentId).toEqual(existingSegmentId);
     });
 
-    test('when request header does not contain trace header then returned traceId and segmentId are undefined', async () => {
+    test('when request header contains xray trace header then returned traceId and segmentId are undefined with w3cTraceId enabled', async () => {
+        const existingTraceId = '1-0-000000000000000000000001';
+        const existingSegmentId = '0000000000000001';
+        const existingTraceHeaderValue = `Root=${existingTraceId};Parent=${existingSegmentId};Sampled=1`;
+
+        const init: RequestInit = {
+            headers: {
+                [X_AMZN_TRACE_ID]: existingTraceHeaderValue
+            }
+        };
+        const request: Request = new Request('https://aws.amazon.com', init);
+
+        const traceHeader = getTraceHeader(request.headers, true);
+
+        expect(traceHeader.traceId).toEqual(undefined);
+        expect(traceHeader.segmentId).toEqual(undefined);
+    });
+
+    test('when request header contains w3c trace header then return traceId and segmentId with w3cTraceId enabled', async () => {
+        const existingTraceId = '00000000000000000000000000000001';
+        const existingSegmentId = '0000000000000001';
+        const existingTraceHeaderValue = `00-${existingTraceId}-${existingSegmentId}-00`;
+
+        const init: RequestInit = {
+            headers: {
+                [W3C_TRACEPARENT_HEADER_NAME]: existingTraceHeaderValue
+            }
+        };
+        const request: Request = new Request('https://aws.amazon.com', init);
+
+        const traceHeader = getTraceHeader(request.headers, true);
+
+        expect(traceHeader.traceId).toEqual(existingTraceId);
+        expect(traceHeader.segmentId).toEqual(existingSegmentId);
+    });
+
+    test('when request header contains w3c trace header then returned traceId and segmentId are undefined with w3cTraceId disabled', async () => {
+        const existingTraceId = '00000000000000000000000000000001';
+        const existingSegmentId = '0000000000000001';
+        const existingTraceHeaderValue = `00-${existingTraceId}-${existingSegmentId}-00`;
+
+        const init: RequestInit = {
+            headers: {
+                [W3C_TRACEPARENT_HEADER_NAME]: existingTraceHeaderValue
+            }
+        };
+        const request: Request = new Request('https://aws.amazon.com', init);
+
+        const traceHeader = getTraceHeader(request.headers, false);
+
+        expect(traceHeader.traceId).toEqual(undefined);
+        expect(traceHeader.segmentId).toEqual(undefined);
+    });
+
+    test('when request header does not contain trace header then returned traceId and segmentId are undefined with w3cTraceId disabled', async () => {
         const request: Request = new Request('https://aws.amazon.com');
 
-        const traceHeader = getTraceHeader(request.headers);
+        const traceHeader = getTraceHeader(request.headers, false);
+
+        expect(traceHeader.traceId).toEqual(undefined);
+        expect(traceHeader.segmentId).toEqual(undefined);
+    });
+
+    test('when request header does not contain trace header then returned traceId and segmentId are undefined with w3cTraceId enabled', async () => {
+        const request: Request = new Request('https://aws.amazon.com');
+
+        const traceHeader = getTraceHeader(request.headers, true);
 
         expect(traceHeader.traceId).toEqual(undefined);
         expect(traceHeader.segmentId).toEqual(undefined);
