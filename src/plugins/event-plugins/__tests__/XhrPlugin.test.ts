@@ -6,6 +6,7 @@ import {
     xRayOffContext,
     xRayOnContext,
     w3cTraceIdOnContext,
+    xRayOffW3COnContext,
     record
 } from '../../../test-utils/test-utils';
 import mock from 'xhr-mock';
@@ -966,6 +967,33 @@ describe('XhrPlugin tests', () => {
         expect(record).not.toHaveBeenCalled();
     });
 
+    test('when trace is disabled with w3c trace format enabled then the plugin does not record a trace', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            urlsToInclude: [/response\.json/]
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOffW3COnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).not.toHaveBeenCalled();
+    });
+
     test('when session is not being recorded then the plugin does not record a trace', async () => {
         // Init
         const getSession: jest.MockedFunction<GetSession> = jest.fn(() => ({
@@ -1033,7 +1061,7 @@ describe('XhrPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(1);
     });
 
-    test('when recordAllRequests is false then the plugin does record a request with status OK', async () => {
+    test('when recordAllRequests is true then the plugin does record a request with status OK', async () => {
         // Init
         const config: Partial<HttpPluginConfig> = {
             urlsToInclude: [/response\.json/],
@@ -1408,6 +1436,41 @@ describe('XhrPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).not.toMatchObject({
             trace_id: '1-0-000000000000000000000000',
+            segment_id: '0000000000000000'
+        });
+    });
+
+    test('when the plugin does not record a trace with w3c format enabled then the trace id is not added to the http event', async () => {
+        // Init
+        const config: Partial<HttpPluginConfig> = {
+            logicalServiceName: 'sample.rum.aws.amazon.com',
+            urlsToInclude: [/response\.json/],
+            recordAllRequests: true
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' }),
+            headers: { 'Content-Length': '125' } as MockHeaders
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOffW3COnContext);
+
+        // Run
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        // Yield to the event queue so the event listeners can run
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).not.toMatchObject({
+            trace_id: '00000000000000000000000000000000',
             segment_id: '0000000000000000'
         });
     });

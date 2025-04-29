@@ -14,6 +14,11 @@ for (let i = 0; i < 256; i++) {
 export const X_AMZN_TRACE_ID = 'X-Amzn-Trace-Id';
 export const W3C_TRACEPARENT_HEADER_NAME = 'traceparent';
 
+export const TRACEPARENT_VERSION_LENGTH = 2;
+export const TRACEPARENT_TRACE_ID_LENGTH = 32;
+export const TRACEPARENT_PARENT_ID_LENGTH = 16;
+export const TRACEPARENT_NUMBER_OF_FIELDS = 4;
+
 export type HttpPluginConfig = {
     logicalServiceName: string;
     urlsToInclude: RegExp[];
@@ -215,12 +220,19 @@ export const getW3CTraceIdHeaderValue = (
     return '00-' + traceId + '-' + segmentId + '-01';
 };
 
+/**
+ * Check if the header is a valid w3c traceparent header.
+ *
+ * See https://www.w3.org/TR/trace-context/#traceparent-header-field-values
+ *
+ * @returns true if the header is a valid w3c traceparent header
+ */
 export const isValidW3CHeader = (headerComponents: string[]) => {
     return (
-        headerComponents?.length === 4 &&
-        headerComponents[0].length === 2 &&
-        headerComponents[1].length === 32 &&
-        headerComponents[2].length === 16 &&
+        headerComponents?.length === TRACEPARENT_NUMBER_OF_FIELDS &&
+        headerComponents[0].length === TRACEPARENT_VERSION_LENGTH &&
+        headerComponents[1].length === TRACEPARENT_TRACE_ID_LENGTH &&
+        headerComponents[2].length === TRACEPARENT_PARENT_ID_LENGTH &&
         (headerComponents[3] === '00' || headerComponents[3] === '01')
     );
 };
@@ -270,6 +282,13 @@ const generateTraceId = (): string => {
     return `1-${hexTime()}-${guid()}`;
 };
 
+/**
+ * Generate a globally unique trace ID in w3c format.
+ *
+ * See https://www.w3.org/TR/trace-context/#trace-id
+ *
+ * @returns a trace id with the form '[random in 32 hex digits]'
+ */
 const generateW3CTraceId = (): string => {
     const randomBytes = new Uint8Array(16);
     getRandomValues(randomBytes);

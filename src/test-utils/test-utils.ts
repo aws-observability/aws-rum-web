@@ -146,6 +146,14 @@ export const w3cTraceIdOnContext: InternalPluginContext = {
     }
 };
 
+export const xRayOffW3COnContext: InternalPluginContext = {
+    ...context,
+    config: {
+        ...DEFAULT_CONFIG,
+        ...{ enableXRay: false, enableW3CTraceId: true }
+    }
+};
+
 export const stringToUtf16 = (inputString: string) => {
     const utf16array = [];
     for (let index = 0; index < inputString.length; index++) {

@@ -15,6 +15,9 @@ CDN+=${VERSION}
 awk '{sub(/\$MONITOR_ID/,MONITOR_ID);sub(/\$REGION/,REGION);sub(/\$CDN/,CDN);sub(/\$GUEST_ARN/,GUEST_ARN);sub(/\$IDENTITY_POOL/,IDENTITY_POOL);sub(/\$ENDPOINT/,ENDPOINT);}1' \
  MONITOR_ID="'$MONITOR_ID'" REGION="'$REGION'" CDN="'$CDN'" GUEST_ARN="'$GUEST_ARN'" IDENTITY_POOL="'$IDENTITY_POOL'" ENDPOINT="'$ENDPOINT'" smoke/smoke-test-application-CDN/smoke.html > processed_smoke.html
 
+awk '{sub(/\$MONITOR_ID/,MONITOR_ID);sub(/\$REGION/,REGION);sub(/\$CDN/,CDN);sub(/\$GUEST_ARN/,GUEST_ARN);sub(/\$IDENTITY_POOL/,IDENTITY_POOL);sub(/\$ENDPOINT/,ENDPOINT);}1' \
+ MONITOR_ID="'$MONITOR_ID'" REGION="'$REGION'" CDN="'$CDN'" GUEST_ARN="'$GUEST_ARN'" IDENTITY_POOL="'$IDENTITY_POOL'" ENDPOINT="'$ENDPOINT'" smoke/smoke-test-application-CDN/smoke_w3c_format_enabled.html > processed_smoke_w3c_format_enabled.html
+
 # Module ES
 awk '{sub(/\$MONITOR_ID/,MONITOR_ID);sub(/\$REGION/,REGION);sub(/\$CDN/,CDN);sub(/\$GUEST_ARN/,GUEST_ARN);sub(/\$IDENTITY_POOL/,IDENTITY_POOL);sub(/\$ENDPOINT/,ENDPOINT);}1' \
  MONITOR_ID="'$MONITOR_ID'" REGION="'$REGION'" CDN="'$CDN'" GUEST_ARN="'$GUEST_ARN'" IDENTITY_POOL="'$IDENTITY_POOL'" ENDPOINT="'$ENDPOINT'" smoke/smoke-test-application-NPM-ES/src/loader-npm-rum.ts > smoke/smoke-test-application-NPM-ES/src/loader-npm-rum-tmp.ts
