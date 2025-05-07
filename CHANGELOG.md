@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.23.0](https://github.com/aws-observability/aws-rum-web/compare/v1.22.0...v1.23.0) (2025-05-07)
+
+
+### Features
+
+* record INP ([#620](https://github.com/aws-observability/aws-rum-web/issues/620)) ([41347d3](https://github.com/aws-observability/aws-rum-web/commit/41347d3b66138748671b8cb3de189878fb7226e5))
+
+
+### Bug Fixes
+
+* Add quotes around message to fix npm deprecate command ([#652](https://github.com/aws-observability/aws-rum-web/issues/652)) ([8d8cf2f](https://github.com/aws-observability/aws-rum-web/commit/8d8cf2fca324abec0913c43769c9be0692d8dfb4))
+* resolve off by one error in session expiration ([#647](https://github.com/aws-observability/aws-rum-web/issues/647)) ([a7a6fa2](https://github.com/aws-observability/aws-rum-web/commit/a7a6fa22f95afbf57e51251ede9a1631a3b9df59))
+
 ## [1.22.0](https://github.com/aws-observability/aws-rum-web/compare/release/1.21.x...release/1.22.x) (2025-03-27)
 
 
