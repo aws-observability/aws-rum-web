@@ -3,6 +3,9 @@ import { REQUEST_BODY } from '../../../test-utils/integ-test-utils';
 import { XRAY_TRACE_EVENT_TYPE, HTTP_EVENT_TYPE } from '../../utils/constant';
 
 const sendFetchRequest: Selector = Selector(`#sendFetchRequest`);
+const sendFetchRequestWithHeadersObject: Selector = Selector(
+    `#sendFetchRequestWithHeadersObject`
+);
 const sendDataPlaneRequest: Selector = Selector(`#sendDataPlaneRequest`);
 const dispatch: Selector = Selector(`#dispatch`);
 const clearRequestResponse: Selector = Selector(`#clearRequestResponse`);
@@ -64,4 +67,30 @@ test('when fetch is called then an http event is recorded', async (t: TestContro
         .eql('GET')
         .expect(eventDetails.response.status)
         .eql(200);
+});
+
+test('when fetch is called with headers that have set method then trace header is added', async (t: TestController) => {
+    // This test simulates the environment where headers have a set method
+    await t
+        .wait(300)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId')
+        .click(clearRequestResponse)
+        .click(sendFetchRequestWithHeadersObject)
+        .expect(fetchRequestHeaders.textContent)
+        .match(/Root=1-[0-9a-f]{8}-[0-9a-f]{24};Parent=[0-9a-f]{16};Sampled=1/)
+        .click(dispatch)
+        .expect(REQUEST_BODY.textContent)
+        .contains('BatchId');
+
+    const json = JSON.parse(await REQUEST_BODY.textContent);
+    const eventType = json.RumEvents[0].type;
+    const eventDetails = JSON.parse(json.RumEvents[0].details);
+
+    await t
+        .expect(eventType)
+        .eql(XRAY_TRACE_EVENT_TYPE)
+        .expect(eventDetails.name)
+        .eql('sample.rum.aws.amazon.com');
 });
