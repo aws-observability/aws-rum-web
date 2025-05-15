@@ -42,7 +42,7 @@ module.exports = {
     devServer: {
         static: path.join(__dirname, '../build/dev'),
         port: 9000,
-        https: false,
+        server: 'http',
         hot: true
     },
     module: {
