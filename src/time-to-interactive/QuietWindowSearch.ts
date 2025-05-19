@@ -4,6 +4,7 @@ import { TTIReportCallback } from './TimeToInteractive';
 
 const LONG_TASK = 'longtask';
 const FPS = 'fps';
+const NAVIGATION = 'navigation';
 
 export class QuietWindowSearch {
     private ttiTracker: any = {};
@@ -17,6 +18,7 @@ export class QuietWindowSearch {
     private totalIntervals = 0;
 
     private visuallyReadyTimestamp = 0;
+    private prerenderedOffset?: number;
 
     private fpsEnabled = false;
 
@@ -127,7 +129,41 @@ export class QuietWindowSearch {
         // Cleanup
         this.ttiTracker = {};
 
-        return this.visuallyReadyTimestamp + timeToQuietPeriodFromVisuallyReady;
+        return this.getPrerenderedOffset(
+            this.visuallyReadyTimestamp + timeToQuietPeriodFromVisuallyReady
+        );
+    }
+
+    private getPrerenderedOffset(tti: number): number {
+        const activationStart = this.getActivationStart();
+
+        if (activationStart === undefined) {
+            return tti;
+        } else {
+            const newTti = Math.floor(tti) - activationStart;
+
+            // return the offset (at least 1ms)
+            return newTti >= 0 ? Math.max(1, newTti) : tti;
+        }
+    }
+
+    private getActivationStart(): number | undefined {
+        if (this.prerenderedOffset !== undefined) {
+            // we've previously calculated, return the value
+            return this.prerenderedOffset;
+        }
+        if (typeof document.prerendering !== 'boolean') {
+            return this.prerenderedOffset;
+        }
+
+        if (window.performance) {
+            const navEntry = window.performance.getEntriesByType(NAVIGATION)[0];
+            if (navEntry && navEntry.activationStart) {
+                this.prerenderedOffset = Math.floor(navEntry.activationStart);
+            }
+        }
+
+        return this.prerenderedOffset;
     }
 
     private isTTIConditionNotFulfilied(
