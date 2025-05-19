@@ -71,7 +71,6 @@ describe('Time to Interactive - Plugin Tests', () => {
             version: '1.0.0'
         });
     });
-
     test('When TTI with frames per second enabled resolves successfully, TTI event with resolved value is recorded by plugin', async () => {
         const plugin: TTIPlugin = new TTIPlugin(true);
 
@@ -89,7 +88,6 @@ describe('Time to Interactive - Plugin Tests', () => {
             version: '1.0.0'
         });
     });
-
     test('Disable and enable does not have effect on the plugin behavior', async () => {
         const plugin: TTIPlugin = new TTIPlugin();
 
