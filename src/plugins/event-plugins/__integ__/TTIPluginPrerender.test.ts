@@ -12,7 +12,7 @@ const prerenderButton: Selector = Selector(`#prerenderedNav`);
 const standardNavButton: Selector = Selector(`#standardNav`);
 
 // Add a longer wait time to ensure TTI events are captured
-const TTI_WAIT_TIME = 5000;
+const TTI_WAIT_TIME = 1000;
 
 fixture('TTI Plugin Prerender Navigation').page(
     'http://localhost:8080/index.html'
@@ -46,7 +46,6 @@ test('prerendered navigation records TTI events', async (t: TestController) => {
         .expect(REQUEST_BODY.textContent)
         .contains('BatchId');
 
-    console.log('request body ' + REQUEST_BODY.textContent);
     // Verify TTI events were recorded
     const events = JSON.parse(await REQUEST_BODY.textContent).RumEvents.filter(
         (e) => e.type === TIME_TO_INTERACTIVE_EVENT_TYPE
