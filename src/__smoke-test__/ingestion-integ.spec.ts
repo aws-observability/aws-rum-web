@@ -11,7 +11,8 @@ import {
     PAGE_VIEW_EVENT_TYPE,
     SESSION_START_EVENT_TYPE,
     DOM_EVENT_TYPE,
-    XRAY_TRACE_EVENT_TYPE
+    XRAY_TRACE_EVENT_TYPE,
+    INP_EVENT_TYPE
 } from '../plugins/utils/constant';
 import {
     getEventIds,
@@ -444,6 +445,48 @@ test('when event with custom attributes is sent then the event is ingested', asy
         MONITOR_NAME,
         5,
         expectedMetadataAttributes
+    );
+    expect(isIngestionCompleted).toEqual(true);
+});
+
+test('when INP event is sent then event is ingested', async ({ page }) => {
+    const timestamp = Date.now() - 30000;
+
+    // Open page
+    await page.goto(TEST_URL);
+    const dummyButton = page.locator('[id=dummyButton]');
+
+    // trigger a slow interaction
+    await Promise.all(
+        new Array(30).fill(null).map(async () => {
+            return await dummyButton.click();
+        })
+    );
+
+    // trigger visibility change event
+    const cls = page.locator('[id=dispatchCLS]');
+    await cls.click();
+
+    // Test will timeout if no successful dataplane request is found
+    const response = await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL)
+    );
+
+    // Parse payload to verify event count
+    const requestBody = JSON.parse(response.request().postData());
+
+    const inp = getEventsByType(requestBody, INP_EVENT_TYPE);
+    const eventIds = getEventIds(inp);
+
+    expect(eventIds.length).not.toEqual(0);
+
+    // Expect INP to be INgested
+    const isIngestionCompleted = await verifyIngestionWithRetry(
+        rumClient,
+        eventIds,
+        timestamp,
+        MONITOR_NAME,
+        5
     );
     expect(isIngestionCompleted).toEqual(true);
 });
