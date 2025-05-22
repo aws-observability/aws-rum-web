@@ -29,6 +29,7 @@ import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
 import { INSTALL_MODULE } from '../utils/constants';
 import EventBus, { Topic } from '../event-bus/EventBus';
+import { TTIPlugin } from '../plugins/event-plugins/TTIPlugin';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -189,6 +190,7 @@ export class Orchestration {
     private dispatchManager: Dispatch;
     private config: Config;
     private eventBus = new EventBus<Topic>();
+    private ttiPluginRef = TTIPlugin;
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
