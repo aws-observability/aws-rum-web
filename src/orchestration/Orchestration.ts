@@ -38,7 +38,8 @@ export enum TelemetryEnum {
     Errors = 'errors',
     Performance = 'performance',
     Interaction = 'interaction',
-    Http = 'http'
+    Http = 'http',
+    Tti = 'tti'
 }
 
 export enum PageIdFormatEnum {
@@ -512,6 +513,9 @@ export class Orchestration {
             },
             [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
+            },
+            [TelemetryEnum.Tti]: (): InternalPlugin[] => {
+                return [new TTIPlugin()];
             }
         };
     }
