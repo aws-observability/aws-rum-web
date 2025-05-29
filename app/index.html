@@ -114,6 +114,42 @@
         <button id="recordPageView" onclick="recordPageView()">
             Record Page View
         </button>
+        <hr />
+        <button id="prerenderedNav" onclick="navigatePrerendered()">
+            Navigate with Prerendering
+        </button>
+        <button id="standardNav" onclick="navigateStandard()">
+            Navigate without Prerendering
+        </button>
+
+        <script>
+            function navigatePrerendered() {
+                const speculationRules = document.createElement('script');
+                speculationRules.type = 'speculationrules';
+
+                // Define the prerender rule for index.html
+                const rules = {
+                    prerender: [
+                        {
+                            source: 'list',
+                            urls: ['./time_to_interactive_event.html']
+                        }
+                    ]
+                };
+
+                speculationRules.textContent = JSON.stringify(rules);
+                document.head.appendChild(speculationRules);
+
+                setTimeout(() => {
+                    window.location.href = './time_to_interactive_event.html';
+                }, 300);
+            }
+
+            function navigateStandard() {
+                window.location.href = './time_to_interactive_event.html';
+            }
+        </script>
+        <hr />
         <span id="request"></span>
         <span id="response"></span>
         <table>
