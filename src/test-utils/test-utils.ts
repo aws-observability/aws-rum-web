@@ -23,7 +23,7 @@ import { INSTALL_MODULE } from '../utils/constants';
 export const AWS_RUM_ENDPOINT = new URL(
     'https://rumservicelambda.us-west-2.amazonaws.com'
 );
-export const WEB_CLIENT_VERSION = '1.23.0';
+export const WEB_CLIENT_VERSION = '1.24.0';
 export const AWS_RUM_REGION = 'us-west-2';
 export const APPLICATION_ID = 'application123';
 export const APPLICATION_VERSION = '1.2';

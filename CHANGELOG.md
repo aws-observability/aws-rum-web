@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.24.0](https://github.com/aws-observability/aws-rum-web/compare/v1.23.0...v1.24.0) (2025-05-29)
+
+### Bug Fixes
+
+* add prerender offset to tti events ([#662](https://github.com/aws-observability/aws-rum-web/pull/662)) ([a6d2a3f](https://github.com/aws-observability/aws-rum-web/commit/a6d2a3f09c351286cb52ad6c1367a87b6d3abdf2))
+
+
 ## [1.23.0](https://github.com/aws-observability/aws-rum-web/compare/v1.22.0...v1.23.0) (2025-05-07)
 
 
