@@ -30,6 +30,12 @@ const TEST_URL = getUrl(
     process.env.VERSION,
     process.env.INSTALL_METHOD
 );
+const W3C_TEST_URL = getUrl(
+    process.env.URL,
+    process.env.VERSION,
+    process.env.INSTALL_METHOD,
+    'smoke_w3c_format_enabled'
+);
 const MONITOR_NAME = process.env.NAME;
 const REGION = ENDPOINT.split('.')[2];
 const TARGET_URL = ENDPOINT + MONITOR_ID;
@@ -262,6 +268,41 @@ test('when http events are sent then the events are ingested', async ({
     expect(isIngestionCompleted).toEqual(true);
 });
 
+test('when http events are sent with w3c format enabled then the events are ingested', async ({
+    page
+}) => {
+    const timestamp = Date.now() - 30000;
+
+    // Open page
+    await page.goto(W3C_TEST_URL);
+    const fetch500 = page.locator('[id=httpStatFetch500]');
+    const xhr500 = page.locator('[id=httpStatXhr500]');
+    await fetch500.click();
+    await xhr500.click();
+
+    // Test will timeout if no successful dataplane request is found
+    const response = await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL)
+    );
+
+    // Parse payload to verify event count
+    const requestBody = JSON.parse(response.request().postData());
+
+    const httpEvents = getEventsByType(requestBody, HTTP_EVENT_TYPE);
+    const eventIds = getEventIds(httpEvents);
+
+    // Expect two http events
+    expect(eventIds.length).toEqual(2);
+    const isIngestionCompleted = await verifyIngestionWithRetry(
+        rumClient,
+        eventIds,
+        timestamp,
+        MONITOR_NAME,
+        5
+    );
+    expect(isIngestionCompleted).toEqual(true);
+});
+
 test('when CLS event is sent then the event is ingested', async ({ page }) => {
     const timestamp = Date.now() - 30000;
 
@@ -361,6 +402,39 @@ test('when INP event is sent then event is ingested', async ({ page }) => {
     expect(eventIds.length).not.toEqual(0);
 
     // Expect INP to be INgested
+    const isIngestionCompleted = await verifyIngestionWithRetry(
+        rumClient,
+        eventIds,
+        timestamp,
+        MONITOR_NAME,
+        5
+    );
+    expect(isIngestionCompleted).toEqual(true);
+});
+
+test('when xray event is sent with w3c format enabled then the event is ingested', async ({
+    page
+}) => {
+    const timestamp = Date.now() - 30000;
+
+    // Open page
+    await page.goto(W3C_TEST_URL);
+    const http200 = page.locator('[id=httpStatFetch200]');
+    await http200.click();
+
+    // Test will timeout if no successful dataplane request is found
+    const response = await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL)
+    );
+
+    // Parse payload to verify event count
+    const requestBody = JSON.parse(response.request().postData());
+
+    const xrayEvent = getEventsByType(requestBody, XRAY_TRACE_EVENT_TYPE);
+    const eventIds = getEventIds(xrayEvent);
+
+    // Except one xray event
+    expect(eventIds.length).toEqual(1);
     const isIngestionCompleted = await verifyIngestionWithRetry(
         rumClient,
         eventIds,

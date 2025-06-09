@@ -47,19 +47,23 @@ export const getEventIds = (events: any[]) => {
 export const getUrl = (
     testUrl: string | URL | undefined,
     version: string | undefined,
-    install_method: string | undefined
+    install_method: string | undefined,
+    page: string | undefined
 ) => {
+    if (!page) {
+        page = 'smoke';
+    }
     if (!testUrl) {
-        return 'http://localhost:9000/smoke_local.html';
+        return 'http://localhost:9000/' + page + '_local.html';
     }
     const url = new URL(testUrl);
     if (url.pathname === '/') {
         if (install_method === 'CDN') {
-            return url + `smoke-${version}.html`;
+            return url + `${page}-${version}.html`;
         } else if (install_method === 'NPM-ES') {
-            return url + `npm/es/${version}/smoke.html`;
+            return url + `npm/es/${version}/` + page + '_local.html';
         } else if (install_method === 'NPM-CJS') {
-            return url + `npm/cjs/${version}/smoke.html`;
+            return url + `npm/cjs/${version}/` + page + '_local.html';
         } else {
             return url.toString();
         }
