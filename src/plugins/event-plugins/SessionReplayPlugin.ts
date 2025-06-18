@@ -9,12 +9,7 @@ export interface eventWithTime {
     [key: string]: any;
 }
 import { InternalPlugin } from '../InternalPlugin';
-import {
-    Session,
-    RUM_SESSION_START,
-    RUM_SESSION_EXPIRE
-} from '../../sessions/SessionManager';
-import { Topic } from '../../event-bus/EventBus';
+import { Session } from '../../sessions/SessionManager';
 
 export const SESSION_REPLAY_EVENT_TYPE = 'com.amazon.rum.session_replay_event';
 
@@ -55,7 +50,7 @@ export class SessionReplayPlugin extends InternalPlugin {
      * Override getPluginId to return the expected ID format in tests
      */
     public getPluginId(): string {
-        return 'aws:rum.rrweb';
+        return SESSION_REPLAY_EVENT_TYPE;
     }
 
     /**
@@ -65,27 +60,6 @@ export class SessionReplayPlugin extends InternalPlugin {
      */
     public forceFlush(): void {
         this.flushEvents(true);
-    }
-
-    protected onload(): void {
-        // Subscribe to session events
-        this.context.eventBus.subscribe(
-            RUM_SESSION_START as unknown as Topic,
-            (event: any) => {
-                this.session = event;
-                if (this.enabled) {
-                    this.startRecording();
-                }
-            }
-        );
-
-        this.context.eventBus.subscribe(
-            RUM_SESSION_EXPIRE as unknown as Topic,
-            () => {
-                this.stopRecording();
-                this.session = undefined;
-            }
-        );
     }
 
     enable(): void {
@@ -116,15 +90,11 @@ export class SessionReplayPlugin extends InternalPlugin {
         }
 
         try {
-            console.log('[RRWebPlugin] Setting up record config');
             const recordConfig = {
                 emit: (event: eventWithTime) => {
                     this.events.push(event);
 
                     if (this.events.length >= this.BATCH_SIZE) {
-                        console.log(
-                            '[RRWebPlugin] Batch size reached, flushing events'
-                        );
                         this.flushEvents();
                     }
                 },
