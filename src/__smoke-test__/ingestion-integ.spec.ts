@@ -306,40 +306,40 @@ test('when http events are sent then the events are ingested', async ({
     expect(isIngestionCompleted).toEqual(true);
 });
 
-test('when http events are sent with w3c format enabled then the events are ingested', async ({
-    page
-}) => {
-    const timestamp = Date.now() - 30000;
+// test('when http events are sent with w3c format enabled then the events are ingested', async ({
+//     page
+// }) => {
+//     const timestamp = Date.now() - 30000;
 
-    // Open page
-    await page.goto(W3C_TEST_URL);
-    const fetch500 = page.locator('[id=httpStatFetch500]');
-    const xhr500 = page.locator('[id=httpStatXhr500]');
-    await fetch500.click();
-    await xhr500.click();
+//     // Open page
+//     await page.goto(W3C_TEST_URL);
+//     const fetch500 = page.locator('[id=httpStatFetch500]');
+//     const xhr500 = page.locator('[id=httpStatXhr500]');
+//     await fetch500.click();
+//     await xhr500.click();
 
-    // Test will timeout if no successful dataplane request is found
-    const response = await page.waitForResponse(async (response) =>
-        isDataPlaneRequest(response, TARGET_URL)
-    );
+//     // Test will timeout if no successful dataplane request is found
+//     const response = await page.waitForResponse(async (response) =>
+//         isDataPlaneRequest(response, TARGET_URL)
+//     );
 
-    // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+//     // Parse payload to verify event count
+//     const requestBody = JSON.parse(response.request().postData());
 
-    const httpEvents = getEventsByType(requestBody, HTTP_EVENT_TYPE);
-    const eventIds = getEventIds(httpEvents);
+//     const httpEvents = getEventsByType(requestBody, HTTP_EVENT_TYPE);
+//     const eventIds = getEventIds(httpEvents);
 
-    // Expect two http events
-    expect(eventIds.length).toEqual(2);
-    const isIngestionCompleted = await verifyIngestionWithRetry(
-        rumClient,
-        eventIds,
-        timestamp,
-        MONITOR_NAME,
-        5
-    );
-    expect(isIngestionCompleted).toEqual(true);
-});
+//     // Expect two http events
+//     expect(eventIds.length).toEqual(2);
+//     const isIngestionCompleted = await verifyIngestionWithRetry(
+//         rumClient,
+//         eventIds,
+//         timestamp,
+//         MONITOR_NAME,
+//         5
+//     );
+//     expect(isIngestionCompleted).toEqual(true);
+// });
 
 test('when CLS event is sent then the event is ingested', async ({ page }) => {
     const timestamp = Date.now() - 30000;

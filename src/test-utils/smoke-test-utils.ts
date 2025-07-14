@@ -54,16 +54,16 @@ export const getUrl = (
         page = 'smoke';
     }
     if (!testUrl) {
-        return 'http://localhost:9000/' + page + '_local.html';
+        return 'http://localhost:9000/' + page + '.html';
     }
     const url = new URL(testUrl);
     if (url.pathname === '/') {
         if (install_method === 'CDN') {
             return url + `${page}-${version}.html`;
         } else if (install_method === 'NPM-ES') {
-            return url + `npm/es/${version}/` + page + '_local.html';
+            return url + `npm/es/${version}/` + page + '.html';
         } else if (install_method === 'NPM-CJS') {
-            return url + `npm/cjs/${version}/` + page + '_local.html';
+            return url + `npm/cjs/${version}/` + page + '.html';
         } else {
             return url.toString();
         }
