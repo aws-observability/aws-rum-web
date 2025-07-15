@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src *; script-src client.rum.us-east-1.amazonaws.com 'nonce-smokeTest'; style-src 'nonce-smokeTest';"
+        /> -->
+        <title>RUM Smoke Test</title>
+
+        <script
+            type="text/javascript"
+            src="./loader_npm_rum_w3c_format_enabled_tmp.js"
+        ></script>
+
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://awsmedia.s3.amazonaws.com/favicon.ico"
+        />
+
+        <script nonce="smokeTest">
+            function httpStatFetch500() {
+                fetch('https://httpstat.us/500');
+            }
+
+            function httpStatFetch200() {
+                fetch('https://httpstat.us/200');
+            }
+
+            function httpStatXhr500() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/500', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+
+            function httpStatXhr200() {
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpstat.us/200', true);
+                xhr.addEventListener('load', function (e) {
+                    console.log(xhr.response);
+                });
+                xhr.send();
+            }
+        </script>
+
+        <style nonce="smokeTest">
+            table {
+                border-collapse: collapse;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            td,
+            th {
+                border: 1px solid black;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <p id="welcome">This application is used for RUM smoke testing.</p>
+        <hr />
+        <button id="httpStatFetch200" onclick="httpStatFetch200()">
+            httpstat fetch 200
+        </button>
+        <button id="httpStatFetch500" onclick="httpStatFetch500()">
+            httpstat fetch 500
+        </button>
+        <button id="httpStatXhr200" onclick="httpStatXhr200()">
+            httpstat xhr 200
+        </button>
+        <button id="httpStatXhr500" onclick="httpStatXhr500()">
+            httpstat xhr 500
+        </button>
+        <hr />
+    </body>
+</html>

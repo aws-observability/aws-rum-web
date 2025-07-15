@@ -30,6 +30,13 @@ const TEST_URL = getUrl(
     process.env.VERSION,
     process.env.INSTALL_METHOD
 );
+
+const W3C_TEST_URL = getUrl(
+    process.env.URL,
+    process.env.VERSION,
+    process.env.INSTALL_METHOD,
+    'smoke_w3c_format_enabled'
+);
 const MONITOR_NAME = process.env.NAME;
 const REGION = ENDPOINT.split('.')[2];
 const TARGET_URL = ENDPOINT + MONITOR_ID;
@@ -373,6 +380,39 @@ test('when xray event is sent then the event is ingested', async ({ page }) => {
 
     // Open page
     await page.goto(TEST_URL);
+    const http200 = page.locator('[id=httpStatFetch200]');
+    await http200.click();
+
+    // Test will timeout if no successful dataplane request is found
+    const response = await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL)
+    );
+
+    // Parse payload to verify event count
+    const requestBody = JSON.parse(response.request().postData());
+
+    const xrayEvent = getEventsByType(requestBody, XRAY_TRACE_EVENT_TYPE);
+    const eventIds = getEventIds(xrayEvent);
+
+    // Except one xray event
+    expect(eventIds.length).toEqual(1);
+    const isIngestionCompleted = await verifyIngestionWithRetry(
+        rumClient,
+        eventIds,
+        timestamp,
+        MONITOR_NAME,
+        5
+    );
+    expect(isIngestionCompleted).toEqual(true);
+});
+
+test('when xray event is sent with w3c trace id then the event is ingested', async ({
+    page
+}) => {
+    const timestamp = Date.now() - 30000;
+
+    // Open page
+    await page.goto(W3C_TEST_URL);
     const http200 = page.locator('[id=httpStatFetch200]');
     await http200.click();
 

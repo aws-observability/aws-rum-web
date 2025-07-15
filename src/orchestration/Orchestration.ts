@@ -95,6 +95,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         telemetries: [],
         useBeacon: true,
         userIdRetentionDays: 30,
+        enableW3CTraceId: false,
         ...internalConfigOverrides
     };
 };
@@ -169,6 +170,7 @@ export interface Config {
     userIdRetentionDays: number;
     alias?: string;
     headers?: HeaderBag;
+    enableW3CTraceId: boolean;
 }
 
 export interface PartialConfig
