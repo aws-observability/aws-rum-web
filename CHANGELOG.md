@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.25.0](https://github.com/aws-observability/aws-rum-web/compare/v1.24.0...v1.25.0) (2025-07-23)
+
+### Features
+
+* add w3c trace id format support ([#655](https://github.com/aws-observability/aws-rum-web/issues/655)) ([206d04b](https://github.com/aws-observability/aws-rum-web/commit/206d04bc59d6e8ebc3e6761d0fdf1d9d9feab52f))
+
+
 ## [1.24.0](https://github.com/aws-observability/aws-rum-web/compare/v1.23.0...v1.24.0) (2025-05-29)
 
 ### Bug Fixes
