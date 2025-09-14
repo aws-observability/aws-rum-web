@@ -119,7 +119,7 @@
         "@aws-sdk/querystring-builder": "^3.36.0",
         "@babel/runtime": "^7.16.0",
         "@smithy/fetch-http-handler": "^4.1.0",
-        "@smithy/protocol-http": "^4.1.6",
+        "@smithy/protocol-http": "^5.2.1",
         "@smithy/signature-v4": "^4.2.2",
         "@smithy/util-hex-encoding": "^3.0.0",
         "shimmer": "^1.2.1",
