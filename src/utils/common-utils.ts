@@ -225,7 +225,7 @@ export const isLongTaskSupported = () => {
 
 /** PutRumEvents regex pattern */
 const putRumEventsPattern =
-    /.*\/appmonitors\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+    /\/appmonitors\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 export const isPutRumEventsCall = (
     url: string,
