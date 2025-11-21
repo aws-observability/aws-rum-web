@@ -90,15 +90,6 @@ const extensions = [
     }
 ];
 
-export const shuffle = (a: any[]) => {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const v = a[i];
-        a[i] = a[j];
-        a[j] = v;
-    }
-};
-
 export const getResourceFileType = (
     url: string,
     initiatorType?: string
