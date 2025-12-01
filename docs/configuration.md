@@ -200,17 +200,15 @@ For example, the following telemetry config array causes the web client to ignor
 
 ```javascript
 telemetries: [
+    'errors',
+    'http',
     [
-        'errors',
-        'http',
-        [
-            'performance',
-            {
-                ignore: (entry: PerformanceEntry) => {
-                    return entry.entryType === 'resource';
-                }
+        'performance',
+        {
+            ignore: (entry: PerformanceEntry) => {
+                return entry.entryType === 'resource';
             }
-        ]
+        }
     ]
 ];
 ```
