@@ -91,22 +91,22 @@ export class WebVitalsPlugin extends InternalPlugin {
     private handleLCP(metric: LCPMetricWithAttribution | Metric) {
         const a = (metric as LCPMetricWithAttribution).attribution;
         const attribution: RumLCPAttribution = {
-            element: a.element,
-            url: a.url,
-            timeToFirstByte: a.timeToFirstByte,
-            resourceLoadDelay: a.resourceLoadDelay,
+            element: a?.element,
+            url: a?.url,
+            timeToFirstByte: a?.timeToFirstByte,
+            resourceLoadDelay: a?.resourceLoadDelay,
             /**
              * `resourceLoadTime` was renamed to `resourceLoadDuration` in web-vitals 4.x
              * This is a cosmetic change, and does not affect the underlying value.
              * We can update the name to `resourceLoadDuration` in RUM's next major version.
              * (See https://github.com/GoogleChrome/web-vitals/pull/450)
              */
-            resourceLoadTime: a.resourceLoadDuration,
+            resourceLoadTime: a?.resourceLoadDuration,
             // See https://github.com/GoogleChrome/web-vitals/pull/450
-            elementRenderDelay: a.elementRenderDelay
+            elementRenderDelay: a?.elementRenderDelay
         };
-        if (a.lcpResourceEntry) {
-            const key = performanceKey(a.lcpResourceEntry as HasLatency);
+        if (a?.lcpResourceEntry) {
+            const key = performanceKey(a?.lcpResourceEntry as HasLatency);
             attribution.lcpResourceEntry = this.resourceEventIds.get(key);
         }
         if (this.navigationEventId) {
@@ -131,10 +131,10 @@ export class WebVitalsPlugin extends InternalPlugin {
             version: '1.0.0',
             value: metric.value,
             attribution: {
-                largestShiftTarget: a.largestShiftTarget,
-                largestShiftValue: a.largestShiftValue,
-                largestShiftTime: a.largestShiftTime,
-                loadState: a.loadState
+                largestShiftTarget: a?.largestShiftTarget,
+                largestShiftValue: a?.largestShiftValue,
+                largestShiftTime: a?.largestShiftTime,
+                loadState: a?.loadState
             }
         } as CumulativeLayoutShiftEvent);
     }
@@ -145,10 +145,10 @@ export class WebVitalsPlugin extends InternalPlugin {
             version: '1.0.0',
             value: metric.value,
             attribution: {
-                eventTarget: a.eventTarget,
-                eventType: a.eventType,
-                eventTime: a.eventTime,
-                loadState: a.loadState
+                eventTarget: a?.eventTarget,
+                eventType: a?.eventType,
+                eventTime: a?.eventTime,
+                loadState: a?.loadState
             }
         } as FirstInputDelayEvent);
     }
@@ -160,14 +160,14 @@ export class WebVitalsPlugin extends InternalPlugin {
             version: '1.0.0',
             value: metric.value,
             attribution: {
-                interactionTarget: a.interactionTarget,
-                interactionTime: a.interactionTime,
-                nextPaintTime: a.nextPaintTime,
-                interactionType: a.interactionType,
-                inputDelay: a.inputDelay,
-                processingDuration: a.processingDuration,
-                presentationDelay: a.presentationDelay,
-                loadState: a.loadState
+                interactionTarget: a?.interactionTarget,
+                interactionTime: a?.interactionTime,
+                nextPaintTime: a?.nextPaintTime,
+                interactionType: a?.interactionType,
+                inputDelay: a?.inputDelay,
+                processingDuration: a?.processingDuration,
+                presentationDelay: a?.presentationDelay,
+                loadState: a?.loadState
             }
         } as InteractionToNextPaintEvent);
     }
