@@ -34,9 +34,6 @@ describe('ResourcePlugin tests', () => {
     });
 
     test('When resource event is present then event is recorded', async () => {
-        // Setup
-        mockRandom(0); // Retain order in shuffle
-
         const plugin: ResourcePlugin = buildResourcePlugin();
 
         // Run
@@ -60,9 +57,6 @@ describe('ResourcePlugin tests', () => {
     });
 
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
-        // Setup
-        mockRandom(0); // Retain order in shuffle
-
         const plugin: ResourcePlugin = buildResourcePlugin();
         const mockContext = Object.assign({}, context, {
             config: { ...DEFAULT_CONFIG, recordResourceUrl: false }
@@ -162,28 +156,15 @@ describe('ResourcePlugin tests', () => {
         const plugin: ResourcePlugin = buildResourcePlugin({ eventLimit: 4 });
 
         // Run
-        mockRandom(0.99); // Retain order in shuffle
-        plugin.load(context);
-        mockRandom(0); // Reverse order in shuffle
         plugin.load(context);
 
         // Assert
         expect(record.mock.calls[0][1]).toEqual(
             expect.objectContaining({
-                targetUrl: imageResourceEventB.name
+                targetUrl: imageResourceEventA.name
             })
         );
         expect(record.mock.calls[1][1]).toEqual(
-            expect.objectContaining({
-                targetUrl: imageResourceEventA.name
-            })
-        );
-        expect(record.mock.calls[2][1]).toEqual(
-            expect.objectContaining({
-                targetUrl: imageResourceEventA.name
-            })
-        );
-        expect(record.mock.calls[3][1]).toEqual(
             expect.objectContaining({
                 targetUrl: imageResourceEventB.name
             })

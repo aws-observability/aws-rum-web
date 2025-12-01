@@ -1,8 +1,7 @@
 import { InternalPlugin } from '../InternalPlugin';
 import {
     getResourceFileType,
-    isPutRumEventsCall,
-    shuffle
+    isPutRumEventsCall
 } from '../../utils/common-utils';
 import { ResourceEvent } from '../../events/resource-event';
 import { PERFORMANCE_RESOURCE_EVENT_TYPE } from '../utils/constant';
@@ -56,33 +55,27 @@ export class ResourcePlugin extends InternalPlugin {
     };
 
     recordPerformanceEntries = (list: PerformanceEntryList) => {
-        const recordAll: PerformanceEntry[] = [];
-        const sample: PerformanceEntry[] = [];
+        list.forEach((event) => {
+            if (event.entryType !== RESOURCE || this.config.ignore(event)) {
+                // ignore
+                return;
+            }
 
-        list.filter((e) => e.entryType === RESOURCE)
-            .filter((e) => !this.config.ignore(e))
-            .forEach((event) => {
-                const { name, initiatorType } =
-                    event as PerformanceResourceTiming;
-                const type = getResourceFileType(name, initiatorType);
-                if (this.config.recordAllTypes.includes(type)) {
-                    recordAll.push(event);
-                } else if (this.config.sampleTypes.includes(type)) {
-                    sample.push(event);
-                }
-            });
+            const { name, initiatorType } = event as PerformanceResourceTiming;
+            const type = getResourceFileType(name, initiatorType);
 
-        // Record all events for resources in recordAllTypes
-        recordAll.forEach((r) =>
-            this.recordResourceEvent(r as PerformanceResourceTiming)
-        );
-
-        // Record events from resources in sample until we hit the resource limit
-        shuffle(sample);
-        while (sample.length > 0 && this.eventCount < this.config.eventLimit) {
-            this.recordResourceEvent(sample.pop() as PerformanceResourceTiming);
-            this.eventCount++;
-        }
+            if (this.config.recordAllTypes.includes(type)) {
+                // Record all events for resources in recordAllTypes
+                this.recordResourceEvent(event as PerformanceResourceTiming);
+            } else if (
+                this.config.sampleTypes.includes(type) &&
+                this.eventCount < this.config.eventLimit
+            ) {
+                // Record sample types
+                this.recordResourceEvent(event as PerformanceResourceTiming);
+                this.eventCount++;
+            }
+        });
     };
 
     recordResourceEvent = ({
