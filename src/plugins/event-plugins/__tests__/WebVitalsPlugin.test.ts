@@ -453,4 +453,90 @@ describe('WebVitalsPlugin tests', () => {
             expect.anything()
         );
     });
+
+    test('When web vitals have null attribution then they handle gracefully', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const webVitals = require('web-vitals/attribution');
+
+        // Test LCP with null attribution
+        webVitals.onLCP.mockImplementationOnce((callback) => {
+            callback({ ...mockLCPData, attribution: null });
+        });
+
+        // Test FID with null attribution
+        webVitals.onFID.mockImplementationOnce((callback) => {
+            callback({ ...mockFIDData, attribution: null });
+        });
+
+        // Test CLS with null attribution
+        webVitals.onCLS.mockImplementationOnce((callback) => {
+            callback({ ...mockCLSData, attribution: null });
+        });
+
+        // Test INP with null attribution
+        webVitals.onINP.mockImplementationOnce((callback) => {
+            callback({ ...mockINPData, attribution: null });
+        });
+
+        const plugin = new WebVitalsPlugin();
+        plugin.load(context);
+
+        // Verify LCP handles null attribution
+        expect(record).toHaveBeenCalledWith(
+            LCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    element: undefined,
+                    url: undefined,
+                    timeToFirstByte: undefined,
+                    resourceLoadDelay: undefined,
+                    resourceLoadTime: undefined,
+                    elementRenderDelay: undefined
+                })
+            })
+        );
+
+        // Verify FID handles null attribution
+        expect(record).toHaveBeenCalledWith(
+            FID_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    eventTarget: undefined,
+                    eventType: undefined,
+                    eventTime: undefined,
+                    loadState: undefined
+                })
+            })
+        );
+
+        // Verify CLS handles null attribution
+        expect(recordCandidate).toHaveBeenCalledWith(
+            CLS_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    largestShiftTarget: undefined,
+                    largestShiftValue: undefined,
+                    largestShiftTime: undefined,
+                    loadState: undefined
+                })
+            })
+        );
+
+        // Verify INP handles null attribution
+        expect(recordCandidate).toHaveBeenCalledWith(
+            INP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    interactionTarget: undefined,
+                    interactionTime: undefined,
+                    nextPaintTime: undefined,
+                    interactionType: undefined,
+                    inputDelay: undefined,
+                    processingDuration: undefined,
+                    presentationDelay: undefined,
+                    loadState: undefined
+                })
+            })
+        );
+    });
 });
