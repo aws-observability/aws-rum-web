@@ -73,12 +73,15 @@ jobs:
 
             - run: npm ci
 
+            - name: Install Playwright Browsers
+              run: npx playwright install
+
             - name: Run Integ Tests on ubuntu-latest
               if: matrix.os == 'ubuntu-latest'
               run: |
-                  npm run integ:headless-linux
+                  npm run integ:firefox
 
             - name: Run Integ tests on windows-latest
               if: matrix.os == 'windows-latest'
               run: |
-                  npm run integ:headless-windows
+                  npm run integ:chrome

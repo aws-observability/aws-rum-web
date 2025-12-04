@@ -2,6 +2,7 @@ module.exports = {
     env: {
         browser: true
     },
+    ignorePatterns: ['playwright*.config.ts', '**/*.spec.ts'],
     extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
