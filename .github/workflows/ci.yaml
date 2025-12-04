@@ -57,6 +57,8 @@ jobs:
                 exclude:
                     - os: ubuntu-latest
                       browser: webkit
+                    - os: windows-latest
+                      browser: webkit
 
         steps:
             - name: Checkout AWS RUM Web Client Repository
