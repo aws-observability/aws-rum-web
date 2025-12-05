@@ -71,6 +71,54 @@ test.describe('JSErrorEvent Plugin', () => {
         expect(eventDetails.message).toMatch(/promise is rejected/);
     });
 
+    test('stack trace is recorded by default', async ({ page }) => {
+        await page.goto('/js_error_event.html');
+
+        await page.waitForTimeout(300);
+        await page.click('#triggerTypeError');
+        await page.click('#dispatch');
+
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+
+        const requestBodyText = await page
+            .locator('#request_body')
+            .textContent();
+        const events = JSON.parse(requestBodyText || '{}').RumEvents.filter(
+            (e: any) => e.type === JS_ERROR_EVENT_TYPE
+        );
+        const eventType = events[0].type;
+        const eventDetails = JSON.parse(events[0].details);
+
+        expect(eventType).toBe(JS_ERROR_EVENT_TYPE);
+        expect(eventDetails.stack).toContain('triggerTypeError');
+    });
+
+    test('when a string is thrown then name and message are recorded', async ({
+        page
+    }) => {
+        await page.goto('/js_error_event.html');
+
+        await page.waitForTimeout(300);
+        await page.click('#throwErrorString');
+        await page.click('#dispatch');
+
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+
+        const requestBodyText = await page
+            .locator('#request_body')
+            .textContent();
+        const json = removeUnwantedEvents(JSON.parse(requestBodyText || '{}'));
+        const eventType = json.RumEvents[0].type;
+        const eventDetails = JSON.parse(json.RumEvents[0].details);
+
+        expect(eventType).toBe(JS_ERROR_EVENT_TYPE);
+        expect(eventDetails.type).toContain('thrown string');
+        expect(eventDetails.message).toContain('thrown string');
+        expect(eventDetails.filename).toMatch(/js_error_event.html/);
+        expect(typeof eventDetails.lineno).toBe('number');
+        expect(typeof eventDetails.colno).toBe('number');
+    });
+
     test('when the application records a caught error then the plugin records the error', async ({
         page
     }) => {
@@ -96,5 +144,45 @@ test.describe('JSErrorEvent Plugin', () => {
         expect(eventType).toBe(JS_ERROR_EVENT_TYPE);
         expect(eventDetails.type).toContain('Error');
         expect(eventDetails.message).toContain('My error message');
+    });
+
+    test('when ignore function matches error then the plugin does not record the error', async ({
+        page
+    }) => {
+        await page.goto('/js_error_event.html');
+
+        await page.waitForTimeout(300);
+        await page.click('#resizeObserverLoopError');
+        await page.click('#dispatch');
+
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+
+        const requestBodyText = await page
+            .locator('#request_body')
+            .textContent();
+        const json = removeUnwantedEvents(JSON.parse(requestBodyText || '{}'));
+
+        expect(json.RumEvents.length).toBe(0);
+    });
+
+    test('when error invoked with record method then the plugin records the error', async ({
+        page
+    }) => {
+        await page.goto('/js_error_event.html');
+
+        await page.waitForTimeout(300);
+        await page.click('#recordObserverLoopError');
+        await page.click('#dispatch');
+
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+
+        const requestBodyText = await page
+            .locator('#request_body')
+            .textContent();
+        const events = JSON.parse(requestBodyText || '{}').RumEvents.filter(
+            (e: any) => e.type === JS_ERROR_EVENT_TYPE
+        );
+
+        expect(events.length).toBe(1);
     });
 });
