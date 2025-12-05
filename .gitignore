@@ -19,3 +19,8 @@ logs
 .idea
 app/smoke_local.html
 app/smoke_w3c_format_enabled_local.html
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/

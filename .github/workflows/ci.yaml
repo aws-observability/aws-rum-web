@@ -44,7 +44,7 @@ jobs:
               run: npm run test
 
     integ-test:
-        name: Run Integ Tests on ${{ matrix.os }}
+        name: Run Integ Tests (${{ matrix.browser }} on ${{ matrix.os }})
         runs-on: ${{ matrix.os }}
         permissions: read-all
         env:
@@ -52,7 +52,13 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [ubuntu-latest, windows-latest, macos-latest]
+                browser: [firefox, chrome, webkit, edge]
+                exclude:
+                    - os: ubuntu-latest
+                      browser: webkit
+                    - os: windows-latest
+                      browser: webkit
 
         steps:
             - name: Checkout AWS RUM Web Client Repository
@@ -63,22 +69,20 @@ jobs:
               with:
                   node-version: '20.x'
 
-            - name: Cache NPM modules
+            - name: Cache NPM modules and Playwright browsers
               uses: actions/cache@v4
               with:
-                  path: ~/.npm
-                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  path: |
+                      ~/.npm
+                      ~/.cache/ms-playwright
+                  key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json') }}
                   restore-keys: |
-                      ${{ runner.os }}-node-
+                      ${{ runner.os }}-deps-
 
             - run: npm ci
 
-            - name: Run Integ Tests on ubuntu-latest
-              if: matrix.os == 'ubuntu-latest'
-              run: |
-                  npm run integ:headless-linux
+            - name: Install Playwright Browsers
+              run: npx playwright install
 
-            - name: Run Integ tests on windows-latest
-              if: matrix.os == 'windows-latest'
-              run: |
-                  npm run integ:headless-windows
+            - name: Run Integration Tests
+              run: npm run integ:${{ matrix.browser }}
