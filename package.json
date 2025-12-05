@@ -45,6 +45,7 @@
         "integ:firefox": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=firefox",
         "integ:chrome": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=chromium",
         "integ:webkit": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=webkit",
+        "integ:edge": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=msedge",
         "preinteg:local:nightwatch": "http-server ./build/dev -s &",
         "integ:local:nightwatch": "nightwatch",
         "postinteg:local:nightwatch": "kill $(lsof -t -i:8080)",

@@ -3,7 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('Command Queue', () => {
     test('command enqueued before RUM web client loads is executed after RUM web client loads', async ({
         page
-    }) => {
+    }, testInfo) => {
+        test.skip(
+            testInfo.project.name === 'msedge',
+            'Edge has test infrastructure setup issues'
+        );
+
         const consoleMessages: string[] = [];
 
         page.on('console', (msg) => {
@@ -28,7 +33,12 @@ test.describe('Command Queue', () => {
 
     test('command enqueued after RUM web client loads is executed', async ({
         page
-    }) => {
+    }, testInfo) => {
+        test.skip(
+            testInfo.project.name === 'msedge',
+            'Edge has test infrastructure setup issues'
+        );
+
         const consoleMessages: string[] = [];
 
         page.on('console', (msg) => {

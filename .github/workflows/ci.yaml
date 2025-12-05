@@ -53,12 +53,14 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
-                browser: [firefox, chrome, webkit]
+                browser: [firefox, chrome, webkit, edge]
                 exclude:
                     - os: ubuntu-latest
                       browser: webkit
                     - os: windows-latest
                       browser: webkit
+                    - os: ubuntu-latest
+                      browser: edge
 
         steps:
             - name: Checkout AWS RUM Web Client Repository
