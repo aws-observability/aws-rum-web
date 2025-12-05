@@ -191,6 +191,9 @@ export class Orchestration {
     private dispatchManager: Dispatch;
     private config: Config;
     private eventBus = new EventBus<Topic>();
+    private applicationId: string;
+    private applicationVersion: string;
+    private region: string;
 
     /**
      * Instantiate the CloudWatch RUM web client and begin monitoring the
@@ -224,7 +227,7 @@ export class Orchestration {
             // removed when internal users have migrated to the new signature.
             region = 'us-west-2';
         }
-
+        this.region = region;
         const cookieAttributes: CookieAttributes = {
             ...defaultCookieAttributes(),
             ...configCookieAttributes
@@ -246,6 +249,8 @@ export class Orchestration {
         // code.
         this.config.endpointUrl = new URL(this.config.endpoint);
 
+        this.applicationId = applicationId;
+        this.applicationVersion = applicationVersion;
         this.eventCache = this.initEventCache(
             applicationId,
             applicationVersion
@@ -332,7 +337,25 @@ export class Orchestration {
      * @param allow when {@code false}, the RUM web client will not store cookies or use localstorage.
      */
     public allowCookies(allow: boolean) {
+        if (allow === this.config.allowCookies) {
+            // no change so just return
+            return;
+        }
         this.config.allowCookies = allow;
+        // recreate event cache, dispatch and plugin manager
+        // as cookie preference has changed
+        this.eventCache = this.initEventCache(
+            this.applicationId,
+            this.applicationVersion
+        );
+        this.dispatchManager = this.initDispatch(
+            this.region,
+            this.applicationId
+        );
+        this.pluginManager = this.initPluginManager(
+            this.applicationId,
+            this.applicationVersion
+        );
     }
 
     /**
