@@ -59,8 +59,6 @@ jobs:
                       browser: webkit
                     - os: windows-latest
                       browser: webkit
-                    - os: ubuntu-latest
-                      browser: edge
 
         steps:
             - name: Checkout AWS RUM Web Client Repository
