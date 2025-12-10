@@ -2,9 +2,9 @@ name: AWS RUM Web Client Smoke Tests
 
 on:
     push:
-        branches: [main, release/*.*.*]
+        branches: [main, release/*.*.*, dev/**/*]
     pull_request:
-        branches: [dev/**/*]
+        branches: [main, release/*.*.*, dev/**/*]
 
 jobs:
     smoke-test:
