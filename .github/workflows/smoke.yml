@@ -34,6 +34,14 @@ jobs:
                   npm ci
                   npm run release
 
+            - name: Cache Playwright browsers
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-playwright-
+
             - name: Install PlayWright
               run: npx playwright install --with-deps chromium
 
@@ -99,6 +107,7 @@ jobs:
               env:
                   URL: ${{ secrets.SMOKE_URL }}
                   MONITOR: ${{ secrets.SMOKE_MONITOR }}
+                  MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
                   ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
                   NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
                   INSTALL_METHOD: 'CDN'
