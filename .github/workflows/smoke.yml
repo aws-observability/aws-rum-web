@@ -1,0 +1,108 @@
+name: AWS RUM Web Client Smoke Tests
+
+on:
+    push:
+        branches: [main, release/*.*.*]
+    pull_request:
+        branches: [dev/**/*]
+
+jobs:
+    smoke-test:
+        name: Run Smoke Tests
+        runs-on: ubuntu-latest
+        environment: smoke-test
+        permissions: write-all
+        steps:
+            - name: Checkout AWS RUM Web Client Repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20.x'
+
+            - name: Cache NPM modules
+              uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
+            - name: Build Release
+              run: |
+                  npm ci
+                  npm run release
+
+            - name: Install PlayWright
+              run: npx playwright install --with-deps chromium
+
+            - name: Fetch AWS Credentials for Smoke Test
+              run: |
+                  export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
+                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+                  export AWS_DEFAULT_REGION=us-east-1
+
+                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+
+            - name: Update Smoke Test Application
+              run: |
+                  chmod u+x .github/scripts/update_smoke_test.sh
+                  .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN_GAMMA }} ${{ secrets.SMOKE_MONITOR_2 }} ${{ secrets.SMOKE_ARN_2 }} ${{ secrets.SMOKE_IDENTITY_2 }}
+
+            - name: Build Smoke Test Application - NPM/ES
+              run: |
+                  chmod u+x .github/scripts/build_npm_applications.sh
+                  .github/scripts/build_npm_applications.sh "PRE" "NPM-ES"
+
+            - name: Build Smoke Test Application - NPM/CJS
+              run: |
+                  chmod u+x .github/scripts/build_npm_applications.sh
+                  .github/scripts/build_npm_applications.sh "PRE" "NPM-CJS"
+
+            - name: Upload Smoke Tests to CloudFront
+              run: |
+                  chmod u+x .github/scripts/upload_smoke_test.sh
+                  .github/scripts/upload_smoke_test.sh ${{ secrets.SMOKE_BUCKET }}
+
+            - name: Run Smoke Test (NPM ES)
+              env:
+                  URL: ${{ secrets.SMOKE_URL }}
+                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
+                  MONITOR2: ${{ secrets.SMOKE_MONITOR_2 }}
+                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+                  INSTALL_METHOD: 'NPM-ES'
+              run: |
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+                  npm run smoke:headless
+              timeout-minutes: 10
+
+            - name: Run Smoke Test (NPM CJS)
+              env:
+                  URL: ${{ secrets.SMOKE_URL }}
+                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
+                  MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
+                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+                  INSTALL_METHOD: 'NPM-CJS'
+              run: |
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+                  npm run smoke:headless
+              timeout-minutes: 10
+
+            - name: Run Smoke Test (CDN)
+              env:
+                  URL: ${{ secrets.SMOKE_URL }}
+                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
+                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+                  INSTALL_METHOD: 'CDN'
+              run: |
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+                  npm run smoke:headless
+              timeout-minutes: 10
