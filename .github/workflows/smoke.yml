@@ -3,6 +3,7 @@ name: AWS RUM Web Client Smoke Tests
 on:
     push:
         branches: [main, release/*.*.*]
+    workflow_call:
 
 jobs:
     smoke-test:
