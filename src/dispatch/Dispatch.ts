@@ -11,6 +11,7 @@ import { PutRumEventsRequest } from './dataplane';
 import { Config } from '../orchestration/Orchestration';
 import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
+import { InternalLogger } from '../utils/InternalLogger';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -83,6 +84,9 @@ export class Dispatch {
     public disable(): void {
         this.stopDispatchTimer();
         this.enabled = false;
+        if (this.config.debug) {
+            InternalLogger.warn('Dispatch disabled');
+        }
     }
 
     /**
@@ -115,9 +119,13 @@ export class Dispatch {
         { response: HttpResponse } | undefined
     > => {
         if (this.doRequest()) {
-            return this.rum
-                .sendFetch(this.createRequest())
-                .catch(this.handleReject);
+            const request = this.createRequest();
+            if (this.config.debug) {
+                InternalLogger.info(
+                    `Dispatching ${request.RumEvents.length} events via fetch`
+                );
+            }
+            return this.rum.sendFetch(request).catch(this.handleReject);
         }
     };
 
@@ -129,6 +137,11 @@ export class Dispatch {
     > => {
         if (this.doRequest()) {
             const request: PutRumEventsRequest = this.createRequest();
+            if (this.config.debug) {
+                InternalLogger.info(
+                    `Dispatching ${request.RumEvents.length} events via beacon`
+                );
+            }
             return this.rum
                 .sendBeacon(request)
                 .catch(() => this.rum.sendFetch(request));
@@ -143,8 +156,11 @@ export class Dispatch {
     public dispatchFetchFailSilent = async (): Promise<{
         response: HttpResponse;
     } | void> => {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        return this.dispatchFetch().catch(() => {});
+        return this.dispatchFetch().catch((e) => {
+            if (this.config.debug) {
+                InternalLogger.error('Dispatch fetch failed silently:', e);
+            }
+        });
     };
 
     /**
@@ -155,8 +171,11 @@ export class Dispatch {
     public dispatchBeaconFailSilent = async (): Promise<{
         response: HttpResponse;
     } | void> => {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        return this.dispatchBeacon().catch(() => {});
+        return this.dispatchBeacon().catch((e) => {
+            if (this.config.debug) {
+                InternalLogger.error('Dispatch beacon failed silently:', e);
+            }
+        });
     };
 
     private flushSync: EventListener = () => {
@@ -170,10 +189,17 @@ export class Dispatch {
                 }
 
                 const req = this.createRequest(true);
+                if (this.config.debug) {
+                    InternalLogger.debug(
+                        `Flushing ${req.RumEvents.length} events on page hide`
+                    );
+                }
                 flush(req)
                     .catch(() => backup(req))
-                    .catch(() => {
-                        // fail silent
+                    .catch((e) => {
+                        if (this.config.debug) {
+                            InternalLogger.error('Page hide flush failed:', e);
+                        }
                     });
             }
         }
@@ -251,6 +277,12 @@ export class Dispatch {
             // RUM disables only when dispatch fails and we are certain
             // that subsequent attempts will not succeed, such as when
             // credentials are invalid or the app monitor does not exist.
+            if (this.config.debug) {
+                InternalLogger.error(
+                    'Dispatch failed with status code:',
+                    e.message
+                );
+            }
             this.disable();
         }
         throw e;

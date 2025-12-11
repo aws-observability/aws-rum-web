@@ -12,6 +12,7 @@ import {
 import EventBus, { Topic } from '../event-bus/EventBus';
 import { RecordEvent } from '../plugins/types';
 import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
+import { InternalLogger } from '../utils/InternalLogger';
 
 const webClientVersion = '1.25.0';
 
@@ -34,6 +35,10 @@ export class EventCache {
 
     private enabled: boolean;
     private installationMethod: string;
+
+    // Enable config.debug mode
+    private droppedEvent = 0; // tracks dropped event count due to insufficient `eventCache`
+    private sessionLimitExceeded = 0; // tracks dropped event count due to insufficieent `sessionEventLimit`
 
     /**
      * @param applicationDetails Application identity and version.
@@ -113,6 +118,8 @@ export class EventCache {
             if (this.sessionManager.canRecord()) {
                 this.sessionManager.incrementSessionEventCount();
                 this.addRecordToCache(type, eventData);
+            } else if (this.config.debug) {
+                this.sessionLimitExceeded++;
             }
         }
     };
@@ -165,6 +172,24 @@ export class EventCache {
      * Returns true if there are one or more events in the cache.
      */
     public hasEvents(): boolean {
+        if (this.config.debug && this.sessionLimitExceeded > 0) {
+            const total = this.events.length + this.sessionLimitExceeded;
+            InternalLogger.warn(
+                `Dropped ${
+                    this.sessionLimitExceeded
+                } of ${total} total events (${(
+                    (this.sessionLimitExceeded / total) *
+                    100
+                ).toFixed(
+                    2
+                )}%) for the current session. Consider increasing sessionEventLimit (currently ${
+                    this.config.sessionEventLimit
+                }) or sessionSampleRate (currently ${
+                    this.config.sessionSampleRate
+                }) to avoid data loss.`
+            );
+        }
+
         return this.events.length !== 0;
     }
 
@@ -179,6 +204,24 @@ export class EventCache {
      * Removes and returns the next batch of events.
      */
     public getEventBatch(flushCandidates = false): RumEvent[] {
+        if (this.config.debug && this.droppedEvent > 0) {
+            const total = this.events.length + this.droppedEvent;
+            InternalLogger.warn(
+                `Dropped ${
+                    this.droppedEvent
+                } of ${total} recently observed events (${(
+                    (this.droppedEvent / total) *
+                    100
+                ).toFixed(
+                    2
+                )}%) due to insufficient in-memory queue. Increase eventCacheSize to ${total} (currently ${
+                    this.config.eventCacheSize
+                }) to avoid data loss.`
+            );
+            // reset
+            this.droppedEvent = 0;
+        }
+
         let batch: RumEvent[] = [];
 
         // Prioritize candidates in the next event batch
@@ -260,7 +303,10 @@ export class EventCache {
             return;
         }
 
-        if (this.events.length === this.config.eventCacheSize) {
+        if (this.events.length >= this.config.eventCacheSize) {
+            if (this.config.debug) {
+                this.droppedEvent += 1;
+            }
             // Drop newest event and keep the older ones
             // 1. Older events tend to be more relevant, such as session start
             //    or performance entries that are attributed to web vitals
