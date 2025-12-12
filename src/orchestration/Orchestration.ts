@@ -78,7 +78,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         enableXRay: false,
         endpoint: DEFAULT_ENDPOINT,
         endpointUrl: new URL(DEFAULT_ENDPOINT),
-        eventCacheSize: 200,
+        eventCacheSize: 1000,
         eventPluginsToLoad: [],
         pageIdFormat: PageIdFormatEnum.Path,
         pagesToExclude: [],

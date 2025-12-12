@@ -528,3 +528,44 @@ describe('Orchestration tests', () => {
         expect(setAwsCredentials).toHaveBeenCalledTimes(1);
     });
 });
+
+describe('defaultConfig tests', () => {
+    test('returns config with expected default values', () => {
+        const cookieAttributes = defaultCookieAttributes();
+        const config = defaultConfig(cookieAttributes);
+
+        expect(config.allowCookies).toBe(false);
+        expect(config.batchLimit).toBe(100);
+        expect(config.client).toBe('arw-module');
+        expect(config.cookieAttributes).toEqual(cookieAttributes);
+        expect(config.disableAutoPageView).toBe(false);
+        expect(config.dispatchInterval).toBe(5000);
+        expect(config.enableRumClient).toBe(true);
+        expect(config.enableXRay).toBe(false);
+        expect(config.endpoint).toBe(
+            'https://dataplane.rum.us-west-2.amazonaws.com'
+        );
+        expect(config.endpointUrl).toEqual(
+            new URL('https://dataplane.rum.us-west-2.amazonaws.com')
+        );
+        expect(config.eventCacheSize).toBe(1000);
+        expect(config.eventPluginsToLoad).toEqual([]);
+        expect(config.pageIdFormat).toBe('PATH');
+        expect(config.pagesToExclude).toEqual([]);
+        expect(config.pagesToInclude).toEqual([/.*/]);
+        expect(config.signing).toBe(true);
+        expect(config.recordResourceUrl).toBe(true);
+        expect(config.retries).toBe(2);
+        expect(config.routeChangeComplete).toBe(100);
+        expect(config.routeChangeTimeout).toBe(10000);
+        expect(config.sessionAttributes).toEqual({});
+        expect(config.sessionEventLimit).toBe(200);
+        expect(config.sessionLengthSeconds).toBe(1800);
+        expect(config.sessionSampleRate).toBe(1);
+        expect(config.telemetries).toEqual([]);
+        expect(config.useBeacon).toBe(true);
+        expect(config.userIdRetentionDays).toBe(30);
+        expect(config.enableW3CTraceId).toBe(false);
+        expect(config.candidatesCacheSize).toBe(10);
+    });
+});
