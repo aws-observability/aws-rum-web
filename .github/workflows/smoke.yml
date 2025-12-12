@@ -3,6 +3,14 @@ name: AWS RUM Web Client Smoke Tests
 on:
     push:
         branches: [main, release/*.*.*]
+    workflow_call:
+    workflow_dispatch:
+
+concurrency:
+    # Only run one at a time, in case there are multiple triggers (e.g. multiple merges to main)
+    group: smoke-tests
+    # This workflow also uploads to gamma, so we do not want to cancel ongoing work.
+    cancel-in-progress: false
 
 jobs:
     smoke-test:
