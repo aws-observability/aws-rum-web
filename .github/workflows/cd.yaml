@@ -35,7 +35,7 @@ jobs:
                   npm install -g npm@latest
                   npm ci
                   npm run release
-                  npm publish
+                  npm publish --provenance
 
             # - name: Create GitHub Release
             #   id: create_release
