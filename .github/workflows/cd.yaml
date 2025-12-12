@@ -3,6 +3,10 @@ name: AWS RUM Web Client Release
 on:
     workflow_dispatch:
 
+permissions:
+    id-token: write
+    contents: read
+
 jobs:
     publish_to_cdn:
         name: Publish New Release
@@ -190,8 +194,6 @@ jobs:
 
             - name: Publish to NPM
               run: npm publish
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Build Smoke Test Application - NPM/ES (Post NPM Release)
               id: build-npm-es-application-post-release
