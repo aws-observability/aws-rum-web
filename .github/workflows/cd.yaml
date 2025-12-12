@@ -36,176 +36,176 @@ jobs:
                   npm ci
                   npm run release
 
-            - name: Install PlayWright
-              run: npx playwright install --with-deps chromium
+            # - name: Install PlayWright
+            #   run: npx playwright install --with-deps chromium
 
-            - name: Fetch AWS Credentials for Gamma Deployment
-              run: |
-                  export AWS_ROLE_ARN=${{ secrets.ROLE_GAMMA }}
-                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
-                  export AWS_DEFAULT_REGION=us-east-1
+            # - name: Fetch AWS Credentials for Gamma Deployment
+            #   run: |
+            #       export AWS_ROLE_ARN=${{ secrets.ROLE_GAMMA }}
+            #       export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+            #       export AWS_DEFAULT_REGION=us-east-1
 
-                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
-                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
-                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+            #       echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+            #       echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+            #       echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
 
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
 
-            - name: Publish to CloudWatch RUM Gamma CDN
-              id: publish-cdn-gamma
-              run: |
-                  chmod u+x .github/scripts/deploy.sh
-                  .github/scripts/deploy.sh ${{ secrets.BUCKET_GAMMA }}
+            # - name: Publish to CloudWatch RUM Gamma CDN
+            #   id: publish-cdn-gamma
+            #   run: |
+            #       chmod u+x .github/scripts/deploy.sh
+            #       .github/scripts/deploy.sh ${{ secrets.BUCKET_GAMMA }}
 
-            - name: Validate Gamma versions.csv file
-              run: |
-                  chmod u+x .github/scripts/validate_versions.sh
-                  .github/scripts/validate_versions.sh ${{ secrets.BUCKET_GAMMA }}
+            # - name: Validate Gamma versions.csv file
+            #   run: |
+            #       chmod u+x .github/scripts/validate_versions.sh
+            #       .github/scripts/validate_versions.sh ${{ secrets.BUCKET_GAMMA }}
 
-            - name: Fetch AWS Credentials for Gamma Smoke Test
-              run: |
-                  export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
-                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
-                  export AWS_DEFAULT_REGION=us-east-1
+            # - name: Fetch AWS Credentials for Gamma Smoke Test
+            #   run: |
+            #       export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
+            #       export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+            #       export AWS_DEFAULT_REGION=us-east-1
 
-                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
-                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
-                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+            #       echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+            #       echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+            #       echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
 
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
 
-            - name: Update Gamma Smoke Test Application
-              id: update-smoke-test-gamma-cdn
-              run: |
-                  chmod u+x .github/scripts/update_smoke_test.sh
-                  .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN_GAMMA }} ${{ secrets.SMOKE_MONITOR_2 }} ${{ secrets.SMOKE_ARN_2 }} ${{ secrets.SMOKE_IDENTITY_2 }}
+            # - name: Update Gamma Smoke Test Application
+            #   id: update-smoke-test-gamma-cdn
+            #   run: |
+            #       chmod u+x .github/scripts/update_smoke_test.sh
+            #       .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN_GAMMA }} ${{ secrets.SMOKE_MONITOR_2 }} ${{ secrets.SMOKE_ARN_2 }} ${{ secrets.SMOKE_IDENTITY_2 }}
 
-            - name: Build Smoke Test Application - NPM/ES
-              id: build-npm-es-application-pre-release
-              run: |
-                  chmod u+x .github/scripts/build_npm_applications.sh
-                  .github/scripts/build_npm_applications.sh "PRE" "NPM-ES"
+            # - name: Build Smoke Test Application - NPM/ES
+            #   id: build-npm-es-application-pre-release
+            #   run: |
+            #       chmod u+x .github/scripts/build_npm_applications.sh
+            #       .github/scripts/build_npm_applications.sh "PRE" "NPM-ES"
 
-            - name: Build Smoke Test Application - NPM/CJS
-              id: build-npm-cjs-application-pre-release
-              run: |
-                  chmod u+x .github/scripts/build_npm_applications.sh
-                  .github/scripts/build_npm_applications.sh "PRE" "NPM-CJS"
+            # - name: Build Smoke Test Application - NPM/CJS
+            #   id: build-npm-cjs-application-pre-release
+            #   run: |
+            #       chmod u+x .github/scripts/build_npm_applications.sh
+            #       .github/scripts/build_npm_applications.sh "PRE" "NPM-CJS"
 
-            - name: Upload Gamma Smoke Tests to CloudFront
-              id: upload-smoke-test-gamma
-              run: |
-                  chmod u+x .github/scripts/upload_smoke_test.sh
-                  .github/scripts/upload_smoke_test.sh ${{ secrets.SMOKE_BUCKET }}
+            # - name: Upload Gamma Smoke Tests to CloudFront
+            #   id: upload-smoke-test-gamma
+            #   run: |
+            #       chmod u+x .github/scripts/upload_smoke_test.sh
+            #       .github/scripts/upload_smoke_test.sh ${{ secrets.SMOKE_BUCKET }}
 
-            - name: Run Smoke Test (NPM ES)
-              env:
-                  URL: ${{ secrets.SMOKE_URL }}
-                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  MONITOR2: ${{ secrets.SMOKE_MONITOR_2 }}
-                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
-                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'NPM-ES'
-              run: |
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-                  npm run smoke:headless
-              timeout-minutes: 10
+            # - name: Run Smoke Test (NPM ES)
+            #   env:
+            #       URL: ${{ secrets.SMOKE_URL }}
+            #       MONITOR: ${{ secrets.SMOKE_MONITOR }}
+            #       MONITOR2: ${{ secrets.SMOKE_MONITOR_2 }}
+            #       ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+            #       NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+            #       INSTALL_METHOD: 'NPM-ES'
+            #   run: |
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       npm run smoke:headless
+            #   timeout-minutes: 10
 
-            - name: Run Smoke Test (NPM CJS)
-              env:
-                  URL: ${{ secrets.SMOKE_URL }}
-                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
-                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
-                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'NPM-CJS'
-              run: |
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-                  npm run smoke:headless
-              timeout-minutes: 10
+            # - name: Run Smoke Test (NPM CJS)
+            #   env:
+            #       URL: ${{ secrets.SMOKE_URL }}
+            #       MONITOR: ${{ secrets.SMOKE_MONITOR }}
+            #       MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
+            #       ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+            #       NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+            #       INSTALL_METHOD: 'NPM-CJS'
+            #   run: |
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       npm run smoke:headless
+            #   timeout-minutes: 10
 
-            - name: Run Gamma Smoke Test (CDN GAMMA)
-              env:
-                  URL: ${{ secrets.SMOKE_URL }}
-                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
-                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'CDN'
-              run: |
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-                  npm run smoke:headless
+            # - name: Run Gamma Smoke Test (CDN GAMMA)
+            #   env:
+            #       URL: ${{ secrets.SMOKE_URL }}
+            #       MONITOR: ${{ secrets.SMOKE_MONITOR }}
+            #       ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+            #       NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+            #       INSTALL_METHOD: 'CDN'
+            #   run: |
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       npm run smoke:headless
 
-            - name: Fetch AWS Credentials for Prod Deployment
-              run: |
-                  export AWS_ROLE_ARN=${{ secrets.ROLE }}
-                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
-                  export AWS_DEFAULT_REGION=us-east-1
+            # - name: Fetch AWS Credentials for Prod Deployment
+            #   run: |
+            #       export AWS_ROLE_ARN=${{ secrets.ROLE }}
+            #       export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+            #       export AWS_DEFAULT_REGION=us-east-1
 
-                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
-                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
-                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+            #       echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+            #       echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+            #       echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
 
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
 
-            - name: Publish to CloudWatch RUM Prod CDN
-              id: publish-cdn-prod
-              run: |
-                  chmod u+x .github/scripts/deploy.sh
-                  .github/scripts/deploy.sh ${{ secrets.BUCKET }}
+            # - name: Publish to CloudWatch RUM Prod CDN
+            #   id: publish-cdn-prod
+            #   run: |
+            #       chmod u+x .github/scripts/deploy.sh
+            #       .github/scripts/deploy.sh ${{ secrets.BUCKET }}
 
-            - name: Validate Prod versions.csv file
-              run: |
-                  chmod u+x .github/scripts/validate_versions.sh
-                  .github/scripts/validate_versions.sh ${{ secrets.BUCKET }}
+            # - name: Validate Prod versions.csv file
+            #   run: |
+            #       chmod u+x .github/scripts/validate_versions.sh
+            #       .github/scripts/validate_versions.sh ${{ secrets.BUCKET }}
 
-            - name: Fetch AWS Credentials for Prod Smoke Test
-              run: |
-                  export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
-                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
-                  export AWS_DEFAULT_REGION=us-east-1
+            # - name: Fetch AWS Credentials for Prod Smoke Test
+            #   run: |
+            #       export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
+            #       export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+            #       export AWS_DEFAULT_REGION=us-east-1
 
-                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
-                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
-                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+            #       echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+            #       echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+            #       echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
 
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+            #       curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
 
-            - name: Update Prod Smoke Test Application
-              id: update-smoke-test-prod-cdn
-              run: |
-                  chmod u+x .github/scripts/update_smoke_test.sh
-                  .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN }} ${{ secrets.SMOKE_MONITOR_2 }} ${{ secrets.SMOKE_ARN_2 }} ${{ secrets.SMOKE_IDENTITY_2 }}
+            # - name: Update Prod Smoke Test Application
+            #   id: update-smoke-test-prod-cdn
+            #   run: |
+            #       chmod u+x .github/scripts/update_smoke_test.sh
+            #       .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN }} ${{ secrets.SMOKE_MONITOR_2 }} ${{ secrets.SMOKE_ARN_2 }} ${{ secrets.SMOKE_IDENTITY_2 }}
 
-            - name: Upload Prod Smoke Tests to CloudFront
-              id: upload-smoke-test-prod
-              run: |
-                  chmod u+x .github/scripts/upload_smoke_test.sh
-                  .github/scripts/upload_smoke_test.sh ${{ secrets.SMOKE_BUCKET }}
+            # - name: Upload Prod Smoke Tests to CloudFront
+            #   id: upload-smoke-test-prod
+            #   run: |
+            #       chmod u+x .github/scripts/upload_smoke_test.sh
+            #       .github/scripts/upload_smoke_test.sh ${{ secrets.SMOKE_BUCKET }}
 
-            - name: Run Prod Smoke Test (CDN)
-              env:
-                  URL: ${{ secrets.SMOKE_URL }}
-                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
-                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
-                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'CDN'
-              run: npm run smoke:headless
+            # - name: Run Prod Smoke Test (CDN)
+            #   env:
+            #       URL: ${{ secrets.SMOKE_URL }}
+            #       MONITOR: ${{ secrets.SMOKE_MONITOR }}
+            #       MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
+            #       ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
+            #       NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
+            #       INSTALL_METHOD: 'CDN'
+            #   run: npm run smoke:headless
 
             - name: Publish to NPM
               run: npm publish
 
-            - name: Build Smoke Test Application - NPM/ES (Post NPM Release)
-              id: build-npm-es-application-post-release
-              run: |
-                  chmod u+x .github/scripts/build_npm_applications.sh
-                  .github/scripts/build_npm_applications.sh "POST" "NPM-ES"
+            # - name: Build Smoke Test Application - NPM/ES (Post NPM Release)
+            #   id: build-npm-es-application-post-release
+            #   run: |
+            #       chmod u+x .github/scripts/build_npm_applications.sh
+            #       .github/scripts/build_npm_applications.sh "POST" "NPM-ES"
 
-            - name: Build Smoke Test Application - NPM/CJS (Post NPM Release)
-              id: build-npm-cjs-application-post-release
-              run: |
-                  chmod u+x .github/scripts/build_npm_applications.sh
-                  .github/scripts/build_npm_applications.sh "POST" "NPM-CJS"
+            # - name: Build Smoke Test Application - NPM/CJS (Post NPM Release)
+            #   id: build-npm-cjs-application-post-release
+            #   run: |
+            #       chmod u+x .github/scripts/build_npm_applications.sh
+            #       .github/scripts/build_npm_applications.sh "POST" "NPM-CJS"
 
             - name: Create GitHub Release
               id: create_release

@@ -1,5 +1,5 @@
 {
-    "name": "aws-rum-web",
+    "name": "aws-rum-web-experimental",
     "version": "1.25.0",
     "sideEffects": false,
     "description": "The Amazon CloudWatch RUM web client.",
