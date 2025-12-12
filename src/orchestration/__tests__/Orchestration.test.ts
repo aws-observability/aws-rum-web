@@ -1,4 +1,8 @@
-import { Orchestration } from '../Orchestration';
+import {
+    Orchestration,
+    defaultConfig,
+    defaultCookieAttributes
+} from '../Orchestration';
 import { Dispatch } from '../../dispatch/Dispatch';
 import { EventCache } from '../../event-cache/EventCache';
 import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
