@@ -172,22 +172,38 @@ export class EventCache {
      * Returns true if there are one or more events in the cache.
      */
     public hasEvents(): boolean {
+        // For debug mode
         if (this.config.debug && this.sessionLimitExceeded > 0) {
             const total = this.events.length + this.sessionLimitExceeded;
-            InternalLogger.warn(
-                `Dropped ${
-                    this.sessionLimitExceeded
-                } of ${total} total events (${(
-                    (this.sessionLimitExceeded / total) *
-                    100
-                ).toFixed(
-                    2
-                )}%) for the current session. Consider increasing sessionEventLimit (currently ${
-                    this.config.sessionEventLimit
-                }) or sessionSampleRate (currently ${
-                    this.config.sessionSampleRate
-                }) to avoid data loss.`
-            );
+            if (this.sessionManager.isSampled()) {
+                InternalLogger.warn(
+                    `Dropped ${
+                        this.sessionLimitExceeded
+                    } of ${total} recently observed events (${(
+                        (this.sessionLimitExceeded / total) *
+                        100
+                    ).toFixed(
+                        2
+                    )}%) because the session limit has exceeded. Consider increasing sessionEventLimit (currently ${
+                        this.config.sessionEventLimit
+                    }) to ${total} or more to avoid data loss.`
+                );
+            } else {
+                InternalLogger.warn(
+                    `Dropped ${
+                        this.sessionLimitExceeded
+                    } of ${total} recently observed events (${(
+                        (this.sessionLimitExceeded / total) *
+                        100
+                    ).toFixed(
+                        2
+                    )}%) because current session is not sampled. Consider increasing sessionSampleRate (currently ${
+                        this.config.sessionSampleRate
+                    }) to capture more user sessions.`
+                );
+            }
+            // reset
+            this.sessionLimitExceeded = 0;
         }
 
         return this.events.length !== 0;
