@@ -29,6 +29,7 @@ import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '../sessions/PageManager';
 import { INSTALL_MODULE } from '../utils/constants';
 import EventBus, { Topic } from '../event-bus/EventBus';
+import { InternalLogger } from '../utils/InternalLogger';
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
@@ -72,6 +73,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         batchLimit: 100,
         client: INSTALL_MODULE,
         cookieAttributes,
+        debug: false,
         disableAutoPageView: false,
         dispatchInterval: 5 * 1000,
         enableRumClient: true,
@@ -122,6 +124,7 @@ export interface Config {
     clientBuilder?: ClientBuilder;
     cookieAttributes: CookieAttributes;
     sessionAttributes: { [k: string]: string | number | boolean };
+    debug: boolean;
     disableAutoPageView: boolean;
     dispatchInterval: number;
     enableRumClient: boolean;
@@ -256,6 +259,17 @@ export class Orchestration {
             applicationId,
             applicationVersion
         );
+
+        if (this.config.debug) {
+            InternalLogger.info(
+                `RUM client initialized for app: ${applicationId}`
+            );
+            InternalLogger.info(
+                `Telemetries enabled: ${
+                    this.config.telemetries.join(', ') || 'none'
+                }`
+            );
+        }
 
         if (this.config.enableRumClient) {
             this.enable();

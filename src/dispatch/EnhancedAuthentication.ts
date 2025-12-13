@@ -1,6 +1,7 @@
 import { Config } from '../orchestration/Orchestration';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { Authentication } from './Authentication';
+import { InternalLogger } from '../utils/InternalLogger';
 
 export class EnhancedAuthentication extends Authentication {
     constructor(config: Config, applicationId: string) {
@@ -40,11 +41,27 @@ export class EnhancedAuthentication extends Authentication {
                         // Ignore
                     }
 
+                    if (this.config.debug) {
+                        InternalLogger.info(
+                            'AWS credentials fetched successfully'
+                        );
+                    }
                     return credentials;
                 } catch (e) {
                     if (retries) {
                         retries--;
+                        if (this.config.debug) {
+                            InternalLogger.warn(
+                                'AWS credential fetch failed, retrying'
+                            );
+                        }
                     } else {
+                        if (this.config.debug) {
+                            InternalLogger.error(
+                                'AWS credential fetch failed:',
+                                e
+                            );
+                        }
                         throw e;
                     }
                 }

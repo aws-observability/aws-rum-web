@@ -9,6 +9,7 @@ import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
 import { RecordEvent } from '../plugins/types';
 import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
+import { InternalLogger } from '../utils/InternalLogger';
 
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -114,16 +115,14 @@ export class SessionManager {
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (this.session.sessionId === NIL_UUID) {
+        if (
             // The session does not exist. Create a new one.
             // If it is created before the page view is recorded, the session start event metadata will
             // not have page attributes as the page does not exist yet.
-            this.createSession();
-        } else if (
-            this.session.sessionId !== NIL_UUID &&
+            this.session.sessionId === NIL_UUID ||
+            // OR the session has expired. Create a new one.
             new Date() >= this.sessionExpiry
         ) {
-            // The session has expired. Create a new one.
             this.createSession();
         }
         return this.session;
@@ -219,8 +218,15 @@ export class SessionManager {
                 try {
                     this.session = JSON.parse(atob(cookie)) as Session;
                     this.pageManager.resumeSession(this.session.page);
+
+                    if (this.config.debug) {
+                        InternalLogger.info(
+                            `Restored session: ${this.session.sessionId}`
+                        );
+                    }
                 } catch (e) {
                     // Error decoding or parsing the cookie -- ignore
+                    InternalLogger.error('Failed to restore session', e);
                 }
             }
         }
@@ -254,6 +260,17 @@ export class SessionManager {
             new Date().getTime() + this.config.sessionLengthSeconds * 1000
         );
         this.storeSessionAsCookie();
+
+        if (this.config.debug) {
+            InternalLogger.info(`Session start: ${this.session.sessionId}`);
+
+            if (!this.session.record) {
+                InternalLogger.warn(
+                    `Session is NOT sampled. Consider increasing sessionSampleRate to avoid data loss (currently ${this.config.sessionSampleRate})`
+                );
+            }
+        }
+
         this.recordEvent(SESSION_START_EVENT_TYPE, {
             version: '1.0.0'
         });

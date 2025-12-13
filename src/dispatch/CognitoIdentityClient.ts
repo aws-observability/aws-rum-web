@@ -4,6 +4,7 @@ import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
 import { Config } from '../orchestration/Orchestration';
+import { InternalLogger } from '../utils/InternalLogger';
 
 const METHOD = 'POST';
 const CONTENT_TYPE = 'application/x-amz-json-1.1';
@@ -48,10 +49,12 @@ export class CognitoIdentityClient {
     private fetchRequestHandler: HttpHandler;
     private hostname: string;
     private identityStorageKey: string;
+    private config?: Config;
 
     constructor(config: CognitoIdentityClientConfig) {
         this.hostname = `cognito-identity.${config.region}.amazonaws.com`;
         this.fetchRequestHandler = config.fetchRequestHandler;
+        this.config = config.clientConfig;
         this.identityStorageKey = config.clientConfig?.cookieAttributes.unique
             ? `${IDENTITY_KEY}_${config.applicationId}`
             : IDENTITY_KEY;
@@ -65,7 +68,9 @@ export class CognitoIdentityClient {
                 localStorage.getItem(this.identityStorageKey)!
             ) as GetIdResponse | null;
         } catch (e) {
-            // Ignore -- we will get a new identity Id from Cognito
+            if (this.config?.debug) {
+                InternalLogger.error('Failed to parse stored identity:', e);
+            }
         }
 
         if (getIdResponse && getIdResponse.IdentityId) {
@@ -89,7 +94,9 @@ export class CognitoIdentityClient {
                     JSON.stringify({ IdentityId: getIdResponse.IdentityId })
                 );
             } catch (e) {
-                // Ignore
+                if (this.config?.debug) {
+                    InternalLogger.error('Failed to store identity:', e);
+                }
             }
             return getIdResponse;
         } catch (e) {
