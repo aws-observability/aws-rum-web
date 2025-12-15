@@ -92,7 +92,7 @@
         "jest-environment-jsdom-global": "^4.0.0",
         "jest-mock-random": "^1.1.1",
         "jsdom": "^21.1.1",
-        "json-schema-to-typescript": "^11.0.2",
+        "json-schema-to-typescript": "^15.0.4",
         "lint-staged": "^13.0.3",
         "lodash": "^4.17.20",
         "nightwatch": "^2.0.6",
