@@ -553,7 +553,7 @@ describe('defaultConfig tests', () => {
         expect(config.endpointUrl).toEqual(
             new URL('https://dataplane.rum.us-west-2.amazonaws.com')
         );
-        expect(config.eventCacheSize).toBe(200);
+        expect(config.eventCacheSize).toBe(1000);
         expect(config.eventPluginsToLoad).toEqual([]);
         expect(config.pageIdFormat).toBe('PATH');
         expect(config.pagesToExclude).toEqual([]);
