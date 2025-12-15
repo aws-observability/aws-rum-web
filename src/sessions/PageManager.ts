@@ -3,6 +3,7 @@ import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
+import { InternalLogger } from '../utils/InternalLogger';
 
 export type Page = {
     pageId: string;
@@ -104,8 +105,14 @@ export class PageManager {
 
         if (!this.page) {
             this.createLandingPage(pageId);
+            if (this.config.debug) {
+                InternalLogger.info(`Landing page recorded: ${pageId}`);
+            }
         } else if (this.page.pageId !== pageId) {
             this.createNextPage(this.page, pageId);
+            if (this.config.debug) {
+                InternalLogger.info(`Navigation to page: ${pageId}`);
+            }
         } else if (this.resumed) {
             // Update attributes state in PageManager for event metadata
             this.collectAttributes(

@@ -227,8 +227,8 @@ export const isPutRumEventsCall = (
             new URL(url).hostname === endpointHost &&
             putRumEventsPattern.test(url)
         );
-    } catch (_) {
-        // Ignore invalid URLs
+    } catch (e) {
+        // Invalid URLs are expected in some cases, so we don't log this as an error
         return false;
     }
 };

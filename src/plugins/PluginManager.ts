@@ -1,6 +1,7 @@
 import { Plugin } from './Plugin';
 import { PluginContext } from './types';
 import { InternalPlugin } from './InternalPlugin';
+import { InternalLogger } from '../utils/InternalLogger';
 
 /**
  * The plugin manager maintains a list of plugins
@@ -29,6 +30,10 @@ export class PluginManager {
 
         // initialize plugin
         plugin.load(this.context);
+
+        if (this.context.config.debug) {
+            InternalLogger.info(`Plugin loaded: ${pluginId}`);
+        }
     }
 
     /**
