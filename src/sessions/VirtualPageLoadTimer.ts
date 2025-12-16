@@ -14,6 +14,10 @@ type Patching = Pick<XMLHttpRequest & Window, 'fetch' | 'send'>;
  * (1) Holds all virtual page load timing related resources
  * (2) Intercepts outgoing XMLHttpRequests and Fetch requests and listens for DOM changes
  * (3) Records virtual page load
+ *
+ * @deprecated This class is deprecated and will be removed in a future version.
+ * For now, it can still be enabled via the legacySPASupport configuration. If you would like to opt-in
+ * to this legacy feature, then please first carefully review https://github.com/aws-observability/aws-rum-web/issues/723
  */
 export class VirtualPageLoadTimer extends MonkeyPatched<
     Patching,
