@@ -69,6 +69,11 @@ export class PageManager {
         this.resumed = false;
         this.recordInteraction = false;
         if (config.legacyVirtualTiming) {
+            if (config.debug) {
+                InternalLogger.warn(
+                    'VirtualPageLoadTiming (deprecated) is enabled. Please use with caution after reviewing https://github.com/aws-observability/aws-rum-web/issues/723'
+                );
+            }
             this.virtualPageLoadTimer = new VirtualPageLoadTimer(
                 this,
                 config,
