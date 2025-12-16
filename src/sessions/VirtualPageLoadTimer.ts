@@ -4,6 +4,7 @@ import { MonkeyPatched } from '../plugins/MonkeyPatched';
 import { Config } from '../orchestration/Orchestration';
 import { RecordEvent } from '../plugins/types';
 import { PageManager, Page } from './PageManager';
+import { InternalLogger } from '../utils/InternalLogger';
 
 type Fetch = typeof fetch;
 type Send = () => void;
@@ -84,6 +85,11 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
     /** Initializes timing related resources for current page. */
     public startTiming() {
         this.latestEndTime = Date.now();
+
+        if (this.config.debug) {
+            InternalLogger.info('Starting timing for virtual page load');
+        }
+
         // Clean up existing timer objects and mutationObserver
         if (this.periodicCheckerId) {
             clearInterval(this.periodicCheckerId);
@@ -114,6 +120,12 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         this.isPageLoaded = false;
         this.requestBuffer.forEach(this.moveItemsFromBuffer);
         this.requestBuffer.clear();
+
+        if (this.config.debug) {
+            InternalLogger.info(
+                `Moved ${this.requestBuffer.size} requests from buffer to ongoing`
+            );
+        }
     }
 
     private sendWrapper = (): ((original: Send) => Send) => {
@@ -132,8 +144,18 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
         const page = this.pageManager.getPage();
         if (page && this.isPageLoaded === false) {
             this.ongoingRequests.add(item);
+            if (this.config.debug) {
+                InternalLogger.info(
+                    `Added XHR to ongoing requests (total: ${this.ongoingRequests.size})`
+                );
+            }
         } else {
             this.requestBuffer.add(item);
+            if (this.config.debug) {
+                InternalLogger.info(
+                    `VirtualPageLoadTimer: Added XHR to buffer (total: ${this.requestBuffer.size})`
+                );
+            }
         }
     }
 
@@ -204,7 +226,19 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
      * (3) Indicate current page has finished loading
      */
     private checkLoadStatus = () => {
+        if (this.config.debug) {
+            InternalLogger.info(
+                `VirtualPageLoadTimer: Checking load status - XHR: ${this.ongoingRequests.size}, Fetch: ${this.fetchCounter}`
+            );
+        }
+
         if (this.ongoingRequests.size === 0 && this.fetchCounter === 0) {
+            if (this.config.debug) {
+                InternalLogger.info(
+                    'Page load completed, recording navigation event'
+                );
+            }
+
             clearInterval(this.periodicCheckerId);
             clearTimeout(this.timeoutCheckerId);
             this.domMutationObserver.disconnect();
@@ -219,6 +253,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
 
     /** Clears timers and disconnects observer to stop page timing. */
     private declareTimeout = () => {
+        if (this.config.debug) {
+            InternalLogger.info('Page load timed out');
+        }
+
         clearInterval(this.periodicCheckerId);
         this.periodicCheckerId = undefined;
         this.timeoutCheckerId = undefined;
@@ -257,5 +295,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
 
     private updateLatestInteractionTime = (e: Event) => {
         this.latestInteractionTime = Date.now();
+        if (this.config.debug) {
+            InternalLogger.info(
+                `Updated interaction time: ${this.latestInteractionTime}`
+            );
+        }
     };
 }

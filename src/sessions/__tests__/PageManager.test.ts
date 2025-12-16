@@ -479,7 +479,8 @@ describe('PageManager tests', () => {
         const pageManager: PageManager = new PageManager(
             {
                 ...DEFAULT_CONFIG,
-                allowCookies: true
+                allowCookies: true,
+                legacyVirtualTiming: true
             },
             record
         );
@@ -519,7 +520,8 @@ describe('PageManager tests', () => {
         const pageManager: PageManager = new PageManager(
             {
                 ...DEFAULT_CONFIG,
-                allowCookies: true
+                allowCookies: true,
+                legacyVirtualTiming: true
             },
             record
         );
@@ -554,7 +556,8 @@ describe('PageManager tests', () => {
         const pageManager: PageManager = new PageManager(
             {
                 ...DEFAULT_CONFIG,
-                allowCookies: true
+                allowCookies: true,
+                legacyVirtualTiming: true
             },
             record
         );
@@ -584,7 +587,8 @@ describe('PageManager tests', () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
-            allowCookies: true
+            allowCookies: true,
+            legacyVirtualTiming: true
         };
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
@@ -608,11 +612,61 @@ describe('PageManager tests', () => {
         expect(pageManager.getPage().start).toEqual(3000);
     });
 
+    test('when legacyVirtualTiming is false then virtualPageLoadTimer is not created', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true,
+                legacyVirtualTiming: false
+            },
+            record
+        );
+
+        // Assert
+        expect(pageManager['virtualPageLoadTimer']).toBeUndefined();
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
+    test('when legacyVirtualTiming is false then page navigation works without virtual timing', async () => {
+        // Init
+        const pageManager: PageManager = new PageManager(
+            {
+                ...DEFAULT_CONFIG,
+                allowCookies: true,
+                legacyVirtualTiming: false
+            },
+            record
+        );
+
+        // Run
+        pageManager.recordPageView('/rum/home');
+        pageManager.recordPageView('/console/home');
+
+        // Assert - page view events are still recorded
+        expect(record.mock.calls.length).toEqual(2);
+        expect(record.mock.calls[1][0]).toEqual(PAGE_VIEW_EVENT_TYPE);
+        expect(record.mock.calls[1][1]).toMatchObject({
+            pageId: '/console/home',
+            interaction: 1
+        });
+
+        window.removeEventListener(
+            'popstate',
+            (pageManager as any).popstateListener
+        );
+    });
+
     test('when latestInteractionTime is within the scope of routeChangeTimeout then page.start is latestInteractionTime', async () => {
         // Init
         const config: Config = {
             ...DEFAULT_CONFIG,
-            allowCookies: true
+            allowCookies: true,
+            legacyVirtualTiming: true
         };
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];

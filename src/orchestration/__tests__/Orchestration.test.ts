@@ -572,5 +572,6 @@ describe('defaultConfig tests', () => {
         expect(config.userIdRetentionDays).toBe(30);
         expect(config.enableW3CTraceId).toBe(false);
         expect(config.candidatesCacheSize).toBe(10);
+        expect(config.legacyVirtualTiming).toBe(false);
     });
 });
