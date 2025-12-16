@@ -12,5 +12,5 @@ if (typeof fetch === 'function' && typeof navigator.sendBeacon === 'function') {
     new CommandQueue().init(window.AwsRumClient);
 } else {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    (window as any)[window.AwsRumClient.n] = () => {};
+    (window as any)[window.AwsRumClient.n] = function () {};
 }
