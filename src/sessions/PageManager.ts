@@ -68,7 +68,7 @@ export class PageManager {
         this.page = undefined;
         this.resumed = false;
         this.recordInteraction = false;
-        if (config.legacyVirtualTiming) {
+        if (config.legacySPASupport) {
             if (config.debug) {
                 InternalLogger.warn(
                     'VirtualPageLoadTiming (deprecated) is enabled. Please use with caution after reviewing https://github.com/aws-observability/aws-rum-web/issues/723'
@@ -184,7 +184,7 @@ export class PageManager {
         //
         // We do not believe that case (2) has a high risk of skewing route
         // change timing, and therefore ignore case (2).
-        if (this.config.legacyVirtualTiming && this.virtualPageLoadTimer) {
+        if (this.config.legacySPASupport && this.virtualPageLoadTimer) {
             const interactionTime =
                 this.virtualPageLoadTimer.latestInteractionTime;
             if (!this.resumed && startTime - interactionTime <= this.TIMEOUT) {

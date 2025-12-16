@@ -47,7 +47,7 @@ For example, the config object may look similar to the following:
 | eventCacheSize | Number | `1000` | The maximum number of events the cache can contain before dropping events. Each event is typically 1KB in size, so we recommend a default limit of 1000 events -> 1 MB to balance performance against capturing all observed events. If necessary, feel free to enable debug mode to get detailed logs on how to optimize cache size depending on your application behavior. |
 | sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 | headers | Object | `{}` | The **headers** configuration is optional and allows you to include custom headers in an HTTP request. For example, you can use it to pass `Authorization` and `x-api-key` headers.<br/><br/>For more details, see: [MDN - Request Headers](https://developer.mozilla.org/en-US/docs/Glossary/Request_header). |
-| legacyVirtualTiming | Boolean | `false` | When this field is `true`, the web client will use legacy virtual page load timing for single page applications. This feature tracks HTTP requests and DOM mutations to determine when a route change is complete. **Warning:** This is a legacy feature that is no longer supported. Please enable with caution in debugging mode to see if it is relevant for your web application. |
+| legacySPASupport | Boolean | `false` | When this field is `true`, the web client will use legacy virtual page load timing for single page applications. This feature tracks HTTP requests and DOM mutations to determine when a route change is complete. **Warning:** This is a legacy feature that is no longer supported. Please enable with caution in debugging mode to see if it is relevant for your web application. |
 
 ## CookieAttributes
 

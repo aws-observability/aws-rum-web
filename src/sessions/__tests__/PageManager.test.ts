@@ -480,7 +480,7 @@ describe('PageManager tests', () => {
             {
                 ...DEFAULT_CONFIG,
                 allowCookies: true,
-                legacyVirtualTiming: true
+                legacySPASupport: true
             },
             record
         );
@@ -521,7 +521,7 @@ describe('PageManager tests', () => {
             {
                 ...DEFAULT_CONFIG,
                 allowCookies: true,
-                legacyVirtualTiming: true
+                legacySPASupport: true
             },
             record
         );
@@ -557,7 +557,7 @@ describe('PageManager tests', () => {
             {
                 ...DEFAULT_CONFIG,
                 allowCookies: true,
-                legacyVirtualTiming: true
+                legacySPASupport: true
             },
             record
         );
@@ -588,7 +588,7 @@ describe('PageManager tests', () => {
         const config: Config = {
             ...DEFAULT_CONFIG,
             allowCookies: true,
-            legacyVirtualTiming: true
+            legacySPASupport: true
         };
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];
@@ -612,13 +612,13 @@ describe('PageManager tests', () => {
         expect(pageManager.getPage().start).toEqual(3000);
     });
 
-    test('when legacyVirtualTiming is false then virtualPageLoadTimer is not created', async () => {
+    test('when legacySPASupport is false then virtualPageLoadTimer is not created', async () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
                 ...DEFAULT_CONFIG,
                 allowCookies: true,
-                legacyVirtualTiming: false
+                legacySPASupport: false
             },
             record
         );
@@ -632,13 +632,13 @@ describe('PageManager tests', () => {
         );
     });
 
-    test('when legacyVirtualTiming is false then page navigation works without virtual timing', async () => {
+    test('when legacySPASupport is false then page navigation works without virtual timing', async () => {
         // Init
         const pageManager: PageManager = new PageManager(
             {
                 ...DEFAULT_CONFIG,
                 allowCookies: true,
-                legacyVirtualTiming: false
+                legacySPASupport: false
             },
             record
         );
@@ -666,7 +666,7 @@ describe('PageManager tests', () => {
         const config: Config = {
             ...DEFAULT_CONFIG,
             allowCookies: true,
-            legacyVirtualTiming: true
+            legacySPASupport: true
         };
         const pageManager: PageManager = new PageManager(config, record);
         const helper = pageManager['virtualPageLoadTimer'];

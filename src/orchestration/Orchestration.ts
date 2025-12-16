@@ -98,7 +98,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
-        legacyVirtualTiming: false, // deprecated
+        legacySPASupport: false, // deprecated
         ...internalConfigOverrides
     };
 };
@@ -177,7 +177,7 @@ export interface Config {
     enableW3CTraceId: boolean;
 
     // Deprecated
-    legacyVirtualTiming: boolean;
+    legacySPASupport: boolean;
 }
 
 export interface PartialConfig
