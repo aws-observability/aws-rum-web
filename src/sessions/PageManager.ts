@@ -71,7 +71,7 @@ export class PageManager {
         if (config.legacySPASupport) {
             if (config.debug) {
                 InternalLogger.warn(
-                    'VirtualPageLoadTiming (deprecated) is enabled. Please use with caution after reviewing https://github.com/aws-observability/aws-rum-web/issues/723'
+                    'VirtualPageLoadTiming (deprecated) is enabled and may result in innaccurate page load timing for Single Page Applications. Please use with caution after reviewing https://github.com/aws-observability/aws-rum-web/issues/723'
                 );
             }
             this.virtualPageLoadTimer = new VirtualPageLoadTimer(

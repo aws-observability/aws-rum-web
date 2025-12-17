@@ -176,8 +176,8 @@ export interface Config {
     headers?: HeaderBag;
     enableW3CTraceId: boolean;
 
-    // Deprecated
-    legacySPASupport: boolean;
+    // Deprecated features; enable with caution
+    legacySPASupport: boolean; // See https://github.com/aws-observability/aws-rum-web/issues/723
 }
 
 export interface PartialConfig
