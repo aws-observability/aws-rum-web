@@ -7,7 +7,8 @@ loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {
     telemetries: [],
     pagesToInclude: [/\/(page_event.html|page_view_one|page_view_two)/],
     pagesToExclude: [/\/page_view_do_not_record/],
-    clientBuilder: showRequestClientBuilder
+    clientBuilder: showRequestClientBuilder,
+    legacySPASupport: true
 });
 window.cwr('setAwsCredentials', {
     accessKeyId: 'a',
