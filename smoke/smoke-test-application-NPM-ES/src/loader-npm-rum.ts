@@ -22,7 +22,8 @@ try {
             'content-type': 'application/json'
         },
         useBeacon: false,
-        releaseId: '2.1.7'
+        releaseId: '2.1.7',
+        legacySPASupport: true
     };
 
     const APPLICATION_ID: string = $MONITOR_ID;
