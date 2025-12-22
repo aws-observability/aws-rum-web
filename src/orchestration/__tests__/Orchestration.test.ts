@@ -580,6 +580,21 @@ describe('Orchestration tests', () => {
         // Assert
         expect(setCognitoCredentials).not.toHaveBeenCalled();
     });
+
+    test('when signing is disabled then setCognitoCredentials is not called even if identityPoolId is configured', async () => {
+        // Init
+        const identityPoolId = 'us-west-2:12345678-1234-1234-1234-123456789012';
+        const guestRoleArn = 'arn:aws:iam::123456789012:role/TestGuestRole';
+
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            identityPoolId,
+            guestRoleArn,
+            signing: false
+        });
+
+        // Assert
+        expect(setCognitoCredentials).not.toHaveBeenCalled();
+    });
 });
 
 describe('defaultConfig tests', () => {

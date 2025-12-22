@@ -418,7 +418,7 @@ export class Orchestration {
             this.config
         );
 
-        if (this.config.identityPoolId) {
+        if (this.config.signing && this.config.identityPoolId) {
             dispatch.setCognitoCredentials(
                 this.config.identityPoolId,
                 this.config.guestRoleArn
