@@ -14,7 +14,8 @@ try {
         cookieAttributes: {
             unique: true
         },
-        useBeacon: false
+        useBeacon: false,
+        legacySPASupport: true
     };
 
     const APPLICATION_ID: string = $MONITOR_ID_2;
