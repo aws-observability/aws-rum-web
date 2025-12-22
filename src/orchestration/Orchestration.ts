@@ -419,7 +419,10 @@ export class Orchestration {
         );
 
         if (this.config.identityPoolId) {
-            dispatch.setCognitoCredentials(this.config.identityPoolId);
+            dispatch.setCognitoCredentials(
+                this.config.identityPoolId,
+                this.config.guestRoleArn
+            );
         }
 
         return dispatch;
