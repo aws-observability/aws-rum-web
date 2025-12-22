@@ -534,6 +534,52 @@ describe('Orchestration tests', () => {
         // Assert
         expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
     });
+
+    test('when identityPoolId and guestRoleArn are configured then setCognitoCredentials is called with both arguments', async () => {
+        // Init
+        const identityPoolId = 'us-west-2:12345678-1234-1234-1234-123456789012';
+        const guestRoleArn = 'arn:aws:iam::123456789012:role/TestGuestRole';
+
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            identityPoolId,
+            guestRoleArn
+        });
+
+        // Assert
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
+        expect(setCognitoCredentials).toHaveBeenCalledWith(
+            identityPoolId,
+            guestRoleArn
+        );
+    });
+
+    test('when only identityPoolId is configured then setCognitoCredentials is called with identityPoolId and undefined guestRoleArn', async () => {
+        // Init
+        const identityPoolId = 'us-west-2:12345678-1234-1234-1234-123456789012';
+
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            identityPoolId
+            // No guestRoleArn provided
+        });
+
+        // Assert
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
+        expect(setCognitoCredentials).toHaveBeenCalledWith(
+            identityPoolId,
+            undefined
+        );
+    });
+
+    test('when identityPoolId is not configured then setCognitoCredentials is not called', async () => {
+        // Init
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            // No identityPoolId provided
+            guestRoleArn: 'arn:aws:iam::123456789012:role/TestGuestRole'
+        });
+
+        // Assert
+        expect(setCognitoCredentials).not.toHaveBeenCalled();
+    });
 });
 
 describe('defaultConfig tests', () => {
