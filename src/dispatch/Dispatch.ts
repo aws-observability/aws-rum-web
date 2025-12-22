@@ -12,6 +12,9 @@ import { Config } from '../orchestration/Orchestration';
 import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
 import { InternalLogger } from '../utils/InternalLogger';
+import { CRED_KEY, IDENTITY_KEY } from '../utils/constants';
+import { BasicAuthentication } from '../dispatch/BasicAuthentication';
+import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -31,6 +34,7 @@ export type ClientBuilder = (
 ) => DataPlaneClient;
 
 export class Dispatch {
+    private applicationId: string;
     private region: string;
     private endpoint: URL;
     private eventCache: EventCache;
@@ -41,13 +45,22 @@ export class Dispatch {
     private config: Config;
     private disableCodes = ['403', '404'];
     private headers: any;
+    private credentialProvider:
+        | AwsCredentialIdentity
+        | AwsCredentialIdentityProvider
+        | undefined;
+
+    private shouldPurgeCredentials = true;
+    private credentialStorageKey: string;
 
     constructor(
+        applicationId: string,
         region: string,
         endpoint: URL,
         eventCache: EventCache,
         config: Config
     ) {
+        this.applicationId = applicationId;
         this.region = region;
         this.endpoint = endpoint;
         this.eventCache = eventCache;
@@ -68,6 +81,10 @@ export class Dispatch {
         } else {
             this.rum = this.buildClient(this.endpoint, this.region, undefined);
         }
+
+        this.credentialStorageKey = this.config.cookieAttributes.unique
+            ? `${CRED_KEY}_${applicationId}`
+            : CRED_KEY;
     }
 
     /**
@@ -100,6 +117,7 @@ export class Dispatch {
             | AwsCredentialIdentity
             | AwsCredentialIdentityProvider
     ): void {
+        this.credentialProvider = credentialProvider;
         this.rum = this.buildClient(
             this.endpoint,
             this.region,
@@ -109,6 +127,23 @@ export class Dispatch {
             // In case a beacon in the first dispatch, we must pre-fetch credentials into a cookie so there is no delay
             // to fetch credentials while the page is closing.
             (credentialProvider as () => Promise<AwsCredentialIdentity>)();
+        }
+    }
+
+    public setCognitoCredentials(
+        identityPoolId: string,
+        guestRoleArn?: string
+    ) {
+        if (identityPoolId && guestRoleArn) {
+            this.setAwsCredentials(
+                new BasicAuthentication(this.config, this.applicationId)
+                    .ChainAnonymousCredentialsProvider
+            );
+        } else {
+            this.setAwsCredentials(
+                new EnhancedAuthentication(this.config, this.applicationId)
+                    .ChainAnonymousCredentialsProvider
+            );
         }
     }
 
@@ -273,17 +308,32 @@ export class Dispatch {
     }
 
     private handleReject = (e: any): { response: HttpResponse } => {
-        if (e instanceof Error && this.disableCodes.includes(e.message)) {
-            // RUM disables only when dispatch fails and we are certain
-            // that subsequent attempts will not succeed, such as when
-            // credentials are invalid or the app monitor does not exist.
-            if (this.config.debug) {
-                InternalLogger.error(
-                    'Dispatch failed with status code:',
-                    e.message
-                );
+        if (e instanceof Error) {
+            if (
+                e.message === '403' &&
+                this.credentialProvider &&
+                this.shouldPurgeCredentials
+            ) {
+                // If auth fails and a credentialProvider has been configured,
+                // then we need to make sure that the cached credentials are for
+                // the intended RUM app monitor. Otherwise, the irrelevant cached
+                // credentials will never get evicted.
+                //
+                // The next retry or request will be made with fresh credentials.
+                this.shouldPurgeCredentials = false;
+                this.forceRebuildClient();
+            } else if (this.disableCodes.includes(e.message)) {
+                // RUM disables only when dispatch fails and we are certain
+                // that subsequent attempts will not succeed, such as when
+                // credentials are invalid or the app monitor does not exist.
+                if (this.config.debug) {
+                    InternalLogger.error(
+                        'Dispatch failed with status code:',
+                        e.message
+                    );
+                }
+                this.disable();
             }
-            this.disable();
         }
         throw e;
     };
@@ -314,4 +364,31 @@ export class Dispatch {
             headers: this.headers
         });
     };
+
+    /**
+     * Purges the cached credentials and rebuilds the dataplane client. This is only necessary
+     * if signing is enabled and the cached credentials are for the wrong app monitor.
+     *
+     * @param credentialProvider - The credential or provider use to sign requests
+     */
+    private forceRebuildClient() {
+        InternalLogger.warn('Removing credentials from local storage');
+        localStorage.removeItem(this.credentialStorageKey);
+
+        if (this.config.identityPoolId) {
+            InternalLogger.info(
+                'Rebuilding client with fresh cognito credentials'
+            );
+            localStorage.removeItem(IDENTITY_KEY);
+            this.setCognitoCredentials(
+                this.config.identityPoolId,
+                this.config.guestRoleArn
+            );
+        } else if (this.credentialProvider) {
+            InternalLogger.info(
+                'Rebuilding client with most recently passed provider'
+            );
+            this.setAwsCredentials(this.credentialProvider);
+        }
+    }
 }

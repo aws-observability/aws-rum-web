@@ -18,12 +18,14 @@ global.fetch = jest.fn();
 const enableDispatch = jest.fn();
 const disableDispatch = jest.fn();
 const setAwsCredentials = jest.fn();
+const setCognitoCredentials = jest.fn();
 
 jest.mock('../../dispatch/Dispatch', () => ({
     Dispatch: jest.fn().mockImplementation(() => ({
         enable: enableDispatch,
         disable: disableDispatch,
-        setAwsCredentials
+        setAwsCredentials,
+        setCognitoCredentials
     }))
 }));
 
@@ -85,9 +87,10 @@ describe('Orchestration tests', () => {
         // Init
         const orchestration = new Orchestration('a', 'c', undefined, {});
 
+        const dispatchmock = (Dispatch as any).mock;
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        expect((Dispatch as any).mock.calls[0][1]).toEqual(
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
             new URL('https://dataplane.rum.us-west-2.amazonaws.com/')
         );
     });
@@ -98,7 +101,7 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        expect((Dispatch as any).mock.calls[0][1]).toEqual(
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
             new URL('https://dataplane.rum.us-east-1.amazonaws.com/')
         );
     });
@@ -504,17 +507,17 @@ describe('Orchestration tests', () => {
         );
     });
 
-    test('when session is not recorded then credentials are not set', async () => {
+    test('when session is not recorded then credentials are set', async () => {
         samplingDecision = false;
         // Init
-        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+        new Orchestration('a', 'c', 'us-east-1', {
             telemetries: [],
             identityPoolId: 'dummyPoolId',
             guestRoleArn: 'dummyRoleArn'
         });
 
         // Assert
-        expect(setAwsCredentials).toHaveBeenCalledTimes(0);
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
 
         // Reset
         samplingDecision = true;
@@ -529,7 +532,7 @@ describe('Orchestration tests', () => {
         });
 
         // Assert
-        expect(setAwsCredentials).toHaveBeenCalledTimes(1);
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
     });
 });
 
