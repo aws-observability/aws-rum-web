@@ -52,6 +52,7 @@ export class Dispatch {
 
     private shouldPurgeCredentials = true;
     private credentialStorageKey: string;
+    private identityStorageKey: string;
 
     constructor(
         applicationId: string,
@@ -85,6 +86,10 @@ export class Dispatch {
         this.credentialStorageKey = this.config.cookieAttributes.unique
             ? `${CRED_KEY}_${applicationId}`
             : CRED_KEY;
+
+        this.identityStorageKey = this.config.cookieAttributes.unique
+            ? `${IDENTITY_KEY}_${applicationId}`
+            : IDENTITY_KEY;
     }
 
     /**
@@ -379,7 +384,7 @@ export class Dispatch {
             InternalLogger.info(
                 'Rebuilding client with fresh cognito credentials'
             );
-            localStorage.removeItem(IDENTITY_KEY);
+            localStorage.removeItem(this.identityStorageKey);
             this.setCognitoCredentials(
                 this.config.identityPoolId,
                 this.config.guestRoleArn

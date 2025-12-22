@@ -4,6 +4,9 @@ import { DataPlaneClient } from '../DataPlaneClient';
 import { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { EventCache } from 'event-cache/EventCache';
+import { CRED_KEY, IDENTITY_KEY } from '../../utils/constants';
+import { BasicAuthentication } from '../BasicAuthentication';
+import { EnhancedAuthentication } from '../EnhancedAuthentication';
 
 global.fetch = mockFetch;
 const sendFetch = jest.fn(() => Promise.resolve());
@@ -12,6 +15,21 @@ jest.mock('../DataPlaneClient', () => ({
     DataPlaneClient: jest
         .fn()
         .mockImplementation(() => ({ sendFetch, sendBeacon }))
+}));
+
+const mockBasicAuthProvider = jest.fn();
+const mockEnhancedAuthProvider = jest.fn();
+
+jest.mock('../BasicAuthentication', () => ({
+    BasicAuthentication: jest.fn().mockImplementation(() => ({
+        ChainAnonymousCredentialsProvider: mockBasicAuthProvider
+    }))
+}));
+
+jest.mock('../EnhancedAuthentication', () => ({
+    EnhancedAuthentication: jest.fn().mockImplementation(() => ({
+        ChainAnonymousCredentialsProvider: mockEnhancedAuthProvider
+    }))
 }));
 
 let visibilityState = 'visible';
@@ -27,6 +45,7 @@ describe('Dispatch tests', () => {
         sendFetch.mockClear();
         sendBeacon.mockClear();
         visibilityState = 'visible';
+        jest.clearAllMocks();
     });
 
     afterEach(() => {
@@ -636,6 +655,10 @@ describe('Dispatch tests', () => {
         );
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
         const client1 = (dispatch as unknown as any).rum as DataPlaneClient;
+        const forceRebuildClientSpy = jest.spyOn(
+            dispatch as unknown as any,
+            'forceRebuildClient'
+        );
 
         // Run
         eventCache.recordEvent('com.amazon.rum.event1', {});
@@ -650,6 +673,7 @@ describe('Dispatch tests', () => {
         // the client should have been rebuilt
         const client2 = (dispatch as unknown as any).rum as DataPlaneClient;
         expect(client1).not.toBe(client2);
+        expect(forceRebuildClientSpy).toHaveBeenCalledTimes(1);
 
         // dispatch should be disabled on the second 403
         sendFetch.mockImplementationOnce(() =>
@@ -660,6 +684,171 @@ describe('Dispatch tests', () => {
             new Error('403')
         );
         expect((dispatch as unknown as any).enabled).toBe(false);
+    });
+
+    test('when forceRebuildClient is called, then credentials in local storage are reset and setCognitoCredentials is called', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    identityPoolId:
+                        'us-west-2:12345678-1234-1234-1234-123456789012',
+                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole'
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(CRED_KEY);
+        expect(removeItemSpy).toHaveBeenCalledWith(IDENTITY_KEY);
+        expect(setCognitoCredentialsSpy).toHaveBeenCalledWith(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        removeItemSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and unique cookies are enabled, then unique storage keys are used', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    identityPoolId:
+                        'us-west-2:12345678-1234-1234-1234-123456789012',
+                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole',
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        unique: true
+                    }
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(
+            `${CRED_KEY}_${Utils.APPLICATION_ID}`
+        );
+        expect(removeItemSpy).toHaveBeenCalledWith(
+            `${IDENTITY_KEY}_${Utils.APPLICATION_ID}`
+        );
+        expect(setCognitoCredentialsSpy).toHaveBeenCalledWith(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        removeItemSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when setCognitoCredentials is called and guestRoleArn exists, then basic authentication is used', async () => {
+        // Init
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
+        };
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            config
+        );
+
+        // Run
+        dispatch.setCognitoCredentials(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        // Assert
+        expect(BasicAuthentication).toHaveBeenCalledWith(
+            config,
+            Utils.APPLICATION_ID
+        );
+        expect(EnhancedAuthentication).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
+            mockBasicAuthProvider
+        );
+
+        setAwsCredentialsSpy.mockRestore();
+    });
+
+    test('when setCognitoCredentials is called and guestRoleArn does not exist, then enhanced authentication is used', async () => {
+        // Init
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
+        };
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            config
+        );
+
+        // Run
+        dispatch.setCognitoCredentials(
+            'us-west-2:12345678-1234-1234-1234-123456789012'
+        );
+
+        // Assert
+        expect(EnhancedAuthentication).toHaveBeenCalledWith(
+            config,
+            Utils.APPLICATION_ID
+        );
+        expect(BasicAuthentication).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
+            mockEnhancedAuthProvider
+        );
+
+        setAwsCredentialsSpy.mockRestore();
     });
 
     test('when a fetch request is successful after rebuilding the dataplane client, then dispatch is not disabled', async () => {
