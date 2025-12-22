@@ -727,55 +727,6 @@ describe('Dispatch tests', () => {
         setCognitoCredentialsSpy.mockRestore();
     });
 
-    test('when forceRebuildClient is called and unique cookies are enabled, then unique storage keys are used', async () => {
-        // Init
-        const mockCredentialProvider = Utils.createAwsCredentials();
-        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
-        const setCognitoCredentialsSpy = jest.spyOn(
-            Dispatch.prototype,
-            'setCognitoCredentials'
-        );
-
-        dispatch = new Dispatch(
-            Utils.APPLICATION_ID,
-            Utils.AWS_RUM_REGION,
-            Utils.AWS_RUM_ENDPOINT,
-            Utils.createDefaultEventCacheWithEvents(),
-            {
-                ...DEFAULT_CONFIG,
-                ...{
-                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
-                    identityPoolId:
-                        'us-west-2:12345678-1234-1234-1234-123456789012',
-                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole',
-                    cookieAttributes: {
-                        ...DEFAULT_CONFIG.cookieAttributes,
-                        unique: true
-                    }
-                }
-            }
-        );
-        dispatch.setAwsCredentials(mockCredentialProvider);
-
-        // Run
-        (dispatch as any).forceRebuildClient();
-
-        // Assert
-        expect(removeItemSpy).toHaveBeenCalledWith(
-            `${CRED_KEY}_${Utils.APPLICATION_ID}`
-        );
-        expect(removeItemSpy).toHaveBeenCalledWith(
-            `${IDENTITY_KEY}_${Utils.APPLICATION_ID}`
-        );
-        expect(setCognitoCredentialsSpy).toHaveBeenCalledWith(
-            'us-west-2:12345678-1234-1234-1234-123456789012',
-            'arn:aws:iam::123456789012:role/TestRole'
-        );
-
-        removeItemSpy.mockRestore();
-        setCognitoCredentialsSpy.mockRestore();
-    });
-
     test('when setCognitoCredentials is called and guestRoleArn exists, then basic authentication is used', async () => {
         // Init
         const setAwsCredentialsSpy = jest.spyOn(
@@ -849,6 +800,182 @@ describe('Dispatch tests', () => {
         );
 
         setAwsCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and unique cookies are enabled, then unique storage keys are used', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    identityPoolId:
+                        'us-west-2:12345678-1234-1234-1234-123456789012',
+                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole',
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        unique: true
+                    }
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(
+            `${CRED_KEY}_${Utils.APPLICATION_ID}`
+        );
+        expect(removeItemSpy).toHaveBeenCalledWith(
+            `${IDENTITY_KEY}_${Utils.APPLICATION_ID}`
+        );
+        expect(setCognitoCredentialsSpy).toHaveBeenCalledWith(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        removeItemSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and cognito is not enabled but credentialProvider was set, then client is rebuilt with credentialProvider', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF
+                    // No identityPoolId - cognito not enabled
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(CRED_KEY);
+        expect(setCognitoCredentialsSpy).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
+            mockCredentialProvider
+        );
+
+        removeItemSpy.mockRestore();
+        setAwsCredentialsSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and cognito is not enabled and credentialProvider was not set, then only credentials are cleared', async () => {
+        // Init
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF
+                    // No identityPoolId - cognito not enabled
+                }
+            }
+        );
+        // Do NOT call setAwsCredentials
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(CRED_KEY);
+        expect(setCognitoCredentialsSpy).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).not.toHaveBeenCalled();
+
+        removeItemSpy.mockRestore();
+        setAwsCredentialsSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when a fetch request is rejected with 403 and signing is disabled, then dispatch is disabled immediately', async () => {
+        // Init
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('403'))
+        );
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    retries: 0,
+                    signing: false
+                }
+            }
+        );
+
+        const forceRebuildClientSpy = jest.spyOn(
+            dispatch as unknown as any,
+            'forceRebuildClient'
+        );
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('403')
+        );
+        // dispatch should be disabled immediately when signing is disabled
+        expect((dispatch as unknown as any).enabled).toBe(false);
+        // forceRebuildClient should not be called when signing is disabled
+        expect(forceRebuildClientSpy).not.toHaveBeenCalled();
+
+        forceRebuildClientSpy.mockRestore();
     });
 
     test('when a fetch request is successful after rebuilding the dataplane client, then dispatch is not disabled', async () => {

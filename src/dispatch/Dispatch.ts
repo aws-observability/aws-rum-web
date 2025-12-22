@@ -316,7 +316,7 @@ export class Dispatch {
         if (e instanceof Error) {
             if (
                 e.message === '403' &&
-                this.credentialProvider &&
+                this.config.signing &&
                 this.shouldPurgeCredentials
             ) {
                 // If auth fails and a credentialProvider has been configured,
