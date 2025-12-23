@@ -18,12 +18,14 @@ global.fetch = jest.fn();
 const enableDispatch = jest.fn();
 const disableDispatch = jest.fn();
 const setAwsCredentials = jest.fn();
+const setCognitoCredentials = jest.fn();
 
 jest.mock('../../dispatch/Dispatch', () => ({
     Dispatch: jest.fn().mockImplementation(() => ({
         enable: enableDispatch,
         disable: disableDispatch,
-        setAwsCredentials
+        setAwsCredentials,
+        setCognitoCredentials
     }))
 }));
 
@@ -85,9 +87,10 @@ describe('Orchestration tests', () => {
         // Init
         const orchestration = new Orchestration('a', 'c', undefined, {});
 
+        const dispatchmock = (Dispatch as any).mock;
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        expect((Dispatch as any).mock.calls[0][1]).toEqual(
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
             new URL('https://dataplane.rum.us-west-2.amazonaws.com/')
         );
     });
@@ -98,7 +101,7 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
-        expect((Dispatch as any).mock.calls[0][1]).toEqual(
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
             new URL('https://dataplane.rum.us-east-1.amazonaws.com/')
         );
     });
@@ -504,17 +507,17 @@ describe('Orchestration tests', () => {
         );
     });
 
-    test('when session is not recorded then credentials are not set', async () => {
+    test('when session is not recorded then credentials are set', async () => {
         samplingDecision = false;
         // Init
-        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+        new Orchestration('a', 'c', 'us-east-1', {
             telemetries: [],
             identityPoolId: 'dummyPoolId',
             guestRoleArn: 'dummyRoleArn'
         });
 
         // Assert
-        expect(setAwsCredentials).toHaveBeenCalledTimes(0);
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
 
         // Reset
         samplingDecision = true;
@@ -529,7 +532,68 @@ describe('Orchestration tests', () => {
         });
 
         // Assert
-        expect(setAwsCredentials).toHaveBeenCalledTimes(1);
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
+    });
+
+    test('when identityPoolId and guestRoleArn are configured then setCognitoCredentials is called with both arguments', async () => {
+        // Init
+        const identityPoolId = 'us-west-2:12345678-1234-1234-1234-123456789012';
+        const guestRoleArn = 'arn:aws:iam::123456789012:role/TestGuestRole';
+
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            identityPoolId,
+            guestRoleArn
+        });
+
+        // Assert
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
+        expect(setCognitoCredentials).toHaveBeenCalledWith(
+            identityPoolId,
+            guestRoleArn
+        );
+    });
+
+    test('when only identityPoolId is configured then setCognitoCredentials is called with identityPoolId and undefined guestRoleArn', async () => {
+        // Init
+        const identityPoolId = 'us-west-2:12345678-1234-1234-1234-123456789012';
+
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            identityPoolId
+            // No guestRoleArn provided
+        });
+
+        // Assert
+        expect(setCognitoCredentials).toHaveBeenCalledTimes(1);
+        expect(setCognitoCredentials).toHaveBeenCalledWith(
+            identityPoolId,
+            undefined
+        );
+    });
+
+    test('when identityPoolId is not configured then setCognitoCredentials is not called', async () => {
+        // Init
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            // No identityPoolId provided
+            guestRoleArn: 'arn:aws:iam::123456789012:role/TestGuestRole'
+        });
+
+        // Assert
+        expect(setCognitoCredentials).not.toHaveBeenCalled();
+    });
+
+    test('when signing is disabled then setCognitoCredentials is not called even if identityPoolId is configured', async () => {
+        // Init
+        const identityPoolId = 'us-west-2:12345678-1234-1234-1234-123456789012';
+        const guestRoleArn = 'arn:aws:iam::123456789012:role/TestGuestRole';
+
+        new Orchestration('testApp', '1.0.0', 'us-west-2', {
+            identityPoolId,
+            guestRoleArn,
+            signing: false
+        });
+
+        // Assert
+        expect(setCognitoCredentials).not.toHaveBeenCalled();
     });
 });
 

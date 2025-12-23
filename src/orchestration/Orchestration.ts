@@ -411,28 +411,17 @@ export class Orchestration {
 
     private initDispatch(region: string, applicationId: string) {
         const dispatch: Dispatch = new Dispatch(
+            applicationId,
             region,
             this.config.endpointUrl,
             this.eventCache,
             this.config
         );
 
-        // Only retrieves and sets credentials if the session is sampled.
-        // The nil session created during initialization will have the same sampling decision as
-        // the new session created when the first event is recorded.
-        if (!this.eventCache.isSessionSampled()) {
-            return dispatch;
-        }
-
-        if (this.config.identityPoolId && this.config.guestRoleArn) {
-            dispatch.setAwsCredentials(
-                new BasicAuthentication(this.config, applicationId)
-                    .ChainAnonymousCredentialsProvider
-            );
-        } else if (this.config.identityPoolId) {
-            dispatch.setAwsCredentials(
-                new EnhancedAuthentication(this.config, applicationId)
-                    .ChainAnonymousCredentialsProvider
+        if (this.config.signing && this.config.identityPoolId) {
+            dispatch.setCognitoCredentials(
+                this.config.identityPoolId,
+                this.config.guestRoleArn
             );
         }
 

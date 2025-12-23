@@ -4,6 +4,9 @@ import { DataPlaneClient } from '../DataPlaneClient';
 import { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { EventCache } from 'event-cache/EventCache';
+import { CRED_KEY, IDENTITY_KEY } from '../../utils/constants';
+import { BasicAuthentication } from '../BasicAuthentication';
+import { EnhancedAuthentication } from '../EnhancedAuthentication';
 
 global.fetch = mockFetch;
 const sendFetch = jest.fn(() => Promise.resolve());
@@ -12,6 +15,21 @@ jest.mock('../DataPlaneClient', () => ({
     DataPlaneClient: jest
         .fn()
         .mockImplementation(() => ({ sendFetch, sendBeacon }))
+}));
+
+const mockBasicAuthProvider = jest.fn();
+const mockEnhancedAuthProvider = jest.fn();
+
+jest.mock('../BasicAuthentication', () => ({
+    BasicAuthentication: jest.fn().mockImplementation(() => ({
+        ChainAnonymousCredentialsProvider: mockBasicAuthProvider
+    }))
+}));
+
+jest.mock('../EnhancedAuthentication', () => ({
+    EnhancedAuthentication: jest.fn().mockImplementation(() => ({
+        ChainAnonymousCredentialsProvider: mockEnhancedAuthProvider
+    }))
 }));
 
 let visibilityState = 'visible';
@@ -27,6 +45,7 @@ describe('Dispatch tests', () => {
         sendFetch.mockClear();
         sendBeacon.mockClear();
         visibilityState = 'visible';
+        jest.clearAllMocks();
     });
 
     afterEach(() => {
@@ -38,6 +57,7 @@ describe('Dispatch tests', () => {
     test('dispatch() sends data through client', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -60,6 +80,7 @@ describe('Dispatch tests', () => {
         // Init
         const credentialProvider: AwsCredentialIdentityProvider = jest.fn();
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -83,6 +104,7 @@ describe('Dispatch tests', () => {
         );
 
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -103,6 +125,7 @@ describe('Dispatch tests', () => {
     test('dispatch() does nothing when disabled', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -125,6 +148,7 @@ describe('Dispatch tests', () => {
     test('dispatch() sends when disabled then enabled', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -148,6 +172,7 @@ describe('Dispatch tests', () => {
     test('dispatch() automatically dispatches when interval > 0', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -171,6 +196,7 @@ describe('Dispatch tests', () => {
     test('dispatch() does not automatically  dispatch when interval = 0', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -194,6 +220,7 @@ describe('Dispatch tests', () => {
     test('dispatch() does not automatically  dispatch when interval < 0', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -217,6 +244,7 @@ describe('Dispatch tests', () => {
     test('dispatch() does not automatically dispatch when dispatch is disabled', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -241,6 +269,7 @@ describe('Dispatch tests', () => {
     test('dispatch() resumes when disabled and enabled', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -269,6 +298,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
         const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -296,6 +326,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
         const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -323,6 +354,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
         const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -350,6 +382,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
         const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -378,6 +411,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
         const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -412,6 +446,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
         const getEventBatch = jest.spyOn(eventCache, 'getEventBatch');
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -442,6 +477,7 @@ describe('Dispatch tests', () => {
     test('when plugin is disabled then beacon dispatch does not run', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -464,6 +500,7 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchFetch throws an error', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -482,6 +519,7 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchBeacon throws an error', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -500,6 +538,7 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchFetchFailSilent fails silently', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -518,6 +557,7 @@ describe('Dispatch tests', () => {
     test('when dispatch does not have AWS credentials then dispatchBeaconFailSilent fails silently', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -542,6 +582,7 @@ describe('Dispatch tests', () => {
         const eventCache = Utils.createDefaultEventCacheWithEvents();
 
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -572,6 +613,7 @@ describe('Dispatch tests', () => {
             Utils.createDefaultEventCacheWithEvents();
 
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -592,7 +634,7 @@ describe('Dispatch tests', () => {
         expect((dispatch as unknown as any).enabled).toBe(true);
     });
 
-    test('when a fetch request is rejected with 403 then dispatch is disabled', async () => {
+    test('when a fetch request is rejected with 403 then dispatch is disabled ONLY after rebuilding the dataplane client', async () => {
         // Init
         sendFetch.mockImplementationOnce(() =>
             Promise.reject(new Error('403'))
@@ -602,6 +644,7 @@ describe('Dispatch tests', () => {
             Utils.createDefaultEventCacheWithEvents();
 
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -611,6 +654,11 @@ describe('Dispatch tests', () => {
             }
         );
         dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        const client1 = (dispatch as unknown as any).rum as DataPlaneClient;
+        const forceRebuildClientSpy = jest.spyOn(
+            dispatch as unknown as any,
+            'forceRebuildClient'
+        );
 
         // Run
         eventCache.recordEvent('com.amazon.rum.event1', {});
@@ -619,7 +667,358 @@ describe('Dispatch tests', () => {
         await expect(dispatch.dispatchFetch()).rejects.toEqual(
             new Error('403')
         );
+        // dispatch should not be disabled on the first 403
+        expect((dispatch as unknown as any).enabled).toBe(true);
+
+        // the client should have been rebuilt
+        const client2 = (dispatch as unknown as any).rum as DataPlaneClient;
+        expect(client1).not.toBe(client2);
+        expect(forceRebuildClientSpy).toHaveBeenCalledTimes(1);
+
+        // dispatch should be disabled on the second 403
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('403'))
+        );
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('403')
+        );
         expect((dispatch as unknown as any).enabled).toBe(false);
+    });
+
+    test('when forceRebuildClient is called, then credentials in local storage are reset and setCognitoCredentials is called', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    identityPoolId:
+                        'us-west-2:12345678-1234-1234-1234-123456789012',
+                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole'
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(CRED_KEY);
+        expect(removeItemSpy).toHaveBeenCalledWith(IDENTITY_KEY);
+        expect(setCognitoCredentialsSpy).toHaveBeenCalledWith(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        removeItemSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when setCognitoCredentials is called and guestRoleArn exists, then basic authentication is used', async () => {
+        // Init
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
+        };
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            config
+        );
+
+        // Run
+        dispatch.setCognitoCredentials(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        // Assert
+        expect(BasicAuthentication).toHaveBeenCalledWith(
+            config,
+            Utils.APPLICATION_ID
+        );
+        expect(EnhancedAuthentication).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
+            mockBasicAuthProvider
+        );
+
+        setAwsCredentialsSpy.mockRestore();
+    });
+
+    test('when setCognitoCredentials is called and guestRoleArn does not exist, then enhanced authentication is used', async () => {
+        // Init
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF }
+        };
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            config
+        );
+
+        // Run
+        dispatch.setCognitoCredentials(
+            'us-west-2:12345678-1234-1234-1234-123456789012'
+        );
+
+        // Assert
+        expect(EnhancedAuthentication).toHaveBeenCalledWith(
+            config,
+            Utils.APPLICATION_ID
+        );
+        expect(BasicAuthentication).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
+            mockEnhancedAuthProvider
+        );
+
+        setAwsCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and unique cookies are enabled, then unique storage keys are used', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    identityPoolId:
+                        'us-west-2:12345678-1234-1234-1234-123456789012',
+                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole',
+                    cookieAttributes: {
+                        ...DEFAULT_CONFIG.cookieAttributes,
+                        unique: true
+                    }
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(
+            `${CRED_KEY}_${Utils.APPLICATION_ID}`
+        );
+        expect(removeItemSpy).toHaveBeenCalledWith(
+            `${IDENTITY_KEY}_${Utils.APPLICATION_ID}`
+        );
+        expect(setCognitoCredentialsSpy).toHaveBeenCalledWith(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
+
+        removeItemSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and cognito is not enabled but credentialProvider was set, then client is rebuilt with credentialProvider', async () => {
+        // Init
+        const mockCredentialProvider = Utils.createAwsCredentials();
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF
+                    // No identityPoolId - cognito not enabled
+                }
+            }
+        );
+        dispatch.setAwsCredentials(mockCredentialProvider);
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(CRED_KEY);
+        expect(setCognitoCredentialsSpy).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
+            mockCredentialProvider
+        );
+
+        removeItemSpy.mockRestore();
+        setAwsCredentialsSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when forceRebuildClient is called and cognito is not enabled and credentialProvider was not set, then only credentials are cleared', async () => {
+        // Init
+        const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+        const setAwsCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setAwsCredentials'
+        );
+        const setCognitoCredentialsSpy = jest.spyOn(
+            Dispatch.prototype,
+            'setCognitoCredentials'
+        );
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            Utils.createDefaultEventCacheWithEvents(),
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF
+                    // No identityPoolId - cognito not enabled
+                }
+            }
+        );
+        // Do NOT call setAwsCredentials
+
+        // Run
+        (dispatch as any).forceRebuildClient();
+
+        // Assert
+        expect(removeItemSpy).toHaveBeenCalledWith(CRED_KEY);
+        expect(setCognitoCredentialsSpy).not.toHaveBeenCalled();
+        expect(setAwsCredentialsSpy).not.toHaveBeenCalled();
+
+        removeItemSpy.mockRestore();
+        setAwsCredentialsSpy.mockRestore();
+        setCognitoCredentialsSpy.mockRestore();
+    });
+
+    test('when a fetch request is rejected with 403 and signing is disabled, then dispatch is disabled immediately', async () => {
+        // Init
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('403'))
+        );
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    retries: 0,
+                    signing: false
+                }
+            }
+        );
+
+        const forceRebuildClientSpy = jest.spyOn(
+            dispatch as unknown as any,
+            'forceRebuildClient'
+        );
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('403')
+        );
+        // dispatch should be disabled immediately when signing is disabled
+        expect((dispatch as unknown as any).enabled).toBe(false);
+        // forceRebuildClient should not be called when signing is disabled
+        expect(forceRebuildClientSpy).not.toHaveBeenCalled();
+
+        forceRebuildClientSpy.mockRestore();
+    });
+
+    test('when a fetch request is successful after rebuilding the dataplane client, then dispatch is not disabled', async () => {
+        // Init
+        sendFetch.mockImplementationOnce(() =>
+            Promise.reject(new Error('403'))
+        );
+
+        const eventCache: EventCache =
+            Utils.createDefaultEventCacheWithEvents();
+
+        dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
+            Utils.AWS_RUM_REGION,
+            Utils.AWS_RUM_ENDPOINT,
+            eventCache,
+            {
+                ...DEFAULT_CONFIG,
+                ...{ dispatchInterval: Utils.AUTO_DISPATCH_OFF, retries: 0 }
+            }
+        );
+        dispatch.setAwsCredentials(Utils.createAwsCredentials());
+        const client1 = (dispatch as unknown as any).rum as DataPlaneClient;
+
+        // Run
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+
+        // Assert
+        await expect(dispatch.dispatchFetch()).rejects.toEqual(
+            new Error('403')
+        );
+        // dispatch should not be disabled on the first 403
+        expect((dispatch as unknown as any).enabled).toBe(true);
+
+        // the client should have been rebuilt
+        const client2 = (dispatch as unknown as any).rum as DataPlaneClient;
+        expect(client1).not.toBe(client2);
+
+        // dispatch should not be disabled if credentials are fixed
+        sendFetch.mockImplementationOnce(() => Promise.resolve());
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+        dispatch.dispatchFetch();
+        expect((dispatch as unknown as any).enabled).toBe(true);
     });
 
     test('when a fetch request is rejected with 404 then dispatch is disabled', async () => {
@@ -632,6 +1031,7 @@ describe('Dispatch tests', () => {
             Utils.createDefaultEventCacheWithEvents();
 
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             eventCache,
@@ -655,6 +1055,7 @@ describe('Dispatch tests', () => {
     test('when signing is disabled then credentials are not needed for dispatch', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -675,6 +1076,7 @@ describe('Dispatch tests', () => {
     test('When valid alias is provided then PutRumEvents request containing alias is sent', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
@@ -702,6 +1104,7 @@ describe('Dispatch tests', () => {
     test('When no alias is provided then PutRumEvents request does not contain an alias', async () => {
         // Init
         dispatch = new Dispatch(
+            Utils.APPLICATION_ID,
             Utils.AWS_RUM_REGION,
             Utils.AWS_RUM_ENDPOINT,
             Utils.createDefaultEventCacheWithEvents(),
