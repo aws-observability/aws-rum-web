@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.26.0](https://github.com/aws-observability/aws-rum-web/compare/v1.25.0...v1.26.0) (2026-01-06)
+
+### Features
+
+* add debugging mode to expose data loss scenarios ([#727](https://github.com/aws-observability/aws-rum-web/issues/727)) ([5fd50aa](https://github.com/aws-observability/aws-rum-web/commit/5fd50aa6f716181c21fcc06b60523d8f6a1f627c))
+* increase default eventCacheSize to 1000 ([#728](https://github.com/aws-observability/aws-rum-web/issues/728)) ([39ba7da](https://github.com/aws-observability/aws-rum-web/commit/39ba7da83b01d3074bcbaffe3ebec90f48ea2542))
+
+
+### Bug Fixes
+
+* disable VirtualPageLoadTimer by default ([#739](https://github.com/aws-observability/aws-rum-web/issues/739)) ([215d4c2](https://github.com/aws-observability/aws-rum-web/commit/215d4c230fd2eec879f2aef4b6d5693883733027))
+* ignore PutRumEvents for PerformanceResource events ([#712](https://github.com/aws-observability/aws-rum-web/issues/712)) ([8377316](https://github.com/aws-observability/aws-rum-web/commit/8377316c1189827d08708a48438c1f52a189c6e8))
+* purge invalid credentials on 403 ([#740](https://github.com/aws-observability/aws-rum-web/issues/740)) ([2329ecc](https://github.com/aws-observability/aws-rum-web/commit/2329ecc23f857226dc273d3b24ba23b836dc33c4))
+* resolve npe in web vitals attribution ([#716](https://github.com/aws-observability/aws-rum-web/issues/716)) ([6151a9b](https://github.com/aws-observability/aws-rum-web/commit/6151a9b2e82d9bb4e45db1c15c631690b07cf3bf))
+
 ## [1.25.0](https://github.com/aws-observability/aws-rum-web/compare/v1.24.0...v1.25.0) (2025-07-23)
 
 ### Features
