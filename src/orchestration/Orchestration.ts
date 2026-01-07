@@ -98,7 +98,6 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
-        legacySPASupport: false, // deprecated
         ...internalConfigOverrides
     };
 };
@@ -175,9 +174,6 @@ export interface Config {
     alias?: string;
     headers?: HeaderBag;
     enableW3CTraceId: boolean;
-
-    // Deprecated features; enable with caution
-    legacySPASupport: boolean; // See https://github.com/aws-observability/aws-rum-web/issues/723
 }
 
 export interface PartialConfig

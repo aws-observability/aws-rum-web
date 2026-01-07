@@ -12,7 +12,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* disable VirtualPageLoadTimer by default ([#739](https://github.com/aws-observability/aws-rum-web/issues/739)) ([215d4c2](https://github.com/aws-observability/aws-rum-web/commit/215d4c230fd2eec879f2aef4b6d5693883733027))
 * ignore PutRumEvents for PerformanceResource events ([#712](https://github.com/aws-observability/aws-rum-web/issues/712)) ([8377316](https://github.com/aws-observability/aws-rum-web/commit/8377316c1189827d08708a48438c1f52a189c6e8))
 * purge invalid credentials on 403 ([#740](https://github.com/aws-observability/aws-rum-web/issues/740)) ([2329ecc](https://github.com/aws-observability/aws-rum-web/commit/2329ecc23f857226dc273d3b24ba23b836dc33c4))
 * resolve npe in web vitals attribution ([#716](https://github.com/aws-observability/aws-rum-web/issues/716)) ([6151a9b](https://github.com/aws-observability/aws-rum-web/commit/6151a9b2e82d9bb4e45db1c15c631690b07cf3bf))

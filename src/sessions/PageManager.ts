@@ -50,7 +50,7 @@ export class PageManager {
     private page: Page | undefined;
     private resumed: boolean;
     private attributes: Attributes | undefined;
-    private virtualPageLoadTimer: VirtualPageLoadTimer | undefined;
+    private virtualPageLoadTimer: VirtualPageLoadTimer;
     private TIMEOUT = 1000;
     private timeOnParentPage: number | undefined;
 
@@ -68,18 +68,11 @@ export class PageManager {
         this.page = undefined;
         this.resumed = false;
         this.recordInteraction = false;
-        if (config.legacySPASupport) {
-            if (config.debug) {
-                InternalLogger.warn(
-                    'VirtualPageLoadTiming (deprecated) is enabled and may result in innaccurate page load timing for Single Page Applications. Please use with caution after reviewing https://github.com/aws-observability/aws-rum-web/issues/723'
-                );
-            }
-            this.virtualPageLoadTimer = new VirtualPageLoadTimer(
-                this,
-                config,
-                record
-            );
-        }
+        this.virtualPageLoadTimer = new VirtualPageLoadTimer(
+            this,
+            config,
+            record
+        );
     }
 
     public getPage(): Page | undefined {
@@ -106,10 +99,6 @@ export class PageManager {
             pageId = payload.pageId;
         }
 
-        if (this.config.debug) {
-            InternalLogger.info(`recordPageView called with pageId: ${pageId}`);
-        }
-
         if (this.useCookies()) {
             this.recordInteraction = true;
         }
@@ -117,17 +106,14 @@ export class PageManager {
         if (!this.page) {
             this.createLandingPage(pageId);
             if (this.config.debug) {
-                InternalLogger.info(`Landing page created: ${pageId}`);
+                InternalLogger.info(`Landing page recorded: ${pageId}`);
             }
         } else if (this.page.pageId !== pageId) {
             this.createNextPage(this.page, pageId);
             if (this.config.debug) {
-                InternalLogger.info(`Navigation to new page: ${pageId}`);
+                InternalLogger.info(`Navigation to page: ${pageId}`);
             }
         } else if (this.resumed) {
-            if (this.config.debug) {
-                InternalLogger.info(`Resumed session for page: ${pageId}`);
-            }
             // Update attributes state in PageManager for event metadata
             this.collectAttributes(
                 this.page as Page,
@@ -135,9 +121,6 @@ export class PageManager {
             );
             return;
         } else {
-            if (this.config.debug) {
-                InternalLogger.info(`No page change detected for: ${pageId}`);
-            }
             // The view has not changed.
             return;
         }
@@ -156,14 +139,7 @@ export class PageManager {
 
     private createNextPage(currentPage: Page, pageId: string) {
         let startTime = Date.now();
-
-        if (this.config.debug) {
-            InternalLogger.info(
-                `Creating next page ${pageId}, interaction: ${
-                    currentPage.interaction + 1
-                }`
-            );
-        }
+        const interactionTime = this.virtualPageLoadTimer.latestInteractionTime;
 
         // The latest interaction time (latest) is not guaranteed to be the
         // interaction that triggered the route change (actual). There are two
@@ -184,24 +160,9 @@ export class PageManager {
         //
         // We do not believe that case (2) has a high risk of skewing route
         // change timing, and therefore ignore case (2).
-        if (this.config.legacySPASupport && this.virtualPageLoadTimer) {
-            const interactionTime =
-                this.virtualPageLoadTimer.latestInteractionTime;
-            if (!this.resumed && startTime - interactionTime <= this.TIMEOUT) {
-                startTime = interactionTime;
-                this.virtualPageLoadTimer.startTiming();
-                if (this.config.debug) {
-                    InternalLogger.info(
-                        `Started virtual page load timing for ${pageId}`
-                    );
-                }
-            } else if (this.config.debug) {
-                InternalLogger.info(
-                    `Skipped virtual page load timing for ${pageId} (resumed: ${
-                        this.resumed
-                    }, timeDiff: ${startTime - interactionTime}ms)`
-                );
-            }
+        if (!this.resumed && startTime - interactionTime <= this.TIMEOUT) {
+            startTime = interactionTime;
+            this.virtualPageLoadTimer.startTiming();
         }
 
         this.timeOnParentPage = startTime - currentPage.start;

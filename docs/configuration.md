@@ -47,7 +47,6 @@ For example, the config object may look similar to the following:
 | eventCacheSize | Number | `1000` | The maximum number of events the cache can contain before dropping events. Each event is typically 1KB in size, so we recommend a default limit of 1000 events -> 1 MB to balance performance against capturing all observed events. If necessary, feel free to enable debug mode to get detailed logs on how to optimize cache size depending on your application behavior. |
 | sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 | headers | Object | `{}` | The **headers** configuration is optional and allows you to include custom headers in an HTTP request. For example, you can use it to pass `Authorization` and `x-api-key` headers.<br/><br/>For more details, see: [MDN - Request Headers](https://developer.mozilla.org/en-US/docs/Glossary/Request_header). |
-| legacySPASupport | Boolean | `false` | When this field is `true`, then legacy NavigationEvents with initiatorType=route_change will be recorded for single page applications. **Warning:** This is a legacy feature that is no longer supported. Please enable with caution in debugging mode first to see if it is relevant for your web application before enabling it in prod. See [#723](https://github.com/aws-observability/aws-rum-web/issues/723) for more details. |
 
 ## CookieAttributes
 
