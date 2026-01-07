@@ -227,10 +227,16 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         init?: RequestInit
     ): HttpEvent => {
         const request = input as Request;
+        const url = resourceToUrlString(input);
+        const normalizedUrl =
+            typeof this.config.eventURLNormalizer === 'function'
+                ? this.config.eventURLNormalizer(url)
+                : url;
+
         return {
             version: '1.0.0',
             request: {
-                url: resourceToUrlString(input),
+                url: normalizedUrl,
                 method: init?.method
                     ? init.method
                     : request.method
