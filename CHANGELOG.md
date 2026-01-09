@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.26.0](https://github.com/aws-observability/aws-rum-web/compare/v1.25.0...v1.26.0) (2026-01-06)
+## [2.0.0](https://github.com/aws-observability/aws-rum-web/compare/v1.25.0...v2.0.0) (2026-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* disable VirtualPageLoadTimer by default (#739)
 
 ### Features
 
