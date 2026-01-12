@@ -80,7 +80,7 @@
         "eslint": "^8.23.1",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-import": "^2.26.0",
-        "eslint-plugin-jsdoc": "^39.3.6",
+        "eslint-plugin-jsdoc": "44.2.7",
         "eslint-plugin-prefer-arrow": "^1.2.3",
         "eslint-plugin-react": "^7.31.8",
         "generate-json-webpack-plugin": "^2.0.0",
