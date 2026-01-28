@@ -4,6 +4,15 @@ Thank you for your interest in contributing to our project. Whether it's a bug r
 
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary information to effectively respond to your bug report or contribution.
 
+## Local Development Tools
+
+The `Examples/` directory contains tools to help developers locally debug RUM telemetry without any dependencies:
+
+-   **aws-rum-web-ui** - Captures and visualizes RUM payloads via a local server and React UI
+-   **spa-react-demo** - Single Page Application example demonstrating RUM integration in a React app
+
+These tools are designed for local debugging and testing of RUM telemetry collection.
+
 ## Reporting Bugs/Feature Requests
 
 We welcome you to use the GitHub issue tracker to report bugs or suggest features.

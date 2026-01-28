@@ -2,7 +2,7 @@ module.exports = {
     env: {
         browser: true
     },
-    ignorePatterns: ['playwright*.config.ts', '**/*.spec.ts'],
+    ignorePatterns: ['playwright*.config.ts', '**/*.spec.ts', 'examples/**'],
     extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
@@ -171,7 +171,6 @@ module.exports = {
         indent: 'off',
         'jsdoc/check-alignment': 'error',
         'jsdoc/check-indentation': 'error',
-        'jsdoc/newline-after-description': 'error',
         'linebreak-style': 'off',
         'max-classes-per-file': ['error', 1],
         'new-parens': 'off',

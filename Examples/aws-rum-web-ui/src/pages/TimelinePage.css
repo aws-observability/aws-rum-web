@@ -1,0 +1,38 @@
+.page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--awsui-color-background-layout-main);
+}
+
+.navbar {
+    padding: 16px;
+    border-bottom: 1px solid var(--awsui-color-border-divider-default);
+    background-color: var(--awsui-color-background-container-content);
+}
+
+.timeline-layout {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    padding: 16px;
+    overflow: hidden;
+}
+
+.json-viewer {
+    background-color: #232f3e;
+    color: #f1f3f4;
+    padding: 16px;
+    border-radius: 8px;
+    overflow: auto;
+    max-height: 70vh;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Dark mode override for JSON viewer */
+.awsui-dark-mode .json-viewer {
+    background-color: #1d2125;
+    color: #e9ebed;
+}
