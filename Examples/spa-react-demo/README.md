@@ -1,17 +1,24 @@
 # SPA React Demo
 
-A production-quality Single Page Application (SPA) built with React for testing AWS RUM Web Client.
+A Single Page Application (SPA) built with React for locally debugging AWS RUM Web Client telemetry without any dependencies.
 
-## Features
+## Purpose
 
--   ✅ All HN story types (Top, New, Best, Ask, Show, Jobs)
--   ✅ Infinite scroll with virtualization
--   ✅ Nested comment threads with tree visualization
--   ✅ Client-side routing with deep links
--   ✅ Pagination with URL state
--   ✅ Responsive design
--   ✅ Error boundaries
--   ✅ Loading states with skeletons
+This example demonstrates RUM telemetry collection in a React SPA environment, featuring:
+
+-   Client-side routing and navigation tracking
+-   API calls and network monitoring
+-   Error boundaries and error tracking
+-   User interactions and performance metrics
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 to view the app with RUM telemetry enabled.
 
 ## Tech Stack
 
@@ -19,34 +26,13 @@ A production-quality Single Page Application (SPA) built with React for testing 
 -   **Redux Toolkit** + **RTK Query** - State management & API caching
 -   **React Router v6** - Client-side routing
 -   **Tailwind CSS v4** - Styling
--   **React Virtuoso** - Virtual scrolling
--   **Lucide React** - Icons
 -   **Vite** - Build tool
 
-## Architecture
+## RUM Integration
 
-```
-src/
-├── api/hn.ts              # RTK Query API definitions
-├── store/index.ts         # Redux store configuration
-├── routes/
-│   ├── Home.tsx           # Story list page
-│   └── Story.tsx          # Story detail with comments
-├── features/
-│   ├── stories/
-│   │   ├── StoryList.tsx  # Virtualized story list
-│   │   └── StoryCard.tsx  # Individual story card
-│   └── comments/
-│       ├── CommentTree.tsx # Comment tree container
-│       └── CommentNode.tsx # Recursive comment node
-├── components/
-│   ├── Layout.tsx         # App layout with navigation
-│   └── ErrorBoundary.tsx  # Error handling
-├── types/hn.ts            # TypeScript interfaces
-└── utils/
-    ├── constants.ts       # App constants
-    └── formatters.ts      # Utility functions
-```
+The RUM client is configured in `src/rum.ts` and initialized in `src/main.tsx`. Telemetry data is sent to a local endpoint for debugging. ├── store/index.ts # Redux store configuration ├── routes/ │ ├── Home.tsx # Story list page │ └── Story.tsx # Story detail with comments ├── features/ │ ├── stories/ │ │ ├── StoryList.tsx # Virtualized story list │ │ └── StoryCard.tsx # Individual story card │ └── comments/ │ ├── CommentTree.tsx # Comment tree container │ └── CommentNode.tsx # Recursive comment node ├── components/ │ ├── Layout.tsx # App layout with navigation │ └── ErrorBoundary.tsx # Error handling ├── types/hn.ts # TypeScript interfaces └── utils/ ├── constants.ts # App constants └── formatters.ts # Utility functions
+
+````
 
 ## Routes
 
@@ -72,7 +58,7 @@ src/
 ```bash
 npm install
 npm run dev
-```
+````
 
 ## Build
 

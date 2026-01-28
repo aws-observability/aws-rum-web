@@ -1,23 +1,20 @@
 # AWS RUM Web UI
 
-A complete solution for capturing and visualizing AWS RUM request payloads.
+A local debugging tool for capturing and visualizing AWS RUM telemetry without any dependencies.
 
-## Features
+## Purpose
 
--   Express server that captures RUM requests on `/appmonitors/:appmonitorId`
--   React UI with AWS Cloudscape Design System for log visualization
--   Real-time log updates every 5 seconds
--   CORS enabled for cross-origin requests
+This tool helps developers locally debug RUM telemetry by:
 
-## Setup
+-   Capturing RUM requests via a local Express server
+-   Visualizing payloads in a React UI with AWS Cloudscape Design System
+-   Inspecting session replay events and metadata
+-   Monitoring real-time telemetry data
+
+## Quick Start
 
 ```bash
 npm install
-```
-
-## Run
-
-```bash
 npm run dev
 ```
 
@@ -28,8 +25,8 @@ This starts:
 
 ## Usage
 
-1. Point your RUM client endpoint to `http://localhost:3000`
-2. View logs at `http://localhost:5173`
+1. Configure your RUM client endpoint to `http://localhost:3000`
+2. Open `http://localhost:5173` to view captured telemetry
 3. Logs are stored in `server/logs.jsonl`
 
 ## API Endpoints
