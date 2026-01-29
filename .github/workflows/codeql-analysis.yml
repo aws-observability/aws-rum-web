@@ -5,7 +5,7 @@ on:
         branches: [main]
 
 permissions:
-  security-events: write
+    security-events: write
 
 jobs:
     analyze:
