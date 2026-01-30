@@ -34,6 +34,24 @@ export type HttpPluginConfig = {
     // the X-Amzn-Trace-Id header should test their applications before enabling
     // it in a production environment.
     addXRayTraceIdHeader: boolean | RegExp[];
+    /**
+     * Use this function to normalize URLs before recording the HTTP Event in RUM.
+     * This is useful when you want to obfuscate sensitive information in the URL or group URLs with similar patterns together (i.e. path parameters)
+     * Or even, to have a clearer naming for known services.
+     *
+     * Example use cases:
+     *
+     * @example normalizing path params
+     *  /users/1234
+     *  /users/5678
+     * can be normalized to
+     *  /users/{userId}
+     * @example
+     *  /users/1234
+     * can be normalized to
+     *  GetUsersById
+     */
+    eventURLNormalizer?: (url: string) => string;
 };
 
 export const isTraceIdHeaderEnabled = (

@@ -1401,4 +1401,37 @@ describe('FetchPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
+
+    test('when eventURLNormalizer is present then HTTP event URL is modified by it', async () => {
+        // Init
+        const URL_NORMALIZED = 'example.com';
+        const config: Partial<HttpPluginConfig> = {
+            recordAllRequests: true,
+            eventURLNormalizer: () => {
+                return URL_NORMALIZED;
+            }
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        // Run
+        await fetch(URL);
+        plugin.disable();
+
+        // Assert
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'GET',
+                url: URL_NORMALIZED
+            },
+            response: {
+                status: 200,
+                statusText: 'OK'
+            }
+        });
+    });
 });
