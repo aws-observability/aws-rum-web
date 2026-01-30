@@ -4,6 +4,9 @@ on:
     push:
         branches: [main]
 
+permissions:
+    security-events: write
+
 jobs:
     analyze:
         name: Analyze
