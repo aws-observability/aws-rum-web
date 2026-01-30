@@ -37,6 +37,14 @@ export function Layout() {
                             >
                                 Jobs
                             </Link>
+                            <Link
+                                to="/debug"
+                                className={`hover:underline ${
+                                    currentPath === 'debug' ? 'font-bold' : ''
+                                }`}
+                            >
+                                Debug
+                            </Link>
                         </nav>
                     </div>
                 </div>

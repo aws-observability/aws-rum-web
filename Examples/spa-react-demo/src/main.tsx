@@ -9,6 +9,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { Home } from './routes/Home';
 import { Story } from './routes/Story';
 import { User } from './routes/User';
+import { ErrorGenerator } from './components/ErrorGenerator';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
                             <Route path=":storyType" element={<Home />} />
                             <Route path="story/:id" element={<Story />} />
                             <Route path="user/:id" element={<User />} />
+                            <Route path="debug" element={<ErrorGenerator />} />
                         </Route>
                     </Routes>
                 </BrowserRouter>
