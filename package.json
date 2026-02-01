@@ -70,7 +70,7 @@
         "@types/ua-parser-js": "^0.7.35",
         "@types/uuid": "^9.0.0",
         "@typescript-eslint/eslint-plugin": "^5.38.0",
-        "@typescript-eslint/parser": "^5.38.0",
+        "@typescript-eslint/parser": "^8.50.1",
         "@webpack-cli/serve": "^3.0.1",
         "babel-loader": "~9.1.0",
         "case-sensitive-paths-webpack-plugin": "^2.4.0",
