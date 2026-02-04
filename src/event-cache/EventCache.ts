@@ -118,7 +118,7 @@ export class EventCache {
             if (this.sessionManager.canRecord()) {
                 this.sessionManager.incrementSessionEventCount();
                 this.addRecordToCache(type, eventData);
-            } else if (this.config.debug) {
+            } else {
                 this.sessionLimitExceeded++;
             }
         }
@@ -172,8 +172,7 @@ export class EventCache {
      * Returns true if there are one or more events in the cache.
      */
     public hasEvents(): boolean {
-        // For debug mode
-        if (this.config.debug && this.sessionLimitExceeded > 0) {
+        if (this.sessionLimitExceeded > 0) {
             const total = this.events.length + this.sessionLimitExceeded;
             if (this.sessionManager.isSampled()) {
                 InternalLogger.warn(
@@ -220,7 +219,7 @@ export class EventCache {
      * Removes and returns the next batch of events.
      */
     public getEventBatch(flushCandidates = false): RumEvent[] {
-        if (this.config.debug && this.droppedEvent > 0) {
+        if (this.droppedEvent > 0) {
             const total = this.events.length + this.droppedEvent;
             InternalLogger.warn(
                 `Dropped ${
@@ -320,9 +319,7 @@ export class EventCache {
         }
 
         if (this.events.length >= this.config.eventCacheSize) {
-            if (this.config.debug) {
-                this.droppedEvent += 1;
-            }
+            this.droppedEvent += 1;
             // Drop newest event and keep the older ones
             // 1. Older events tend to be more relevant, such as session start
             //    or performance entries that are attributed to web vitals

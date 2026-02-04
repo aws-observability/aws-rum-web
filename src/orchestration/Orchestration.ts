@@ -72,6 +72,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         allowCookies: false,
         batchLimit: 100,
         client: INSTALL_MODULE,
+        compressionStrategy: { enabled: true },
         cookieAttributes,
         debug: false,
         disableAutoPageView: false,
@@ -117,12 +118,20 @@ export type CookieAttributes = {
 
 export type PartialCookieAttributes = Partial<CookieAttributes>;
 
+// Compression strategy for dispatch payloads
+// Currently only `enabled` is exposed; thresholds are hardcoded in compression.ts
+// To make thresholds configurable, extend this type and pass to compressIfBeneficial()
+export type CompressionStrategy = {
+    enabled: boolean;
+};
+
 export interface Config {
     allowCookies: boolean;
     releaseId?: string;
     batchLimit: number;
     client: string;
     clientBuilder?: ClientBuilder;
+    compressionStrategy: CompressionStrategy;
     cookieAttributes: CookieAttributes;
     sessionAttributes: { [k: string]: string | number | boolean };
     debug: boolean;
@@ -253,6 +262,8 @@ export class Orchestration {
         // code.
         this.config.endpointUrl = new URL(this.config.endpoint);
 
+        InternalLogger.configure(this.config.debug);
+
         this.eventCache = this.initEventCache(
             applicationId,
             applicationVersion
@@ -264,16 +275,12 @@ export class Orchestration {
             applicationVersion
         );
 
-        if (this.config.debug) {
-            InternalLogger.info(
-                `RUM client initialized for app: ${applicationId}`
-            );
-            InternalLogger.info(
+        InternalLogger.info(`RUM client initialized for app: ${applicationId}`);
+        InternalLogger.info(
                 `Telemetries enabled: ${
                     this.config.telemetries.join(', ') || 'none'
                 }`
             );
-        }
 
         if (this.config.enableRumClient) {
             this.enable();

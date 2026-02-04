@@ -106,9 +106,7 @@ export class Dispatch {
     public disable(): void {
         this.stopDispatchTimer();
         this.enabled = false;
-        if (this.config.debug) {
-            InternalLogger.warn('Dispatch disabled');
-        }
+        InternalLogger.warn('Dispatch disabled');
     }
 
     /**
@@ -160,11 +158,9 @@ export class Dispatch {
     > => {
         if (this.doRequest()) {
             const request = this.createRequest();
-            if (this.config.debug) {
-                InternalLogger.info(
-                    `Dispatching ${request.RumEvents.length} events via fetch`
-                );
-            }
+            InternalLogger.info(
+                `Dispatching ${request.RumEvents.length} events via fetch`
+            );
             return this.rum.sendFetch(request).catch(this.handleReject);
         }
     };
@@ -177,11 +173,9 @@ export class Dispatch {
     > => {
         if (this.doRequest()) {
             const request: PutRumEventsRequest = this.createRequest();
-            if (this.config.debug) {
-                InternalLogger.info(
-                    `Dispatching ${request.RumEvents.length} events via beacon`
-                );
-            }
+            InternalLogger.info(
+                `Dispatching ${request.RumEvents.length} events via beacon`
+            );
             return this.rum
                 .sendBeacon(request)
                 .catch(() => this.rum.sendFetch(request));
@@ -197,9 +191,7 @@ export class Dispatch {
         response: HttpResponse;
     } | void> => {
         return this.dispatchFetch().catch((e) => {
-            if (this.config.debug) {
-                InternalLogger.error('Dispatch fetch failed silently:', e);
-            }
+            InternalLogger.error('Dispatch fetch failed silently:', e);
         });
     };
 
@@ -212,9 +204,7 @@ export class Dispatch {
         response: HttpResponse;
     } | void> => {
         return this.dispatchBeacon().catch((e) => {
-            if (this.config.debug) {
-                InternalLogger.error('Dispatch beacon failed silently:', e);
-            }
+            InternalLogger.error('Dispatch beacon failed silently:', e);
         });
     };
 
@@ -229,17 +219,13 @@ export class Dispatch {
                 }
 
                 const req = this.createRequest(true);
-                if (this.config.debug) {
-                    InternalLogger.debug(
-                        `Flushing ${req.RumEvents.length} events on page hide`
-                    );
-                }
+                InternalLogger.debug(
+                    `Flushing ${req.RumEvents.length} events on page hide`
+                );
                 flush(req)
                     .catch(() => backup(req))
                     .catch((e) => {
-                        if (this.config.debug) {
-                            InternalLogger.error('Page hide flush failed:', e);
-                        }
+                        InternalLogger.error('Page hide flush failed:', e);
                     });
             }
         }
@@ -331,12 +317,10 @@ export class Dispatch {
                 // RUM disables only when dispatch fails and we are certain
                 // that subsequent attempts will not succeed, such as when
                 // credentials are invalid or the app monitor does not exist.
-                if (this.config.debug) {
-                    InternalLogger.error(
-                        'Dispatch failed with status code:',
-                        e.message
-                    );
-                }
+                InternalLogger.error(
+                    'Dispatch failed with status code:',
+                    e.message
+                );
                 this.disable();
             }
         }
@@ -366,7 +350,8 @@ export class Dispatch {
             endpoint,
             region,
             credentials,
-            headers: this.headers
+            headers: this.headers,
+            compressionStrategy: this.config.compressionStrategy
         });
     };
 

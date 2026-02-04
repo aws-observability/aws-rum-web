@@ -31,9 +31,7 @@ export class PluginManager {
         // initialize plugin
         plugin.load(this.context);
 
-        if (this.context.config.debug) {
-            InternalLogger.info(`Plugin loaded: ${pluginId}`);
-        }
+        InternalLogger.debug(`Plugin loaded: ${pluginId}`);
     }
 
     /**

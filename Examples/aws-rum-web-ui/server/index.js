@@ -3,10 +3,58 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { unpack } from '@rrweb/packer';
+import zlib from 'zlib';
+import { promisify } from 'util';
+
+const gunzip = promisify(zlib.gunzip);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3000;
+
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 100; // max requests per window
+const requestCounts = new Map();
+
+const rateLimiter = (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+    const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+    let record = requestCounts.get(ip);
+    if (!record || record.windowStart < windowStart) {
+        record = { windowStart: now, count: 0 };
+        requestCounts.set(ip, record);
+    }
+
+    record.count++;
+    if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+        return res.status(429).json({ error: 'Too many requests' });
+    }
+    next();
+};
+
+// Gzip decompression middleware
+const decompressGzip = async (req, res, next) => {
+    if (req.headers['content-encoding'] === 'gzip') {
+        try {
+            const chunks = [];
+            for await (const chunk of req) {
+                chunks.push(chunk);
+            }
+            const compressed = Buffer.concat(chunks);
+            const decompressed = await gunzip(compressed);
+            req.body = JSON.parse(decompressed.toString('utf8'));
+            next();
+        } catch (err) {
+            console.error('Failed to decompress gzip:', err);
+            res.status(400).json({ error: 'Invalid gzip payload' });
+        }
+    } else {
+        next();
+    }
+};
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -17,9 +65,9 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.text());
-app.use(express.raw());
+app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
-app.all('/appmonitors/:appmonitorId', (req, res) => {
+app.all('/appmonitors/:appmonitorId', rateLimiter, decompressGzip, (req, res) => {
     const { UserDetails } = req.body || {};
 
     const requestEntry = {
