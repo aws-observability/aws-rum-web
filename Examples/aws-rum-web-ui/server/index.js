@@ -51,7 +51,7 @@ const decompressGzip = async (req, res, next) => {
             req.compressionMeta = {
                 compressedBytes: compressed.length,
                 uncompressedBytes: decompressed.length,
-                ratio: (decompressed.length / compressed.length).toFixed(2)
+                ratio: (compressed.length / decompressed.length).toFixed(2)
             };
 
             next();
