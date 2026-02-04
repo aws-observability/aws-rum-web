@@ -52,6 +52,9 @@ export const compressIfBeneficial = async (
     payload: string
 ): Promise<CompressionResult> => {
     const originalSize = payload.length;
+    InternalLogger.debug(
+        `compressIfBeneficial called, payload size: ${originalSize}B`
+    );
 
     // Guard: browser support check
     if (!isCompressionSupported()) {

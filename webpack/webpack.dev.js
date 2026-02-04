@@ -33,7 +33,10 @@ module.exports = merge(common, {
         loader_custom_events: './src/loader/loader-custom-events.js',
         loader_alias: './src/loader/loader-alias.js',
         loader_custom_headers: './src/loader/loader-custom-headers.js',
-        loader_w3c_format_enabled: './src/loader/loader-w3c-format-enabled.js'
+        loader_w3c_format_enabled: './src/loader/loader-w3c-format-enabled.js',
+        loader_compression: './src/loader/loader-compression.js',
+        loader_compression_disabled:
+            './src/loader/loader-compression-disabled.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']

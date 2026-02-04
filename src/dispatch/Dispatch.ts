@@ -30,7 +30,8 @@ const NO_CRED_MSG = 'CWR: Cannot dispatch; no AWS credentials.';
 export type ClientBuilder = (
     endpoint: URL,
     region: string,
-    credentials?: AwsCredentialIdentity | AwsCredentialIdentityProvider
+    credentials?: AwsCredentialIdentity | AwsCredentialIdentityProvider,
+    compressionStrategy?: { enabled: boolean }
 ) => DataPlaneClient;
 
 export class Dispatch {
@@ -80,7 +81,12 @@ export class Dispatch {
                 }
             };
         } else {
-            this.rum = this.buildClient(this.endpoint, this.region, undefined);
+            this.rum = this.buildClient(
+                this.endpoint,
+                this.region,
+                undefined,
+                this.config.compressionStrategy
+            );
         }
 
         this.credentialStorageKey = this.config.cookieAttributes.unique
@@ -124,7 +130,8 @@ export class Dispatch {
         this.rum = this.buildClient(
             this.endpoint,
             this.region,
-            credentialProvider
+            credentialProvider,
+            this.config.compressionStrategy
         );
         if (typeof credentialProvider === 'function') {
             // In case a beacon in the first dispatch, we must pre-fetch credentials into a cookie so there is no delay
@@ -337,7 +344,8 @@ export class Dispatch {
     private defaultClientBuilder: ClientBuilder = (
         endpoint,
         region,
-        credentials
+        credentials,
+        compressionStrategy
     ) => {
         return new DataPlaneClient({
             fetchRequestHandler: new RetryHttpHandler(
@@ -351,7 +359,7 @@ export class Dispatch {
             region,
             credentials,
             headers: this.headers,
-            compressionStrategy: this.config.compressionStrategy
+            compressionStrategy
         });
     };
 

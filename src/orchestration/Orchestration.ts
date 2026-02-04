@@ -72,7 +72,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         allowCookies: false,
         batchLimit: 100,
         client: INSTALL_MODULE,
-        compressionStrategy: { enabled: true },
+        compressionStrategy: { enabled: false },
         cookieAttributes,
         debug: false,
         disableAutoPageView: false,
@@ -263,6 +263,23 @@ export class Orchestration {
         this.config.endpointUrl = new URL(this.config.endpoint);
 
         InternalLogger.configure(this.config.debug);
+        InternalLogger.debug(
+            'Configuration:',
+            JSON.stringify(
+                {
+                    allowCookies: this.config.allowCookies,
+                    compressionStrategy: this.config.compressionStrategy,
+                    debug: this.config.debug,
+                    dispatchInterval: this.config.dispatchInterval,
+                    enableXRay: this.config.enableXRay,
+                    endpoint: this.config.endpoint,
+                    sessionSampleRate: this.config.sessionSampleRate,
+                    signing: this.config.signing
+                },
+                null,
+                2
+            )
+        );
 
         this.eventCache = this.initEventCache(
             applicationId,
