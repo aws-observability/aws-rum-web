@@ -26,12 +26,16 @@ export const compressIfBeneficial = async (
     const originalSize = payload.length;
 
     if (!isCompressionSupported()) {
-        InternalLogger.debug('CompressionStream not supported, skipping compression');
+        InternalLogger.debug(
+            'CompressionStream not supported, skipping compression'
+        );
         return { body: payload, compressed: false };
     }
 
     if (originalSize < MIN_SIZE_BYTES) {
-        InternalLogger.debug(`Payload size ${originalSize}B below threshold ${MIN_SIZE_BYTES}B, skipping compression`);
+        InternalLogger.debug(
+            `Payload size ${originalSize}B below threshold ${MIN_SIZE_BYTES}B, skipping compression`
+        );
         return { body: payload, compressed: false };
     }
 
@@ -39,10 +43,18 @@ export const compressIfBeneficial = async (
     const ratio = 1 - compressed.length / originalSize;
 
     if (ratio >= MIN_COMPRESSION_RATIO) {
-        InternalLogger.debug(`Compressed ${originalSize}B -> ${compressed.length}B (${(ratio * 100).toFixed(1)}% reduction)`);
+        InternalLogger.debug(
+            `Compressed ${originalSize}B -> ${compressed.length}B (${(
+                ratio * 100
+            ).toFixed(1)}% reduction)`
+        );
         return { body: compressed, compressed: true };
     }
 
-    InternalLogger.debug(`Compression ratio ${(ratio * 100).toFixed(1)}% below threshold ${MIN_COMPRESSION_RATIO * 100}%, skipping`);
+    InternalLogger.debug(
+        `Compression ratio ${(ratio * 100).toFixed(1)}% below threshold ${
+            MIN_COMPRESSION_RATIO * 100
+        }%, skipping`
+    );
     return { body: payload, compressed: false };
 };

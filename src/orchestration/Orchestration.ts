@@ -277,10 +277,10 @@ export class Orchestration {
 
         InternalLogger.info(`RUM client initialized for app: ${applicationId}`);
         InternalLogger.info(
-                `Telemetries enabled: ${
-                    this.config.telemetries.join(', ') || 'none'
-                }`
-            );
+            `Telemetries enabled: ${
+                this.config.telemetries.join(', ') || 'none'
+            }`
+        );
 
         if (this.config.enableRumClient) {
             this.enable();

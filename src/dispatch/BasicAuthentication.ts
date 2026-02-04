@@ -69,10 +69,7 @@ export class BasicAuthentication extends Authentication {
                             'AWS credential fetch failed, retrying'
                         );
                     } else {
-                        InternalLogger.error(
-                            'AWS credential fetch failed:',
-                            e
-                        );
+                        InternalLogger.error('AWS credential fetch failed:', e);
                         throw e;
                     }
                 }
