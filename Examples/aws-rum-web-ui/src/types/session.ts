@@ -25,4 +25,9 @@ export interface RawRequest {
     headers: Record<string, string>;
     body: any;
     query: Record<string, string>;
+    compression?: {
+        compressedBytes: number;
+        uncompressedBytes: number;
+        ratio: string;
+    } | null;
 }

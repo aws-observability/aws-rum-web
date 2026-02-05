@@ -1,5 +1,11 @@
 const unknownCaller = '[aws-rum-web:unknown.unknown]';
 export class InternalLogger {
+    private static debugEnabled = false;
+
+    static configure(debug: boolean): void {
+        InternalLogger.debugEnabled = debug;
+    }
+
     private static getCallerInfo(): string {
         try {
             const stack = new Error().stack;
@@ -38,24 +44,36 @@ export class InternalLogger {
     }
 
     static info(message: any, ...optionalParams: any[]): void {
+        if (!InternalLogger.debugEnabled) {
+            return;
+        }
         const prefix = this.getCallerInfo();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         console.info(prefix, message, ...optionalParams);
     }
 
     static debug(message: any, ...optionalParams: any[]): void {
+        if (!InternalLogger.debugEnabled) {
+            return;
+        }
         const prefix = this.getCallerInfo();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         console.debug(prefix, message, ...optionalParams);
     }
 
     static warn(message: any, ...optionalParams: any[]): void {
+        if (!InternalLogger.debugEnabled) {
+            return;
+        }
         const prefix = this.getCallerInfo();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         console.warn(prefix, message, ...optionalParams);
     }
 
     static error(message: any, ...optionalParams: any[]): void {
+        if (!InternalLogger.debugEnabled) {
+            return;
+        }
         const prefix = this.getCallerInfo();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         console.error(prefix, message, ...optionalParams);

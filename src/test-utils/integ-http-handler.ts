@@ -17,7 +17,8 @@ import { BeaconHttpHandler } from '../dispatch/BeaconHttpHandler';
 export const showIntegRequestClientBuilder: ClientBuilder = (
     endpoint,
     region,
-    credentials
+    credentials,
+    compressionStrategy
 ) => {
     return new DataPlaneClient({
         fetchRequestHandler: new ShowIntegRequestHandler(
@@ -28,7 +29,8 @@ export const showIntegRequestClientBuilder: ClientBuilder = (
         ),
         endpoint,
         region,
-        credentials
+        credentials,
+        compressionStrategy
     });
 };
 

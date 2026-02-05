@@ -15,7 +15,8 @@ const token =
 export const showRequestClientBuilder: ClientBuilder = (
     endpoint,
     region,
-    credentials
+    credentials,
+    compressionStrategy
 ) => {
     return new DataPlaneClient({
         fetchRequestHandler: new ShowMockRequestHandler(),
@@ -23,6 +24,7 @@ export const showRequestClientBuilder: ClientBuilder = (
         endpoint,
         region,
         credentials,
+        compressionStrategy,
         headers: {
             Authorization: `Bearer ${token}`,
             'x-api-key': 'a1b2c3d4e5f6',

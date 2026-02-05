@@ -30,7 +30,23 @@ export const logRequestToPage = (request: HttpRequest) => {
         request.protocol + '//' + request.hostname + request.path
     );
     setElementText('request_header', headerBagToString(request.headers));
-    setElementText('request_body', request.body);
+
+    // Handle both string and Uint8Array (compressed) bodies
+    if (request.body instanceof Uint8Array) {
+        setElementText(
+            'request_body',
+            `[compressed: ${request.body.length} bytes]`
+        );
+        setElementText('request_compressed', 'true');
+        setElementText('request_compressed_size', String(request.body.length));
+    } else {
+        setElementText('request_body', request.body);
+        setElementText('request_compressed', 'false');
+        setElementText(
+            'request_uncompressed_size',
+            String(request.body.length)
+        );
+    }
 };
 
 export const logResponseToPage = (response: HttpResponse) => {

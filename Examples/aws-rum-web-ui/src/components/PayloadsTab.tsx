@@ -2,6 +2,7 @@ import Container from '@cloudscape-design/components/container';
 import Header from '@cloudscape-design/components/header';
 import Box from '@cloudscape-design/components/box';
 import type { RawRequest } from '../types/session';
+import { PayloadItem } from './PayloadItem';
 import './PayloadsTab.css';
 
 interface PayloadsTabProps {
@@ -32,38 +33,13 @@ export function PayloadsTab({ requests, onRequestClick }: PayloadsTabProps) {
                     </Box>
                 ) : (
                     <div className="events-list">
-                        {requests.map((request, idx) => {
-                            const requestSize =
-                                new Blob([JSON.stringify(request)]).size / 1024;
-
-                            return (
-                                <div
-                                    key={idx}
-                                    className="event-item"
-                                    onClick={() => onRequestClick(request)}
-                                >
-                                    <div
-                                        className="event-marker"
-                                        style={{ backgroundColor: '#0972d3' }}
-                                    />
-                                    <div className="event-content">
-                                        <Box variant="strong" fontSize="body-s">
-                                            {request.method}{' '}
-                                            {request.appmonitorId}
-                                        </Box>
-                                        <Box
-                                            variant="small"
-                                            color="text-body-secondary"
-                                        >
-                                            {new Date(
-                                                request.timestamp
-                                            ).toLocaleString()}{' '}
-                                            • {requestSize.toFixed(2)} KB
-                                        </Box>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {requests.map((request, idx) => (
+                            <PayloadItem
+                                key={idx}
+                                request={request}
+                                onClick={() => onRequestClick(request)}
+                            />
+                        ))}
                     </div>
                 )}
             </Container>

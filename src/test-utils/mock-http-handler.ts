@@ -13,14 +13,16 @@ import { logRequestToPage, logResponseToPage } from './http-handler-utils';
 export const showRequestClientBuilder: ClientBuilder = (
     endpoint,
     region,
-    credentials
+    credentials,
+    compressionStrategy
 ) => {
     return new DataPlaneClient({
         fetchRequestHandler: new ShowMockRequestHandler(),
         beaconRequestHandler: new ShowMockRequestHandler(),
         endpoint,
         region,
-        credentials
+        credentials,
+        compressionStrategy
     });
 };
 

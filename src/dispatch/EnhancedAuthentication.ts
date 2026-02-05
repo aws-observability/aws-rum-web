@@ -41,27 +41,18 @@ export class EnhancedAuthentication extends Authentication {
                         // Ignore
                     }
 
-                    if (this.config.debug) {
-                        InternalLogger.info(
-                            'AWS credentials fetched successfully'
-                        );
-                    }
+                    InternalLogger.debug(
+                        'AWS credentials fetched successfully'
+                    );
                     return credentials;
                 } catch (e) {
                     if (retries) {
                         retries--;
-                        if (this.config.debug) {
-                            InternalLogger.warn(
-                                'AWS credential fetch failed, retrying'
-                            );
-                        }
+                        InternalLogger.warn(
+                            'AWS credential fetch failed, retrying'
+                        );
                     } else {
-                        if (this.config.debug) {
-                            InternalLogger.error(
-                                'AWS credential fetch failed:',
-                                e
-                            );
-                        }
+                        InternalLogger.error('AWS credential fetch failed:', e);
                         throw e;
                     }
                 }

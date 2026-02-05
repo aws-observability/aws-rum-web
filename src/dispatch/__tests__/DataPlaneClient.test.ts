@@ -5,6 +5,7 @@ import { DataPlaneClient } from '../DataPlaneClient';
 import { HttpRequest } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
 import { HeaderBag } from '@aws-sdk/types';
+import * as compression from '../compression';
 
 const beaconHandler = jest.fn(() => Promise.resolve());
 jest.mock('../BeaconHttpHandler', () => ({
@@ -23,6 +24,7 @@ interface Config {
     signing: boolean;
     endpoint: URL;
     headers?: HeaderBag;
+    compressionEnabled?: boolean;
 }
 
 const defaultConfig = { signing: true, endpoint: Utils.AWS_RUM_ENDPOINT };
@@ -36,7 +38,10 @@ const createDataPlaneClient = (
         endpoint: config.endpoint,
         region: Utils.AWS_RUM_REGION,
         credentials: config.signing ? Utils.createAwsCredentials() : undefined,
-        headers: config.headers ? config.headers : undefined
+        headers: config.headers ? config.headers : undefined,
+        compressionStrategy: config.compressionEnabled
+            ? { enabled: true }
+            : undefined
     });
 };
 
@@ -377,5 +382,127 @@ describe('DataPlaneClient tests', () => {
         expect(signedRequest.headers['x-api-key']).toEqual(
             headers['x-api-key']
         );
+    });
+
+    describe('compression', () => {
+        let compressIfBeneficialSpy: jest.SpyInstance;
+
+        beforeEach(() => {
+            compressIfBeneficialSpy = jest.spyOn(
+                compression,
+                'compressIfBeneficial'
+            );
+        });
+
+        afterEach(() => {
+            compressIfBeneficialSpy.mockRestore();
+        });
+
+        test('when compression is enabled then compressIfBeneficial is called for sendFetch', async () => {
+            compressIfBeneficialSpy.mockResolvedValue({
+                body: 'uncompressed',
+                compressed: false
+            });
+            const client = createDataPlaneClient({
+                ...defaultConfig,
+                compressionEnabled: true
+            });
+
+            await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            expect(compressIfBeneficialSpy).toHaveBeenCalledTimes(1);
+        });
+
+        test('when compression is disabled then compressIfBeneficial is not called', async () => {
+            const client = createDataPlaneClient({
+                ...defaultConfig,
+                compressionEnabled: false
+            });
+
+            await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            expect(compressIfBeneficialSpy).not.toHaveBeenCalled();
+        });
+
+        test('when compression is not configured then compressIfBeneficial is not called', async () => {
+            const client = createDataPlaneClient(defaultConfig);
+
+            await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            expect(compressIfBeneficialSpy).not.toHaveBeenCalled();
+        });
+
+        test('when payload is compressed then Content-Encoding header is set to gzip', async () => {
+            const compressedBody = new Uint8Array([1, 2, 3]);
+            compressIfBeneficialSpy.mockResolvedValue({
+                body: compressedBody,
+                compressed: true
+            });
+            const client = createDataPlaneClient({
+                ...defaultConfig,
+                compressionEnabled: true,
+                signing: false
+            });
+
+            await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            const request: HttpRequest = (fetchHandler.mock.calls[0] as any)[0];
+            expect(request.headers['Content-Encoding']).toEqual('gzip');
+            expect(request.body).toBe(compressedBody);
+        });
+
+        test('when payload is not compressed then Content-Encoding header is not set', async () => {
+            compressIfBeneficialSpy.mockResolvedValue({
+                body: '{"test": "data"}',
+                compressed: false
+            });
+            const client = createDataPlaneClient({
+                ...defaultConfig,
+                compressionEnabled: true,
+                signing: false
+            });
+
+            await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            const request: HttpRequest = (fetchHandler.mock.calls[0] as any)[0];
+            expect(request.headers['Content-Encoding']).toBeUndefined();
+        });
+
+        test('when sendBeacon is used then compression is not applied', async () => {
+            const client = createDataPlaneClient({
+                ...defaultConfig,
+                compressionEnabled: true
+            });
+
+            await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            expect(compressIfBeneficialSpy).not.toHaveBeenCalled();
+            const request: HttpRequest = (
+                beaconHandler.mock.calls[0] as any
+            )[0];
+            expect(request.headers['Content-Encoding']).toBeUndefined();
+        });
+
+        test('when compression is enabled with signing then X-Amz-Content-Sha256 is computed from compressed body', async () => {
+            const compressedBody = new Uint8Array([1, 2, 3, 4, 5]);
+            compressIfBeneficialSpy.mockResolvedValue({
+                body: compressedBody,
+                compressed: true
+            });
+            const client = createDataPlaneClient({
+                ...defaultConfig,
+                compressionEnabled: true,
+                signing: true
+            });
+
+            await client.sendFetch(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            const request: HttpRequest = (fetchHandler.mock.calls[0] as any)[0];
+            expect(request.headers['X-Amz-Content-Sha256']).toBeDefined();
+            // Hash should be different from uncompressed payload hash
+            expect(request.headers['X-Amz-Content-Sha256']).not.toEqual(
+                '57bbd361f5c5ab66d7dafb33d6c8bf714bbb140300fad06145b8d66c388b5d43'
+            );
+        });
     });
 });

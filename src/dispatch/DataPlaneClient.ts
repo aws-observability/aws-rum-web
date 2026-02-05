@@ -15,6 +15,8 @@ import {
     UserDetails,
     RumEvent
 } from './dataplane';
+import { compressIfBeneficial } from './compression';
+import { CompressionStrategy } from '../orchestration/Orchestration';
 
 const SERVICE = 'rum';
 const METHOD = 'POST';
@@ -49,6 +51,7 @@ export declare type DataPlaneClientConfig = {
         | AwsCredentialIdentity
         | undefined;
     headers?: HeaderBag;
+    compressionStrategy?: CompressionStrategy;
 };
 
 export class DataPlaneClient {
@@ -72,9 +75,21 @@ export class DataPlaneClient {
     public sendFetch = async (
         putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
+        const serializedRequest = JSON.stringify(
+            serializeRequest(putRumEventsRequest)
+        );
+
+        const compressionEnabled =
+            this.config.compressionStrategy?.enabled ?? false;
+        const { body, compressed } = compressionEnabled
+            ? await compressIfBeneficial(serializedRequest)
+            : { body: serializedRequest, compressed: false };
+
         const options = await this.getHttpRequestOptions(
             putRumEventsRequest,
-            CONTENT_TYPE_JSON
+            body,
+            CONTENT_TYPE_JSON,
+            compressed
         );
         let request: HttpRequest = new HttpRequest(options);
         if (this.awsSigV4) {
@@ -89,9 +104,14 @@ export class DataPlaneClient {
     public sendBeacon = async (
         putRumEventsRequest: PutRumEventsRequest
     ): Promise<{ response: HttpResponse }> => {
+        const serializedRequest = JSON.stringify(
+            serializeRequest(putRumEventsRequest)
+        );
         const options = await this.getHttpRequestOptions(
             putRumEventsRequest,
-            CONTENT_TYPE_TEXT
+            serializedRequest,
+            CONTENT_TYPE_TEXT,
+            false
         );
         let request: HttpRequest = new HttpRequest(options);
         if (this.awsSigV4) {
@@ -108,33 +128,34 @@ export class DataPlaneClient {
 
     private getHttpRequestOptions = async (
         putRumEventsRequest: PutRumEventsRequest,
-        contentType: string
+        body: string | Uint8Array,
+        contentType: string,
+        compressed: boolean
     ) => {
-        const serializedRequest: string = JSON.stringify(
-            serializeRequest(putRumEventsRequest)
-        );
         const path = this.config.endpoint.pathname.replace(/\/$/, '');
+        const headers: Record<string, string> = {
+            'content-type': contentType,
+            host: this.config.endpoint.host,
+            ...this.config.headers
+        };
+        if (compressed) {
+            headers['Content-Encoding'] = 'gzip';
+        }
         const options = {
             method: METHOD,
             protocol: this.config.endpoint.protocol,
             port: Number(this.config.endpoint.port) || undefined,
-            headers: {
-                'content-type': contentType,
-                host: this.config.endpoint.host,
-                ...this.config.headers
-            },
+            headers,
             hostname: this.config.endpoint.hostname,
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
-            body: serializedRequest
+            body
         };
         if (this.awsSigV4) {
             return {
                 ...options,
                 headers: {
                     ...options.headers,
-                    'X-Amz-Content-Sha256': await hashAndEncode(
-                        serializedRequest
-                    )
+                    'X-Amz-Content-Sha256': await hashAndEncode(body)
                 }
             };
         }
@@ -175,7 +196,7 @@ const serializeEvent = (event: RumEvent): SerializedRumEvent => {
     };
 };
 
-const hashAndEncode = async (payload: string) => {
+const hashAndEncode = async (payload: string | Uint8Array) => {
     const sha256 = new Sha256();
     sha256.update(payload);
     return toHex(await sha256.digest()).toLowerCase();

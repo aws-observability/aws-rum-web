@@ -6,6 +6,7 @@ import SegmentedControl from '@cloudscape-design/components/segmented-control';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import { RrwebPlayer } from './RrwebPlayer';
+import { PayloadItem } from './PayloadItem';
 import type { SessionMetadata, RumEvent, RawRequest } from '../types/session';
 import {
     RRWEB_EVENT_TYPE_NAMES,
@@ -300,56 +301,15 @@ export function SessionReplayTab({
                                 ) : (
                                     <div className="events-list">
                                         {selectedRequests.map(
-                                            (request, idx) => {
-                                                const requestSize =
-                                                    new Blob([
-                                                        JSON.stringify(request)
-                                                    ]).size / 1024;
-
-                                                return (
-                                                    <div
-                                                        key={idx}
-                                                        className="event-item"
-                                                        onClick={() =>
-                                                            onRequestClick(
-                                                                request
-                                                            )
-                                                        }
-                                                    >
-                                                        <div
-                                                            className="event-marker"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    '#0972d3'
-                                                            }}
-                                                        />
-                                                        <div className="event-content">
-                                                            <Box
-                                                                variant="strong"
-                                                                fontSize="body-s"
-                                                            >
-                                                                {request.method}{' '}
-                                                                {
-                                                                    request.appmonitorId
-                                                                }
-                                                            </Box>
-                                                            <Box
-                                                                variant="small"
-                                                                color="text-body-secondary"
-                                                            >
-                                                                {new Date(
-                                                                    request.timestamp
-                                                                ).toLocaleString()}{' '}
-                                                                •{' '}
-                                                                {requestSize.toFixed(
-                                                                    2
-                                                                )}{' '}
-                                                                KB
-                                                            </Box>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
+                                            (request, idx) => (
+                                                <PayloadItem
+                                                    key={idx}
+                                                    request={request}
+                                                    onClick={() =>
+                                                        onRequestClick(request)
+                                                    }
+                                                />
+                                            )
                                         )}
                                     </div>
                                 )}
