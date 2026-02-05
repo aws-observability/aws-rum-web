@@ -1,0 +1,23 @@
+name: Bundle Size Report
+
+on:
+    pull_request:
+        branches: [main, release/*]
+
+permissions:
+    pull-requests: write
+
+jobs:
+    bundle-size-report:
+        name: Bundle Size Report
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '18'
+
+            - name: Checkout aws-rum-web
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.ref }}
