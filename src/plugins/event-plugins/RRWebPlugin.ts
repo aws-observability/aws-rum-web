@@ -1,3 +1,22 @@
+/**
+ * RRWebPlugin — Session replay plugin for CloudWatch RUM.
+ *
+ * Records DOM mutations and user interactions using rrweb, then batches
+ * and forwards them as SessionReplayEvent payloads to the RUM data plane.
+ *
+ * @prerelease This plugin is in prerelease state. It is NOT exposed in the
+ * top-level telemetry configuration and is NOT built into the default bundle.
+ * Users must manually import and install it via `eventPluginsToLoad`:
+ *
+ * ```ts
+ * import { RRWebPlugin } from 'aws-rum-web/plugins/event-plugins/RRWebPlugin';
+ *
+ * const config = {
+ *     eventPluginsToLoad: [new RRWebPlugin({ batchSize: 25 })]
+ * };
+ * ```
+ */
+
 import { InternalPlugin } from '../InternalPlugin';
 import { RRWEB_EVENT_TYPE } from '../utils/constant';
 import { InternalLogger } from '../../utils/InternalLogger';
@@ -5,23 +24,33 @@ import { record } from 'rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
 import type { SessionReplayEvent } from '../../events/session-replay-event';
 
+/** A single rrweb event as defined by the SessionReplayEvent schema. */
 type RRWebEvent = SessionReplayEvent['events'][number];
 
 export const RRWEB_PLUGIN_ID = 'rrweb';
 
+/** Configuration options for {@link RRWebPlugin}. */
 export type RRWebPluginConfig = {
-    additionalSampleRate: number; // 0-1, probability of recording a session, in addition to session sample rate
-    batchSize: number; // Number of events to batch before sending
-    flushInterval: number; // MS between automatic flushes
+    /** Probability (0–1) of recording replay for a session, applied on top of sessionSampleRate. */
+    additionalSampleRate: number;
+    /** Number of rrweb events to buffer before automatically flushing a batch. */
+    batchSize: number;
+    /** Milliseconds between automatic flushes of buffered events. */
+    flushInterval: number;
+    /** Options forwarded directly to the rrweb `record()` function. */
     recordOptions: recordOptions<unknown>;
 };
 
+/**
+ * Production-safe defaults. Privacy masking is enabled; heavy options
+ * (inlineImages, cross-origin iframes) are disabled.
+ */
 export const RRWEB_CONFIG_PROD: RRWebPluginConfig = {
     additionalSampleRate: 1.0,
     batchSize: 50,
     flushInterval: 5000,
     recordOptions: {
-        // Performance
+        // Performance — keep payload size manageable
         slimDOMOptions: 'all',
         inlineStylesheet: true,
         inlineImages: false,
@@ -33,11 +62,12 @@ export const RRWEB_CONFIG_PROD: RRWebPluginConfig = {
         maskTextSelector: '*'
     }
 };
+
+/** Development defaults — privacy masking disabled for easier debugging. */
 export const RRWEB_CONFIG_DEV: RRWebPluginConfig = {
     ...RRWEB_CONFIG_PROD,
     recordOptions: {
         ...RRWEB_CONFIG_PROD.recordOptions,
-        // Disable privacy masking for local development
         maskAllInputs: false,
         maskTextSelector: undefined,
         maskInputOptions: {}
@@ -46,8 +76,22 @@ export const RRWEB_CONFIG_DEV: RRWebPluginConfig = {
 
 const defaultConfig = RRWEB_CONFIG_PROD;
 
+/**
+ * Session replay plugin that records DOM snapshots and mutations via rrweb.
+ *
+ * @prerelease Not included in the default bundle. Must be imported and
+ * installed manually via `eventPluginsToLoad`.
+ *
+ * Lifecycle:
+ * 1. `load()` — receives PluginContext (inherited from InternalPlugin)
+ * 2. `enable()` — starts rrweb recording if session is sampled
+ * 3. Buffered events are flushed on batchSize threshold, flushInterval timer,
+ * or page unload (via the `flush()` lifecycle hook)
+ * 4. `disable()` — stops recording and flushes remaining events
+ */
 export class RRWebPlugin extends InternalPlugin {
     private config: RRWebPluginConfig;
+    /** Buffer of rrweb events waiting to be flushed. */
     private recordingEvents: RRWebEvent[] = [];
     private isRecording = false;
     private recordingStartTime: number | null = null;
@@ -57,6 +101,7 @@ export class RRWebPlugin extends InternalPlugin {
 
     constructor(config?: Partial<RRWebPluginConfig>) {
         super(RRWEB_PLUGIN_ID);
+        // Merge record options separately so individual fields can be overridden
         const recordOptions: recordOptions<unknown> = {
             ...defaultConfig.recordOptions,
             ...config?.recordOptions
@@ -70,13 +115,14 @@ export class RRWebPlugin extends InternalPlugin {
         });
     }
 
+    /** Start rrweb recording if the session passes both sample-rate checks. */
     enable(): void {
         if (this.enabled) {
             InternalLogger.info('RRWebPlugin already enabled');
             return;
         }
 
-        // Check if the current session is being recorded
+        // Gate on session-level sampling
         const session = this.context?.getSession();
         if (!session || !session.record) {
             InternalLogger.warn(
@@ -86,10 +132,10 @@ export class RRWebPlugin extends InternalPlugin {
                     sessionRecord: session?.record
                 }
             );
-            return; // Don't record if session is not being recorded
+            return;
         }
 
-        // Check if we should record this replay
+        // Gate on plugin-level additional sampling
         const randomValue = Math.random();
         if (randomValue > this.config.additionalSampleRate) {
             InternalLogger.warn(
@@ -99,7 +145,7 @@ export class RRWebPlugin extends InternalPlugin {
                     samplingRate: this.config.additionalSampleRate
                 }
             );
-            return; // Skip recording for this session
+            return;
         }
 
         this.enabled = true;
@@ -107,6 +153,7 @@ export class RRWebPlugin extends InternalPlugin {
         this.startRecording();
     }
 
+    /** Stop rrweb recording and flush any remaining buffered events. */
     disable(): void {
         if (!this.enabled) {
             InternalLogger.info('RRWebPlugin already disabled');
@@ -118,6 +165,10 @@ export class RRWebPlugin extends InternalPlugin {
         this.stopCurrentRecording();
     }
 
+    /**
+     * Handle manual start/stop commands.
+     * @param data - Object with `{ action: 'start' | 'stop' }`.
+     */
     record(data: unknown): void {
         const action = (data as { action?: string })?.action;
         if (action === 'start') {
@@ -130,9 +181,10 @@ export class RRWebPlugin extends InternalPlugin {
     }
 
     protected onload(): void {
-        // this.enable();
+        // Recording starts in enable(), not on load
     }
 
+    /** Initialize rrweb recording and start the periodic flush timer. */
     private startRecording(): void {
         this.recordingStartTime = Date.now();
         this.recordingEvents = [];
@@ -142,7 +194,7 @@ export class RRWebPlugin extends InternalPlugin {
             startTime: this.recordingStartTime
         });
 
-        // Start recording with rrweb
+        // rrweb.record() returns a stop function on success
         const stopFn: (() => void) | undefined = record<RRWebEvent>({
             ...(this.config.recordOptions as recordOptions<RRWebEvent>),
             emit: this.handleRRWebEvent.bind(this)
@@ -159,12 +211,13 @@ export class RRWebPlugin extends InternalPlugin {
             );
         }
 
-        // Set up periodic flush
+        // Periodic flush so events don't sit in the buffer indefinitely
         this.flushTimer = window.setInterval(() => {
-            this.flushEvents();
+            this.flush();
         }, this.config.flushInterval);
     }
 
+    /** Stop rrweb, clear the flush timer, and drain remaining events. */
     private stopCurrentRecording(): void {
         if (!this.isRecording) {
             InternalLogger.info(
@@ -176,24 +229,23 @@ export class RRWebPlugin extends InternalPlugin {
         InternalLogger.info('RRWebPlugin stopping current recording');
         this.isRecording = false;
 
-        // Stop recording
         if (this.stopRecording) {
             this.stopRecording();
             this.stopRecording = null;
             InternalLogger.info('RRWebPlugin rrweb recording stopped');
         }
 
-        // Clear flush timer
         if (this.flushTimer) {
             clearInterval(this.flushTimer);
             this.flushTimer = null;
             InternalLogger.info('RRWebPlugin flush timer cleared');
         }
 
-        // Flush any remaining events
-        this.flushEvents();
+        // Drain any remaining buffered events
+        this.flush();
     }
 
+    /** Buffer an incoming rrweb event; auto-flush when batchSize is reached. */
     private handleRRWebEvent(event: RRWebEvent): void {
         if (!this.isRecording) {
             return;
@@ -201,7 +253,6 @@ export class RRWebPlugin extends InternalPlugin {
 
         this.recordingEvents.push(event);
 
-        // Check if we need to flush due to batch size
         if (this.recordingEvents.length >= this.config.batchSize) {
             InternalLogger.info(
                 'RRWebPlugin flushing events due to batch size',
@@ -210,14 +261,23 @@ export class RRWebPlugin extends InternalPlugin {
                     batchSize: this.config.batchSize
                 }
             );
-            this.flushEvents();
+            this.flush();
         }
     }
 
-    private flushEvents(): void {
+    /**
+     * Drain the event buffer into a single {@link SessionReplayEvent} and
+     * record it via `context.record()`. No-op when the buffer is empty.
+     *
+     * Called automatically by the web client during page unload
+     * (via EventCache → PluginManager → flush lifecycle) so that
+     * buffered replay data is not lost. Also called internally on
+     * batchSize threshold, flushInterval timer, and disable().
+     */
+    flush(): void {
         if (this.recordingEvents.length === 0) {
             InternalLogger.info(
-                'RRWebPlugin flushEvents called but no events to flush'
+                'RRWebPlugin flushEvent called but no events to flush'
             );
             return;
         }
@@ -234,13 +294,12 @@ export class RRWebPlugin extends InternalPlugin {
             eventCount: events.length
         };
 
-        // Send to RUM with event type com.amazon.rum.rrweb
         this.context.record(RRWEB_EVENT_TYPE, eventData);
         InternalLogger.info('RRWebPlugin events sent to RUM', {
             eventType: RRWEB_EVENT_TYPE,
             eventCount: this.recordingEvents.length
         });
-        // Clear events after sending
+
         this.recordingEvents = [];
     }
 }

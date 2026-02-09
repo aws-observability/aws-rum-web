@@ -61,6 +61,13 @@ export class PluginManager {
     }
 
     /**
+     * Flush all plugins that have cached events.
+     */
+    public flush() {
+        this.plugins.forEach((p) => p.flush?.());
+    }
+
+    /**
      * Return if a plugin exists.
      *
      * @param pluginId a unique identifier for the plugin

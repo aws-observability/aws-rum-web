@@ -291,6 +291,7 @@ export class Orchestration {
             applicationId,
             applicationVersion
         );
+        this.eventCache.setPluginFlushHook(() => this.pluginManager.flush());
 
         InternalLogger.info(`RUM client initialized for app: ${applicationId}`);
         InternalLogger.info(

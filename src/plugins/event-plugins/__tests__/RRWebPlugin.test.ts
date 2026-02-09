@@ -261,4 +261,30 @@ describe('RRWebPlugin', () => {
 
         expect(stopFn).toHaveBeenCalled();
     });
+
+    test('flush sends buffered events via context.record', () => {
+        plugin.load(context);
+        plugin.enable();
+
+        const emitFn = mockRrwebRecord.mock.calls[0][0]!.emit!;
+        emitFn(mockEvent(2, 1000) as any);
+        emitFn(mockEvent(3, 2000) as any);
+
+        expect(record).not.toHaveBeenCalled();
+
+        plugin.flush();
+
+        expect(record).toHaveBeenCalledTimes(1);
+        const payload = record.mock.calls[0][1] as SessionReplayEvent;
+        expect(payload.eventCount).toBe(2);
+    });
+
+    test('flush does nothing when no buffered events', () => {
+        plugin.load(context);
+        plugin.enable();
+
+        plugin.flush();
+
+        expect(record).not.toHaveBeenCalled();
+    });
 });

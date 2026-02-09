@@ -43,4 +43,21 @@ describe('Plugins tests', () => {
         // @ts-ignore
         expect(context.record.mock.calls[0][0]).toEqual(DEMO_EVENT_TYPE);
     });
+
+    test('flush calls flush on plugins that implement it', async () => {
+        const pluginManager: PluginManager = new PluginManager(context);
+        const flushFn = jest.fn();
+        const pluginWithFlush = new DemoPlugin();
+        (pluginWithFlush as any).flush = flushFn;
+
+        const pluginWithoutFlush = new DemoPlugin();
+        (pluginWithoutFlush as any).getPluginId = () => 'demo2';
+
+        pluginManager.addPlugin(pluginWithFlush);
+        pluginManager.addPlugin(pluginWithoutFlush);
+
+        pluginManager.flush();
+
+        expect(flushFn).toHaveBeenCalledTimes(1);
+    });
 });
