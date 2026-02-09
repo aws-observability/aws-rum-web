@@ -5,6 +5,8 @@ import Box from '@cloudscape-design/components/box';
 import SegmentedControl from '@cloudscape-design/components/segmented-control';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
+import Link from '@cloudscape-design/components/link';
+import Popover from '@cloudscape-design/components/popover';
 import { RrwebPlayer } from './RrwebPlayer';
 import { PayloadItem } from './PayloadItem';
 import type { SessionMetadata, RumEvent, RawRequest } from '../types/session';
@@ -208,20 +210,91 @@ export function SessionReplayTab({
                         </div>
                     ) : (
                         <SpaceBetween size="m">
-                            <ColumnLayout columns={1}>
+                            <ColumnLayout columns={3} variant="text-grid">
                                 <div>
                                     <Box variant="awsui-key-label">
                                         Session ID
                                     </Box>
-                                    <div
-                                        style={{
-                                            fontFamily: 'monospace',
-                                            fontSize: '14px',
-                                            userSelect: 'all'
-                                        }}
+                                    <Box
+                                        variant="p"
+                                        fontSize="body-m"
+                                        fontWeight="bold"
                                     >
-                                        {selectedSessionId}
-                                    </div>
+                                        <span
+                                            style={{
+                                                fontFamily: 'monospace',
+                                                userSelect: 'all'
+                                            }}
+                                        >
+                                            {selectedSessionId}
+                                        </span>
+                                    </Box>
+                                </div>
+                                <div>
+                                    <Box variant="awsui-key-label">
+                                        Event Count
+                                    </Box>
+                                    <Box
+                                        variant="p"
+                                        fontSize="heading-l"
+                                        fontWeight="heavy"
+                                    >
+                                        {selectedRumEvents.length.toLocaleString()}
+                                    </Box>
+                                </div>
+                                <div>
+                                    <Box variant="awsui-key-label">
+                                        Cost{' '}
+                                        <Popover
+                                            header="CloudWatch RUM Pricing"
+                                            content={
+                                                <SpaceBetween size="xs">
+                                                    <Box variant="p">
+                                                        RUM web events are
+                                                        billed at $1.00 per
+                                                        100,000 events.
+                                                    </Box>
+                                                    <Link
+                                                        href="https://aws.amazon.com/cloudwatch/pricing/"
+                                                        external
+                                                    >
+                                                        View pricing
+                                                    </Link>
+                                                </SpaceBetween>
+                                            }
+                                            triggerType="custom"
+                                        >
+                                            <Box
+                                                color="text-status-info"
+                                                display="inline"
+                                                fontSize="body-s"
+                                            >
+                                                <span
+                                                    style={{
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    ⓘ
+                                                </span>
+                                            </Box>
+                                        </Popover>
+                                    </Box>
+                                    <Box
+                                        variant="p"
+                                        fontSize="heading-l"
+                                        fontWeight="heavy"
+                                    >
+                                        $
+                                        {(
+                                            selectedRumEvents.length / 100000
+                                        ).toFixed(4)}
+                                    </Box>
+                                    <Box
+                                        variant="small"
+                                        color="text-body-secondary"
+                                    >
+                                        $1.00 / 100K events
+                                    </Box>
                                 </div>
                             </ColumnLayout>
                             {selectedReplayEvents.length === 0 ? (

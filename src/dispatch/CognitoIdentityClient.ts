@@ -94,9 +94,7 @@ export class CognitoIdentityClient {
                     JSON.stringify({ IdentityId: getIdResponse.IdentityId })
                 );
             } catch (e) {
-                if (this.config?.debug) {
-                    InternalLogger.error('Failed to store identity:', e);
-                }
+                InternalLogger.error('Failed to store identity:', e);
             }
             return getIdResponse;
         } catch (e) {

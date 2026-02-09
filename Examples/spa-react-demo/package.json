@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.11.2",
-        "aws-rum-web": "^2.0.0",
+        "aws-rum-web": "file:../..",
         "lucide-react": "^0.563.0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",

@@ -2,7 +2,6 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { unpack } from '@rrweb/packer';
 import zlib from 'zlib';
 import { promisify } from 'util';
 
@@ -137,40 +136,7 @@ app.all(
                                 ? JSON.parse(event.details)
                                 : event.details;
 
-                        // Decompress events if they're compressed
-                        let events = details.events || [];
-
-                        // Check if events is a string (compressed by pack())
-                        if (typeof events === 'string') {
-                            try {
-                                const unpacked = unpack(events);
-                                // unpack() returns an object with numeric keys, convert to array
-                                events = Array.isArray(unpacked)
-                                    ? unpacked
-                                    : Object.values(unpacked);
-                                console.log(
-                                    'Decompressed session replay events',
-                                    {
-                                        sessionId: UserDetails?.sessionId,
-                                        compressedSize:
-                                            details.metadata?.compressedSize,
-                                        uncompressedSize:
-                                            details.metadata?.uncompressedSize,
-                                        eventsCount: events.length
-                                    }
-                                );
-                            } catch (unpackError) {
-                                console.error(
-                                    'Failed to decompress events:',
-                                    unpackError
-                                );
-                                // Keep original events
-                            }
-                        } else {
-                            console.log(
-                                'Session replay events not compressed (array format)'
-                            );
-                        }
+                        const events = details.events || [];
 
                         sessionReplayData = {
                             sessionId: UserDetails?.sessionId,

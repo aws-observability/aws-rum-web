@@ -2,3 +2,4 @@ src/events/*
 **/src/loader-npm-rum.ts
 **/src/loader-npm-rum-2.ts
 **/src/loader-npm-rum-w3c-format-enabled.ts
+tst/

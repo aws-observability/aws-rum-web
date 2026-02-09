@@ -120,6 +120,7 @@
         "@smithy/protocol-http": "^4.1.6",
         "@smithy/signature-v4": "^4.2.2",
         "@smithy/util-hex-encoding": "^3.0.0",
+        "rrweb": "2.0.0-alpha.4",
         "shimmer": "^1.2.1",
         "ua-parser-js": "^1.0.33",
         "uuid": "^9.0.0",

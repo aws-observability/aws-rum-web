@@ -24,3 +24,6 @@ app/smoke_w3c_format_enabled_local.html
 playwright-report/
 test-results/
 playwright/.cache/
+
+# Vibe coding
+.kiro

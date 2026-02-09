@@ -36,7 +36,8 @@ module.exports = merge(common, {
         loader_w3c_format_enabled: './src/loader/loader-w3c-format-enabled.js',
         loader_compression: './src/loader/loader-compression.js',
         loader_compression_disabled:
-            './src/loader/loader-compression-disabled.js'
+            './src/loader/loader-compression-disabled.js',
+        loader_session_replay: './src/loader/loader-session-replay.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json']
