@@ -219,11 +219,9 @@ export class SessionManager {
                     this.session = JSON.parse(atob(cookie)) as Session;
                     this.pageManager.resumeSession(this.session.page);
 
-                    if (this.config.debug) {
-                        InternalLogger.info(
-                            `Restored session: ${this.session.sessionId}`
-                        );
-                    }
+                    InternalLogger.info(
+                        `Restored session: ${this.session.sessionId}`
+                    );
                 } catch (e) {
                     // Error decoding or parsing the cookie -- ignore
                     InternalLogger.error('Failed to restore session', e);
@@ -261,14 +259,12 @@ export class SessionManager {
         );
         this.storeSessionAsCookie();
 
-        if (this.config.debug) {
-            InternalLogger.info(`Session start: ${this.session.sessionId}`);
+        InternalLogger.info(`Session start: ${this.session.sessionId}`);
 
-            if (!this.session.record) {
-                InternalLogger.warn(
-                    `Session is NOT sampled. Consider increasing sessionSampleRate to avoid data loss (currently ${this.config.sessionSampleRate})`
-                );
-            }
+        if (!this.session.record) {
+            InternalLogger.warn(
+                `Session is NOT sampled. Consider increasing sessionSampleRate to avoid data loss (currently ${this.config.sessionSampleRate})`
+            );
         }
 
         this.recordEvent(SESSION_START_EVENT_TYPE, {

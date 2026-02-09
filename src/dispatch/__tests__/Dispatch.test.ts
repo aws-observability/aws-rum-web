@@ -1127,4 +1127,62 @@ describe('Dispatch tests', () => {
         expect(DataPlaneClient).toHaveBeenCalled();
         expect(sendFetch).toHaveBeenCalledTimes(1);
     });
+
+    describe('clientBuilder', () => {
+        test('when custom clientBuilder is provided then compressionStrategy is passed', async () => {
+            const mockClientBuilder = jest.fn().mockReturnValue({
+                sendFetch: jest.fn().mockResolvedValue({}),
+                sendBeacon: jest.fn().mockResolvedValue({})
+            });
+
+            dispatch = new Dispatch(
+                Utils.APPLICATION_ID,
+                Utils.AWS_RUM_REGION,
+                Utils.AWS_RUM_ENDPOINT,
+                Utils.createDefaultEventCacheWithEvents(),
+                {
+                    ...DEFAULT_CONFIG,
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    clientBuilder: mockClientBuilder,
+                    compressionStrategy: { enabled: true }
+                }
+            );
+            dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+            expect(mockClientBuilder).toHaveBeenCalledWith(
+                Utils.AWS_RUM_ENDPOINT,
+                Utils.AWS_RUM_REGION,
+                expect.anything(),
+                { enabled: true }
+            );
+        });
+
+        test('when custom clientBuilder is provided with compression disabled then compressionStrategy is passed as disabled', async () => {
+            const mockClientBuilder = jest.fn().mockReturnValue({
+                sendFetch: jest.fn().mockResolvedValue({}),
+                sendBeacon: jest.fn().mockResolvedValue({})
+            });
+
+            dispatch = new Dispatch(
+                Utils.APPLICATION_ID,
+                Utils.AWS_RUM_REGION,
+                Utils.AWS_RUM_ENDPOINT,
+                Utils.createDefaultEventCacheWithEvents(),
+                {
+                    ...DEFAULT_CONFIG,
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
+                    clientBuilder: mockClientBuilder,
+                    compressionStrategy: { enabled: false }
+                }
+            );
+            dispatch.setAwsCredentials(Utils.createAwsCredentials());
+
+            expect(mockClientBuilder).toHaveBeenCalledWith(
+                Utils.AWS_RUM_ENDPOINT,
+                Utils.AWS_RUM_REGION,
+                expect.anything(),
+                { enabled: false }
+            );
+        });
+    });
 });
