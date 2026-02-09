@@ -1,65 +1,28 @@
 {
-    "name": "aws-rum-web",
+    "name": "aws-rum-web-monorepo",
     "version": "2.0.0",
-    "sideEffects": false,
-    "description": "The Amazon CloudWatch RUM web client.",
+    "private": true,
+    "description": "The Amazon CloudWatch RUM web client monorepo.",
     "license": "Apache-2.0",
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
-    "main": "dist/cjs/index.js",
-    "module": "dist/es/index.js",
-    "files": [
-        "dist/",
-        "CHANGELOG.md",
-        "NOTICE",
-        "LICENSE-THIRD-PARTY"
-    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/aws-observability/aws-rum-web.git"
     },
+    "workspaces": [
+        "packages/*"
+    ],
     "scripts": {
-        "server": "webpack-dev-server --config webpack/webpack.dev.js",
-        "start": "npm run server",
         "prepare": "husky install",
-        "pretest": "npm run build:schemas",
-        "test": "jest -c jest.unit.config.js",
-        "test:coverage": "npm run test -- --coverage --coverageThreshold='{\"global\":{\"statements\":80,\"branches\":70,\"functions\":70,\"lines\":80}}'",
+        "test": "npm test --workspace=packages/core",
+        "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/aws-rum-web",
         "build:schemas": "node scripts/generate-schema-ts.js",
-        "build:webpack:dev": "webpack --config webpack/webpack.dev.js",
-        "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
-        "build:dist:es": "tsc --project ./tsconfig.es.json",
-        "build:dist:cjs": "tsc --project ./tsconfig.cjs.json",
-        "build:assets": "npm-run-all -p build:dist:* build:webpack:prod",
-        "build": "npm-run-all -s build:schemas build:assets",
-        "build:dev": "npm-run-all -s build build:webpack:dev",
-        "build:version": "bash update-version.sh",
-        "release": "npm run build",
-        "version": "standard-version",
-        "lint": "eslint --ext .ts src/",
+        "lint": "eslint --ext .ts packages/core/src/",
         "lint:errors": "npm run lint -- --quiet",
         "lint:fix": "npm run lint -- --fix",
         "prettier": "npx prettier --check .",
         "prettier:fix": "npm run prettier -- --write",
-        "prepublishOnly": "npm run release",
-        "preinteg": "npm run build:dev",
-        "integ": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts",
-        "integ:firefox": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=firefox",
-        "integ:chrome": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=chromium",
-        "integ:webkit": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=webkit",
-        "integ:edge": "npm run build:dev && npx playwright test --config=playwright.integ.config.ts --project=msedge",
-        "preinteg:local:nightwatch": "http-server ./build/dev -s &",
-        "integ:local:nightwatch": "nightwatch",
-        "postinteg:local:nightwatch": "kill $(lsof -t -i:8080)",
-        "preinteg:local:nightwatch:chrome": "http-server ./build/dev -s &",
-        "integ:local:nightwatch:chrome": "nightwatch -e chrome",
-        "postinteg:local:nightwatch:chrome": "kill $(lsof -t -i:8080)",
-        "preinteg:local:nightwatch:firefox": "http-server ./build/dev -s &",
-        "integ:local:nightwatch:firefox": "nightwatch -e firefox",
-        "postinteg:local:nightwatch:firefox": "kill $(lsof -t -i:8080)",
-        "smoke:local:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version MONITOR_ID_2=$MONITOR_ID_2 npx playwright test --config=playwright.local.config.ts",
-        "smoke:local": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version MONITOR_ID_2=$MONITOR_ID_2 npx playwright test --config=playwright.local.config.ts --headed",
-        "smoke:headless": "cross-env URL=$URL MONITOR_ID=$MONITOR ENDPOINT=$ENDPOINT NAME=$NAME VERSION=$npm_package_version INSTALL_METHOD=$INSTALL_METHOD MONITOR_ID_2=$MONITOR_ID_2 npx playwright test --config=playwright.config.ts",
-        "prepare": "husky install"
+        "release": "npm run build"
     },
     "devDependencies": {
         "@aws-sdk/client-rum": "^3.76.0",
@@ -94,6 +57,7 @@
         "jest-mock-random": "^1.1.1",
         "jsdom": "^21.1.1",
         "json-schema-to-typescript": "^11.0.2",
+        "lerna": "^8.0.0",
         "lint-staged": "^13.3.0",
         "lodash": "^4.17.20",
         "nightwatch": "^2.0.6",
@@ -101,6 +65,7 @@
         "npm-run-all": "^4.1.5",
         "prettier": "2.8.4",
         "standard-version": "^9.3.2",
+        "terser-webpack-plugin": "^5.3.10",
         "ts-jest": "^29.0.3",
         "ts-loader": "^9.4.2",
         "typescript": "^4.8.4",
@@ -113,39 +78,12 @@
         "webpack-merge": "^6.0.1",
         "xhr-mock": "^2.5.1"
     },
-    "dependencies": {
-        "@aws-crypto/sha256-js": "^3.0.0",
-        "@aws-sdk/querystring-builder": "^3.36.0",
-        "@babel/runtime": "^7.16.0",
-        "@smithy/fetch-http-handler": "^4.1.0",
-        "@smithy/protocol-http": "^4.1.6",
-        "@smithy/signature-v4": "^4.2.2",
-        "@smithy/util-hex-encoding": "^3.0.0",
-        "rrweb": "2.0.0-alpha.4",
-        "shimmer": "^1.2.1",
-        "ua-parser-js": "^1.0.33",
-        "uuid": "^9.0.0",
-        "web-vitals": "^4.0.0"
-    },
     "lint-staged": {
         "*.ts": [
             "eslint --fix",
             "prettier --write"
         ],
         "*.{js,json,html,yml,md}": "prettier --write"
-    },
-    "jest": {
-        "setupFiles": [
-            "<rootDir>/tst/jest.setup.ts",
-            "jest-date-mock"
-        ],
-        "transform": {
-            ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-        },
-        "moduleFileExtensions": [
-            "ts",
-            "js"
-        ]
     },
     "browserslist": [
         "defaults"

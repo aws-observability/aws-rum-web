@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
     collectCoverage: !!process.env.BRAZIL_PACKAGE_NAME,
     coveragePathIgnorePatterns: ['__tests__', '__integ__', '/node_modules/'],
@@ -6,12 +8,12 @@ module.exports = {
     },
     moduleFileExtensions: ['js', 'json', 'node', 'ts'],
     testEnvironment: 'jest-environment-jsdom-global',
-    testMatch: ['**/__tests__/**/*.js', '**/__tests__/**/*.ts'],
+    testMatch: ['**/packages/core/src/**/__tests__/**/*.ts'],
     transform: {
         '^.+\\.tsx?$': [
             'ts-jest',
             {
-                tsconfig: 'tsconfig.unit.json'
+                tsconfig: path.resolve(__dirname, 'tsconfig.unit.json')
             }
         ]
     },

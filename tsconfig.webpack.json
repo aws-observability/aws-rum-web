@@ -1,9 +1,10 @@
 {
+    "extends": "./tsconfig.json",
     "compilerOptions": {
+        "baseUrl": "packages/core/src",
         "module": "es2020",
         "outDir": "./dist/webpack",
         "sourceMap": true
     },
-    "include": ["src/index-browser.ts"],
-    "extends": "./tsconfig"
+    "include": ["packages/core/src/index-browser.ts"]
 }

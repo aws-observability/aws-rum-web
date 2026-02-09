@@ -1,9 +1,8 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "baseUrl": "packages/core/src",
         "module": "commonjs",
         "outDir": "./dist/cjs"
     },
-    "include": ["packages/core/src/index.ts"]
+    "include": ["src/index.ts"]
 }

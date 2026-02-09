@@ -1,8 +1,9 @@
 const fs = require('fs');
 const jsonSchemaToTypescript = require('json-schema-to-typescript');
 
-const schemasDir = 'src/event-schemas';
-const typesDir = 'src/events';
+const path = require('path');
+const schemasDir = path.resolve(__dirname, '../packages/core/src/event-schemas');
+const typesDir = path.resolve(__dirname, '../packages/core/src/events');
 const schemaPattern = /(.*)\.json/;
 
 const compileFromSchema = (schemaFile) => {
