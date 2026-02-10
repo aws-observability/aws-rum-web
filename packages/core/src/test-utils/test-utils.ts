@@ -94,8 +94,7 @@ export const DEFAULT_CONFIG: Config = {
     telemetries: [],
     useBeacon: true,
     userIdRetentionDays: 30,
-    enableW3CTraceId: false,
-    legacySPASupport: false
+    enableW3CTraceId: false
 };
 
 export const createDefaultEventCache = (): EventCache => {

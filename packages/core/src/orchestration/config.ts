@@ -67,7 +67,6 @@ export interface Config {
     alias?: string;
     headers?: Record<string, string>;
     enableW3CTraceId: boolean;
-    legacySPASupport: boolean;
 }
 
 export interface PartialConfig

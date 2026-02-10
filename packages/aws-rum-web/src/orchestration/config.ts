@@ -78,7 +78,6 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
-        legacySPASupport: false,
         ...internalConfigOverrides
     };
 };

@@ -22,7 +22,10 @@
         "lint:fix": "npm run lint -- --fix",
         "prettier": "npx prettier --check .",
         "prettier:fix": "npm run prettier -- --write",
-        "release": "npm run build"
+        "release": "npm run build",
+        "stats": "node scripts/bundle-stats.js --both",
+        "stats:full": "node scripts/bundle-stats.js --full",
+        "stats:slim": "node scripts/bundle-stats.js --slim"
     },
     "devDependencies": {
         "@aws-sdk/client-rum": "^3.76.0",

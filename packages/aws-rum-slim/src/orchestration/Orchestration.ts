@@ -1,22 +1,7 @@
 import { InternalPluginContext } from '@aws-rum-web/core/plugins/types';
-import { InternalPlugin } from '@aws-rum-web/core/plugins/InternalPlugin';
 import { PluginManager } from '@aws-rum-web/core/plugins/PluginManager';
-import {
-    DomEventPlugin,
-    DOM_EVENT_PLUGIN_ID,
-    TargetDomEvent
-} from '@aws-rum-web/core/plugins/event-plugins/DomEventPlugin';
-import {
-    JsErrorPlugin,
-    JS_ERROR_EVENT_PLUGIN_ID
-} from '@aws-rum-web/core/plugins/event-plugins/JsErrorPlugin';
 import { EventCache } from '@aws-rum-web/core/event-cache/EventCache';
 import { Dispatch } from '@aws-rum-web/core/dispatch/Dispatch';
-import { NavigationPlugin } from '@aws-rum-web/core/plugins/event-plugins/NavigationPlugin';
-import { ResourcePlugin } from '@aws-rum-web/core/plugins/event-plugins/ResourcePlugin';
-import { WebVitalsPlugin } from '@aws-rum-web/core/plugins/event-plugins/WebVitalsPlugin';
-import { XhrPlugin } from '@aws-rum-web/core/plugins/event-plugins/XhrPlugin';
-import { FetchPlugin } from '@aws-rum-web/core/plugins/event-plugins/FetchPlugin';
 import { PageViewPlugin } from '@aws-rum-web/core/plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '@aws-rum-web/core/sessions/PageManager';
 import { INSTALL_MODULE } from '@aws-rum-web/core/utils/constants';
@@ -27,7 +12,6 @@ import {
     type Config,
     type PartialConfig,
     type CookieAttributes,
-    type Telemetry,
     type PageIdFormat
 } from '@aws-rum-web/core/orchestration/config';
 
@@ -35,18 +19,10 @@ export {
     type Config,
     type PartialConfig,
     type CookieAttributes,
-    type Telemetry,
     type PageIdFormat
 } from '@aws-rum-web/core/orchestration/config';
 
 export type PartialCookieAttributes = Partial<CookieAttributes>;
-
-export enum TelemetryEnum {
-    Errors = 'errors',
-    Performance = 'performance',
-    Interaction = 'interaction',
-    Http = 'http'
-}
 
 export enum PageIdFormatEnum {
     Path = 'PATH',
@@ -56,12 +32,6 @@ export enum PageIdFormatEnum {
 
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
-
-type PluginInitializer = (config: object) => InternalPlugin[];
-
-interface TelemetriesFunctor {
-    [key: string]: PluginInitializer;
-}
 
 const defaultCookieAttributes = (): CookieAttributes => {
     return {
@@ -92,7 +62,7 @@ const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         pageIdFormat: PageIdFormatEnum.Path,
         pagesToExclude: [],
         pagesToInclude: [/.*/],
-        signing: false, // Slim: always unsigned
+        signing: false,
         recordResourceUrl: true,
         retries: 2,
         routeChangeComplete: 100,
@@ -105,14 +75,15 @@ const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
-        legacySPASupport: false,
         candidatesCacheSize: 10
     };
 };
 
 /**
- * Slim orchestrator — no auth/signing dependencies.
- * Use with a proxy endpoint (signing: false).
+ * Slim orchestrator — no auth/signing dependencies, no built-in telemetry plugins.
+ *
+ * Only PageViewPlugin loads by default. Pass additional plugins via
+ * `eventPluginsToLoad` or call `addPlugin()` at runtime.
  */
 export class Orchestration {
     private pluginManager: PluginManager;
@@ -143,7 +114,7 @@ export class Orchestration {
             ...{ fetchFunction: fetch },
             ...defaultConfig(cookieAttributes),
             ...partialConfig,
-            signing: false // Force unsigned — slim has no signing support
+            signing: false
         } as Config;
 
         this.config.endpoint = partialConfig.endpoint
@@ -169,7 +140,6 @@ export class Orchestration {
             this.eventCache,
             this.config
         );
-        // No auth or signing injection — slim distribution
 
         this.pluginManager = this.initPluginManager(
             applicationId,
@@ -223,14 +193,11 @@ export class Orchestration {
     }
 
     public recordError(error: any) {
-        this.pluginManager.record(JS_ERROR_EVENT_PLUGIN_ID, error);
+        this.pluginManager.record('com.amazonaws.rum.js-error', error);
     }
 
-    public registerDomEvents(events: TargetDomEvent[]) {
-        this.pluginManager.updatePlugin<TargetDomEvent[]>(
-            DOM_EVENT_PLUGIN_ID,
-            events
-        );
+    public registerDomEvents(events: any[]) {
+        this.pluginManager.updatePlugin('com.amazonaws.rum.dom-event', events);
     }
 
     public recordEvent(eventType: string, eventData: object) {
@@ -241,13 +208,6 @@ export class Orchestration {
         applicationId: string,
         applicationVersion: string
     ) {
-        const BUILTIN_PLUGINS: InternalPlugin[] =
-            this.constructBuiltinPlugins();
-        const PLUGINS: Plugin[] = [
-            ...BUILTIN_PLUGINS,
-            ...this.config.eventPluginsToLoad
-        ];
-
         const pluginContext: InternalPluginContext = {
             applicationId,
             applicationVersion,
@@ -265,54 +225,10 @@ export class Orchestration {
             pluginManager.addPlugin(new PageViewPlugin());
         }
 
-        PLUGINS.forEach((p) => {
+        this.config.eventPluginsToLoad.forEach((p) => {
             pluginManager.addPlugin(p);
         });
 
         return pluginManager;
-    }
-
-    private constructBuiltinPlugins(): InternalPlugin[] {
-        let plugins: InternalPlugin[] = [];
-        const functor: TelemetriesFunctor = this.telemetryFunctor();
-
-        this.config.telemetries.forEach((type) => {
-            if (typeof type === 'string' && functor[type.toLowerCase()]) {
-                plugins = [...plugins, ...functor[type.toLowerCase()]({})];
-            } else if (
-                Array.isArray(type) &&
-                functor[(type[0] as string).toLowerCase()]
-            ) {
-                plugins = [
-                    ...plugins,
-                    ...functor[(type[0] as string).toLowerCase()](
-                        type[1] as object
-                    )
-                ];
-            }
-        });
-
-        return plugins;
-    }
-
-    private telemetryFunctor(): TelemetriesFunctor {
-        return {
-            [TelemetryEnum.Errors]: (config: object): InternalPlugin[] => {
-                return [new JsErrorPlugin(config)];
-            },
-            [TelemetryEnum.Performance]: (config: object): InternalPlugin[] => {
-                return [
-                    new NavigationPlugin(config),
-                    new ResourcePlugin(config),
-                    new WebVitalsPlugin(config)
-                ];
-            },
-            [TelemetryEnum.Interaction]: (config: object): InternalPlugin[] => {
-                return [new DomEventPlugin(config)];
-            },
-            [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
-                return [new XhrPlugin(config), new FetchPlugin(config)];
-            }
-        };
     }
 }
