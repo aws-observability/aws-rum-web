@@ -19,13 +19,17 @@ const enableDispatch = jest.fn();
 const disableDispatch = jest.fn();
 const setAwsCredentials = jest.fn();
 const setCognitoCredentials = jest.fn();
+const setCognitoCredentialProviderFactory = jest.fn();
+const setSigningConfigFactory = jest.fn();
 
 jest.mock('@aws-rum-web/core/dispatch/Dispatch', () => ({
     Dispatch: jest.fn().mockImplementation(() => ({
         enable: enableDispatch,
         disable: disableDispatch,
         setAwsCredentials,
-        setCognitoCredentials
+        setCognitoCredentials,
+        setCognitoCredentialProviderFactory,
+        setSigningConfigFactory
     }))
 }));
 

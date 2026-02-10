@@ -106,69 +106,63 @@ Validation checklist:
 
 ---
 
-## Phase 2b: Extract Slim Distribution
+## Phase 2b: Extract Slim Distribution (COMPLETED)
 
 **Goal**: Create `aws-rum-slim` — a distribution without auth/signing dependencies (~30KB gzip vs current 44KB, or ~21KB gzip if ua-parser also excluded).
 
 **Approach**: Dependency injection. Remove static auth imports from `Dispatch.ts` and `DataPlaneClient.ts`. Distribution packages inject (or don't inject) auth at the orchestration layer.
 
-**Auth dependency chain being severed:**
+**Auth dependency chain severed:**
 
 ```
-Dispatch.ts ──static import──> BasicAuthentication, EnhancedAuthentication  ← REMOVE
-DataPlaneClient.ts ──static import──> SignatureV4, Sha256                   ← EXTRACT
+Dispatch.ts ──static import──> BasicAuthentication, EnhancedAuthentication  ← REMOVED
+DataPlaneClient.ts ──static import──> SignatureV4, Sha256                   ← EXTRACTED
 ```
 
-### Task 2b.1 — Make Dispatch auth-agnostic
-
-Remove static imports of `BasicAuthentication`/`EnhancedAuthentication` from `Dispatch.ts`. Change `setCognitoCredentials()` to accept a credential provider directly (already partially there via `setAwsCredentials()`), removing the internal construction of auth classes.
+✅ Task 2b.1 — Made Dispatch auth-agnostic via `CognitoCredentialProviderFactory` DI. Removed `BasicAuthentication`/`EnhancedAuthentication` static imports. `aws-rum-web` Orchestration injects the factory.
 
 Files changed:
 
--   **Modified**: `packages/core/src/dispatch/Dispatch.ts` — remove `BasicAuthentication`/`EnhancedAuthentication` imports; `setCognitoCredentials()` removed or changed to accept a pre-built credential provider
--   **Modified**: `packages/aws-rum-web/src/orchestration/Orchestration.ts` — construct `BasicAuthentication`/`EnhancedAuthentication` here, pass credential provider to `Dispatch.setAwsCredentials()`
--   **Modified**: Dispatch tests — update mocks accordingly
+-   **Modified**: `packages/core/src/dispatch/Dispatch.ts` — removed auth imports; added `CognitoCredentialProviderFactory` and `SigningConfigFactory` types; `setCognitoCredentials()` delegates to injected factory
+-   **Modified**: `packages/aws-rum-web/src/orchestration/Orchestration.ts` — injects cognito factory using `BasicAuthentication`/`EnhancedAuthentication`
+-   **Modified**: `packages/core/src/dispatch/__tests__/Dispatch.test.ts` — replaced auth class mocks with `mockCognitoFactory`
+-   **Modified**: `packages/aws-rum-web/src/orchestration/__tests__/Orchestration.test.ts` — added `setCognitoCredentialProviderFactory` and `setSigningConfigFactory` to Dispatch mock
+-   **Modified**: `packages/core/src/index.ts` — exports `CognitoCredentialProviderFactory`, `SigningConfigFactory`, `SigningConfig`
 
-### Task 2b.2 — Extract signing from DataPlaneClient
-
-Split `DataPlaneClient` so core version sends unsigned requests only. `aws-rum-web` provides a signing `clientBuilder` that wraps with `SignatureV4`/`Sha256`.
-
-Files changed:
-
--   **Modified**: `packages/core/src/dispatch/DataPlaneClient.ts` — remove `SignatureV4`, `Sha256`, `@smithy/protocol-http` imports; unsigned-only requests
--   **New**: `packages/aws-rum-web/src/dispatch/SigningClientBuilder.ts` — signing `clientBuilder` that imports `SignatureV4`, `Sha256`, constructs a signing `DataPlaneClient`
--   **Modified**: `packages/aws-rum-web/src/orchestration/Orchestration.ts` — pass signing `clientBuilder` via config
--   **Modified**: DataPlaneClient tests — split into unsigned (core) and signed (aws-rum-web) tests
-
-### Task 2b.3 — Create aws-rum-slim package
-
-Create the slim distribution package with its own Orchestration (no auth injection), webpack config, and CDN entry.
+✅ Task 2b.2 — Extracted signing from DataPlaneClient via `SigningConfig` DI. Core sends unsigned requests only. `aws-rum-web` provides signing via `createSigningConfig()`.
 
 Files changed:
 
--   **New**: `packages/aws-rum-slim/package.json` — deps: `@aws-rum-web/core` only
--   **New**: `packages/aws-rum-slim/tsconfig.json`
--   **New**: `packages/aws-rum-slim/src/index.ts` — exports slim Orchestration
--   **New**: `packages/aws-rum-slim/src/index-browser.ts` — CDN entry → `cwr-slim.js`
--   **New**: `packages/aws-rum-slim/src/orchestration/Orchestration.ts` — no auth injection, no signing clientBuilder
--   **New**: `packages/aws-rum-slim/webpack/` — webpack configs producing `cwr-slim.js`
+-   **Modified**: `packages/core/src/dispatch/DataPlaneClient.ts` — removed `SignatureV4`, `Sha256`, `@smithy/util-hex-encoding` imports; accepts optional `SigningConfig` via constructor
+-   **New**: `packages/aws-rum-web/src/dispatch/signing.ts` — `createSigningConfig()` using `SignatureV4`/`Sha256`
+-   **Modified**: `packages/aws-rum-web/src/orchestration/Orchestration.ts` — injects `createSigningConfig` via `dispatch.setSigningConfigFactory()`
+-   **Modified**: `packages/core/src/dispatch/__tests__/DataPlaneClient.test.ts` — creates `SigningConfig` explicitly in tests
+-   **Modified**: `packages/core/src/dispatch/__tests__/BeaconHttpHandler.test.ts` — passes `SigningConfig` to `DataPlaneClient`
 
-### Task 2b.4 — Validate Phase 2b
+✅ Task 2b.3 — Created `aws-rum-slim` package with no auth/signing injection.
 
-```bash
-npm install
-npm test                       # All existing tests pass
-npm run build                  # Both cwr.js and cwr-slim.js produced
-```
+Files created:
 
-Validation checklist:
+-   `packages/aws-rum-slim/package.json` — deps: `@aws-rum-web/core` only
+-   `packages/aws-rum-slim/tsconfig.json`, `tsconfig.es.json`, `tsconfig.cjs.json`
+-   `packages/aws-rum-slim/src/index.ts` — same public API minus `setAwsCredentials`
+-   `packages/aws-rum-slim/src/index-browser.ts` — CDN entry → `cwr-slim.js`
+-   `packages/aws-rum-slim/src/CommandQueue.ts` — no `setAwsCredentials`, forces `signing: false`
+-   `packages/aws-rum-slim/src/orchestration/Orchestration.ts` — no auth/signing injection
+-   `packages/aws-rum-slim/webpack/webpack.common.js`, `webpack.prod.js` — produces `cwr-slim.js`
 
--   [ ] All existing tests pass (618+)
--   [ ] `cwr.js` bundle size unchanged (~159KB / ~44KB gzip)
--   [ ] `cwr-slim.js` bundle size ~21-30KB gzip (depending on which plugins included)
--   [ ] `cwr-slim.js` works with `signing: false` (proxy endpoint)
--   [ ] `cwr.js` works with `signing: true` (Cognito auth)
--   [ ] `npm run lint` — no new errors
+✅ Task 2b.4 — Validated:
+
+| Check | Result |
+| --- | --- |
+| `npm install` succeeds | ✅ |
+| `npm ls @aws-rum-web/core` shows workspace symlinks | ✅ core, aws-rum-web, aws-rum-slim all linked |
+| All existing tests pass | ✅ 618 tests, 39 suites |
+| `cwr.js` bundle size | 157KB / 43KB gzip |
+| `cwr-slim.js` bundle size | 113KB / 33KB gzip (−24% gzip) |
+| Auth/signing strings in slim bundle | ✅ 0 matches |
+| Auth/signing strings in full bundle | ✅ present |
+| `npm run lint` | ✅ 0 errors (884 pre-existing warnings) |
 
 ---
 
@@ -196,7 +190,7 @@ Validation checklist:
 ```
 Phase 0 (done) → Phase 1 (done): 1.1 → 1.2 → 1.3 → 1.4 → 1.5
                  Phase 2a (done): 2a.1 → 2a.2 → 2a.3
-                 Phase 2b: 2b.1 → 2b.2 → 2b.3 → 2b.4
+                 Phase 2b (done): 2b.1 → 2b.2 → 2b.3 → 2b.4
                  Phase 3: 3.1 → 3.2 → 3.3 (after Phase 2b)
 ```
 

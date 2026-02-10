@@ -1,0 +1,28 @@
+{
+    "name": "aws-rum-slim",
+    "version": "2.0.0",
+    "description": "Lightweight Amazon CloudWatch RUM web client (no auth/signing dependencies).",
+    "license": "Apache-2.0",
+    "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
+    "main": "dist/cjs/index.js",
+    "module": "dist/es/index.js",
+    "types": "dist/es/index.d.ts",
+    "sideEffects": false,
+    "files": [
+        "dist/",
+        "CHANGELOG.md",
+        "NOTICE",
+        "LICENSE-THIRD-PARTY"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aws-observability/aws-rum-web.git"
+    },
+    "scripts": {
+        "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
+        "build": "npm-run-all -s build:webpack:prod"
+    },
+    "dependencies": {
+        "@aws-rum-web/core": "2.0.0"
+    }
+}

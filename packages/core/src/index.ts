@@ -8,6 +8,9 @@ export {
     PageIdFormat
 } from './orchestration/config';
 export { ClientBuilder } from './dispatch/Dispatch';
+export { CognitoCredentialProviderFactory } from './dispatch/Dispatch';
+export { SigningConfigFactory } from './dispatch/Dispatch';
+export { SigningConfig } from './dispatch/DataPlaneClient';
 export { PageAttributes } from './sessions/PageManager';
 export { Plugin } from './plugins/Plugin';
 export { PluginContext } from './plugins/types';

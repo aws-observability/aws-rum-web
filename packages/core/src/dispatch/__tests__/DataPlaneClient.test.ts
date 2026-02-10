@@ -1,11 +1,14 @@
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
-import { FetchHttpHandler } from '@smithy/fetch-http-handler';
-import { DataPlaneClient } from '../DataPlaneClient';
+import { DataPlaneClient, SigningConfig } from '../DataPlaneClient';
 import { HttpRequest } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
 import { HeaderBag } from '@aws-sdk/types';
 import * as compression from '../compression';
+import { SignatureV4 } from '@smithy/signature-v4';
+import { Sha256 } from '@aws-crypto/sha256-js';
+import { toHex } from '@smithy/util-hex-encoding';
+import { RequestPresigningArguments } from '@aws-sdk/types';
 
 const beaconHandler = jest.fn(() => Promise.resolve());
 jest.mock('../BeaconHttpHandler', () => ({
@@ -14,11 +17,6 @@ jest.mock('../BeaconHttpHandler', () => ({
         .mockImplementation(() => ({ handle: beaconHandler }))
 }));
 const fetchHandler = jest.fn(() => Promise.resolve());
-jest.mock('@smithy/fetch-http-handler', () => ({
-    FetchHttpHandler: jest
-        .fn()
-        .mockImplementation(() => ({ handle: fetchHandler }))
-}));
 
 interface Config {
     signing: boolean;
@@ -29,20 +27,57 @@ interface Config {
 
 const defaultConfig = { signing: true, endpoint: Utils.AWS_RUM_ENDPOINT };
 
+const SERVICE = 'rum';
+const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
+
+const createTestSigningConfig = (region: string): SigningConfig => {
+    const credentials = Utils.createAwsCredentials();
+    const awsSigV4 = new SignatureV4({
+        applyChecksum: true,
+        credentials,
+        region,
+        service: SERVICE,
+        uriEscapePath: true,
+        sha256: Sha256
+    });
+    return {
+        sign: async (request: HttpRequest) =>
+            (await awsSigV4.sign(request)) as HttpRequest,
+        presign: async (request: HttpRequest) =>
+            (await awsSigV4.presign(
+                request,
+                REQUEST_PRESIGN_ARGS
+            )) as HttpRequest,
+        hashAndEncode: async (payload: string | Uint8Array) => {
+            const sha256 = new Sha256();
+            sha256.update(payload);
+            return toHex(await sha256.digest()).toLowerCase();
+        }
+    };
+};
+
 const createDataPlaneClient = (
     config: Config = defaultConfig
 ): DataPlaneClient => {
-    return new DataPlaneClient({
-        fetchRequestHandler: new FetchHttpHandler(),
-        beaconRequestHandler: new BeaconHttpHandler(),
-        endpoint: config.endpoint,
-        region: Utils.AWS_RUM_REGION,
-        credentials: config.signing ? Utils.createAwsCredentials() : undefined,
-        headers: config.headers ? config.headers : undefined,
-        compressionStrategy: config.compressionEnabled
-            ? { enabled: true }
-            : undefined
-    });
+    const signing = config.signing
+        ? createTestSigningConfig(Utils.AWS_RUM_REGION)
+        : undefined;
+    return new DataPlaneClient(
+        {
+            fetchRequestHandler: { handle: fetchHandler } as any,
+            beaconRequestHandler: new BeaconHttpHandler(),
+            endpoint: config.endpoint,
+            region: Utils.AWS_RUM_REGION,
+            credentials: config.signing
+                ? Utils.createAwsCredentials()
+                : undefined,
+            headers: config.headers ? config.headers : undefined,
+            compressionStrategy: config.compressionEnabled
+                ? { enabled: true }
+                : undefined
+        },
+        signing
+    );
 };
 
 describe('DataPlaneClient tests', () => {
@@ -55,13 +90,6 @@ describe('DataPlaneClient tests', () => {
         BeaconHttpHandler.mockImplementation(() => {
             return {
                 handle: beaconHandler
-            };
-        });
-
-        // @ts-ignore
-        FetchHttpHandler.mockImplementation(() => {
-            return {
-                handle: fetchHandler
             };
         });
     });

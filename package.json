@@ -15,7 +15,7 @@
     "scripts": {
         "prepare": "husky install",
         "test": "npm test --workspace=packages/core",
-        "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/aws-rum-web",
+        "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/aws-rum-web && npm run build --workspace=packages/aws-rum-slim",
         "build:schemas": "node scripts/generate-schema-ts.js",
         "lint": "eslint --ext .ts packages/core/src/",
         "lint:errors": "npm run lint -- --quiet",

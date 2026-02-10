@@ -5,8 +5,6 @@ import { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
 import { EventCache } from '../../event-cache/EventCache';
 import { CRED_KEY, IDENTITY_KEY } from '../../utils/constants';
-import { BasicAuthentication } from '../BasicAuthentication';
-import { EnhancedAuthentication } from '../EnhancedAuthentication';
 
 global.fetch = mockFetch;
 const sendFetch = jest.fn(() => Promise.resolve());
@@ -20,17 +18,23 @@ jest.mock('../DataPlaneClient', () => ({
 const mockBasicAuthProvider = jest.fn();
 const mockEnhancedAuthProvider = jest.fn();
 
-jest.mock('../BasicAuthentication', () => ({
-    BasicAuthentication: jest.fn().mockImplementation(() => ({
-        ChainAnonymousCredentialsProvider: mockBasicAuthProvider
-    }))
-}));
-
-jest.mock('../EnhancedAuthentication', () => ({
-    EnhancedAuthentication: jest.fn().mockImplementation(() => ({
-        ChainAnonymousCredentialsProvider: mockEnhancedAuthProvider
-    }))
-}));
+/**
+ * Helper to create a mock CognitoCredentialProviderFactory.
+ * Returns basic provider when guestRoleArn is provided, enhanced otherwise.
+ */
+const mockCognitoFactory = jest.fn(
+    (
+        _config: any,
+        _appId: string,
+        _identityPoolId: string,
+        guestRoleArn?: string
+    ) => {
+        if (_identityPoolId && guestRoleArn) {
+            return mockBasicAuthProvider;
+        }
+        return mockEnhancedAuthProvider;
+    }
+);
 
 let visibilityState = 'visible';
 Object.defineProperty(document, 'visibilityState', {
@@ -710,6 +714,7 @@ describe('Dispatch tests', () => {
                 }
             }
         );
+        dispatch.setCognitoCredentialProviderFactory(mockCognitoFactory);
         dispatch.setAwsCredentials(mockCredentialProvider);
 
         // Run
@@ -745,6 +750,7 @@ describe('Dispatch tests', () => {
             Utils.createDefaultEventCacheWithEvents(),
             config
         );
+        dispatch.setCognitoCredentialProviderFactory(mockCognitoFactory);
 
         // Run
         dispatch.setCognitoCredentials(
@@ -753,11 +759,12 @@ describe('Dispatch tests', () => {
         );
 
         // Assert
-        expect(BasicAuthentication).toHaveBeenCalledWith(
+        expect(mockCognitoFactory).toHaveBeenCalledWith(
             config,
-            Utils.APPLICATION_ID
+            Utils.APPLICATION_ID,
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
         );
-        expect(EnhancedAuthentication).not.toHaveBeenCalled();
         expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
             mockBasicAuthProvider
         );
@@ -783,6 +790,7 @@ describe('Dispatch tests', () => {
             Utils.createDefaultEventCacheWithEvents(),
             config
         );
+        dispatch.setCognitoCredentialProviderFactory(mockCognitoFactory);
 
         // Run
         dispatch.setCognitoCredentials(
@@ -790,11 +798,12 @@ describe('Dispatch tests', () => {
         );
 
         // Assert
-        expect(EnhancedAuthentication).toHaveBeenCalledWith(
+        expect(mockCognitoFactory).toHaveBeenCalledWith(
             config,
-            Utils.APPLICATION_ID
+            Utils.APPLICATION_ID,
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            undefined
         );
-        expect(BasicAuthentication).not.toHaveBeenCalled();
         expect(setAwsCredentialsSpy).toHaveBeenCalledWith(
             mockEnhancedAuthProvider
         );
@@ -830,6 +839,7 @@ describe('Dispatch tests', () => {
                 }
             }
         );
+        dispatch.setCognitoCredentialProviderFactory(mockCognitoFactory);
         dispatch.setAwsCredentials(mockCredentialProvider);
 
         // Run

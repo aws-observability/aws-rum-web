@@ -5,5 +5,5 @@
         "declaration": true,
         "outDir": "./dist/es"
     },
-    "include": ["src/index.ts"]
+    "include": ["src/**/*"]
 }

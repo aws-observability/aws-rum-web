@@ -1,22 +1,61 @@
 import * as Utils from '../../test-utils/test-utils';
 import { BeaconHttpHandler } from '../BeaconHttpHandler';
-import { DataPlaneClient } from '../DataPlaneClient';
-import { HttpHandler, HttpResponse } from '@smithy/protocol-http';
+import { DataPlaneClient, SigningConfig } from '../DataPlaneClient';
+import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { advanceTo } from 'jest-date-mock';
+import { SignatureV4 } from '@smithy/signature-v4';
+import { Sha256 } from '@aws-crypto/sha256-js';
+import { toHex } from '@smithy/util-hex-encoding';
+import { RequestPresigningArguments } from '@aws-sdk/types';
 
 const sendBeacon = jest.fn(() => true);
+
+const SERVICE = 'rum';
+const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
+
+const createTestSigningConfig = (): SigningConfig => {
+    const credentials = Utils.createAwsCredentials();
+    const awsSigV4 = new SignatureV4({
+        applyChecksum: true,
+        credentials,
+        region: Utils.AWS_RUM_REGION,
+        service: SERVICE,
+        uriEscapePath: true,
+        sha256: Sha256
+    });
+    return {
+        sign: async (request: HttpRequest) =>
+            (await awsSigV4.sign(request)) as HttpRequest,
+        presign: async (request: HttpRequest) =>
+            (await awsSigV4.presign(
+                request,
+                REQUEST_PRESIGN_ARGS
+            )) as HttpRequest,
+        hashAndEncode: async (payload: string | Uint8Array) => {
+            const sha256 = new Sha256();
+            sha256.update(payload);
+            return toHex(await sha256.digest()).toLowerCase();
+        }
+    };
+};
 
 const createDataPlaneClient = (
     config: { signing: boolean } = { signing: true }
 ): DataPlaneClient => {
     const beaconHandler = new BeaconHttpHandler();
-    return new DataPlaneClient({
-        fetchRequestHandler: {} as HttpHandler,
-        beaconRequestHandler: beaconHandler,
-        endpoint: Utils.AWS_RUM_ENDPOINT,
-        region: Utils.AWS_RUM_REGION,
-        credentials: config.signing ? Utils.createAwsCredentials() : undefined
-    });
+    const signing = config.signing ? createTestSigningConfig() : undefined;
+    return new DataPlaneClient(
+        {
+            fetchRequestHandler: {} as HttpHandler,
+            beaconRequestHandler: beaconHandler,
+            endpoint: Utils.AWS_RUM_ENDPOINT,
+            region: Utils.AWS_RUM_REGION,
+            credentials: config.signing
+                ? Utils.createAwsCredentials()
+                : undefined
+        },
+        signing
+    );
 };
 
 describe('BeaconHttpHandler tests', () => {

@@ -4,7 +4,7 @@ import {
     HttpResponse
 } from '@aws-sdk/types';
 import { EventCache } from '../event-cache/EventCache';
-import { DataPlaneClient } from './DataPlaneClient';
+import { DataPlaneClient, SigningConfig } from './DataPlaneClient';
 import { BeaconHttpHandler } from './BeaconHttpHandler';
 import { FetchHttpHandler } from './FetchHttpHandler';
 import { PutRumEventsRequest } from './dataplane';
@@ -13,8 +13,6 @@ import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
 import { InternalLogger } from '../utils/InternalLogger';
 import { CRED_KEY, IDENTITY_KEY } from '../utils/constants';
-import { BasicAuthentication } from '../dispatch/BasicAuthentication';
-import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -33,6 +31,26 @@ export type ClientBuilder = (
     credentials?: AwsCredentialIdentity | AwsCredentialIdentityProvider,
     compressionStrategy?: { enabled: boolean }
 ) => DataPlaneClient;
+
+/**
+ * A factory that creates a credential provider for Cognito authentication.
+ * Injected by distribution packages (e.g., aws-rum-web) that include auth.
+ */
+export type CognitoCredentialProviderFactory = (
+    config: Config,
+    applicationId: string,
+    identityPoolId: string,
+    guestRoleArn?: string
+) => AwsCredentialIdentityProvider;
+
+/**
+ * A factory that creates a SigningConfig for request signing.
+ * Injected by distribution packages that include signing support.
+ */
+export type SigningConfigFactory = (
+    credentials: AwsCredentialIdentity | AwsCredentialIdentityProvider,
+    region: string
+) => SigningConfig;
 
 export class Dispatch {
     private applicationId: string;
@@ -54,6 +72,8 @@ export class Dispatch {
     private shouldPurgeCredentials = true;
     private credentialStorageKey: string;
     private identityStorageKey: string;
+    private cognitoCredentialProviderFactory?: CognitoCredentialProviderFactory;
+    private signingConfigFactory?: SigningConfigFactory;
 
     constructor(
         applicationId: string,
@@ -140,21 +160,43 @@ export class Dispatch {
         }
     }
 
+    /**
+     * Set the factory used to create Cognito credential providers.
+     * This is injected by distribution packages that include auth support.
+     */
+    public setCognitoCredentialProviderFactory(
+        factory: CognitoCredentialProviderFactory
+    ): void {
+        this.cognitoCredentialProviderFactory = factory;
+    }
+
+    /**
+     * Set the factory used to create signing configurations.
+     * This is injected by distribution packages that include signing support.
+     */
+    public setSigningConfigFactory(factory: SigningConfigFactory): void {
+        this.signingConfigFactory = factory;
+    }
+
+    /**
+     * Initialize Cognito credentials using the injected factory.
+     * If no factory has been set, this is a no-op.
+     */
     public setCognitoCredentials(
         identityPoolId: string,
         guestRoleArn?: string
     ) {
-        if (identityPoolId && guestRoleArn) {
-            this.setAwsCredentials(
-                new BasicAuthentication(this.config, this.applicationId)
-                    .ChainAnonymousCredentialsProvider
-            );
-        } else {
-            this.setAwsCredentials(
-                new EnhancedAuthentication(this.config, this.applicationId)
-                    .ChainAnonymousCredentialsProvider
-            );
+        if (!this.cognitoCredentialProviderFactory) {
+            return;
         }
+        this.setAwsCredentials(
+            this.cognitoCredentialProviderFactory(
+                this.config,
+                this.applicationId,
+                identityPoolId,
+                guestRoleArn
+            )
+        );
     }
 
     /**
@@ -242,25 +284,7 @@ export class Dispatch {
      * Automatically dispatch cached events.
      */
     public startDispatchTimer() {
-        document.addEventListener(
-            'visibilitychange',
-            // The page is moving to the hidden state, which means it may be
-            // unloaded. The sendBeacon API would typically be used in this
-            // case. However, ad-blockers prevent sendBeacon from functioning.
-            // We therefore have two bad options:
-            //
-            // (1) Use sendBeacon. Data will be lost when ad blockers are
-            //     used and the page loses visibility
-            // (2) Use fetch. Data will be lost when the page is unloaded
-            //     before fetch completes
-            //
-            // A third option is to send both, however this would increase
-            // bandwitch and require deduping server side.
-            this.flushSync
-        );
-        // Using 'pagehide' is redundant most of the time (visibilitychange is
-        // always fired before pagehide) but older browsers may support
-        // 'pagehide' but not 'visibilitychange'.
+        document.addEventListener('visibilitychange', this.flushSync);
         document.addEventListener('pagehide', this.flushSync);
         if (this.config.dispatchInterval <= 0 || this.dispatchTimerId) {
             return;
@@ -312,18 +336,9 @@ export class Dispatch {
                 this.config.signing &&
                 this.shouldPurgeCredentials
             ) {
-                // If auth fails and a credentialProvider has been configured,
-                // then we need to make sure that the cached credentials are for
-                // the intended RUM app monitor. Otherwise, the irrelevant cached
-                // credentials will never get evicted.
-                //
-                // The next retry or request will be made with fresh credentials.
                 this.shouldPurgeCredentials = false;
                 this.forceRebuildClient();
             } else if (this.disableCodes.includes(e.message)) {
-                // RUM disables only when dispatch fails and we are certain
-                // that subsequent attempts will not succeed, such as when
-                // credentials are invalid or the app monitor does not exist.
                 InternalLogger.error(
                     'Dispatch failed with status code:',
                     e.message
@@ -336,10 +351,6 @@ export class Dispatch {
 
     /**
      * The default method for creating data plane service clients.
-     *
-     * @param endpoint Service endpoint.
-     * @param region  Service region.
-     * @param credentials AWS credentials.
      */
     private defaultClientBuilder: ClientBuilder = (
         endpoint,
@@ -347,27 +358,31 @@ export class Dispatch {
         credentials,
         compressionStrategy
     ) => {
-        return new DataPlaneClient({
-            fetchRequestHandler: new RetryHttpHandler(
-                new FetchHttpHandler({
-                    fetchFunction: this.config.fetchFunction
-                }),
-                this.config.retries
-            ),
-            beaconRequestHandler: new BeaconHttpHandler(),
-            endpoint,
-            region,
-            credentials,
-            headers: this.headers,
-            compressionStrategy
-        });
+        const signing =
+            credentials && this.signingConfigFactory
+                ? this.signingConfigFactory(credentials, region)
+                : undefined;
+        return new DataPlaneClient(
+            {
+                fetchRequestHandler: new RetryHttpHandler(
+                    new FetchHttpHandler({
+                        fetchFunction: this.config.fetchFunction
+                    }),
+                    this.config.retries
+                ),
+                beaconRequestHandler: new BeaconHttpHandler(),
+                endpoint,
+                region,
+                credentials,
+                headers: this.headers,
+                compressionStrategy
+            },
+            signing
+        );
     };
 
     /**
-     * Purges the cached credentials and rebuilds the dataplane client. This is only necessary
-     * if signing is enabled and the cached credentials are for the wrong app monitor.
-     *
-     * @param credentialProvider - The credential or provider use to sign requests
+     * Purges the cached credentials and rebuilds the dataplane client.
      */
     private forceRebuildClient() {
         InternalLogger.warn('Removing credentials from local storage');

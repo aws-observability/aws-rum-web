@@ -29,6 +29,7 @@ import { INSTALL_MODULE } from '@aws-rum-web/core/utils/constants';
 import EventBus, { Topic } from '@aws-rum-web/core/event-bus/EventBus';
 import { InternalLogger } from '@aws-rum-web/core/utils/InternalLogger';
 import { Plugin } from '@aws-rum-web/core/plugins/Plugin';
+import { createSigningConfig } from '../dispatch/signing';
 import {
     Config,
     PartialConfig,
@@ -313,6 +314,21 @@ export class Orchestration {
             this.config.endpointUrl,
             this.eventCache,
             this.config
+        );
+
+        // Inject signing support
+        dispatch.setSigningConfigFactory(createSigningConfig);
+
+        // Inject Cognito credential provider factory
+        dispatch.setCognitoCredentialProviderFactory(
+            (config, appId, identityPoolId, guestRoleArn) => {
+                if (identityPoolId && guestRoleArn) {
+                    return new BasicAuthentication(config, appId)
+                        .ChainAnonymousCredentialsProvider;
+                }
+                return new EnhancedAuthentication(config, appId)
+                    .ChainAnonymousCredentialsProvider;
+            }
         );
 
         if (this.config.signing && this.config.identityPoolId) {

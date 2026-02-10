@@ -1,13 +1,9 @@
-import { toHex } from '@smithy/util-hex-encoding';
-import { SignatureV4 } from '@smithy/signature-v4';
 import {
     AwsCredentialIdentityProvider,
     AwsCredentialIdentity,
     HttpResponse,
-    RequestPresigningArguments,
     HeaderBag
 } from '@aws-sdk/types';
-import { Sha256 } from '@aws-crypto/sha256-js';
 import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import {
     AppMonitorDetails,
@@ -18,12 +14,9 @@ import {
 import { compressIfBeneficial } from './compression';
 import { CompressionStrategy } from '../orchestration/config';
 
-const SERVICE = 'rum';
 const METHOD = 'POST';
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_TEXT = 'text/plain;charset=UTF-8';
-
-const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
 
 declare type SerializedRumEvent = {
     id: string;
@@ -54,22 +47,34 @@ export declare type DataPlaneClientConfig = {
     compressionStrategy?: CompressionStrategy;
 };
 
+/**
+ * Signs an HttpRequest and returns the signed request.
+ */
+export type RequestSigner = (request: HttpRequest) => Promise<HttpRequest>;
+
+/**
+ * Pre-signs an HttpRequest (for beacon/query-string signing) and returns the signed request.
+ */
+export type RequestPresigner = (request: HttpRequest) => Promise<HttpRequest>;
+
+/**
+ * Computes a content hash for the given payload.
+ */
+export type ContentHasher = (payload: string | Uint8Array) => Promise<string>;
+
+export declare type SigningConfig = {
+    sign: RequestSigner;
+    presign: RequestPresigner;
+    hashAndEncode: ContentHasher;
+};
+
 export class DataPlaneClient {
     private config: DataPlaneClientConfig;
-    private awsSigV4: SignatureV4 | undefined;
+    private signing?: SigningConfig;
 
-    constructor(config: DataPlaneClientConfig) {
+    constructor(config: DataPlaneClientConfig, signing?: SigningConfig) {
         this.config = config;
-        if (config.credentials) {
-            this.awsSigV4 = new SignatureV4({
-                applyChecksum: true,
-                credentials: config.credentials,
-                region: config.region,
-                service: SERVICE,
-                uriEscapePath: true,
-                sha256: Sha256
-            });
-        }
+        this.signing = signing;
     }
 
     public sendFetch = async (
@@ -92,13 +97,10 @@ export class DataPlaneClient {
             compressed
         );
         let request: HttpRequest = new HttpRequest(options);
-        if (this.awsSigV4) {
-            request = (await this.awsSigV4.sign(request)) as HttpRequest;
+        if (this.signing) {
+            request = await this.signing.sign(request);
         }
-        const httpResponse: Promise<{
-            response: HttpResponse;
-        }> = this.config.fetchRequestHandler.handle(request);
-        return httpResponse;
+        return this.config.fetchRequestHandler.handle(request);
     };
 
     public sendBeacon = async (
@@ -114,16 +116,10 @@ export class DataPlaneClient {
             false
         );
         let request: HttpRequest = new HttpRequest(options);
-        if (this.awsSigV4) {
-            request = (await this.awsSigV4.presign(
-                request,
-                REQUEST_PRESIGN_ARGS
-            )) as HttpRequest;
+        if (this.signing) {
+            request = await this.signing.presign(request);
         }
-        const httpResponse: Promise<{
-            response: HttpResponse;
-        }> = this.config.beaconRequestHandler.handle(request);
-        return httpResponse;
+        return this.config.beaconRequestHandler.handle(request);
     };
 
     private getHttpRequestOptions = async (
@@ -150,12 +146,14 @@ export class DataPlaneClient {
             path: `${path}/appmonitors/${putRumEventsRequest.AppMonitorDetails.id}`,
             body
         };
-        if (this.awsSigV4) {
+        if (this.signing) {
             return {
                 ...options,
                 headers: {
                     ...options.headers,
-                    'X-Amz-Content-Sha256': await hashAndEncode(body)
+                    'X-Amz-Content-Sha256': await this.signing.hashAndEncode(
+                        body
+                    )
                 }
             };
         }
@@ -163,12 +161,9 @@ export class DataPlaneClient {
     };
 }
 
-const serializeRequest = (
+export const serializeRequest = (
     request: PutRumEventsRequest
 ): SerializedPutRumEventsRequest => {
-    //  If we were using the AWS SDK client here then the serialization would be handled for us through a generated
-    //  serialization/deserialization library. However, since much of the generated code is unnecessary, we do the
-    //  serialization ourselves with this function.
     const serializedRumEvents: SerializedRumEvent[] = [];
     request.RumEvents.forEach((e) =>
         serializedRumEvents.push(serializeEvent(e))
@@ -188,16 +183,9 @@ const serializeRequest = (
 const serializeEvent = (event: RumEvent): SerializedRumEvent => {
     return {
         id: event.id,
-        // Dates must be converted to timestamps before serialization.
         timestamp: Math.round(event.timestamp.getTime() / 1000),
         type: event.type,
         metadata: event.metadata,
         details: event.details
     };
-};
-
-const hashAndEncode = async (payload: string | Uint8Array) => {
-    const sha256 = new Sha256();
-    sha256.update(payload);
-    return toHex(await sha256.digest()).toLowerCase();
 };
