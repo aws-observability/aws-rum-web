@@ -3,7 +3,7 @@ import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { InternalLogger } from '../utils/InternalLogger';
 
 const METHOD = 'POST';

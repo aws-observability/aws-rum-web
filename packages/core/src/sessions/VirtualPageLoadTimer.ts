@@ -1,7 +1,7 @@
 import { NavigationEvent } from '../events/navigation-event';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../plugins/utils/constant';
 import { MonkeyPatched } from '../plugins/MonkeyPatched';
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { RecordEvent } from '../plugins/types';
 import { PageManager, Page } from './PageManager';
 import { InternalLogger } from '../utils/InternalLogger';

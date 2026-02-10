@@ -1,5 +1,5 @@
 import { AwsRumClientInit as RemoteConfig } from '../CommandQueue';
-import { PartialConfig } from '../orchestration/Orchestration';
+import { PartialConfig } from '../orchestration/config';
 
 export type FileConfig = {
     clientConfig?: ClientConfig;

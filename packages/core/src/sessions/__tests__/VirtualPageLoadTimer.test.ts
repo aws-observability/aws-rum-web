@@ -8,7 +8,7 @@ import {
     mockFetchWithErrorObject,
     mockFetchWithErrorObjectAndStack
 } from '../../test-utils/test-utils';
-import { Config } from '../../orchestration/Orchestration';
+import { Config } from '../../orchestration/config';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../plugins/utils/constant';
 import mock from 'xhr-mock';
 import { VirtualPageLoadTimer } from '../VirtualPageLoadTimer';

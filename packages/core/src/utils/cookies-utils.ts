@@ -1,4 +1,4 @@
-import { CookieAttributes } from '../orchestration/Orchestration';
+import { CookieAttributes } from '../orchestration/config';
 
 /**
  * Stores a cookie.

@@ -1,4 +1,4 @@
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { Authentication } from './Authentication';
 import { InternalLogger } from '../utils/InternalLogger';

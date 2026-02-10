@@ -7,6 +7,14 @@ export {
     Telemetry,
     TelemetryEnum
 } from './orchestration/Orchestration';
+export {
+    Config,
+    PartialConfig,
+    CookieAttributes,
+    CompressionStrategy,
+    defaultConfig,
+    defaultCookieAttributes
+} from './orchestration/config';
 export { ClientBuilder } from './dispatch/Dispatch';
 export { PageAttributes } from './sessions/PageManager';
 export { Plugin } from './plugins/Plugin';

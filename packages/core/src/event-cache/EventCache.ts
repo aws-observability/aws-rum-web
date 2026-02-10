@@ -1,7 +1,7 @@
 import { Session, SessionManager } from '../sessions/SessionManager';
 import { v4 } from 'uuid';
 import { MetaData } from '../events/meta-data';
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { PageAttributes, PageManager } from '../sessions/PageManager';
 import {
     AppMonitorDetails,

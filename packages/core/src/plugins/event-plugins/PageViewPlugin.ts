@@ -1,4 +1,4 @@
-import { PageIdFormatEnum } from '../../orchestration/Orchestration';
+import { PageIdFormatEnum } from '../../orchestration/config';
 import { MonkeyPatched } from '../MonkeyPatched';
 
 export const PAGE_EVENT_PLUGIN_ID = 'page-view';

@@ -11,7 +11,7 @@ import {
 } from '../../utils/cookies-utils';
 import * as uuid from 'uuid';
 import { navigationEvent } from '../../test-utils/mock-data';
-import { Config } from '../../orchestration/Orchestration';
+import { Config } from '../../orchestration/config';
 import { mockRandom } from 'jest-mock-random';
 import { PageManager } from '../PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';

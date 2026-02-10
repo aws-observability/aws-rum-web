@@ -1,6 +1,6 @@
 import { context } from '../../../test-utils/test-utils';
 import { PageViewPlugin } from '../PageViewPlugin';
-import { PageIdFormatEnum } from '../../../orchestration/Orchestration';
+import { PageIdFormatEnum } from '../../../orchestration/config';
 
 const PAGE_VIEW_ONE_PATH = '/page_view_one?region=us-west-1#lang';
 const PAGE_VIEW_TWO_PATH = '/page_view_two?region=us-west-1#lang';

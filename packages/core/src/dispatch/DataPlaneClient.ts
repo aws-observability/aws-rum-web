@@ -16,7 +16,7 @@ import {
     RumEvent
 } from './dataplane';
 import { compressIfBeneficial } from './compression';
-import { CompressionStrategy } from '../orchestration/Orchestration';
+import { CompressionStrategy } from '../orchestration/config';
 
 const SERVICE = 'rum';
 const METHOD = 'POST';

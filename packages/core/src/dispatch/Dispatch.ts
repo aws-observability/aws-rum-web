@@ -8,7 +8,7 @@ import { DataPlaneClient } from './DataPlaneClient';
 import { BeaconHttpHandler } from './BeaconHttpHandler';
 import { FetchHttpHandler } from './FetchHttpHandler';
 import { PutRumEventsRequest } from './dataplane';
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
 import { InternalLogger } from '../utils/InternalLogger';

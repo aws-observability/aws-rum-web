@@ -4,7 +4,7 @@ import {
     Config,
     defaultConfig,
     defaultCookieAttributes
-} from '../orchestration/Orchestration';
+} from '../orchestration/config';
 import {
     GetSession,
     InternalPluginContext,

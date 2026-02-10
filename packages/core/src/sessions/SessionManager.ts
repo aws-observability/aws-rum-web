@@ -1,7 +1,7 @@
 import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { Page, PageManager } from './PageManager';
 
 import { UAParser } from 'ua-parser-js';

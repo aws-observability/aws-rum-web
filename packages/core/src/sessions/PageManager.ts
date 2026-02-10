@@ -1,4 +1,4 @@
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { VirtualPageLoadTimer } from '../sessions/VirtualPageLoadTimer';

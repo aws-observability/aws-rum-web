@@ -1,4 +1,4 @@
-import { Config } from '../orchestration/Orchestration';
+import { Config } from '../orchestration/config';
 import { Session } from '../sessions/SessionManager';
 import EventBus, { Topic } from '../event-bus/EventBus';
 

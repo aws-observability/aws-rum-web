@@ -4,7 +4,7 @@ import {
     mockOtaConfigFile,
     mockOtaConfigObject
 } from '../../test-utils/mock-remote-config';
-import { PartialConfig } from '../../orchestration/Orchestration';
+import { PartialConfig } from '../../orchestration/config';
 import { getRemoteConfig } from '../remote-config';
 import { Response } from 'node-fetch';
 

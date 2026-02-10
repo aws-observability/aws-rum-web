@@ -2,7 +2,7 @@ import { Page } from './../PageManager';
 import { advanceTo } from 'jest-date-mock';
 import { PageManager } from '../PageManager';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
-import { Config } from '../../orchestration/Orchestration';
+import { Config } from '../../orchestration/config';
 import { PAGE_VIEW_EVENT_TYPE } from '../../plugins/utils/constant';
 
 import mock from 'xhr-mock';

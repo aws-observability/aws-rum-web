@@ -98,22 +98,78 @@ Validation checklist:
 
 ---
 
-## Phase 2: Extract Slim Distribution (TBD)
+## Phase 2a: Move Orchestration to aws-rum-web
 
-Approach to be determined after Phase 1 is validated and stable.
+**Goal**: Core becomes shared primitives only. Orchestration, config handling, and CDN entry move to `aws-rum-web`.
 
-### Possible tasks (not finalized):
+**Problem**: `Orchestration.ts` defines both the orchestrator class AND shared types (`Config`, `PartialConfig`, `CookieAttributes`, `CompressionStrategy`, `PageIdFormatEnum`, `TelemetryEnum`). These types are imported by 15+ files across dispatch, event-cache, sessions, plugins, and utils. The class can move; the types must stay in core.
 
--   Create `packages/slim/` with unsigned-only dispatch
--   Refactor auth to be optional in core (or extract to separate package)
--   Wire `aws-rum-web` to depend on slim + add auth
--   Build `cwr-slim.js` via webpack
--   Validate slim bundle is ~18-22KB gzipped with zero `@smithy/*` / `@aws-crypto/*` code
+### Task 2a.1 — Extract config types from Orchestration.ts
+
+Extract shared types into `packages/core/src/orchestration/config.ts`. Update all internal imports. `Orchestration.ts` re-exports from `config.ts` for backward compat.
+
+New file `packages/core/src/orchestration/config.ts` gets:
+- `Config`, `PartialConfig` interfaces
+- `CookieAttributes`, `PartialCookieAttributes` types
+- `CompressionStrategy` type
+- `TelemetryEnum`, `PageIdFormatEnum` enums
+- `Telemetry`, `PageIdFormat` type aliases
+- `defaultConfig()`, `defaultCookieAttributes()` functions
+- `INSTALL_MODULE` constant usage (or import)
+
+Files importing `Config` etc. from `../orchestration/Orchestration` update to `../orchestration/config`:
+- `dispatch/Authentication.ts`, `BasicAuthentication.ts`, `EnhancedAuthentication.ts`, `Dispatch.ts`, `DataPlaneClient.ts`, `CognitoIdentityClient.ts`
+- `event-cache/EventCache.ts`
+- `sessions/SessionManager.ts`, `PageManager.ts`, `VirtualPageLoadTimer.ts`
+- `plugins/types.ts`, `plugins/event-plugins/PageViewPlugin.ts`
+- `utils/cookies-utils.ts`
+- `test-utils/test-utils.ts`, `test-utils/mock-remote-config.ts`
+- All corresponding test files
+
+### Task 2a.2 — Move orchestration + CDN entry to aws-rum-web
+
+Move these files from `packages/core/src/` → `packages/aws-rum-web/src/`:
+- `orchestration/Orchestration.ts` + `orchestration/__tests__/`
+- `CommandQueue.ts` + `__tests__/CommandQueue.test.ts`
+- `index-browser.ts`
+- `remote-config/` (depends on CommandQueue types)
+
+Rewrite imports in moved files to use `@aws-rum-web/core/...` deep paths.
+
+Update core's `index.ts` barrel: remove Orchestration re-exports, export config types + primitives.
+Update `aws-rum-web`'s `index.ts`: export Orchestration as `AwsRum`, config types, plus re-export core primitives.
+
+Update webpack entry: point to local `src/index-browser.ts` (now in aws-rum-web).
+Update jest config: test both `packages/core/src/**/__tests__/**` and `packages/aws-rum-web/src/**/__tests__/**`.
+Update tsconfig.webpack.json: include aws-rum-web's `index-browser.ts`.
+
+### Task 2a.3 — Validate Phase 2a
+
+```bash
+npm install
+npm test                       # All 618 tests pass
+npm run build                  # cwr.js produced
+```
+
+Validation checklist:
+- [ ] All tests pass (same count)
+- [ ] Bundle size unchanged (~159KB / ~44KB gzip)
+- [ ] `npm run lint` — no new errors
+- [ ] Core has no orchestration/CommandQueue/index-browser files
+- [ ] aws-rum-web owns orchestration, CDN entry, remote-config
+
+---
+
+## Phase 2b: Extract Slim Distribution
+
+**Goal**: Create `aws-rum-slim` — a distribution without auth/signing heavy dependencies.
+
+Approach to be determined after Phase 2a is validated. Requires analysis of heavy modules (auth, ua-parser, rrweb, Smithy/crypto deps) and surgical removal.
 
 ### Open decisions:
 
-1. How to make auth optional: separate package, feature flag, or stub implementations?
-2. Where does `signing.ts` live: in core (with optional import) or in a separate auth package?
+1. Which heavy modules to exclude from slim (auth, ua-parser-js, rrweb, @smithy/*, @aws-crypto/*?)
+2. How to make auth optional: separate package, feature flag, or stub implementations?
 3. Does `aws-rum-web` depend on slim, or do both depend on core independently?
 
 ---
@@ -140,9 +196,10 @@ Approach to be determined after Phase 1 is validated and stable.
 ## Dependency between tasks
 
 ```
-Phase 0 (done) → Phase 1: 1.1 → 1.2 → 1.3 → 1.4 → 1.5
-                 Phase 2: TBD (after Phase 1 validated)
-                 Phase 3: 3.1 → 3.2 → 3.3 (after Phase 2)
+Phase 0 (done) → Phase 1 (done): 1.1 → 1.2 → 1.3 → 1.4 → 1.5
+                 Phase 2a: 2a.1 → 2a.2 → 2a.3
+                 Phase 2b: TBD (after Phase 2a validated)
+                 Phase 3: 3.1 → 3.2 → 3.3 (after Phase 2b)
 ```
 
 ## Risk checkpoints
@@ -152,3 +209,6 @@ Phase 0 (done) → Phase 1: 1.1 → 1.2 → 1.3 → 1.4 → 1.5
 | 1.2 | Core package has all source files, no files left in root `src/` |
 | 1.3 | Webpack entry points resolve correctly through the re-export layer |
 | 1.5 | Full regression. Bundle size identical. All tests pass. If anything broke, fix before Phase 2. |
+| 2a.1 | All tests pass. No file imports from `orchestration/Orchestration` for types — only from `orchestration/config`. |
+| 2a.2 | Core has no Orchestration class, CommandQueue, index-browser, or remote-config. aws-rum-web owns them. |
+| 2a.3 | Full regression. Bundle size unchanged. All tests pass. |
