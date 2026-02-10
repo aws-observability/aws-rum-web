@@ -1,19 +1,11 @@
 export {
-    PartialConfig as AwsRumConfig,
-    Orchestration as AwsRum,
-    PartialCookieAttributes,
-    PageIdFormat,
-    PageIdFormatEnum,
-    Telemetry,
-    TelemetryEnum
-} from './orchestration/Orchestration';
-export {
     Config,
     PartialConfig,
     CookieAttributes,
+    PartialCookieAttributes,
     CompressionStrategy,
-    defaultConfig,
-    defaultCookieAttributes
+    Telemetry,
+    PageIdFormat
 } from './orchestration/config';
 export { ClientBuilder } from './dispatch/Dispatch';
 export { PageAttributes } from './sessions/PageManager';

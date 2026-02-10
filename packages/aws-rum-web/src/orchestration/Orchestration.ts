@@ -1,33 +1,34 @@
-import { InternalPluginContext } from '../plugins/types';
-import { InternalPlugin } from '../plugins/InternalPlugin';
-import { BasicAuthentication } from '../dispatch/BasicAuthentication';
-import { EnhancedAuthentication } from '../dispatch/EnhancedAuthentication';
-import { PluginManager } from '../plugins/PluginManager';
+import { InternalPluginContext } from '@aws-rum-web/core/plugins/types';
+import { InternalPlugin } from '@aws-rum-web/core/plugins/InternalPlugin';
+import { BasicAuthentication } from '@aws-rum-web/core/dispatch/BasicAuthentication';
+import { EnhancedAuthentication } from '@aws-rum-web/core/dispatch/EnhancedAuthentication';
+import { PluginManager } from '@aws-rum-web/core/plugins/PluginManager';
 import {
     DomEventPlugin,
     DOM_EVENT_PLUGIN_ID,
     TargetDomEvent
-} from '../plugins/event-plugins/DomEventPlugin';
+} from '@aws-rum-web/core/plugins/event-plugins/DomEventPlugin';
 import {
     JsErrorPlugin,
     JS_ERROR_EVENT_PLUGIN_ID
-} from '../plugins/event-plugins/JsErrorPlugin';
-import { EventCache } from '../event-cache/EventCache';
-import { Dispatch } from '../dispatch/Dispatch';
+} from '@aws-rum-web/core/plugins/event-plugins/JsErrorPlugin';
+import { EventCache } from '@aws-rum-web/core/event-cache/EventCache';
+import { Dispatch } from '@aws-rum-web/core/dispatch/Dispatch';
 import {
     AwsCredentialIdentityProvider,
     AwsCredentialIdentity
 } from '@aws-sdk/types';
-import { NavigationPlugin } from '../plugins/event-plugins/NavigationPlugin';
-import { ResourcePlugin } from '../plugins/event-plugins/ResourcePlugin';
-import { WebVitalsPlugin } from '../plugins/event-plugins/WebVitalsPlugin';
-import { XhrPlugin } from '../plugins/event-plugins/XhrPlugin';
-import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
-import { PageViewPlugin } from '../plugins/event-plugins/PageViewPlugin';
-import { PageAttributes } from '../sessions/PageManager';
-import { INSTALL_MODULE } from '../utils/constants';
-import EventBus, { Topic } from '../event-bus/EventBus';
-import { InternalLogger } from '../utils/InternalLogger';
+import { NavigationPlugin } from '@aws-rum-web/core/plugins/event-plugins/NavigationPlugin';
+import { ResourcePlugin } from '@aws-rum-web/core/plugins/event-plugins/ResourcePlugin';
+import { WebVitalsPlugin } from '@aws-rum-web/core/plugins/event-plugins/WebVitalsPlugin';
+import { XhrPlugin } from '@aws-rum-web/core/plugins/event-plugins/XhrPlugin';
+import { FetchPlugin } from '@aws-rum-web/core/plugins/event-plugins/FetchPlugin';
+import { PageViewPlugin } from '@aws-rum-web/core/plugins/event-plugins/PageViewPlugin';
+import { PageAttributes } from '@aws-rum-web/core/sessions/PageManager';
+import { INSTALL_MODULE } from '@aws-rum-web/core/utils/constants';
+import EventBus, { Topic } from '@aws-rum-web/core/event-bus/EventBus';
+import { InternalLogger } from '@aws-rum-web/core/utils/InternalLogger';
+import { Plugin } from '@aws-rum-web/core/plugins/Plugin';
 import {
     Config,
     PartialConfig,
@@ -36,9 +37,8 @@ import {
     defaultCookieAttributes,
     defaultConfig
 } from './config';
-import { Plugin } from '../plugins/Plugin';
 
-// Re-export all config types for backward compatibility
+// Re-export config types for public API
 export {
     Config,
     PartialConfig,

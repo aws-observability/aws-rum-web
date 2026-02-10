@@ -1,10 +1,6 @@
 import { EventCache } from '../event-cache/EventCache';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import {
-    Config,
-    defaultConfig,
-    defaultCookieAttributes
-} from '../orchestration/config';
+import { Config } from '../orchestration/config';
 import {
     GetSession,
     InternalPluginContext,
@@ -61,7 +57,46 @@ export const PUT_RUM_EVENTS_REQUEST: PutRumEventsRequest = {
     ]
 };
 
-export const DEFAULT_CONFIG: Config = defaultConfig(defaultCookieAttributes());
+export const DEFAULT_CONFIG: Config = {
+    allowCookies: false,
+    batchLimit: 100,
+    client: 'arw-module',
+    compressionStrategy: { enabled: false },
+    cookieAttributes: {
+        unique: false,
+        domain: window.location.hostname,
+        path: '/',
+        sameSite: 'Strict',
+        secure: true
+    },
+    debug: false,
+    disableAutoPageView: false,
+    dispatchInterval: 5 * 1000,
+    enableRumClient: true,
+    enableXRay: false,
+    endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+    endpointUrl: new URL('https://dataplane.rum.us-west-2.amazonaws.com'),
+    eventCacheSize: 1000,
+    candidatesCacheSize: 10,
+    eventPluginsToLoad: [],
+    pageIdFormat: 'PATH',
+    pagesToExclude: [],
+    pagesToInclude: [/.*/],
+    signing: true,
+    recordResourceUrl: true,
+    retries: 2,
+    routeChangeComplete: 100,
+    routeChangeTimeout: 10000,
+    sessionAttributes: {},
+    sessionEventLimit: 200,
+    sessionLengthSeconds: 60 * 30,
+    sessionSampleRate: 1,
+    telemetries: [],
+    useBeacon: true,
+    userIdRetentionDays: 30,
+    enableW3CTraceId: false,
+    legacySPASupport: false
+};
 
 export const createDefaultEventCache = (): EventCache => {
     return new EventCache(APP_MONITOR_DETAILS, DEFAULT_CONFIG);

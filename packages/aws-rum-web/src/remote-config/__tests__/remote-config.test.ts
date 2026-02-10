@@ -3,8 +3,8 @@ import {
     dummyOtaConfigURL,
     mockOtaConfigFile,
     mockOtaConfigObject
-} from '../../test-utils/mock-remote-config';
-import { PartialConfig } from '../../orchestration/config';
+} from '@aws-rum-web/core/test-utils/mock-remote-config';
+import { PartialConfig } from '@aws-rum-web/core/orchestration/config';
 import { getRemoteConfig } from '../remote-config';
 import { Response } from 'node-fetch';
 

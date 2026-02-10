@@ -6,10 +6,13 @@ const babelLoaderOptions = {
 };
 
 module.exports = {
-    entry: path.resolve(__dirname, '../../../packages/core/src/index-browser.ts'),
+    entry: path.resolve(__dirname, '../src/index-browser.ts'),
     target: ['web', 'es5'],
     resolve: {
-        extensions: ['.ts', '.js', '.json']
+        extensions: ['.ts', '.js', '.json'],
+        alias: {
+            '@aws-rum-web/core': path.resolve(__dirname, '../../core/src')
+        }
     },
     plugins: [new CaseSensitivePathsPlugin()],
     module: {
@@ -33,7 +36,10 @@ module.exports = {
                     {
                         loader: 'ts-loader',
                         options: {
-                            configFile: path.resolve(__dirname, '../../../tsconfig.webpack.json')
+                            configFile: path.resolve(
+                                __dirname,
+                                '../../../tsconfig.webpack.json'
+                            )
                         }
                     }
                 ]

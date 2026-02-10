@@ -2,8 +2,7 @@ import {
     AwsCredentialIdentity,
     AwsCredentialIdentityProvider
 } from '@aws-sdk/types';
-import { Plugin } from 'plugins/Plugin';
-import { INSTALL_SCRIPT } from './utils/constants';
+import { INSTALL_SCRIPT } from '@aws-rum-web/core/utils/constants';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 

@@ -1,10 +1,21 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "baseUrl": "packages/core/src",
+        "baseUrl": ".",
         "module": "es2020",
         "outDir": "./dist/webpack",
         "sourceMap": true
     },
-    "include": ["packages/core/src/index-browser.ts"]
+    "include": [
+        "packages/aws-rum-web/src/index-browser.ts",
+        "packages/aws-rum-web/src/orchestration/**/*.ts",
+        "packages/aws-rum-web/src/remote-config/**/*.ts",
+        "packages/aws-rum-web/src/CommandQueue.ts"
+    ],
+    "exclude": [
+        "**/__tests__/**",
+        "**/__integ__/**",
+        "**/__smoke-test__/**",
+        "**/__smoke-test-npm__/**"
+    ]
 }

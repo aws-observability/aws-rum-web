@@ -3,15 +3,15 @@ import {
     defaultConfig,
     defaultCookieAttributes
 } from '../Orchestration';
-import { Dispatch } from '../../dispatch/Dispatch';
-import { EventCache } from '../../event-cache/EventCache';
-import { DomEventPlugin } from '../../plugins/event-plugins/DomEventPlugin';
-import { JsErrorPlugin } from '../../plugins/event-plugins/JsErrorPlugin';
-import { PluginManager } from '../../plugins/PluginManager';
-import { PageAttributes } from '../../sessions/PageManager';
-import { INSTALL_SCRIPT } from '../../utils/constants';
-import { performanceEvent } from '../../test-utils/mock-data';
-import { DEFAULT_CONFIG } from '../../test-utils/test-utils';
+import { Dispatch } from '@aws-rum-web/core/dispatch/Dispatch';
+import { EventCache } from '@aws-rum-web/core/event-cache/EventCache';
+import { DomEventPlugin } from '@aws-rum-web/core/plugins/event-plugins/DomEventPlugin';
+import { JsErrorPlugin } from '@aws-rum-web/core/plugins/event-plugins/JsErrorPlugin';
+import { PluginManager } from '@aws-rum-web/core/plugins/PluginManager';
+import { PageAttributes } from '@aws-rum-web/core/sessions/PageManager';
+import { INSTALL_SCRIPT } from '@aws-rum-web/core/utils/constants';
+import { performanceEvent } from '@aws-rum-web/core/test-utils/mock-data';
+import { DEFAULT_CONFIG } from '@aws-rum-web/core/test-utils/test-utils';
 
 global.fetch = jest.fn();
 
@@ -20,7 +20,7 @@ const disableDispatch = jest.fn();
 const setAwsCredentials = jest.fn();
 const setCognitoCredentials = jest.fn();
 
-jest.mock('../../dispatch/Dispatch', () => ({
+jest.mock('@aws-rum-web/core/dispatch/Dispatch', () => ({
     Dispatch: jest.fn().mockImplementation(() => ({
         enable: enableDispatch,
         disable: disableDispatch,
@@ -29,8 +29,10 @@ jest.mock('../../dispatch/Dispatch', () => ({
     }))
 }));
 
-jest.mock('../../utils/common-utils', () => {
-    const originalModule = jest.requireActual('../../utils/common-utils');
+jest.mock('@aws-rum-web/core/utils/common-utils', () => {
+    const originalModule = jest.requireActual(
+        '@aws-rum-web/core/utils/common-utils'
+    );
     return {
         __esModule: true,
         ...originalModule,
@@ -46,7 +48,7 @@ const recordEvent = jest.fn();
 
 let samplingDecision = true;
 const isSessionSampled = jest.fn().mockImplementation(() => samplingDecision);
-jest.mock('../../event-cache/EventCache', () => ({
+jest.mock('@aws-rum-web/core/event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
         disable: disableEventCache,
@@ -64,7 +66,7 @@ const updatePlugin = jest.fn();
 const enablePlugins = jest.fn();
 const disablePlugins = jest.fn();
 
-jest.mock('../../plugins/PluginManager', () => ({
+jest.mock('@aws-rum-web/core/plugins/PluginManager', () => ({
     PluginManager: jest.fn().mockImplementation(() => ({
         addPlugin,
         enable: enablePlugins,

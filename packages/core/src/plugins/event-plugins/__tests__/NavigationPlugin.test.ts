@@ -10,7 +10,7 @@ import {
 import { NavigationPlugin } from '../NavigationPlugin';
 import { context, record } from '../../../test-utils/test-utils';
 import { PERFORMANCE_NAVIGATION_EVENT_TYPE } from '../../utils/constant';
-import { PerformancePluginConfig } from 'plugins/utils/performance-utils';
+import { PerformancePluginConfig } from '../../utils/performance-utils';
 
 const buildNavigationPlugin = (config?: Partial<PerformancePluginConfig>) => {
     return new NavigationPlugin(config);

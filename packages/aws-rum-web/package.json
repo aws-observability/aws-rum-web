@@ -19,10 +19,8 @@
         "url": "https://github.com/aws-observability/aws-rum-web.git"
     },
     "scripts": {
-        "build:dist:es": "tsc --project ./tsconfig.es.json",
-        "build:dist:cjs": "tsc --project ./tsconfig.cjs.json",
         "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
-        "build": "npm-run-all -p build:dist:* build:webpack:prod"
+        "build": "npm-run-all -s build:webpack:prod"
     },
     "dependencies": {
         "@aws-rum-web/core": "2.0.0"

@@ -3,7 +3,7 @@ import * as Utils from '../../test-utils/test-utils';
 import { DataPlaneClient } from '../DataPlaneClient';
 import { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import { DEFAULT_CONFIG, mockFetch } from '../../test-utils/test-utils';
-import { EventCache } from 'event-cache/EventCache';
+import { EventCache } from '../../event-cache/EventCache';
 import { CRED_KEY, IDENTITY_KEY } from '../../utils/constants';
 import { BasicAuthentication } from '../BasicAuthentication';
 import { EnhancedAuthentication } from '../EnhancedAuthentication';
