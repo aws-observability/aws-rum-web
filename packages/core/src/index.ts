@@ -5,7 +5,8 @@ export {
     PartialCookieAttributes,
     CompressionStrategy,
     Telemetry,
-    PageIdFormat
+    PageIdFormat,
+    UserAgentDetails
 } from './orchestration/config';
 export { ClientBuilder } from './dispatch/Dispatch';
 export { CognitoCredentialProviderFactory } from './dispatch/Dispatch';

@@ -1,10 +1,8 @@
 import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
-import { Config } from '../orchestration/config';
+import { Config, UserAgentDetails } from '../orchestration/config';
 import { Page, PageManager } from './PageManager';
-
-import { UAParser } from 'ua-parser-js';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
 import { RecordEvent } from '../plugins/types';
@@ -281,18 +279,14 @@ export class SessionManager {
     }
 
     private collectAttributes() {
-        const ua = new UAParser(navigator.userAgent).getResult();
+        const ua = this.config.userAgentProvider?.() ?? userAgentDataFallback();
         this.attributes = {
             browserLanguage: navigator.language,
-            browserName: ua.browser.name ? ua.browser.name : UNKNOWN,
-            browserVersion: ua.browser.version ? ua.browser.version : UNKNOWN,
-            osName: ua.os.name ? ua.os.name : UNKNOWN,
-            osVersion: ua.os.version ? ua.os.version : UNKNOWN,
-            // Possible device types include {console, mobile, tablet, smarttv, wearable, embedded}. If the device
-            // type is undefined, there was no information indicating the device is anything other than a desktop,
-            // so we assume the device is a desktop.
-            deviceType: ua.device.type ? ua.device.type : DESKTOP_DEVICE_TYPE,
-            // This client is used exclusively in web applications.
+            browserName: ua.browserName,
+            browserVersion: ua.browserVersion,
+            osName: ua.osName,
+            osVersion: ua.osVersion,
+            deviceType: ua.deviceType,
             platformType: WEB_PLATFORM_TYPE,
             domain: window.location.hostname,
             'aws:releaseId': this.config.releaseId
@@ -313,3 +307,33 @@ export class SessionManager {
         return Math.random() < this.config.sessionSampleRate;
     }
 }
+
+/**
+ * Best-effort UA detection using navigator.userAgentData (Chromium only).
+ * Falls back to UNKNOWN/desktop when unavailable (Firefox, Safari).
+ */
+const userAgentDataFallback = (): UserAgentDetails => {
+    const uad = (navigator as any).userAgentData;
+    if (!uad) {
+        return {
+            browserName: UNKNOWN,
+            browserVersion: UNKNOWN,
+            osName: UNKNOWN,
+            osVersion: UNKNOWN,
+            deviceType: DESKTOP_DEVICE_TYPE
+        };
+    }
+    // Pick the most specific brand (skip "Chromium" and GREASE brands like "Not A;Brand")
+    const brands: { brand: string; version: string }[] = uad.brands ?? [];
+    const brand =
+        brands.find(
+            (b) => b.brand !== 'Chromium' && !b.brand.startsWith('Not')
+        ) ?? brands[0];
+    return {
+        browserName: brand?.brand ?? UNKNOWN,
+        browserVersion: brand?.version ?? UNKNOWN,
+        osName: uad.platform ?? UNKNOWN,
+        osVersion: UNKNOWN,
+        deviceType: uad.mobile ? 'mobile' : DESKTOP_DEVICE_TYPE
+    };
+};

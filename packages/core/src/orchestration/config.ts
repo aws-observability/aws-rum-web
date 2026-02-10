@@ -25,6 +25,14 @@ export type CompressionStrategy = {
 
 export type Telemetry = string | (string | object)[];
 
+export type UserAgentDetails = {
+    browserName: string;
+    browserVersion: string;
+    osName: string;
+    osVersion: string;
+    deviceType: string;
+};
+
 export interface Config {
     allowCookies: boolean;
     releaseId?: string;
@@ -67,6 +75,7 @@ export interface Config {
     alias?: string;
     headers?: Record<string, string>;
     enableW3CTraceId: boolean;
+    userAgentProvider?: () => UserAgentDetails;
 }
 
 export interface PartialConfig

@@ -50,6 +50,7 @@ export {
     PageIdFormatEnum,
     Telemetry,
     PageIdFormat,
+    UserAgentDetails,
     defaultCookieAttributes,
     defaultConfig
 } from './config';
