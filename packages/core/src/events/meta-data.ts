@@ -6,30 +6,31 @@
  */
 
 export interface MetaData {
-  /**
-   * Schema version.
-   */
-  version: "1.0.0";
-  "aws:releaseId"?: string;
-  browserLanguage?: string;
-  browserName?: string;
-  browserVersion?: string;
-  osName?: string;
-  osVersion?: string;
-  deviceType?: string;
-  platformType?: string;
-  pageUrl?: string;
-  url?: string;
-  pageId?: string;
-  parentPageId?: string;
-  interaction?: number;
-  referrerUrl?: string;
-  pageTitle?: string;
-  title?: string;
-  countryCode?: string;
-  subdivisionCode?: string;
-  domain: string;
-  pageTags?: string[];
-  "aws:client"?: string;
-  "aws:clientVersion"?: string;
+    /**
+     * Schema version.
+     */
+    version: '1.0.0';
+    'aws:releaseId'?: string;
+    browserLanguage?: string;
+    browserName?: string;
+    browserVersion?: string;
+    osName?: string;
+    osVersion?: string;
+    deviceType?: string;
+    platformType?: string;
+    pageUrl?: string;
+    url?: string;
+    pageId?: string;
+    parentPageId?: string;
+    interaction?: number;
+    referrerUrl?: string;
+    pageTitle?: string;
+    title?: string;
+    countryCode?: string;
+    subdivisionCode?: string;
+    domain: string;
+    pageTags?: string[];
+    'aws:client'?: string;
+    'aws:clientVersion'?: string;
+    'aws:userAgent'?: string;
 }

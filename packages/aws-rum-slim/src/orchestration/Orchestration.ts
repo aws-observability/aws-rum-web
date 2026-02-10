@@ -12,7 +12,7 @@ import {
     type Config,
     type PartialConfig,
     type CookieAttributes,
-    type PageIdFormat
+    userAgentDataProvider
 } from '@aws-rum-web/core/orchestration/config';
 
 export {
@@ -75,7 +75,8 @@ const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
-        candidatesCacheSize: 10
+        candidatesCacheSize: 10,
+        userAgentProvider: userAgentDataProvider
     };
 };
 

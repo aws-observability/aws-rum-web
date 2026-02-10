@@ -3,6 +3,7 @@ import {
     createDefaultEventCache,
     createEventCache,
     testMetaData,
+    testCommonMetaData,
     mockFetch
 } from '../../test-utils/test-utils';
 import type { RumEvent } from '../../dispatch/dataplane';
@@ -46,15 +47,15 @@ describe('EventCache tests', () => {
         eventCache.recordPageView('/console/home');
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
-        // Assert
+        // Assert — event-level metadata has page fields only
         const events = eventCache.getEventBatch();
         events.forEach((event) => {
-            expect(JSON.parse(event.metadata)).toEqual({
-                ...testMetaData,
-                osName: expect.any(String), // osName depends on platform
-                osVersion: expect.any(String) // osVersion depends on platform
-            });
+            expect(JSON.parse(event.metadata)).toEqual(testMetaData);
         });
+
+        // Common metadata has session-level fields
+        const common = eventCache.getCommonMetadata();
+        expect(common).toEqual(testCommonMetaData);
     });
 
     test('default meta data can be overriden by custom attributes except version', async () => {
@@ -77,20 +78,22 @@ describe('EventCache tests', () => {
         eventCache.recordPageView('/console/home');
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
-        // Assert
+        // Assert — session attributes override common metadata
+        const common = eventCache.getCommonMetadata();
+        expect(common).toEqual({
+            ...testCommonMetaData,
+            ...sessionAttributes,
+            version: '1.0.0' // Version cannnot be overriden
+        });
+
+        // Event-level metadata still has page fields only
         const events: RumEvent[] = eventCache.getEventBatch();
         events.forEach((event) => {
-            expect(JSON.parse(event.metadata)).toEqual({
-                ...testMetaData,
-                ...sessionAttributes,
-                version: '1.0.0', // Version cannnot be overriden
-                osName: expect.any(String), // osName depends on platform
-                osVersion: expect.any(String) // osVersion depends on platform
-            });
+            expect(JSON.parse(event.metadata)).toEqual(testMetaData);
         });
     });
 
-    test('when aws:releaseId exists then it is added to event metadata', async () => {
+    test('when aws:releaseId exists then it is added to common metadata', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const eventCache = createEventCache({
@@ -102,15 +105,12 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        const events = eventCache.getEventBatch();
-        events.forEach((event) => {
-            expect(JSON.parse(event.metadata)).toMatchObject({
-                'aws:releaseId': '5.2.1'
-            });
+        expect(eventCache.getCommonMetadata()).toMatchObject({
+            'aws:releaseId': '5.2.1'
         });
     });
 
-    test('when aws:releaseId does NOT exist then it is NOT added to event metadata', async () => {
+    test('when aws:releaseId does NOT exist then it is NOT added to common metadata', async () => {
         // Init
         const EVENT1_SCHEMA = 'com.amazon.rum.event1';
         const eventCache = createEventCache();
@@ -120,10 +120,7 @@ describe('EventCache tests', () => {
         eventCache.recordEvent(EVENT1_SCHEMA, {});
 
         // Assert
-        const events = eventCache.getEventBatch();
-        events.forEach((event) => {
-            expect(JSON.parse(event.metadata)['aws:releaseId']).toBeUndefined();
-        });
+        expect(eventCache.getCommonMetadata()['aws:releaseId']).toBeUndefined();
     });
 
     test('when a session is not sampled then return false', async () => {

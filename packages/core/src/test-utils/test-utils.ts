@@ -272,22 +272,26 @@ export const createExpectedEvents = (types: string[], expect: any) =>
         id: expect.stringMatching(/[0-9a-f\-]+/),
         timestamp: new Date(),
         type,
-        metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+        metadata: '{}',
         details: '{}'
     }));
 
 export const testMetaData = {
+    pageId: '/console/home',
+    title: ''
+};
+
+export const testCommonMetaData = {
     version: '1.0.0',
     'aws:client': INSTALL_MODULE,
     'aws:clientVersion': WEB_CLIENT_VERSION,
     domain: 'us-east-1.console.aws.amazon.com',
     browserLanguage: 'en-US',
-    browserName: 'unknown',
-    browserVersion: 'unknown',
-    osName: 'unknown',
-    osVersion: 'unknown',
+    browserName: undefined,
+    browserVersion: undefined,
+    osName: undefined,
+    osVersion: undefined,
     deviceType: 'desktop',
     platformType: 'web',
-    pageId: '/console/home',
-    title: ''
+    'aws:userAgent': navigator.userAgent
 };

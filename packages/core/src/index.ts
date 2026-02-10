@@ -6,7 +6,8 @@ export {
     CompressionStrategy,
     Telemetry,
     PageIdFormat,
-    UserAgentDetails
+    UserAgentDetails,
+    userAgentDataProvider
 } from './orchestration/config';
 export { ClientBuilder } from './dispatch/Dispatch';
 export { CognitoCredentialProviderFactory } from './dispatch/Dispatch';

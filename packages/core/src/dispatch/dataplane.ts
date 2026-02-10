@@ -11,6 +11,7 @@ export interface PutRumEventsRequest {
     BatchId: string;
     AppMonitorDetails: AppMonitorDetails;
     UserDetails: UserDetails;
+    Metadata?: string;
     RumEvents: RumEvent[];
     Alias?: string;
 }
@@ -37,6 +38,6 @@ export interface ParsedRumEvent {
     id: string;
     timestamp: Date;
     type: string;
-    metadata?: MetaData;
+    metadata?: Partial<MetaData>;
     details: object;
 }

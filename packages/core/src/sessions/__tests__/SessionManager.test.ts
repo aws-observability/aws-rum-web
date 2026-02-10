@@ -666,7 +666,7 @@ describe('SessionManager tests', () => {
         expect(attributes).toEqual(DESKTOP_USER_AGENT_META_DATA);
     });
 
-    test('when no userAgentProvider and no userAgentData, UA fields default to unknown/desktop', async () => {
+    test('when no userAgentProvider and no userAgentData, UA fields are undefined and raw userAgent is set', async () => {
         // Init — ensure no userAgentData
         const origUAD = (navigator as any).userAgentData;
         delete (navigator as any).userAgentData;
@@ -681,11 +681,12 @@ describe('SessionManager tests', () => {
         const attributes: Attributes = sessionManager.getAttributes();
 
         // Assert
-        expect(attributes.browserName).toEqual('unknown');
-        expect(attributes.browserVersion).toEqual('unknown');
-        expect(attributes.osName).toEqual('unknown');
-        expect(attributes.osVersion).toEqual('unknown');
+        expect(attributes.browserName).toBeUndefined();
+        expect(attributes.browserVersion).toBeUndefined();
+        expect(attributes.osName).toBeUndefined();
+        expect(attributes.osVersion).toBeUndefined();
         expect(attributes.deviceType).toEqual('desktop');
+        expect(attributes['aws:userAgent']).toEqual(navigator.userAgent);
 
         // Restore
         if (origUAD !== undefined) {
@@ -693,7 +694,7 @@ describe('SessionManager tests', () => {
         }
     });
 
-    test('when no userAgentProvider and userAgentData available, uses userAgentData', async () => {
+    test('when userAgentDataProvider is set and userAgentData available, uses userAgentData', async () => {
         // Init — mock userAgentData
         const origUAD = (navigator as any).userAgentData;
         (navigator as any).userAgentData = {
@@ -705,9 +706,14 @@ describe('SessionManager tests', () => {
             platform: 'macOS'
         };
 
+        const { userAgentDataProvider } = await import(
+            '../../orchestration/config'
+        );
+
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            allowCookies: false
+            allowCookies: false,
+            userAgentProvider: userAgentDataProvider
         });
 
         // Run
@@ -718,8 +724,9 @@ describe('SessionManager tests', () => {
         expect(attributes.browserName).toEqual('Google Chrome');
         expect(attributes.browserVersion).toEqual('144');
         expect(attributes.osName).toEqual('macOS');
-        expect(attributes.osVersion).toEqual('unknown');
+        expect(attributes.osVersion).toBeUndefined();
         expect(attributes.deviceType).toEqual('desktop');
+        expect(attributes['aws:userAgent']).toBeUndefined();
 
         // Restore
         if (origUAD !== undefined) {

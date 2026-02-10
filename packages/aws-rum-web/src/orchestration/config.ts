@@ -41,10 +41,10 @@ const UNKNOWN = 'unknown';
 const uaParserProvider = (): UserAgentDetails => {
     const ua = new UAParser(navigator.userAgent).getResult();
     return {
-        browserName: ua.browser.name ?? UNKNOWN,
-        browserVersion: ua.browser.version ?? UNKNOWN,
-        osName: ua.os.name ?? UNKNOWN,
-        osVersion: ua.os.version ?? UNKNOWN,
+        browserName: ua.browser.name,
+        browserVersion: ua.browser.version,
+        osName: ua.os.name,
+        osVersion: ua.os.version,
         deviceType: ua.device.type ?? DESKTOP_DEVICE_TYPE
     };
 };

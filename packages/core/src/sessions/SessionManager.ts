@@ -1,7 +1,7 @@
 import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
-import { Config, UserAgentDetails } from '../orchestration/config';
+import { Config } from '../orchestration/config';
 import { Page, PageManager } from './PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
@@ -29,10 +29,10 @@ export type Attributes = {
     // The custom release id, to match a source map
     'aws:releaseId'?: string;
     browserLanguage: string;
-    browserName: string;
-    browserVersion: string;
-    osName: string;
-    osVersion: string;
+    browserName?: string;
+    browserVersion?: string;
+    osName?: string;
+    osVersion?: string;
     // Possible device types include {console, mobile, tablet, smarttv, wearable, embedded}. If the device
     // type is undefined, there was no information indicating the device is anything other than a desktop,
     // so we assume the device is a desktop.
@@ -279,18 +279,23 @@ export class SessionManager {
     }
 
     private collectAttributes() {
-        const ua = this.config.userAgentProvider?.() ?? userAgentDataFallback();
+        const ua = this.config.userAgentProvider?.();
         this.attributes = {
             browserLanguage: navigator.language,
-            browserName: ua.browserName,
-            browserVersion: ua.browserVersion,
-            osName: ua.osName,
-            osVersion: ua.osVersion,
-            deviceType: ua.deviceType,
+            browserName: ua?.browserName,
+            browserVersion: ua?.browserVersion,
+            osName: ua?.osName,
+            osVersion: ua?.osVersion,
+            deviceType: ua?.deviceType ?? DESKTOP_DEVICE_TYPE,
             platformType: WEB_PLATFORM_TYPE,
             domain: window.location.hostname,
             'aws:releaseId': this.config.releaseId
         };
+        // When no userAgentProvider resolved UA fields, include the raw
+        // User-Agent string so the server can parse it.
+        if (!ua) {
+            this.attributes['aws:userAgent'] = navigator.userAgent;
+        }
     }
 
     /**
@@ -307,33 +312,3 @@ export class SessionManager {
         return Math.random() < this.config.sessionSampleRate;
     }
 }
-
-/**
- * Best-effort UA detection using navigator.userAgentData (Chromium only).
- * Falls back to UNKNOWN/desktop when unavailable (Firefox, Safari).
- */
-const userAgentDataFallback = (): UserAgentDetails => {
-    const uad = (navigator as any).userAgentData;
-    if (!uad) {
-        return {
-            browserName: UNKNOWN,
-            browserVersion: UNKNOWN,
-            osName: UNKNOWN,
-            osVersion: UNKNOWN,
-            deviceType: DESKTOP_DEVICE_TYPE
-        };
-    }
-    // Pick the most specific brand (skip "Chromium" and GREASE brands like "Not A;Brand")
-    const brands: { brand: string; version: string }[] = uad.brands ?? [];
-    const brand =
-        brands.find(
-            (b) => b.brand !== 'Chromium' && !b.brand.startsWith('Not')
-        ) ?? brands[0];
-    return {
-        browserName: brand?.brand ?? UNKNOWN,
-        browserVersion: brand?.version ?? UNKNOWN,
-        osName: uad.platform ?? UNKNOWN,
-        osVersion: UNKNOWN,
-        deviceType: uad.mobile ? 'mobile' : DESKTOP_DEVICE_TYPE
-    };
-};

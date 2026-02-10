@@ -26,11 +26,11 @@ export type CompressionStrategy = {
 export type Telemetry = string | (string | object)[];
 
 export type UserAgentDetails = {
-    browserName: string;
-    browserVersion: string;
-    osName: string;
-    osVersion: string;
-    deviceType: string;
+    browserName?: string;
+    browserVersion?: string;
+    osName?: string;
+    osVersion?: string;
+    deviceType?: string;
 };
 
 export interface Config {
@@ -75,10 +75,32 @@ export interface Config {
     alias?: string;
     headers?: Record<string, string>;
     enableW3CTraceId: boolean;
-    userAgentProvider?: () => UserAgentDetails;
+    userAgentProvider?: () => UserAgentDetails | undefined;
 }
 
 export interface PartialConfig
     extends Omit<Partial<Config>, 'cookieAttributes'> {
     cookieAttributes?: PartialCookieAttributes;
 }
+
+/**
+ * Best-effort UA detection using navigator.userAgentData (Chromium only).
+ * Returns undefined when userAgentData is not available.
+ */
+export const userAgentDataProvider = (): UserAgentDetails | undefined => {
+    const uad = (navigator as any).userAgentData;
+    if (!uad) {
+        return undefined;
+    }
+    const brands: { brand: string; version: string }[] = uad.brands ?? [];
+    const brand =
+        brands.find(
+            (b) => b.brand !== 'Chromium' && !b.brand.startsWith('Not')
+        ) ?? brands[0];
+    return {
+        browserName: brand?.brand,
+        browserVersion: brand?.version,
+        osName: uad.platform,
+        deviceType: uad.mobile ? 'mobile' : 'desktop'
+    };
+};

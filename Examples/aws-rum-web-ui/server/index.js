@@ -115,9 +115,43 @@ app.all(
             req.body.RumEvents &&
             Array.isArray(req.body.RumEvents)
         ) {
-            const { AppMonitorDetails, UserDetails } = req.body;
+            const { AppMonitorDetails, UserDetails, Metadata } = req.body;
+
+            // Payload-level Metadata contains session-level fields common
+            // to all events in the batch (browser, OS, domain, etc.).
+            // Merge into each event's metadata so consumers see the full
+            // picture: { ...payloadMetadata, ...eventMetadata }
+            let payloadMetadata = {};
+            if (Metadata) {
+                try {
+                    payloadMetadata =
+                        typeof Metadata === 'string'
+                            ? JSON.parse(Metadata)
+                            : Metadata;
+                } catch (e) {
+                    console.error('Failed to parse payload Metadata:', e);
+                }
+            }
 
             req.body.RumEvents.forEach((event) => {
+                // Inherit payload-level metadata into event metadata
+                if (event.metadata) {
+                    try {
+                        const eventMeta =
+                            typeof event.metadata === 'string'
+                                ? JSON.parse(event.metadata)
+                                : event.metadata;
+                        event.metadata = JSON.stringify({
+                            ...payloadMetadata,
+                            ...eventMeta
+                        });
+                    } catch (e) {
+                        // leave as-is if parse fails
+                    }
+                } else if (Object.keys(payloadMetadata).length) {
+                    event.metadata = JSON.stringify(payloadMetadata);
+                }
+
                 const eventEntry = {
                     appmonitorId: req.params.appmonitorId,
                     requestTimestamp: requestEntry.timestamp,
