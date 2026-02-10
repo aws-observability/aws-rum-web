@@ -106,51 +106,141 @@ aws-rum-web/                         (monorepo root)
 -   **Testing without publishing**: npm workspaces auto-link packages locally via symlinks
 -   **Validation**: Bundle size must be identical, all tests must pass
 
-## Phase 2: Extract Slim Distribution (TBD)
+## Phase 2b: Extract Slim Distribution
+
+### Heavy Module Analysis
+
+Bundle: 159KB raw / 44KB gzip (minified). All numbers below measured by stubbing deps and rebuilding with webpack production mode.
+
+**Per-dependency cost (minified):**
+
+| Module group | Pre-minified | Minified | Gzip | Pulled in by |
+| --- | --- | --- | --- | --- |
+| Auth + signing (deps) | ~126 KiB | 29 KB | 9.6 KB | `DataPlaneClient`, `Authentication` |
+| ↳ `@smithy/signature-v4` | 65.5 KiB | — | — | `DataPlaneClient` (request signing) |
+| ↳ `@aws-crypto/sha256-js` + tslib | 23.2 KiB | — | — | `DataPlaneClient` (SigV4 hashing) |
+| ↳ `@smithy/fetch-http-handler` | 15.3 KiB | — | — | `Authentication` (Cognito HTTP calls) |
+| ↳ `@smithy/protocol-http` | 7.2 KiB | — | — | `DataPlaneClient`, `FetchHttpHandler`, `BeaconHttpHandler` |
+| ↳ `@smithy/other` + `@aws-sdk/*` | ~15 KiB | — | — | Various Smithy/SDK utilities |
+| Auth + signing (app code) | 36.8 KiB | ~15 KB | ~5 KB | `Authentication.ts`, `BasicAuthentication.ts`, `EnhancedAuthentication.ts`, `CognitoIdentityClient.ts`, `StsClient.ts` |
+| `ua-parser-js` | 53.7 KiB | 19 KB | 8.4 KB | `NavigationPlugin` (browser/OS detection) |
+| `web-vitals` | 24.4 KiB | 10.4 KB | 3.3 KB | `WebVitalsPlugin`, `VisuallyReadySearch` |
+| `uuid` | 22.4 KiB | 0.5 KB | 0.2 KB | `Dispatch` (batch IDs) |
+| `shimmer` | 2.9 KiB | 1.1 KB | 0.4 KB | `FetchPlugin`, `XhrPlugin` (monkey-patching) |
+| `rrweb` | 0 (tree-shaken) | 0 | 0 | `RRWebPlugin` — only in NPM barrel, not CDN entry |
+
+Note: Auth app code (36.8 KiB pre-minified) is currently pulled in unconditionally because `Dispatch.ts` statically imports `BasicAuthentication`/`EnhancedAuthentication`. Phase 2b.1 severs these imports so the app code is also tree-shaken.
+
+**Pre-minified app code by directory (231 KiB total → 98 KB minified / 22 KB gzip):**
+
+| Directory | Pre-minified | Notes |
+| --- | --- | --- |
+| `dispatch/` | 81.8 KiB | 36.8 KiB is auth app code (removed in slim) |
+| `plugins/event-plugins/` | 54.7 KiB | All 10 built-in plugins |
+| `sessions/` | 25.3 KiB | SessionManager, PageManager, VirtualPageLoadTimer |
+| `plugins/other` | 17.4 KiB | InternalPlugin, PluginManager, http-utils |
+| `orchestration/` | 14.8 KiB | Orchestration + config |
+| `event-cache/` | 11.5 KiB | EventCache |
+| `utils/` | 11.3 KiB | Shared utilities |
+| `root` | 9.5 KiB | CommandQueue, index-browser |
+| `remote-config/` | 4.9 KiB | Remote config fetching |
+
+### Bundle Size Scenarios
+
+Assumes full decoupling of auth app code + third-party deps (Phase 2b complete):
+
+| Scenario                               | Raw     | Gzip   | Savings vs full |
+| -------------------------------------- | ------- | ------ | --------------- |
+| Full (`cwr.js`) — current              | 159 KB  | 44 KB  | —               |
+| No auth/signing (deps + app code)      | ~115 KB | ~30 KB | −14 KB gz       |
+| No auth + no ua-parser                 | ~96 KB  | ~21 KB | −23 KB gz       |
+| No auth + no ua-parser + no web-vitals | ~86 KB  | ~18 KB | −26 KB gz       |
+| Bare minimum (app code + uuid only)    | ~84 KB  | ~17 KB | −27 KB gz       |
+
+Note: `uuid` (0.2 KB gz) and `shimmer` (0.4 KB gz) are negligible after minification. `rrweb` is already tree-shaken from the CDN bundle.
+
+Auth dependency chain:
+
+```
+Orchestration → Dispatch.setCognitoCredentials()
+                  → BasicAuthentication → CognitoIdentityClient → @smithy/fetch-http-handler
+                  → EnhancedAuthentication → StsClient → @smithy/fetch-http-handler
+                → DataPlaneClient → SignatureV4, Sha256, @smithy/protocol-http
+```
+
+**Key problem**: `Dispatch.ts` statically imports `BasicAuthentication` and `EnhancedAuthentication`. Even when `signing: false`, webpack can't tree-shake them. Auth code is pulled in unconditionally.
+
+### Decided Approach: Dependency Injection
+
+**Strategy**: Make auth pluggable via dependency injection. Core's `Dispatch` accepts an optional auth provider instead of statically importing auth classes. Distribution packages inject (or don't inject) auth at the orchestration layer.
+
+Specific changes:
+
+1. **`Dispatch.ts`**: Remove static imports of `BasicAuthentication`/`EnhancedAuthentication`. Change `setCognitoCredentials()` to accept a credential provider factory function instead of constructing auth internally.
+
+2. **`DataPlaneClient.ts`**: Split into two variants:
+
+    - Core keeps a `DataPlaneClient` that does NOT import `SignatureV4`/`Sha256` — sends unsigned requests only
+    - `aws-rum-web` provides a `SigningDataPlaneClient` (or wraps via `clientBuilder`) that adds signing
+
+3. **`aws-rum-web` Orchestration**: Injects real `BasicAuthentication`/`EnhancedAuthentication` into Dispatch, provides signing `clientBuilder`
+
+4. **`aws-rum-slim` Orchestration**: Never injects auth — those modules never get bundled. Uses unsigned `DataPlaneClient` only.
 
 ### Target Structure
 
 ```
 packages/
 ├── core/                            @aws-rum-web/core
-│   └── src/                         Unchanged from Phase 1
+│   └── src/
+│       └── dispatch/
+│           ├── Dispatch.ts          Auth-agnostic (DI-based)
+│           ├── DataPlaneClient.ts   Unsigned requests only
+│           ├── FetchHttpHandler.ts  Kept (no signing deps)
+│           ├── BeaconHttpHandler.ts Kept (no signing deps)
+│           └── ...
 │
-├── slim/                            aws-rum-slim (new)
-│   ├── src/
-│   │   ├── index.ts                 Re-exports core, no auth
-│   │   └── index-browser.ts         CDN entry
-│   ├── webpack/
-│   └── package.json                 deps: @aws-rum-web/core
+├── aws-rum-web/                     aws-rum-web (full distribution)
+│   └── src/
+│       ├── orchestration/           Injects auth + signing clientBuilder
+│       ├── auth/                    Re-exports core auth classes
+│       └── signing/                 SigningDataPlaneClient wrapper
 │
-└── aws-rum-web/                     aws-rum-web (refactored)
-    ├── src/
-    │   ├── index.ts                 Re-exports slim + adds auth
-    │   └── index-browser.ts         CDN entry
-    └── package.json                 deps: aws-rum-slim
+└── aws-rum-slim/                    aws-rum-slim (new, no auth)
+    └── src/
+        ├── orchestration/           No auth injection, signing: false
+        ├── index.ts
+        └── index-browser.ts         CDN entry → cwr-slim.js
 ```
 
 ### Dependency Graph
 
 ```
-aws-rum-web → aws-rum-slim → @aws-rum-web/core
+aws-rum-web  → @aws-rum-web/core (+ auth/signing modules from core)
+aws-rum-slim → @aws-rum-web/core (no auth modules pulled in)
 ```
 
-### Approach (Decided in Phase 2)
+Both distribution packages depend on core independently. `aws-rum-web` does NOT depend on `aws-rum-slim` — this avoids unnecessary coupling and keeps each distribution's webpack tree-shaking independent.
 
-Options for making auth optional:
+### What Stays in Core vs. Moves
 
-1. Separate `@aws-rum-web/auth` package — slim doesn't import it
-2. Feature flag in core — slim hardcodes `signing: false`
-3. Stub implementations — slim provides no-op auth classes
+Auth files stay in `packages/core/src/dispatch/` but are NOT imported by core's `Dispatch.ts`:
 
-Decision deferred until Phase 1 is stable.
+-   `Authentication.ts`, `BasicAuthentication.ts`, `EnhancedAuthentication.ts`
+-   `CognitoIdentityClient.ts`, `StsClient.ts`
+-   `SignatureV4` / `Sha256` usage in `DataPlaneClient.ts` (extracted to signing variant)
+
+This means they exist in core's source tree but are only pulled into the bundle when a distribution package explicitly imports them.
 
 ## Expected Bundle Sizes
 
-| Distribution                 | Contents    | Est. Size (gzip)      |
-| ---------------------------- | ----------- | --------------------- |
-| `aws-rum-web` (cwr.js)       | core + auth | ~44KB (same as today) |
-| `aws-rum-slim` (cwr-slim.js) | core only   | ~18-22KB              |
+Measured by stubbing heavy dependencies and rebuilding with webpack production mode:
+
+| Distribution | Contents | Raw | Gzip |
+| --- | --- | --- | --- |
+| `aws-rum-web` (cwr.js) | core + auth + ua-parser | 159KB | 44KB |
+| `aws-rum-slim` (cwr-slim.js) — auth only removed | core + ua-parser | ~115KB | ~30KB |
+| `aws-rum-slim` (cwr-slim.js) — auth + ua-parser removed | core only | ~96KB | ~21KB |
 
 ## Workspace Tooling
 
