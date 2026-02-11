@@ -1,21 +1,21 @@
 export {
-    Config,
-    PartialConfig,
-    CookieAttributes,
-    PartialCookieAttributes,
-    CompressionStrategy,
-    Telemetry,
-    PageIdFormat,
-    UserAgentDetails,
+    type Config,
+    type PartialConfig,
+    type CookieAttributes,
+    type PartialCookieAttributes,
+    type CompressionStrategy,
+    type Telemetry,
+    type PageIdFormat,
+    type UserAgentDetails,
     userAgentDataProvider
 } from './orchestration/config';
-export { ClientBuilder } from './dispatch/Dispatch';
-export { CognitoCredentialProviderFactory } from './dispatch/Dispatch';
-export { SigningConfigFactory } from './dispatch/Dispatch';
-export { SigningConfig } from './dispatch/DataPlaneClient';
-export { PageAttributes } from './sessions/PageManager';
-export { Plugin } from './plugins/Plugin';
-export { PluginContext } from './plugins/types';
+export { type ClientBuilder } from './dispatch/Dispatch';
+export { type CognitoCredentialProviderFactory } from './dispatch/Dispatch';
+export { type SigningConfigFactory } from './dispatch/Dispatch';
+export { type SigningConfig } from './dispatch/DataPlaneClient';
+export { type PageAttributes } from './sessions/PageManager';
+export { type Plugin } from './plugins/Plugin';
+export { type PluginContext } from './plugins/types';
 export { TTIPlugin } from './plugins/event-plugins/TTIPlugin';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';
