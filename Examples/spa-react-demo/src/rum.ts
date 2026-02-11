@@ -1,4 +1,4 @@
-import { AwsRum, type AwsRumConfig } from 'aws-rum-slim';
+import { AwsRum, type AwsRumConfig } from '@aws-rum-web/slim';
 import { FetchPlugin, RRWebPlugin } from '@aws-rum-web/core';
 
 try {
