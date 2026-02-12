@@ -38,4 +38,10 @@ export interface Plugin<UpdateType = unknown> {
      * @param updateWith Data that the plugin will use to update its config.
      */
     update?(updateWith: UpdateType): void;
+
+    /**
+     * Flush cached events. The plugin should call context.record() with
+     * any buffered events so they are included in the next dispatch.
+     */
+    flush?(): void;
 }

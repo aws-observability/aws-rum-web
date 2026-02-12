@@ -1,4 +1,4 @@
-import { AwsRum, type AwsRumConfig } from 'aws-rum-web';
+import { AwsRum, RRWebPlugin, type AwsRumConfig } from 'aws-rum-web';
 
 try {
     const config: AwsRumConfig = {
@@ -8,14 +8,15 @@ try {
         endpoint: 'http://localhost:3000',
         telemetries: [
             'errors',
-            'performance',
-            ['http', { recordAllRequests: true }]
-            // "sessionreplay",
+            // 'performance',
+            ['http', { recordAllRequests: false }]
         ],
         allowCookies: true,
-        enableXRay: true,
+        enableXRay: false,
         debug: true,
-        signing: false
+        signing: false,
+        compressionStrategy: { enabled: true },
+        eventPluginsToLoad: [new RRWebPlugin()]
     };
 
     const APPLICATION_ID: string = '93755407-009b-4396-9280-0104beb732a9';

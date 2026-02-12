@@ -1,0 +1,40 @@
+{
+    "$id": "com.amazon.rum.session_replay_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "SessionReplayEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "events": {
+            "type": "array",
+            "description": "Batch of rrweb recording events.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "number",
+                        "description": "rrweb event type."
+                    },
+                    "timestamp": {
+                        "type": "number",
+                        "description": "Unix timestamp in milliseconds."
+                    },
+                    "data": {
+                        "description": "rrweb event payload."
+                    }
+                },
+                "required": ["type", "timestamp", "data"]
+            }
+        },
+        "eventCount": {
+            "type": "number",
+            "description": "Number of events in this batch."
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "events", "eventCount"]
+}

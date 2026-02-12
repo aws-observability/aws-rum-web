@@ -283,24 +283,24 @@ export class Dispatch {
         }
     }
 
-    private doRequest(flushCandidates = false): boolean {
+    private doRequest(flush = false): boolean {
         if (!this.enabled) {
             return false;
         }
 
-        if (flushCandidates && this.eventCache.hasCandidates()) {
+        if (flush && this.eventCache.hasCandidates()) {
             return true;
         }
 
         return this.eventCache.hasEvents();
     }
 
-    private createRequest(flushCandidates = false): PutRumEventsRequest {
+    private createRequest(flush = false): PutRumEventsRequest {
         return {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
-            RumEvents: this.eventCache.getEventBatch(flushCandidates),
+            RumEvents: this.eventCache.getEventBatch(flush),
             Alias: this.config.alias
         };
     }

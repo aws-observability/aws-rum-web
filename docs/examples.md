@@ -40,6 +40,7 @@ For example, the following plugin records an event whenever the end-user scrolls
 ```typescript
 class MyScrollEventPlugin implements Plugin {
     protected context!: PluginContext;
+    private bufferedEvents: any[] = [];
 
     constructor() {
         this.id = 'MyScrollEventPlugin';
@@ -62,8 +63,20 @@ class MyScrollEventPlugin implements Plugin {
         return this.id;
     }
 
+    // Optional: flush any buffered events. Called by the web client during
+    // page unload so buffered data is not lost. Implement this method when
+    // your plugin batches events before recording them.
+    flush() {
+        if (this.bufferedEvents.length > 0) {
+            this.context.record('my_scroll_events', {
+                events: this.bufferedEvents
+            });
+            this.bufferedEvents = [];
+        }
+    }
+
     private eventHandler = (scrollEvent: Event) => {
-        this.record({ elementId: scrollEvent.target.id });
+        this.bufferedEvents.push({ elementId: scrollEvent.target.id });
     };
 }
 ```

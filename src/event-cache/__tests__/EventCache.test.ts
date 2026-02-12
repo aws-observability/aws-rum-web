@@ -702,4 +702,26 @@ describe('EventCache tests', () => {
         expect(batch.length).toBe(1);
         expect(JSON.parse(batch[0].details)).toEqual({ data: '2' });
     });
+
+    test('getEventBatch calls pluginFlushHook when flush is true', async () => {
+        const eventCache = createDefaultEventCache();
+        const hook = jest.fn();
+        eventCache.setPluginFlushHook(hook);
+
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+        eventCache.getEventBatch(true);
+
+        expect(hook).toHaveBeenCalledTimes(1);
+    });
+
+    test('getEventBatch does not call pluginFlushHook when flush is false', async () => {
+        const eventCache = createDefaultEventCache();
+        const hook = jest.fn();
+        eventCache.setPluginFlushHook(hook);
+
+        eventCache.recordEvent('com.amazon.rum.event1', {});
+        eventCache.getEventBatch();
+
+        expect(hook).not.toHaveBeenCalled();
+    });
 });

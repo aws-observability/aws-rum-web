@@ -36,6 +36,8 @@ export class EventCache {
     private enabled: boolean;
     private installationMethod: string;
 
+    private pluginFlushHook?: () => void;
+
     // Enable config.debug mode
     private droppedEvent = 0; // tracks dropped event count due to insufficient `eventCache`
     private sessionLimitExceeded = 0; // tracks dropped event count due to insufficieent `sessionEventLimit`
@@ -78,6 +80,10 @@ export class EventCache {
      */
     public disable(): void {
         this.enabled = false;
+    }
+
+    public setPluginFlushHook(fn: () => void) {
+        this.pluginFlushHook = fn;
     }
 
     /**
@@ -218,7 +224,7 @@ export class EventCache {
     /**
      * Removes and returns the next batch of events.
      */
-    public getEventBatch(flushCandidates = false): RumEvent[] {
+    public getEventBatch(flush = false): RumEvent[] {
         if (this.droppedEvent > 0) {
             const total = this.events.length + this.droppedEvent;
             InternalLogger.warn(
@@ -239,8 +245,13 @@ export class EventCache {
 
         let batch: RumEvent[] = [];
 
+        if (flush) {
+            // Flush plugins so their cached events land in this batch
+            this.pluginFlushHook?.();
+        }
+
         // Prioritize candidates in the next event batch
-        if (flushCandidates && this.hasCandidates()) {
+        if (flush && this.hasCandidates()) {
             // Pull all candidates if they fit in the batch
             if (this.candidates.size <= this.config.batchLimit) {
                 batch = Array.from(this.candidates.values());

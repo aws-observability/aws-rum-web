@@ -53,7 +53,8 @@ jest.mock('../../event-cache/EventCache', () => ({
         recordPageView,
         addSessionAttributes,
         recordEvent,
-        isSessionSampled
+        isSessionSampled,
+        setPluginFlushHook: jest.fn()
     }))
 }));
 
