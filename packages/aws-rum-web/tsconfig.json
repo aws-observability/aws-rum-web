@@ -6,7 +6,13 @@
         "noEmit": true,
         "paths": {
             "@aws-rum-web/core": ["../core/src"],
-            "@aws-rum-web/core/*": ["../core/src/*"]
+            "@aws-rum-web/core/*": ["../core/src/*"],
+            "@aws-rum-web/slim/CommandQueue": [
+                "../aws-rum-slim/src/CommandQueue"
+            ],
+            "@aws-rum-web/slim/orchestration/Orchestration": [
+                "../aws-rum-slim/src/orchestration/Orchestration"
+            ]
         }
     },
     "include": ["src/**/*"]

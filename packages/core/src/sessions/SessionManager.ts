@@ -1,7 +1,7 @@
 import { storeCookie, getCookie } from '../utils/cookies-utils';
 
 import { v4 } from 'uuid';
-import { Config } from '../orchestration/config';
+import { Config, userAgentDataProvider } from '../orchestration/config';
 import { Page, PageManager } from './PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
@@ -279,7 +279,7 @@ export class SessionManager {
     }
 
     private collectAttributes() {
-        const ua = this.config.userAgentProvider?.();
+        const ua = userAgentDataProvider();
         this.attributes = {
             browserLanguage: navigator.language,
             browserName: ua?.browserName,
@@ -291,8 +291,8 @@ export class SessionManager {
             domain: window.location.hostname,
             'aws:releaseId': this.config.releaseId
         };
-        // When no userAgentProvider resolved UA fields, include the raw
-        // User-Agent string so the server can parse it.
+        // When userAgentData is not available (Firefox/Safari), include the
+        // raw User-Agent string so the server can parse it.
         if (!ua) {
             this.attributes['aws:userAgent'] = navigator.userAgent;
         }

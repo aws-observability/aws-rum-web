@@ -175,8 +175,7 @@ describe('Orchestration tests', () => {
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             ...DEFAULT_CONFIG,
             candidatesCacheSize: 10,
-            fetchFunction: fetch,
-            userAgentProvider: expect.any(Function)
+            fetchFunction: fetch
         });
     });
 
@@ -193,8 +192,7 @@ describe('Orchestration tests', () => {
         expect(EventCache).toHaveBeenCalledTimes(1);
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             ...DEFAULT_CONFIG,
-            fetchFunction: fetch,
-            userAgentProvider: expect.any(Function)
+            fetchFunction: fetch
         });
     });
 

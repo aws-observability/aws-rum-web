@@ -3,17 +3,8 @@ import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 
 export type CommandFunction = (payload?: any) => void;
 
-interface CommandFunctions {
-    addSessionAttributes: CommandFunction;
-    recordPageView: CommandFunction;
-    recordError: CommandFunction;
-    registerDomEvents: CommandFunction;
-    recordEvent: CommandFunction;
-    dispatch: CommandFunction;
-    dispatchBeacon: CommandFunction;
-    enable: CommandFunction;
-    disable: CommandFunction;
-    allowCookies: CommandFunction;
+export interface CommandFunctions {
+    [key: string]: CommandFunction;
 }
 
 export type Command = { c: string; p: any };
@@ -30,9 +21,9 @@ export type AwsRumClientInit = {
 };
 
 export class CommandQueue {
-    private orchestration!: Orchestration;
+    protected orchestration!: Orchestration;
 
-    private commandHandlerMap: CommandFunctions = {
+    protected commandHandlerMap: CommandFunctions = {
         addSessionAttributes: (payload: { [k: string]: any }): void => {
             this.orchestration.addSessionAttributes(payload);
         },
@@ -82,8 +73,7 @@ export class CommandQueue {
     }
 
     public async push(command: Command) {
-        const commandHandler =
-            this.commandHandlerMap[command.c as keyof CommandFunctions];
+        const commandHandler = this.commandHandlerMap[command.c];
         if (commandHandler) {
             commandHandler(command.p);
         } else {
@@ -91,7 +81,7 @@ export class CommandQueue {
         }
     }
 
-    private initCwr(awsRum: AwsRumClientInit) {
+    protected initCwr(awsRum: AwsRumClientInit) {
         if (awsRum.c) {
             awsRum.c.client = INSTALL_SCRIPT;
         } else {

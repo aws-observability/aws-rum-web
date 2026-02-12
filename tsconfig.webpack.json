@@ -10,7 +10,8 @@
         "packages/aws-rum-web/src/index-browser.ts",
         "packages/aws-rum-web/src/orchestration/**/*.ts",
         "packages/aws-rum-web/src/remote-config/**/*.ts",
-        "packages/aws-rum-web/src/CommandQueue.ts"
+        "packages/aws-rum-web/src/CommandQueue.ts",
+        "packages/aws-rum-slim/src/**/*.ts"
     ],
     "exclude": [
         "**/__tests__/**",

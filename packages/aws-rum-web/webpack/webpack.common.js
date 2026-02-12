@@ -11,7 +11,11 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.js', '.json'],
         alias: {
-            '@aws-rum-web/core': path.resolve(__dirname, '../../core/src')
+            '@aws-rum-web/core': path.resolve(__dirname, '../../core/src'),
+            '@aws-rum-web/slim': path.resolve(
+                __dirname,
+                '../../aws-rum-slim/src'
+            )
         }
     },
     plugins: [new CaseSensitivePathsPlugin()],

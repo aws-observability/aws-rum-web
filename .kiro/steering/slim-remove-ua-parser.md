@@ -6,6 +6,12 @@
 
 `ua-parser-js` (19.3 KB raw / 27% of slim bundle) is imported by `SessionManager.collectAttributes()` in core. Because `SessionManager` is essential infrastructure (created by `EventCache`), the dependency is always bundled — even in `aws-rum-slim` where server-side UA parsing is the intended approach.
 
+### GitHub context
+
+-   [#507 — Slim Build](https://github.com/aws-observability/aws-rum-web/issues/507): Requested a slim distribution without auth dependencies for proxy-endpoint users. Drove the entire monorepo + slim distribution work (Phase 1–2b). Auth extraction is done; ua-parser-js is the next largest remaining dependency in slim.
+-   [#294 — Accept navigator.userAgent in the dataplane API](https://github.com/aws-observability/aws-rum-web/issues/294): @JoshBarr explicitly calls out `ua-parser-js` (~6KB gzip) as too heavy for embedding RUM in a library with a strict performance budget. Proposes the dataplane API accept the raw UA string instead of requiring client-side parsing. Part 1 (DI) makes ua-parser optional; Part 2 (`aws:userAgent` in payload metadata) directly addresses this request.
+-   [#305 — Don't require authentication to post metrics](https://github.com/aws-observability/aws-rum-web/issues/305): Same author as #294. Argues RUM should be fire-and-forget without Cognito/STS coordination. Resolved by `aws-rum-slim` (Phase 2b).
+
 ### Current code
 
 ```typescript
