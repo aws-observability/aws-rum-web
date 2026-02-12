@@ -31,7 +31,14 @@ export const RRWEB_PLUGIN_ID = 'rrweb';
 
 /** Configuration options for {@link RRWebPlugin}. */
 export type RRWebPluginConfig = {
-    /** Probability (0–1) of recording replay for a session, applied on top of sessionSampleRate. */
+    /**
+     * Probability (0–1) of recording replay for a session, applied on top
+     * of the global `sessionSampleRate`.
+     *
+     * Effective replay rate = sessionSampleRate × additionalSampleRate.
+     * Example: 0.5 sessionSampleRate × 0.05 additionalSampleRate = 2.5%
+     * of all visits are recorded with replay.
+     */
     additionalSampleRate: number;
     /** Number of rrweb events to buffer before automatically flushing a batch. */
     batchSize: number;
@@ -61,17 +68,6 @@ export const RRWEB_CONFIG_PROD: RRWebPluginConfig = {
         maskAllInputs: true,
         maskTextSelector: '*'
     }
-};
-
-/** Development defaults — privacy masking disabled for easier debugging. */
-export const RRWEB_CONFIG_DEV: RRWebPluginConfig = {
-    ...RRWEB_CONFIG_PROD,
-    recordOptions: {
-        ...RRWEB_CONFIG_PROD.recordOptions,
-        maskAllInputs: false,
-        maskTextSelector: undefined,
-        maskInputOptions: {}
-    } as recordOptions<unknown>
 };
 
 const defaultConfig = RRWEB_CONFIG_PROD;

@@ -1,11 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import {
-    RRWebPlugin,
-    RRWEB_CONFIG_PROD,
-    RRWEB_CONFIG_DEV
-} from '../RRWebPlugin';
+import { RRWebPlugin, RRWEB_CONFIG_PROD } from '../RRWebPlugin';
 import { context, record, getSession } from '../../../test-utils/test-utils';
 import { RRWEB_EVENT_TYPE } from '../../utils/constant';
 import type { SessionReplayEvent } from '../../../events/session-replay-event';
@@ -64,18 +60,6 @@ describe('RRWebPlugin', () => {
                 recordCrossOriginIframes: false,
                 maskAllInputs: true,
                 maskTextSelector: '*'
-            }
-        });
-    });
-
-    test('RRWEB_CONFIG_DEV disables privacy masking', () => {
-        expect(RRWEB_CONFIG_DEV).toEqual({
-            ...RRWEB_CONFIG_PROD,
-            recordOptions: {
-                ...RRWEB_CONFIG_PROD.recordOptions,
-                maskAllInputs: false,
-                maskTextSelector: undefined,
-                maskInputOptions: {}
             }
         });
     });
