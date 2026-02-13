@@ -32,4 +32,4 @@ export const SESSION_START_EVENT_TYPE = `${RUM_AMZ_PREFIX}.session_start_event`;
 export const TIME_TO_INTERACTIVE_EVENT_TYPE = `${RUM_AMZ_PREFIX}.time_to_interactive_event`;
 
 // RRWeb session recording event
-export const RRWEB_EVENT_TYPE = `${RUM_AMZ_PREFIX}.rrweb`;
+export const RRWEB_EVENT_TYPE = `${RUM_AMZ_PREFIX}.rrweb_event`;

@@ -1,7 +1,7 @@
 {
-    "$id": "com.amazon.rum.session_replay_event",
+    "$id": "com.amazon.rum.rrweb_event",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "SessionReplayEvent",
+    "title": "RRWebEvent",
     "type": "object",
     "properties": {
         "version": {
