@@ -4,7 +4,7 @@
 import { RRWebPlugin, RRWEB_CONFIG_PROD } from '../RRWebPlugin';
 import { context, record, getSession } from '../../../test-utils/test-utils';
 import { RRWEB_EVENT_TYPE } from '../../utils/constant';
-import type { SessionReplayEvent } from '../../../events/session-replay-event';
+import type { RRWebEvent } from '../../../events/rrweb-event';
 import { record as rrwebRecord } from 'rrweb';
 
 jest.mock('rrweb', () => ({
@@ -163,7 +163,7 @@ describe('RRWebPlugin', () => {
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(RRWEB_EVENT_TYPE);
 
-        const payload = record.mock.calls[0][1] as SessionReplayEvent;
+        const payload = record.mock.calls[0][1] as RRWebEvent;
         expect(payload).toEqual({
             version: '1.0.0',
             events: [event1, event2],
@@ -259,7 +259,7 @@ describe('RRWebPlugin', () => {
         plugin.flush();
 
         expect(record).toHaveBeenCalledTimes(1);
-        const payload = record.mock.calls[0][1] as SessionReplayEvent;
+        const payload = record.mock.calls[0][1] as RRWebEvent;
         expect(payload.eventCount).toBe(2);
     });
 

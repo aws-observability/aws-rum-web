@@ -43,7 +43,7 @@ test.describe('RRWebPlugin', () => {
         const body1 = await page.locator('#request_body').textContent();
         const replay1 = getReplayEvents(body1!);
 
-        // Should have at least one SessionReplayEvent with correct structure
+        // Should have at least one RRWebEvent with correct structure
         expect(replay1.length).toBeGreaterThanOrEqual(1);
         expect(replay1[0].details.version).toBe('1.0.0');
         expect(replay1[0].details.events.length).toBeGreaterThan(0);
@@ -165,7 +165,7 @@ test.describe('RRWebPlugin', () => {
         expect(incrementalSources).toContain(3); // Scroll
         expect(incrementalSources).toContain(5); // Input
 
-        // Every SessionReplayEvent payload has correct structure
+        // Every RRWebEvent payload has correct structure
         for (const event of replayEvents) {
             expect(event.details.version).toBe('1.0.0');
             expect(event.details.eventCount).toBe(event.details.events.length);
