@@ -2,7 +2,7 @@
  * RRWebPlugin — Session replay plugin for CloudWatch RUM.
  *
  * Records DOM mutations and user interactions using rrweb, then batches
- * and forwards them as SessionReplayEvent payloads to the RUM data plane.
+ * and forwards them as RRWebEvent payloads to the RUM data plane.
  *
  * @prerelease This plugin is in prerelease state. It is NOT exposed in the
  * top-level telemetry configuration and is NOT built into the default bundle.
@@ -22,10 +22,10 @@ import { RRWEB_EVENT_TYPE } from '../utils/constant';
 import { InternalLogger } from '../../utils/InternalLogger';
 import { record } from 'rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
-import type { SessionReplayEvent } from '../../events/session-replay-event';
+import type { RRWebEvent } from '../../events/rrweb-event';
 
-/** A single rrweb event as defined by the SessionReplayEvent schema. */
-type RRWebEvent = SessionReplayEvent['events'][number];
+/** A single rrweb event as defined by the RRWebEvent schema. */
+type RRWebRecordEvent = RRWebEvent['events'][number];
 
 export const RRWEB_PLUGIN_ID = 'rrweb';
 
@@ -88,7 +88,7 @@ const defaultConfig = RRWEB_CONFIG_PROD;
 export class RRWebPlugin extends InternalPlugin {
     private config: RRWebPluginConfig;
     /** Buffer of rrweb events waiting to be flushed. */
-    private recordingEvents: RRWebEvent[] = [];
+    private recordingEvents: RRWebRecordEvent[] = [];
     private isRecording = false;
     private recordingStartTime: number | null = null;
     private flushTimer: number | null = null;
@@ -191,8 +191,8 @@ export class RRWebPlugin extends InternalPlugin {
         });
 
         // rrweb.record() returns a stop function on success
-        const stopFn: (() => void) | undefined = record<RRWebEvent>({
-            ...(this.config.recordOptions as recordOptions<RRWebEvent>),
+        const stopFn: (() => void) | undefined = record<RRWebRecordEvent>({
+            ...(this.config.recordOptions as recordOptions<RRWebRecordEvent>),
             emit: this.handleRRWebEvent.bind(this)
         });
 
@@ -242,7 +242,7 @@ export class RRWebPlugin extends InternalPlugin {
     }
 
     /** Buffer an incoming rrweb event; auto-flush when batchSize is reached. */
-    private handleRRWebEvent(event: RRWebEvent): void {
+    private handleRRWebEvent(event: RRWebRecordEvent): void {
         if (!this.isRecording) {
             return;
         }
@@ -262,7 +262,7 @@ export class RRWebPlugin extends InternalPlugin {
     }
 
     /**
-     * Drain the event buffer into a single {@link SessionReplayEvent} and
+     * Drain the event buffer into a single {@link RRWebEvent} and
      * record it via `context.record()`. No-op when the buffer is empty.
      *
      * Called automatically by the web client during page unload
@@ -284,7 +284,7 @@ export class RRWebPlugin extends InternalPlugin {
 
         const events = [...this.recordingEvents];
 
-        const eventData: SessionReplayEvent = {
+        const eventData: RRWebEvent = {
             version: '1.0.0',
             events,
             eventCount: events.length
