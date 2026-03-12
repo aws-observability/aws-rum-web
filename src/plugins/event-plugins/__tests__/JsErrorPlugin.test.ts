@@ -676,4 +676,119 @@ describe('JsErrorPlugin tests', () => {
         // Assert
         expect(record).toHaveBeenCalled();
     });
+
+    test('when an Error has a nested cause chain then all causes are captured', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+        const rootCause = new TypeError('null is not an object');
+        const midError = new Error('Database query failed');
+        (midError as any).cause = rootCause;
+        const topError = new Error('Request handler failed');
+        (topError as any).cause = midError;
+
+        // Run
+        plugin.load(context);
+        plugin.record(topError);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        const event = record.mock.calls[0][1] as any;
+        expect(event.cause).toHaveLength(2);
+        expect(event.cause[0]).toMatchObject({
+            type: 'Error',
+            message: 'Database query failed'
+        });
+        expect(event.cause[1]).toMatchObject({
+            type: 'TypeError',
+            message: 'null is not an object'
+        });
+    });
+
+    test('when an Error has a primitive cause then the cause message is the stringified value', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+        const error = new Error('Something failed');
+        (error as any).cause = 'root cause string';
+
+        // Run
+        plugin.load(context);
+        plugin.record(error);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][1]).toMatchObject(
+            expect.objectContaining({
+                cause: [{ message: 'root cause string' }]
+            })
+        );
+    });
+
+    test('when an Error has a circular cause reference then the chain stops without duplicates', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+        const error = new Error('circular');
+        (error as any).cause = error; // points back to itself
+
+        // Run
+        plugin.load(context);
+        plugin.record(error);
+        plugin.disable();
+
+        // Assert — the first cause is recorded, then the cycle is detected
+        expect(record).toHaveBeenCalledTimes(1);
+        const event = record.mock.calls[0][1] as any;
+        expect(event.cause).toHaveLength(1);
+        expect(event.cause[0]).toMatchObject({
+            type: 'Error',
+            message: 'circular'
+        });
+    });
+
+    test('when a cause is a plain object with no Error fields then a fallback message is used', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+        const error = new Error('wrapper');
+        (error as any).cause = { code: 'ENOENT', path: '/tmp/foo' };
+
+        // Run
+        plugin.load(context);
+        plugin.record(error);
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        const event = record.mock.calls[0][1] as any;
+        expect(event.cause).toHaveLength(1);
+        expect(event.cause[0].message).toBeDefined();
+        expect(event.cause[0].message.length).toBeGreaterThan(0);
+    });
+
+    test('when a cause chain exceeds the max depth then it is truncated', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Build a chain of 8 errors (deeper than the max depth of 5)
+        let current = new Error('cause-7');
+        for (let i = 6; i >= 0; i--) {
+            const next = new Error(`cause-${i}`);
+            (next as any).cause = current;
+            current = next;
+        }
+        const top = new Error('top');
+        (top as any).cause = current;
+
+        // Run
+        plugin.load(context);
+        plugin.record(top);
+        plugin.disable();
+
+        // Assert — only 5 causes should be captured
+        expect(record).toHaveBeenCalledTimes(1);
+        const event = record.mock.calls[0][1] as any;
+        expect(event.cause).toHaveLength(5);
+        expect(event.cause[0].message).toBe('cause-0');
+        expect(event.cause[4].message).toBe('cause-4');
+    });
 });

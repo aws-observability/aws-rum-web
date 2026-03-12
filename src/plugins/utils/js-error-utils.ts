@@ -14,6 +14,7 @@ interface Error {
     lineNumber?: number; // non-standard Mozilla property
     columnNumber?: number; // non-standard Mozilla property
     stack?: string; // non-standard Mozilla and Chrome property
+    cause?: unknown; // ES2022 Error.cause property
 }
 
 const isObject = (error: any): boolean => {
@@ -56,6 +57,59 @@ const appendErrorPrimitiveDetails = (
     rumEvent.message = error.toString();
 };
 
+const MAX_CAUSE_DEPTH = 5;
+
+const buildCauseChain = (
+    cause: unknown,
+    stackTraceLength: number
+): { type?: string; message?: string; stack?: string }[] => {
+    const chain: { type?: string; message?: string; stack?: string }[] = [];
+    const seen = new WeakSet();
+    let current: unknown = cause;
+    let depth = 0;
+
+    while (
+        current !== undefined &&
+        current !== null &&
+        depth < MAX_CAUSE_DEPTH
+    ) {
+        if (isObject(current)) {
+            if (seen.has(current as object)) break;
+            seen.add(current as object);
+            const entry: { type?: string; message?: string; stack?: string } =
+                {};
+            const err = current as Error;
+            if (err.name) {
+                entry.type = err.name;
+            }
+            if (err.message) {
+                entry.message = err.message;
+            }
+            if (stackTraceLength && err.stack) {
+                entry.stack =
+                    err.stack.length > stackTraceLength
+                        ? err.stack.substring(0, stackTraceLength) + '...'
+                        : err.stack;
+            }
+            // Fall back to stringified representation for plain objects
+            // with no recognizable Error fields
+            if (!entry.type && !entry.message && !entry.stack) {
+                entry.message = String(current);
+            }
+            chain.push(entry);
+            current = err.cause;
+        } else if (isErrorPrimitive(current)) {
+            chain.push({ message: String(current) });
+            break;
+        } else {
+            break;
+        }
+        depth++;
+    }
+
+    return chain;
+};
+
 const appendErrorObjectDetails = (
     rumEvent: JSErrorEvent,
     error: Error,
@@ -83,6 +137,12 @@ const appendErrorObjectDetails = (
             error.stack.length > stackTraceLength
                 ? error.stack.substring(0, stackTraceLength) + '...'
                 : error.stack;
+    }
+    if (error.cause !== undefined && error.cause !== null) {
+        const causeChain = buildCauseChain(error.cause, stackTraceLength);
+        if (causeChain.length > 0) {
+            rumEvent.cause = causeChain;
+        }
     }
 };
 
