@@ -384,6 +384,39 @@ describe('DataPlaneClient tests', () => {
         );
     });
 
+    describe('sendBeacon payload size guard', () => {
+        test('when payload exceeds beacon limit then sendBeacon rejects', async () => {
+            // Init
+            const client: DataPlaneClient = createDataPlaneClient();
+            const largeRequest = {
+                ...Utils.PUT_RUM_EVENTS_REQUEST,
+                RumEvents: Array.from({ length: 500 }, (_, i) => ({
+                    id: `event-${i}`,
+                    timestamp: new Date(0),
+                    type: 'com.amazon.rum.event1',
+                    details: JSON.stringify({ data: 'x'.repeat(200) })
+                }))
+            };
+
+            // Run & Assert
+            await expect(client.sendBeacon(largeRequest)).rejects.toThrow(
+                'Payload too large for sendBeacon'
+            );
+            expect(beaconHandler).not.toHaveBeenCalled();
+        });
+
+        test('when payload is within beacon limit then sendBeacon proceeds normally', async () => {
+            // Init
+            const client: DataPlaneClient = createDataPlaneClient();
+
+            // Run
+            await client.sendBeacon(Utils.PUT_RUM_EVENTS_REQUEST);
+
+            // Assert
+            expect(beaconHandler).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('compression', () => {
         let compressIfBeneficialSpy: jest.SpyInstance;
 
