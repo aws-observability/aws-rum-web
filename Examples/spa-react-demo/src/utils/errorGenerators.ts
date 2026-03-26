@@ -1,16 +1,22 @@
 import { ErrorType } from '../types/errorGenerator';
 
 export const ERROR_DEFAULTS = {
+    [ErrorType.ERROR]: 'Demo Error: generic error',
     [ErrorType.TYPE_ERROR]: 'Demo TypeError: accessing property of undefined',
     [ErrorType.REFERENCE_ERROR]: 'Demo ReferenceError: variable is not defined',
     [ErrorType.RANGE_ERROR]: 'Demo RangeError: array length invalid',
     [ErrorType.SYNTAX_ERROR]: 'Demo SyntaxError: invalid syntax',
-    [ErrorType.PROMISE_REJECTION]:
-        'Demo Promise Rejection: unhandled rejection',
-    [ErrorType.SETTIMEOUT_ERROR]: 'Demo SetTimeout Error: error in timeout',
-    [ErrorType.ASYNC_AWAIT_ERROR]:
-        'Demo Async/Await Error: error in async function'
+    [ErrorType.EVAL_ERROR]: 'Demo EvalError: eval function error',
+    [ErrorType.URI_ERROR]: 'Demo URIError: malformed URI',
+    [ErrorType.AGGREGATE_ERROR]: 'Demo AggregateError: multiple errors occurred'
 } as const;
+
+/**
+ * Generates a base Error
+ */
+export function generateBaseError(customMessage?: string): void {
+    throw new Error(customMessage || ERROR_DEFAULTS[ErrorType.ERROR]);
+}
 
 /**
  * Generates a TypeError by accessing a property on undefined
@@ -43,33 +49,26 @@ export function generateSyntaxError(_customMessage?: string): void {
 }
 
 /**
- * Generates an unhandled Promise rejection
+ * Generates an EvalError
  */
-export function generatePromiseRejection(customMessage?: string): void {
-    Promise.reject(
-        new Error(customMessage || ERROR_DEFAULTS[ErrorType.PROMISE_REJECTION])
-    );
+export function generateEvalError(customMessage?: string): void {
+    throw new EvalError(customMessage || ERROR_DEFAULTS[ErrorType.EVAL_ERROR]);
 }
 
 /**
- * Generates an error inside setTimeout
+ * Generates a URIError by decoding a malformed URI component
  */
-export function generateSetTimeoutError(customMessage?: string): void {
-    setTimeout(() => {
-        throw new Error(
-            customMessage || ERROR_DEFAULTS[ErrorType.SETTIMEOUT_ERROR]
-        );
-    }, 0);
+export function generateURIError(_customMessage?: string): void {
+    decodeURIComponent('%');
 }
 
 /**
- * Generates an error in an async function
+ * Generates an AggregateError with multiple sub-errors
  */
-export async function generateAsyncAwaitError(
-    customMessage?: string
-): Promise<void> {
-    throw new Error(
-        customMessage || ERROR_DEFAULTS[ErrorType.ASYNC_AWAIT_ERROR]
+export function generateAggregateError(customMessage?: string): void {
+    throw new AggregateError(
+        [new Error('sub-error 1'), new TypeError('sub-error 2')],
+        customMessage || ERROR_DEFAULTS[ErrorType.AGGREGATE_ERROR]
     );
 }
 
@@ -78,6 +77,9 @@ export async function generateAsyncAwaitError(
  */
 export function generateError(type: ErrorType, customMessage?: string): void {
     switch (type) {
+        case ErrorType.ERROR:
+            generateBaseError(customMessage);
+            break;
         case ErrorType.TYPE_ERROR:
             generateTypeError(customMessage);
             break;
@@ -90,14 +92,14 @@ export function generateError(type: ErrorType, customMessage?: string): void {
         case ErrorType.SYNTAX_ERROR:
             generateSyntaxError(customMessage);
             break;
-        case ErrorType.PROMISE_REJECTION:
-            generatePromiseRejection(customMessage);
+        case ErrorType.EVAL_ERROR:
+            generateEvalError(customMessage);
             break;
-        case ErrorType.SETTIMEOUT_ERROR:
-            generateSetTimeoutError(customMessage);
+        case ErrorType.URI_ERROR:
+            generateURIError(customMessage);
             break;
-        case ErrorType.ASYNC_AWAIT_ERROR:
-            generateAsyncAwaitError(customMessage);
+        case ErrorType.AGGREGATE_ERROR:
+            generateAggregateError(customMessage);
             break;
     }
 }

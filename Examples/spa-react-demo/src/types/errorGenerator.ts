@@ -1,20 +1,22 @@
 export type ErrorType =
+    | 'Error'
     | 'TypeError'
     | 'ReferenceError'
     | 'RangeError'
     | 'SyntaxError'
-    | 'PromiseRejection'
-    | 'SetTimeoutError'
-    | 'AsyncAwaitError';
+    | 'EvalError'
+    | 'URIError'
+    | 'AggregateError';
 
 export const ErrorType = {
+    ERROR: 'Error' as ErrorType,
     TYPE_ERROR: 'TypeError' as ErrorType,
     REFERENCE_ERROR: 'ReferenceError' as ErrorType,
     RANGE_ERROR: 'RangeError' as ErrorType,
     SYNTAX_ERROR: 'SyntaxError' as ErrorType,
-    PROMISE_REJECTION: 'PromiseRejection' as ErrorType,
-    SETTIMEOUT_ERROR: 'SetTimeoutError' as ErrorType,
-    ASYNC_AWAIT_ERROR: 'AsyncAwaitError' as ErrorType
+    EVAL_ERROR: 'EvalError' as ErrorType,
+    URI_ERROR: 'URIError' as ErrorType,
+    AGGREGATE_ERROR: 'AggregateError' as ErrorType
 };
 
 export interface ErrorQueueItem {
