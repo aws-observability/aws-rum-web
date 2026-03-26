@@ -23,6 +23,15 @@ const METHOD = 'POST';
 const CONTENT_TYPE_JSON = 'application/json';
 const CONTENT_TYPE_TEXT = 'text/plain;charset=UTF-8';
 
+// SendBeacon payload limit. Browsers typically enforce a 64 KiB limit on
+// the data parameter passed to navigator.sendBeacon. We compare against
+// string length (UTF-16 code units) rather than exact byte size to avoid
+// allocating a Blob on every dispatch. For ASCII-dominant JSON payloads
+// this is effectively equal to byte size; for multi-byte characters
+// string length undercounts UTF-8 bytes, but the ~1.5 KB margin between
+// this threshold and the real 65,536-byte limit absorbs that difference.
+const BEACON_PAYLOAD_LIMIT = 64_000;
+
 const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
 
 declare type SerializedRumEvent = {
@@ -107,6 +116,15 @@ export class DataPlaneClient {
         const serializedRequest = JSON.stringify(
             serializeRequest(putRumEventsRequest)
         );
+
+        // Guard against the ~64 KiB sendBeacon payload limit. When the
+        // serialized body exceeds the threshold we reject immediately so
+        // the caller can fall back to fetch without wasting time on
+        // presigning.
+        if (serializedRequest.length > BEACON_PAYLOAD_LIMIT) {
+            throw new Error('Payload too large for sendBeacon');
+        }
+
         const options = await this.getHttpRequestOptions(
             putRumEventsRequest,
             serializedRequest,
