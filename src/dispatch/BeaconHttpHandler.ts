@@ -1,5 +1,5 @@
 import { HttpHandler, HttpRequest, HttpResponse } from '@smithy/protocol-http';
-import { buildQueryString } from '@aws-sdk/querystring-builder';
+import { buildQueryString } from '@smithy/querystring-builder';
 
 export class BeaconHttpHandler implements HttpHandler {
     handle(request: HttpRequest): Promise<{ response: HttpResponse }> {
