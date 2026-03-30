@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/aws-observability/aws-rum-web/compare/v2.0.0...v2.1.0) (2026-03-30)
+
+
+### Features
+
+* add gzip compression strategy ([#759](https://github.com/aws-observability/aws-rum-web/issues/759)) ([03429f2](https://github.com/aws-observability/aws-rum-web/commit/03429f2a11f9046bd126c4e24796d65e539cb4ba))
+* add rrweb plugin ([#762](https://github.com/aws-observability/aws-rum-web/issues/762)) ([7af852d](https://github.com/aws-observability/aws-rum-web/commit/7af852d89dcb8c8c56ba369b03e8b7540d238a5d))
+
+
+### Bug Fixes
+
+* fall back to fetch when sendBeacon payload exceeds 64 KB limit ([#777](https://github.com/aws-observability/aws-rum-web/issues/777)) ([f2376ef](https://github.com/aws-observability/aws-rum-web/commit/f2376efe644980894a316e272ce468a3b4dd22f7))
+
 ## [2.0.0](https://github.com/aws-observability/aws-rum-web/compare/v1.25.0...v2.0.0) (2026-01-09)
 
 
