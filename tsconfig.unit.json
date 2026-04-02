@@ -11,7 +11,8 @@
         "types": ["node", "jest", "@testing-library/jest-dom"],
         "paths": {
             "@aws-rum-web/core": ["./packages/core/src"],
-            "@aws-rum-web/core/*": ["./packages/core/src/*"]
+            "@aws-rum-web/core/*": ["./packages/core/src/*"],
+            "@aws-rum-web/slim/*": ["./packages/aws-rum-slim/src/*"]
         }
     },
     "include": [

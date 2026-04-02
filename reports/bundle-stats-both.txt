@@ -2,107 +2,107 @@
 ══════════════════════════════════════════════════════════════════════
   FULL BUNDLE: cwr.js
 ══════════════════════════════════════════════════════════════════════
-  Total:  148.5 KB raw  /  41.0 KB gzip  (EXACT)
+  Total:  132.0 KB raw  /  32.1 KB gzip  (EXACT)
 ──────────────────────────────────────────────────────────────────────
   Category                              Raw % of total
 ──────────────────────────────────────────────────────────────────────
-  app: plugins                      31.6 KB      21.3%
-  aws-sdk/smithy                    20.9 KB      14.1%
-  app: dispatch                     19.9 KB      13.4%
-  ua-parser-js                      19.3 KB      13.0%
-  web-vitals                        11.5 KB       7.7%
-  app: auth                          9.6 KB       6.4%
-  app: orchestration                 9.2 KB       6.2%
-  app: sessions                      6.7 KB       4.5%
-  app: event-cache                   5.7 KB       3.9%
-  app: utils                         4.5 KB       3.0%
-  app: other                         2.6 KB       1.8%
-  app: remote-config                 2.0 KB       1.4%
-  tslib                              1.5 KB       1.0%
-  shimmer                            1.4 KB       0.9%
-  uuid                               1.1 KB       0.7%
-  app: event-bus                     0.7 KB       0.5%
-  webpack runtime                    0.2 KB       0.1%
+  app: plugins                      31.6 KB      24.0%
+  aws-sdk/smithy                    20.9 KB      15.9%
+  app: dispatch                     19.8 KB      15.0%
+  web-vitals                        11.5 KB       8.7%
+  app: auth                         11.4 KB       8.6%
+  app: orchestration                10.5 KB       8.0%
+  app: sessions                      6.6 KB       5.0%
+  app: utils                         4.5 KB       3.4%
+  app: event-cache                   4.4 KB       3.3%
+  app: other                         3.0 KB       2.3%
+  app: remote-config                 2.5 KB       1.9%
+  tslib                              1.5 KB       1.1%
+  shimmer                            1.4 KB       1.0%
+  app: event-bus                     0.9 KB       0.7%
+  uuid                               0.8 KB       0.6%
+  webpack runtime                    0.6 KB       0.4%
 ──────────────────────────────────────────────────────────────────────
   Sizes are EXACT (from source map character attribution).
   Gzip total is EXACT. Per-category gzip is not shown (not additive).
 
   All modules (104):
-       19.3 KB  ../../node_modules/ua-parser-js/src/ua-parser.js
        11.5 KB  ../../node_modules/web-vitals/dist/web-vitals.attribution.js
-        5.7 KB  ../core/src/event-cache/EventCache.ts
-        5.4 KB  ./src/orchestration/Orchestration.ts
         4.9 KB  ../core/src/plugins/event-plugins/NavigationPlugin.ts
         4.9 KB  ../core/src/dispatch/Dispatch.ts
         4.8 KB  ../core/src/plugins/event-plugins/XhrPlugin.ts
         4.6 KB  ../core/src/dispatch/CognitoIdentityClient.ts
-        4.0 KB  ../core/src/sessions/SessionManager.ts
+        4.5 KB  ../aws-rum-slim/src/orchestration/Orchestration.ts
+        4.4 KB  ../core/src/event-cache/EventCache.ts
         4.0 KB  ../../node_modules/@smithy/signature-v4/dist-es/SignatureV4.js
+        4.0 KB  ../core/src/sessions/SessionManager.ts
         3.8 KB  ../core/src/plugins/utils/http-utils.ts
-        3.3 KB  ./src/orchestration/config.ts
         3.2 KB  ../core/src/plugins/event-plugins/WebVitalsPlugin.ts
+        3.1 KB  ./src/orchestration/Orchestration.ts
         3.1 KB  ../core/src/dispatch/Authentication.ts
         2.9 KB  ../core/src/plugins/event-plugins/FetchPlugin.ts
-        2.8 KB  ../core/src/dispatch/BasicAuthentication.ts
+        2.9 KB  ../core/src/dispatch/BasicAuthentication.ts
         2.7 KB  ../core/src/sessions/PageManager.ts
         2.6 KB  ../core/src/dispatch/compression.ts
-        2.6 KB  ../core/src/utils/InternalLogger.ts
-        2.4 KB  ../core/src/plugins/event-plugins/DomEventPlugin.ts
+        2.6 KB  ../core/src/utils/common-utils.ts
+        2.5 KB  ./src/remote-config/remote-config.ts
+        2.5 KB  ./src/orchestration/config.ts
+        2.4 KB  ../core/src/dispatch/StsClient.ts
+        2.3 KB  ../core/src/plugins/event-plugins/DomEventPlugin.ts
         2.3 KB  ../../node_modules/@smithy/signature-v4/dist-es/HeaderFormatter.js
         2.3 KB  ../core/src/dispatch/RetryHttpHandler.ts
         2.2 KB  ../core/src/dispatch/DataPlaneClient.ts
-        2.0 KB  ./src/remote-config/remote-config.ts
         2.0 KB  ../core/src/dispatch/utils.ts
-        1.9 KB  ../core/node_modules/@smithy/fetch-http-handler/dist-es/fetch-http-handler.js
+        2.0 KB  ../core/node_modules/@smithy/fetch-http-handler/dist-es/fetch-http-handler.js
         1.8 KB  ../../node_modules/@aws-crypto/sha256-js/build/module/RawSha256.js
-        1.8 KB  ../core/src/plugins/PluginManager.ts
-        1.7 KB  ../core/node_modules/@smithy/util-base64/dist-es/constants.browser.js
-        1.6 KB  ./src/CommandQueue.ts
+        1.7 KB  ../core/src/plugins/event-plugins/PageViewPlugin.ts
+        1.6 KB  ../core/node_modules/@smithy/protocol-http/dist-es/httpResponse.js
+        1.5 KB  ../core/src/dispatch/EnhancedAuthentication.ts
         1.5 KB  ../../node_modules/tslib/tslib.es6.mjs
         1.5 KB  ../core/src/plugins/utils/js-error-utils.ts
+        1.4 KB  ../aws-rum-slim/src/CommandQueue.ts
         1.4 KB  ../../node_modules/shimmer/index.js
         1.3 KB  ../core/src/plugins/event-plugins/ResourcePlugin.ts
-        1.3 KB  ../core/src/dispatch/StsClient.ts
         1.3 KB  ../core/src/dispatch/FetchHttpHandler.ts
-        1.2 KB  ../core/src/utils/common-utils.ts
+        1.2 KB  ../core/src/utils/InternalLogger.ts
         1.2 KB  ../core/src/plugins/event-plugins/JsErrorPlugin.ts
-        1.1 KB  ../core/src/plugins/event-plugins/PageViewPlugin.ts
+        1.1 KB  ../core/src/plugins/PluginManager.ts
         1.0 KB  ../core/src/plugins/MonkeyPatched.ts
         1.0 KB  ../core/src/plugins/utils/performance-utils.ts
-        0.9 KB  ./src/dispatch/signing.ts
+        0.9 KB  ../core/src/event-bus/EventBus.ts
         0.9 KB  ../../node_modules/@aws-crypto/sha256-js/build/module/jsSha256.js
-        0.8 KB  ../core/src/dispatch/EnhancedAuthentication.ts
         0.8 KB  ../../node_modules/@aws-crypto/sha256-js/build/module/constants.js
         0.8 KB  ../core/src/errors/XhrError.ts
         0.8 KB  ../../node_modules/@smithy/signature-v4/node_modules/@smithy/protocol-http/dist-es/httpRequest.js
         0.8 KB  ../core/node_modules/@smithy/protocol-http/dist-es/httpRequest.js
-        0.7 KB  ../core/src/event-bus/EventBus.ts
+        0.7 KB  ./src/dispatch/signing.ts
+        0.6 KB  ./src/CommandQueue.ts
         0.6 KB  ../../node_modules/@smithy/signature-v4/dist-es/constants.js
+        0.6 KB  webpack/bootstrap
         0.6 KB  ../core/src/plugins/utils/constant.ts
-        0.6 KB  ../core/src/orchestration/config.ts
+        0.5 KB  ../core/src/plugins/InternalPlugin.ts
         0.5 KB  ../core/src/dispatch/BeaconHttpHandler.ts
         0.5 KB  ../../node_modules/@smithy/util-hex-encoding/dist-es/index.js
         0.5 KB  ../core/src/utils/cookies-utils.ts
-        0.4 KB  ../../node_modules/uuid/dist/esm-browser/v4.js
+        0.4 KB  ../core/src/orchestration/config.ts
+        0.4 KB  ../core/node_modules/@smithy/util-base64/dist-es/constants.browser.js
         0.4 KB  ../../node_modules/@smithy/signature-v4/dist-es/credentialDerivation.js
-        0.3 KB  ../core/src/plugins/InternalPlugin.ts
         0.3 KB  ../../node_modules/@smithy/signature-v4/dist-es/getCanonicalQuery.js
         0.3 KB  ../../node_modules/@smithy/signature-v4/dist-es/getPayloadHash.js
-        0.3 KB  ../../node_modules/uuid/dist/esm-browser/stringify.js
         0.3 KB  ../../node_modules/uuid/dist/esm-browser/rng.js
         0.3 KB  ../../node_modules/@aws-crypto/util/build/module/convertToBuffer.js
+        0.3 KB  ../../node_modules/uuid/dist/esm-browser/stringify.js
         0.2 KB  ../../node_modules/@smithy/signature-v4/dist-es/moveHeadersToQuery.js
         0.2 KB  ../../node_modules/@aws-sdk/querystring-builder/dist-es/index.js
         0.2 KB  ../core/node_modules/@smithy/querystring-builder/dist-es/index.js
         0.2 KB  ./src/index-browser.ts
         0.2 KB  ../../node_modules/@smithy/signature-v4/dist-es/getCanonicalHeaders.js
-        0.2 KB  ../core/node_modules/@smithy/protocol-http/dist-es/httpResponse.js
+        0.2 KB  ../../node_modules/uuid/dist/esm-browser/v4.js
         0.2 KB  ../core/src/dispatch/request-timeout.ts
         0.2 KB  ../../node_modules/@smithy/signature-v4/dist-es/utilDate.js
         0.2 KB  ../core/node_modules/@smithy/fetch-http-handler/dist-es/request-timeout.js
         0.1 KB  ../../node_modules/@smithy/signature-v4/node_modules/@smithy/util-utf8/dist-es/toUint8Array.js
         0.1 KB  ../core/src/utils/random.ts
-        0.1 KB  webpack/bootstrap
         0.1 KB  ../../node_modules/@smithy/is-array-buffer/dist-es/index.js
         0.1 KB  ../../node_modules/@smithy/signature-v4/dist-es/prepareRequest.js
         0.1 KB  ../../node_modules/@aws-sdk/util-uri-escape/dist-es/escape-uri.js
@@ -129,7 +129,6 @@
         0.1 KB  ../core/node_modules/@smithy/types/dist-es/endpoint.js
         0.0 KB  ../core/node_modules/@smithy/fetch-http-handler/dist-es/create-request.js
         0.0 KB  ../../node_modules/@smithy/signature-v4/node_modules/@smithy/util-utf8/dist-es/fromUtf8.browser.js
-        0.0 KB  webpack/runtime/amd options
         0.0 KB  ../../node_modules/@aws-crypto/util/node_modules/@smithy/util-utf8/dist-es/fromUtf8.browser.js
         0.0 KB  ../../node_modules/@smithy/signature-v4/node_modules/@smithy/util-middleware/dist-es/getSmithyContext.js
 
@@ -137,36 +136,35 @@
 ══════════════════════════════════════════════════════════════════════
   SLIM BUNDLE: cwr-slim.js
 ══════════════════════════════════════════════════════════════════════
-  Total:  46.5 KB raw  /  12.0 KB gzip  (EXACT)
+  Total:  46.6 KB raw  /  12.1 KB gzip  (EXACT)
 ──────────────────────────────────────────────────────────────────────
   Category                              Raw % of total
 ──────────────────────────────────────────────────────────────────────
-  app: dispatch                     13.9 KB      30.0%
-  app: sessions                      6.7 KB      14.4%
-  app: orchestration                 6.1 KB      13.1%
-  app: plugins                       5.0 KB      10.8%
+  app: dispatch                     13.9 KB      29.9%
+  app: sessions                      6.6 KB      14.2%
+  app: orchestration                 6.3 KB      13.4%
+  app: plugins                       5.0 KB      10.7%
   app: event-cache                   4.4 KB       9.4%
   aws-sdk/smithy                     3.2 KB       6.9%
   app: utils                         1.8 KB       3.8%
   app: other                         1.6 KB       3.5%
   shimmer                            1.4 KB       3.0%
-  uuid                               1.0 KB       2.3%
-  app: event-bus                     0.7 KB       1.5%
+  app: event-bus                     0.9 KB       2.0%
+  uuid                               0.8 KB       1.8%
   webpack runtime                    0.6 KB       1.2%
 ──────────────────────────────────────────────────────────────────────
   Sizes are EXACT (from source map character attribution).
   Gzip total is EXACT. Per-category gzip is not shown (not additive).
 
   All modules (41):
+        5.8 KB  slim/./src/orchestration/Orchestration.ts
         4.9 KB  slim/../core/src/dispatch/Dispatch.ts
         4.4 KB  slim/../core/src/event-cache/EventCache.ts
-        4.3 KB  slim/./src/orchestration/Orchestration.ts
         4.0 KB  slim/../core/src/sessions/SessionManager.ts
         2.7 KB  slim/../core/src/sessions/PageManager.ts
         2.6 KB  slim/../core/src/dispatch/compression.ts
         2.3 KB  slim/../core/src/dispatch/RetryHttpHandler.ts
         2.2 KB  slim/../core/src/dispatch/DataPlaneClient.ts
-        1.8 KB  slim/../core/src/orchestration/config.ts
         1.7 KB  slim/../core/src/plugins/event-plugins/PageViewPlugin.ts
         1.6 KB  slim/../core/node_modules/@smithy/protocol-http/dist-es/httpResponse.js
         1.4 KB  slim/./src/CommandQueue.ts
@@ -175,18 +173,19 @@
         1.2 KB  slim/../core/src/utils/InternalLogger.ts
         1.1 KB  slim/../core/src/plugins/PluginManager.ts
         1.0 KB  slim/../core/src/plugins/MonkeyPatched.ts
+        0.9 KB  slim/../core/src/event-bus/EventBus.ts
         0.8 KB  slim/../core/node_modules/@smithy/protocol-http/dist-es/httpRequest.js
-        0.7 KB  slim/../core/src/event-bus/EventBus.ts
         0.6 KB  slim/webpack/bootstrap
         0.5 KB  slim/../core/src/plugins/utils/constant.ts
         0.5 KB  slim/../core/src/plugins/InternalPlugin.ts
         0.5 KB  slim/../core/src/dispatch/BeaconHttpHandler.ts
         0.5 KB  slim/../core/src/utils/cookies-utils.ts
-        0.4 KB  slim/../../node_modules/uuid/dist/esm-browser/v4.js
+        0.4 KB  slim/../core/src/orchestration/config.ts
         0.3 KB  slim/../../node_modules/uuid/dist/esm-browser/rng.js
         0.3 KB  slim/../../node_modules/uuid/dist/esm-browser/stringify.js
         0.2 KB  slim/../../node_modules/@aws-sdk/querystring-builder/dist-es/index.js
         0.2 KB  slim/./src/index-browser.ts
+        0.2 KB  slim/../../node_modules/uuid/dist/esm-browser/v4.js
         0.2 KB  slim/../core/src/dispatch/request-timeout.ts
         0.2 KB  slim/../core/src/plugins/utils/http-utils.ts
         0.1 KB  slim/../../node_modules/@aws-sdk/util-uri-escape/dist-es/escape-uri.js
@@ -200,5 +199,5 @@
         0.1 KB  slim/../core/node_modules/@smithy/types/dist-es/auth/HttpApiKeyAuth.js
         0.1 KB  slim/../core/node_modules/@smithy/types/dist-es/endpoint.js
 
-  Slim saves 71% gzip vs full (EXACT).
+  Slim saves 62% gzip vs full (EXACT).
 

@@ -1,7 +1,10 @@
 import { InternalPluginContext } from '@aws-rum-web/core/plugins/types';
 import { PluginManager } from '@aws-rum-web/core/plugins/PluginManager';
 import { EventCache } from '@aws-rum-web/core/event-cache/EventCache';
-import { Dispatch } from '@aws-rum-web/core/dispatch/Dispatch';
+import {
+    Dispatch,
+    SigningConfigFactory
+} from '@aws-rum-web/core/dispatch/Dispatch';
 import { PageViewPlugin } from '@aws-rum-web/core/plugins/event-plugins/PageViewPlugin';
 import { PageAttributes } from '@aws-rum-web/core/sessions/PageManager';
 import { INSTALL_MODULE } from '@aws-rum-web/core/utils/constants';
@@ -11,9 +14,12 @@ import { Plugin } from '@aws-rum-web/core/plugins/Plugin';
 import {
     type Config,
     type PartialConfig,
-    type CookieAttributes,
-    userAgentDataProvider
+    type CookieAttributes
 } from '@aws-rum-web/core/orchestration/config';
+import {
+    AwsCredentialIdentityProvider,
+    AwsCredentialIdentity
+} from '@aws-sdk/types';
 
 export {
     type Config,
@@ -33,7 +39,7 @@ export enum PageIdFormatEnum {
 const DEFAULT_REGION = 'us-west-2';
 const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
 
-const defaultCookieAttributes = (): CookieAttributes => {
+export const defaultCookieAttributes = (): CookieAttributes => {
     return {
         unique: false,
         domain: window.location.hostname,
@@ -43,7 +49,7 @@ const defaultCookieAttributes = (): CookieAttributes => {
     };
 };
 
-const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
+export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
     return {
         allowCookies: false,
         batchLimit: 100,
@@ -75,8 +81,7 @@ const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
-        candidatesCacheSize: 10,
-        userAgentProvider: userAgentDataProvider
+        candidatesCacheSize: 10
     };
 };
 
@@ -85,13 +90,16 @@ const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
  *
  * Only PageViewPlugin loads by default. Pass additional plugins via
  * `eventPluginsToLoad` or call `addPlugin()` at runtime.
+ *
+ * Designed as a base class: `aws-rum-web` extends this to add auth,
+ * signing, and the telemetries plugin system.
  */
 export class Orchestration {
-    private pluginManager: PluginManager;
-    private eventCache: EventCache;
-    private dispatchManager: Dispatch;
-    private config: Config;
-    private eventBus = new EventBus<Topic>();
+    protected pluginManager: PluginManager;
+    protected eventCache: EventCache;
+    protected dispatchManager: Dispatch;
+    protected config: Config;
+    protected eventBus = new EventBus<Topic>();
 
     constructor(
         applicationId: string,
@@ -114,8 +122,7 @@ export class Orchestration {
         this.config = {
             ...{ fetchFunction: fetch },
             ...defaultConfig(cookieAttributes),
-            ...partialConfig,
-            signing: false
+            ...partialConfig
         } as Config;
 
         this.config.endpoint = partialConfig.endpoint
@@ -134,13 +141,7 @@ export class Orchestration {
             this.eventBus
         );
 
-        this.dispatchManager = new Dispatch(
-            applicationId,
-            region,
-            this.config.endpointUrl,
-            this.eventCache,
-            this.config
-        );
+        this.dispatchManager = this.initDispatch(region, applicationId);
 
         this.pluginManager = this.initPluginManager(
             applicationId,
@@ -153,6 +154,24 @@ export class Orchestration {
         } else {
             this.disable();
         }
+    }
+
+    /**
+     * Set the credential provider that will be used to authenticate with the
+     * data plane service (AWS auth).
+     */
+    public setAwsCredentials(
+        credentials: AwsCredentialIdentity | AwsCredentialIdentityProvider
+    ): void {
+        this.dispatchManager.setAwsCredentials(credentials);
+    }
+
+    /**
+     * Set the factory used to create signing configurations.
+     * NPM consumers can use this to opt into request signing.
+     */
+    public setSigningConfigFactory(factory: SigningConfigFactory): void {
+        this.dispatchManager.setSigningConfigFactory(factory);
     }
 
     public addSessionAttributes(sessionAttributes: {
@@ -205,10 +224,20 @@ export class Orchestration {
         this.eventCache.recordEvent(eventType, eventData);
     }
 
-    private initPluginManager(
+    protected initDispatch(region: string, applicationId: string): Dispatch {
+        return new Dispatch(
+            applicationId,
+            region,
+            this.config.endpointUrl,
+            this.eventCache,
+            this.config
+        );
+    }
+
+    protected initPluginManager(
         applicationId: string,
         applicationVersion: string
-    ) {
+    ): PluginManager {
         const pluginContext: InternalPluginContext = {
             applicationId,
             applicationVersion,

@@ -7,6 +7,23 @@
     "main": "dist/cjs/index.js",
     "module": "dist/es/index.js",
     "types": "dist/es/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/es/index.js",
+            "require": "./dist/cjs/index.js",
+            "types": "./dist/es/index.d.ts"
+        },
+        "./CommandQueue": {
+            "import": "./src/CommandQueue.ts",
+            "require": "./src/CommandQueue.ts",
+            "types": "./src/CommandQueue.ts"
+        },
+        "./orchestration/Orchestration": {
+            "import": "./src/orchestration/Orchestration.ts",
+            "require": "./src/orchestration/Orchestration.ts",
+            "types": "./src/orchestration/Orchestration.ts"
+        }
+    },
     "sideEffects": false,
     "files": [
         "dist/",
