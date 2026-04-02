@@ -1,5 +1,12 @@
-import { AwsRum, type AwsRumConfig } from '@aws-rum-web/slim';
-import { FetchPlugin, RRWebPlugin } from '@aws-rum-web/core';
+import {
+    Orchestration as AwsRum,
+    type PartialConfig as AwsRumConfig
+} from '@aws-rum-web/slim/orchestration/Orchestration';
+import { FetchPlugin } from '@aws-rum-web/core/plugins/event-plugins/FetchPlugin';
+import { NavigationPlugin } from '@aws-rum-web/core/plugins/event-plugins/NavigationPlugin';
+import { ResourcePlugin } from '@aws-rum-web/core/plugins/event-plugins/ResourcePlugin';
+import { WebVitalsPlugin } from '@aws-rum-web/core/plugins/event-plugins/WebVitalsPlugin';
+import { JsErrorPlugin } from '@aws-rum-web/core/plugins/event-plugins/JsErrorPlugin';
 
 try {
     const config: AwsRumConfig = {
@@ -15,7 +22,11 @@ try {
         eventPluginsToLoad: [
             new FetchPlugin({
                 recordAllRequests: true
-            })
+            }),
+            new WebVitalsPlugin(),
+            new ResourcePlugin(),
+            new NavigationPlugin(),
+            new JsErrorPlugin()
             // new RRWebPlugin()
         ]
     };

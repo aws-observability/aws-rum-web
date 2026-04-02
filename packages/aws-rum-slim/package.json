@@ -37,7 +37,8 @@
     },
     "scripts": {
         "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
-        "build": "npm-run-all -s build:webpack:prod"
+        "build": "npm-run-all -s build:webpack:prod",
+        "stats": "webpack --config webpack/webpack.stats.js"
     },
     "dependencies": {
         "@aws-rum-web/core": "3.0.0"
