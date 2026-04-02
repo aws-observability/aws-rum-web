@@ -20,9 +20,10 @@
     "scripts": {
         "server": "webpack-dev-server --config webpack/webpack.dev.js",
         "start": "npm run server",
+        "prepare": "husky install",
         "pretest": "npm run build:schemas",
         "test": "jest -c jest.unit.config.js",
-        "test:coverage": "npm run test -- --coverage",
+        "test:coverage": "npm run test -- --coverage --coverageThreshold='{\"global\":{\"statements\":80,\"branches\":70,\"functions\":70,\"lines\":80}}'",
         "build:schemas": "node scripts/generate-schema-ts.js",
         "build:webpack:dev": "webpack --config webpack/webpack.dev.js",
         "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
@@ -85,7 +86,7 @@
         "eslint-plugin-react": "^7.31.8",
         "generate-json-webpack-plugin": "^2.0.0",
         "http-server": "^14.1.1",
-        "husky": "^8.0.1",
+        "husky": "^8.0.3",
         "jest": "^29.3.1",
         "jest-date-mock": "^1.0.8",
         "jest-environment-jsdom": "^29.3.1",
@@ -93,7 +94,7 @@
         "jest-mock-random": "^1.1.1",
         "jsdom": "^21.1.1",
         "json-schema-to-typescript": "^11.0.2",
-        "lint-staged": "^13.0.3",
+        "lint-staged": "^13.3.0",
         "lodash": "^4.17.20",
         "nightwatch": "^2.0.6",
         "node-fetch": "^2.6.1",
@@ -127,8 +128,11 @@
         "web-vitals": "^4.0.0"
     },
     "lint-staged": {
-        "*.ts": "npm run lint:errors",
-        "*.{js,ts,json,html,yml,md}": "npx prettier --check"
+        "*.ts": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{js,json,html,yml,md}": "prettier --write"
     },
     "jest": {
         "setupFiles": [
