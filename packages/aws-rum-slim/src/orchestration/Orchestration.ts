@@ -13,7 +13,7 @@ import { InternalLogger } from '@aws-rum-web/core/utils/InternalLogger';
 import { Plugin } from '@aws-rum-web/core/plugins/Plugin';
 import {
     type Config,
-    type PartialConfig,
+    type PartialConfig as CorePartialConfig,
     type CookieAttributes
 } from '@aws-rum-web/core/orchestration/config';
 import {
@@ -23,10 +23,12 @@ import {
 
 export {
     type Config,
-    type PartialConfig,
     type CookieAttributes,
     type PageIdFormat
 } from '@aws-rum-web/core/orchestration/config';
+
+/** Slim config omits `telemetries` — use `eventPluginsToLoad` instead. */
+export type PartialConfig = Omit<CorePartialConfig, 'telemetries'>;
 
 export type PartialCookieAttributes = Partial<CookieAttributes>;
 

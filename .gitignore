@@ -8,6 +8,7 @@ coverage
 node_modules
 npm-debug.log
 src/events
+packages/*/src/events
 integ-test-results
 .DS_Store
 *.swp

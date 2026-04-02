@@ -5,16 +5,18 @@ import {
 import { INSTALL_SCRIPT } from '@aws-rum-web/core/utils/constants';
 import {
     CommandQueue as SlimCommandQueue,
-    type AwsRumClientInit
+    type AwsRumClientInit as SlimAwsRumClientInit
 } from '@aws-rum-web/slim/CommandQueue';
+import { PartialConfig } from '@aws-rum-web/core/orchestration/config';
 import { Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 
-export type {
-    Command,
-    CommandFunction,
-    AwsRumClientInit
-} from '@aws-rum-web/slim/CommandQueue';
+export type { Command, CommandFunction } from '@aws-rum-web/slim/CommandQueue';
+
+/** Extends slim's init type to accept `telemetries` in the config. */
+export type AwsRumClientInit = Omit<SlimAwsRumClientInit, 'c'> & {
+    c?: PartialConfig;
+};
 
 /**
  * Full-featured CommandQueue extending slim with setAwsCredentials

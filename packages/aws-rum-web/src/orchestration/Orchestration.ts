@@ -19,11 +19,9 @@ import { XhrPlugin } from '@aws-rum-web/core/plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '@aws-rum-web/core/plugins/event-plugins/FetchPlugin';
 import { InternalLogger } from '@aws-rum-web/core/utils/InternalLogger';
 import { createSigningConfig } from '../dispatch/signing';
-import {
-    Orchestration as SlimOrchestration,
-    type PartialConfig
-} from '@aws-rum-web/slim/orchestration/Orchestration';
+import { Orchestration as SlimOrchestration } from '@aws-rum-web/slim/orchestration/Orchestration';
 import { TelemetryEnum } from './config';
+import { PartialConfig } from '@aws-rum-web/core/orchestration/config';
 
 // Re-export config types for public API
 export {
