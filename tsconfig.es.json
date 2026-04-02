@@ -1,7 +1,8 @@
 {
+    "extends": "./tsconfig.json",
     "compilerOptions": {
+        "baseUrl": "packages/core/src",
         "outDir": "./dist/es"
     },
-    "include": ["src/index.ts"],
-    "extends": "./tsconfig"
+    "include": ["packages/core/src/index.ts"]
 }

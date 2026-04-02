@@ -1,12 +1,16 @@
 {
     "compilerOptions": {
-        "baseUrl": "src",
+        "baseUrl": ".",
         "declaration": true,
         "lib": ["dom", "es2018"],
         "module": "esnext",
         "moduleResolution": "node",
         "strict": true,
-        "target": "es5"
-    },
-    "include": ["src/**/*"]
+        "target": "es5",
+        "skipLibCheck": true,
+        "paths": {
+            "@aws-rum-web/core": ["./packages/core/src"],
+            "@aws-rum-web/core/*": ["./packages/core/src/*"]
+        }
+    }
 }

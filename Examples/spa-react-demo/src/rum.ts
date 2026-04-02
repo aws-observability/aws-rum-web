@@ -1,4 +1,4 @@
-import { AwsRum, RRWebPlugin, type AwsRumConfig } from 'aws-rum-web';
+import { AwsRum, RRWebPlugin, type AwsRumConfig } from 'aws-rum-slim';
 
 try {
     const config: AwsRumConfig = {

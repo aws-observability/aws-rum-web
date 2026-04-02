@@ -1,0 +1,36 @@
+{
+    "name": "@aws-rum-web/core",
+    "version": "2.0.0",
+    "private": true,
+    "description": "Core telemetry engine for the Amazon CloudWatch RUM web client.",
+    "license": "Apache-2.0",
+    "main": "dist/cjs/index.js",
+    "module": "dist/es/index.js",
+    "types": "dist/es/index.d.ts",
+    "sideEffects": false,
+    "files": [
+        "dist/"
+    ],
+    "scripts": {
+        "pretest": "npm run build:schemas",
+        "test": "jest -c ../../jest.unit.config.js",
+        "build:schemas": "node ../../scripts/generate-schema-ts.js",
+        "build:dist:es": "tsc --project ./tsconfig.es.json",
+        "build:dist:cjs": "tsc --project ./tsconfig.cjs.json",
+        "build": "npm-run-all -s build:schemas build:dist:*"
+    },
+    "dependencies": {
+        "@aws-crypto/sha256-js": "^3.0.0",
+        "@aws-sdk/querystring-builder": "^3.36.0",
+        "@babel/runtime": "^7.16.0",
+        "@smithy/fetch-http-handler": "^4.1.0",
+        "@smithy/protocol-http": "^4.1.6",
+        "@smithy/signature-v4": "^4.2.2",
+        "@smithy/util-hex-encoding": "^3.0.0",
+        "rrweb": "2.0.0-alpha.4",
+        "shimmer": "^1.2.1",
+        "ua-parser-js": "^1.0.33",
+        "uuid": "^9.0.0",
+        "web-vitals": "^4.0.0"
+    }
+}
