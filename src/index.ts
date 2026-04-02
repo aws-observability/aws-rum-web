@@ -20,4 +20,3 @@ export * from './plugins/event-plugins/ResourcePlugin';
 export * from './plugins/event-plugins/WebVitalsPlugin';
 export * from './plugins/event-plugins/FetchPlugin';
 export * from './plugins/event-plugins/XhrPlugin';
-export * from './plugins/event-plugins/RRWebPlugin';
