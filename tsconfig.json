@@ -6,7 +6,7 @@
         "module": "esnext",
         "moduleResolution": "node",
         "strict": true,
-        "target": "es5",
+        "target": "es2017",
         "skipLibCheck": true,
         "paths": {
             "@aws-rum-web/core": ["./packages/core/src"],

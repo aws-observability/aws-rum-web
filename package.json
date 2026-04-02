@@ -29,8 +29,6 @@
     },
     "devDependencies": {
         "@aws-sdk/client-rum": "^3.76.0",
-        "@babel/plugin-transform-runtime": "^7.16.0",
-        "@babel/preset-env": "~7.20.2",
         "@playwright/test": "^1.57.0",
         "@types/jest": "^29.2.3",
         "@types/shimmer": "^1.0.2",
@@ -39,7 +37,6 @@
         "@typescript-eslint/eslint-plugin": "^5.38.0",
         "@typescript-eslint/parser": "^5.38.0",
         "@webpack-cli/serve": "^3.0.1",
-        "babel-loader": "~9.1.0",
         "case-sensitive-paths-webpack-plugin": "^2.4.0",
         "copy-webpack-plugin": "^13.0.0",
         "copyfiles": "^2.4.1",
@@ -89,6 +86,9 @@
         "*.{js,json,html,yml,md}": "prettier --write"
     },
     "browserslist": [
-        "defaults"
+        "Chrome >= 55",
+        "Firefox >= 52",
+        "Safari >= 10.1",
+        "Edge >= 15"
     ]
 }
