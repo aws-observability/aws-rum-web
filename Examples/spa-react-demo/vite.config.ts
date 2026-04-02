@@ -11,7 +11,7 @@ export default defineConfig({
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
         alias: [
             {
-                find: /^aws-rum-slim$/,
+                find: /^@aws-rum-web\/slim$/,
                 replacement: path.resolve(
                     __dirname,
                     '../../packages/aws-rum-slim/src/index.ts'
@@ -28,6 +28,6 @@ export default defineConfig({
         ]
     },
     optimizeDeps: {
-        exclude: ['aws-rum-slim', '@aws-rum-web/core']
+        exclude: ['@aws-rum-web/slim', '@aws-rum-web/core']
     }
 });

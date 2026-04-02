@@ -1,6 +1,6 @@
 {
-    "name": "aws-rum-slim",
-    "version": "2.0.0",
+    "name": "@aws-rum-web/slim",
+    "version": "3.0.0",
     "description": "Lightweight Amazon CloudWatch RUM web client (no auth/signing dependencies).",
     "license": "Apache-2.0",
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
@@ -23,6 +23,6 @@
         "build": "npm-run-all -s build:webpack:prod"
     },
     "dependencies": {
-        "@aws-rum-web/core": "2.0.0"
+        "@aws-rum-web/core": "3.0.0"
     }
 }

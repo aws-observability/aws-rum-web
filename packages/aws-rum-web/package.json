@@ -1,6 +1,6 @@
 {
     "name": "aws-rum-web",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "description": "The Amazon CloudWatch RUM web client.",
     "license": "Apache-2.0",
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
@@ -23,6 +23,6 @@
         "build": "npm-run-all -s build:webpack:prod"
     },
     "dependencies": {
-        "@aws-rum-web/core": "2.0.0"
+        "@aws-rum-web/core": "3.0.0"
     }
 }
