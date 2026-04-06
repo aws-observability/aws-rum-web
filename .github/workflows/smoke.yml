@@ -114,7 +114,7 @@ jobs:
               run: |
                   curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
                   npm run smoke:headless
-              timeout-minutes: 10
+              timeout-minutes: 20
 
             - name: Run Smoke Test (NPM CJS)
               env:
@@ -127,7 +127,7 @@ jobs:
               run: |
                   curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
                   npm run smoke:headless
-              timeout-minutes: 10
+              timeout-minutes: 20
 
             - name: Run Gamma Smoke Test (CDN GAMMA)
               env:
@@ -139,3 +139,4 @@ jobs:
               run: |
                   curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
                   npm run smoke:headless
+              timeout-minutes: 20

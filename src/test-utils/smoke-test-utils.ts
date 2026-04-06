@@ -110,7 +110,7 @@ export const verifyIngestionWithRetry = async (
         } catch (error) {
             retryCount -= 1;
             console.log(`${error.message} Waiting for next retry.`);
-            await new Promise((r) => setTimeout(r, 60000));
+            await new Promise((r) => setTimeout(r, 30000));
         }
     }
 };

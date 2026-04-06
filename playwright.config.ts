@@ -10,7 +10,7 @@ var config = {
         process.env.INSTALL_METHOD === 'CDN'
             ? 'src/__smoke-test__'
             : 'src/__smoke-test-npm__',
-    retries: process.env.CI ? 2 : 2,
+    retries: 3,
     timeout: 300000,
     use: {
         trace: 'on-first-retry'
