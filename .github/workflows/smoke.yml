@@ -13,8 +13,8 @@ concurrency:
     cancel-in-progress: false
 
 jobs:
-    smoke-test:
-        name: Run Smoke Tests
+    deploy:
+        name: Build and Deploy
         runs-on: ubuntu-latest
         environment: smoke-test
         permissions: write-all
@@ -40,9 +40,6 @@ jobs:
               run: |
                   npm ci
                   npm run release
-
-            - name: Install PlayWright
-              run: npx playwright install --with-deps chromium
 
             - name: Fetch AWS Credentials for Gamma Deployment
               run: |
@@ -86,57 +83,73 @@ jobs:
                   .github/scripts/update_smoke_test.sh ${{ secrets.SMOKE_MONITOR }} ${{ secrets.SMOKE_REGION }} ${{ secrets.SMOKE_ARN }} ${{ secrets.SMOKE_IDENTITY }} ${{ secrets.CONFIG_ENDPOINT }} ${{ secrets.CDN_GAMMA }} ${{ secrets.SMOKE_MONITOR_2 }} ${{ secrets.SMOKE_ARN_2 }} ${{ secrets.SMOKE_IDENTITY_2 }}
 
             - name: Build Smoke Test Application - NPM/ES
-              id: build-npm-es-application-pre-release
               run: |
                   chmod u+x .github/scripts/build_npm_applications.sh
                   .github/scripts/build_npm_applications.sh "PRE" "NPM-ES"
 
             - name: Build Smoke Test Application - NPM/CJS
-              id: build-npm-cjs-application-pre-release
               run: |
                   chmod u+x .github/scripts/build_npm_applications.sh
                   .github/scripts/build_npm_applications.sh "PRE" "NPM-CJS"
 
             - name: Upload Gamma Smoke Tests to CloudFront
-              id: upload-smoke-test-gamma
               run: |
                   chmod u+x .github/scripts/upload_smoke_test.sh
                   .github/scripts/upload_smoke_test.sh ${{ secrets.SMOKE_BUCKET }}
 
-            - name: Run Smoke Test (NPM ES)
+    smoke-test:
+        name: Smoke Test (${{ matrix.install_method }})
+        needs: deploy
+        runs-on: ubuntu-latest
+        environment: smoke-test
+        permissions: write-all
+        strategy:
+            fail-fast: false
+            matrix:
+                install_method: ['NPM-ES', 'NPM-CJS', 'CDN']
+        steps:
+            - name: Checkout AWS RUM Web Client Repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20.x'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Cache NPM modules
+              uses: actions/cache@v5
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
+
+            - name: Install Dependencies
+              run: npm ci
+
+            - name: Install PlayWright
+              run: npx playwright install --with-deps chromium
+
+            - name: Fetch AWS Credentials
+              run: |
+                  export AWS_ROLE_ARN=${{ secrets.SMOKE_TEST_ROLE }}
+                  export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+                  export AWS_DEFAULT_REGION=us-east-1
+
+                  echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+                  echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+                  echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+
+                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+
+            - name: Run Smoke Test
               env:
                   URL: ${{ secrets.SMOKE_URL }}
                   MONITOR: ${{ secrets.SMOKE_MONITOR }}
                   MONITOR2: ${{ secrets.SMOKE_MONITOR_2 }}
                   ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
                   NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'NPM-ES'
-              run: |
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-                  npm run smoke:headless
-              timeout-minutes: 20
-
-            - name: Run Smoke Test (NPM CJS)
-              env:
-                  URL: ${{ secrets.SMOKE_URL }}
-                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  MONITOR_2: ${{ secrets.SMOKE_MONITOR_2 }}
-                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
-                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'NPM-CJS'
-              run: |
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-                  npm run smoke:headless
-              timeout-minutes: 20
-
-            - name: Run Gamma Smoke Test (CDN GAMMA)
-              env:
-                  URL: ${{ secrets.SMOKE_URL }}
-                  MONITOR: ${{ secrets.SMOKE_MONITOR }}
-                  ENDPOINT: ${{ secrets.SMOKE_ENDPOINT }}
-                  NAME: ${{ secrets.SMOKE_MONITOR_NAME }}
-                  INSTALL_METHOD: 'CDN'
-              run: |
-                  curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
-                  npm run smoke:headless
+                  INSTALL_METHOD: ${{ matrix.install_method }}
+              run: npm run smoke:headless
               timeout-minutes: 20
