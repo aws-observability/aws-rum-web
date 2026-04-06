@@ -17,7 +17,9 @@ jobs:
         name: Smoke Test (Setup)
         runs-on: ubuntu-latest
         environment: smoke-test
-        permissions: write-all
+        permissions:
+            id-token: write
+            contents: read
         steps:
             - name: Checkout AWS RUM Web Client Repository
               uses: actions/checkout@v4
@@ -102,7 +104,9 @@ jobs:
         needs: deploy
         runs-on: ubuntu-latest
         environment: smoke-test
-        permissions: write-all
+        permissions:
+            id-token: write
+            contents: read
         strategy:
             fail-fast: false
             matrix:
