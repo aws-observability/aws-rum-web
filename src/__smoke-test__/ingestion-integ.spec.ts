@@ -69,8 +69,7 @@ test('when session start event is sent then event is ingested', async ({
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: SESSION_START_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -99,8 +98,7 @@ test('when resource event is sent then event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: PERFORMANCE_RESOURCE_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -129,8 +127,7 @@ test('when LCP event is sent then event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: LCP_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -159,8 +156,7 @@ test('when FID event is sent then event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: FID_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -195,8 +191,7 @@ test('when navigation events are sent then events are ingested', async ({
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: PERFORMANCE_NAVIGATION_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -228,8 +223,7 @@ test('when page view event is sent then the event is ingested', async ({
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: PAGE_VIEW_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -265,8 +259,7 @@ test('when error events are sent then the events are ingested', async ({
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: JS_ERROR_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -300,8 +293,7 @@ test('when http events are sent then the events are ingested', async ({
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: HTTP_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -336,8 +328,7 @@ test('when CLS event is sent then the event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: CLS_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -369,8 +360,7 @@ test('when dom event is sent then the event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: DOM_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -400,8 +390,7 @@ test('when xray event is sent then the event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: XRAY_TRACE_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -433,8 +422,7 @@ test('when xray event is sent with w3c trace id then the event is ingested', asy
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: XRAY_TRACE_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -483,10 +471,8 @@ test('when event with custom attributes is sent then the event is ingested', asy
         eventIds.slice(1), // ignore initial load
         timestamp,
         MONITOR_NAME,
-        {
-            metadataAttributes: expectedMetadataAttributes,
-            eventType: PAGE_VIEW_EVENT_TYPE
-        }
+        undefined,
+        expectedMetadataAttributes
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -527,8 +513,7 @@ test('when INP event is sent then event is ingested', async ({ page }) => {
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: PAGE_VIEW_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });
@@ -562,8 +547,7 @@ test('when http events are sent with w3c format enabled then the events are inge
         rumClient,
         eventIds,
         timestamp,
-        MONITOR_NAME,
-        { eventType: HTTP_EVENT_TYPE }
+        MONITOR_NAME
     );
     expect(isIngestionCompleted).toEqual(true);
 });

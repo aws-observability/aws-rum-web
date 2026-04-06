@@ -100,34 +100,21 @@ export const verifyIngestionWithRetry = async (
     eventIds: any[],
     timestamp: number,
     monitorName: string | undefined,
-    options: {
-        retryCount?: number;
-        metadataAttributes?: string[];
-        eventType?: string;
-    } = {}
+    retryCount: number = INGESTION_READ_ATTEMPTS,
+    metadataAttributes: string[] | undefined = undefined
 ) => {
-    const {
-        retryCount: initialRetryCount = INGESTION_READ_ATTEMPTS,
-        metadataAttributes,
-        eventType
-    } = options;
-    let retriesLeft = initialRetryCount;
+    const maxRetries = retryCount;
     while (true) {
-        if (retriesLeft === 0) {
+        if (retryCount === 0) {
             console.log(
-                `[ingestion] Retry exhausted after ${initialRetryCount} attempts. ` +
+                `[ingestion] Retry exhausted after ${maxRetries} attempts. ` +
                     `${eventIds.length} event(s) never ingested.`
             );
             return false;
         }
         try {
             const ingestedEvents: Map<string, string[]> =
-                await getIngestedEvents(
-                    rumClient,
-                    timestamp,
-                    monitorName,
-                    eventType
-                );
+                await getIngestedEvents(rumClient, timestamp, monitorName);
 
             return await expectValidEvents(
                 ingestedEvents,
@@ -135,12 +122,10 @@ export const verifyIngestionWithRetry = async (
                 metadataAttributes
             );
         } catch (error) {
-            retriesLeft -= 1;
+            retryCount -= 1;
             console.log(
                 `[ingestion] ${error.message} ` +
-                    `(attempt ${
-                        initialRetryCount - retriesLeft
-                    }/${initialRetryCount}, ` +
+                    `(attempt ${maxRetries - retryCount}/${maxRetries}, ` +
                     `waiting ${
                         INGESTION_POLL_INTERVAL_MS / 1000
                     }s before retry)`
@@ -154,18 +139,14 @@ export const verifyIngestionWithRetry = async (
 export const getIngestedEvents = async (
     rumClient: RUMClient,
     timestamp: number,
-    monitorName: string | undefined,
-    eventType: string | undefined = undefined
+    monitorName: string | undefined
 ) => {
     const ingestedEvents: Map<string, string[]> = new Map();
     const input: GetAppMonitorDataCommandInput = {
         Name: monitorName,
         TimeRange: {
             After: timestamp
-        },
-        ...(eventType && {
-            Filters: [{ Name: 'EventType', Values: [eventType] }]
-        })
+        }
     };
     let command = new GetAppMonitorDataCommand(input);
     // Running tests in parallel require pagination logic, as several test cases have the same timestamp
