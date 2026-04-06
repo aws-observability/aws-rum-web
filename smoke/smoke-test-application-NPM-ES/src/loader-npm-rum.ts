@@ -36,6 +36,7 @@ try {
         APPLICATION_REGION,
         config
     );
+    (window as any).awsRum = awsRum;
 } catch (error) {
     console.log(error);
     throw error;
