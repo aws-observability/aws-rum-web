@@ -22,6 +22,7 @@ try {
             'content-type': 'application/json'
         },
         useBeacon: false,
+        releaseId: '2.1.7',
         legacySPASupport: true
     };
 
@@ -29,12 +30,13 @@ try {
     const APPLICATION_VERSION: string = '1.0.0';
     const APPLICATION_REGION: string = $REGION;
 
-    awsRum: AwsRum = new AwsRum(
+    awsRum = new AwsRum(
         APPLICATION_ID,
         APPLICATION_VERSION,
         APPLICATION_REGION,
         config
     );
+    (window as any).awsRum = awsRum;
 } catch (error) {
     console.log(error);
     throw error;

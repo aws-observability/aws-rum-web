@@ -5,6 +5,9 @@ import {
 } from '@aws-sdk/client-rum';
 import { expect, Response } from '@playwright/test';
 
+const INGESTION_READ_ATTEMPTS = 15;
+const INGESTION_POLL_INTERVAL_MS = 10000;
+
 const builtInAttributes = [
     'version',
     'browserLanguage',
@@ -24,6 +27,7 @@ const builtInAttributes = [
     'title',
     'countryCode',
     'subdivisionCode',
+    'localityName',
     'domain',
     'pageTags',
     'aws:client',
@@ -53,23 +57,29 @@ export const getUrl = (
     if (!page) {
         page = 'smoke';
     }
+    let resolvedUrl: string;
     if (!testUrl) {
-        return 'http://localhost:9000/' + page + '.html';
-    }
-    const url = new URL(testUrl);
-    if (url.pathname === '/') {
-        if (install_method === 'CDN') {
-            return url + `${page}-${version}.html`;
-        } else if (install_method === 'NPM-ES') {
-            return url + `npm/es/${version}/` + page + '.html';
-        } else if (install_method === 'NPM-CJS') {
-            return url + `npm/cjs/${version}/` + page + '.html';
-        } else {
-            return url.toString();
-        }
+        resolvedUrl = 'http://localhost:9000/' + page + '.html';
     } else {
-        return url.toString();
+        const url = new URL(testUrl);
+        if (url.pathname === '/') {
+            if (install_method === 'CDN') {
+                resolvedUrl = url + `${page}-${version}.html`;
+            } else if (install_method === 'NPM-ES') {
+                resolvedUrl = url + `npm/es/${version}/` + page + '.html';
+            } else if (install_method === 'NPM-CJS') {
+                resolvedUrl = url + `npm/cjs/${version}/` + page + '.html';
+            } else {
+                resolvedUrl = url.toString();
+            }
+        } else {
+            resolvedUrl = url.toString();
+        }
     }
+    console.log(
+        `[smoke-test] url=${resolvedUrl} method=${install_method} page=${page}`
+    );
+    return resolvedUrl;
 };
 
 /**
@@ -90,12 +100,16 @@ export const verifyIngestionWithRetry = async (
     eventIds: any[],
     timestamp: number,
     monitorName: string | undefined,
-    retryCount: number,
+    retryCount: number = INGESTION_READ_ATTEMPTS,
     metadataAttributes: string[] | undefined = undefined
 ) => {
+    const maxRetries = retryCount;
     while (true) {
         if (retryCount === 0) {
-            console.log('Retry attempt exhausted.');
+            console.log(
+                `[ingestion] Retry exhausted after ${maxRetries} attempts. ` +
+                    `${eventIds.length} event(s) never ingested.`
+            );
             return false;
         }
         try {
@@ -109,8 +123,14 @@ export const verifyIngestionWithRetry = async (
             );
         } catch (error) {
             retryCount -= 1;
-            console.log(`${error.message} Waiting for next retry.`);
-            await new Promise((r) => setTimeout(r, 60000));
+            console.log(
+                `[ingestion] ${error.message} ` +
+                    `(attempt ${maxRetries - retryCount}/${maxRetries}, ` +
+                    `waiting ${
+                        INGESTION_POLL_INTERVAL_MS / 1000
+                    }s before retry)`
+            );
+            await new Promise((r) => setTimeout(r, INGESTION_POLL_INTERVAL_MS));
         }
     }
 };
