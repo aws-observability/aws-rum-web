@@ -9,7 +9,7 @@ permissions:
 
 jobs:
     gamma-smoke-test:
-        name: Gamma Deploy and Smoke Tests
+        name: Gamma
         uses: ./.github/workflows/smoke.yml
         secrets: inherit
 
