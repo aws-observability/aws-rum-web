@@ -136,8 +136,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: 'v${{ steps.publish-cdn.outputs.current-version }}'
-                  release_name: 'Release ${{ steps.publish-cdn.outputs.current-version }}'
+                  tag_name: 'v${{ steps.publish-cdn-prod.outputs.current-version }}'
+                  release_name: 'Release ${{ steps.publish-cdn-prod.outputs.current-version }}'
                   body: 'See [CHANGELOG](https://github.com/aws-observability/aws-rum-web/blob/main/CHANGELOG.md) for details.'
                   draft: true
                   prerelease: false
