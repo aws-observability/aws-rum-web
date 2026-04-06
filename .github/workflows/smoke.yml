@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
     deploy:
-        name: Smoke Test (Build and Deploy)
+        name: Smoke Test (Setup)
         runs-on: ubuntu-latest
         environment: smoke-test
         permissions: write-all

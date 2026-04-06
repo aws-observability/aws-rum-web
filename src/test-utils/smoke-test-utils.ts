@@ -5,6 +5,9 @@ import {
 } from '@aws-sdk/client-rum';
 import { expect, Response } from '@playwright/test';
 
+const INGESTION_READ_ATTEMPTS = 15;
+const INGESTION_POLL_INTERVAL_MS = 10000;
+
 const builtInAttributes = [
     'version',
     'browserLanguage',
@@ -97,7 +100,7 @@ export const verifyIngestionWithRetry = async (
     eventIds: any[],
     timestamp: number,
     monitorName: string | undefined,
-    retryCount: number,
+    retryCount: number = INGESTION_READ_ATTEMPTS,
     metadataAttributes: string[] | undefined = undefined
 ) => {
     const maxRetries = retryCount;
@@ -123,9 +126,11 @@ export const verifyIngestionWithRetry = async (
             console.log(
                 `[ingestion] ${error.message} ` +
                     `(attempt ${maxRetries - retryCount}/${maxRetries}, ` +
-                    `waiting 30s before retry)`
+                    `waiting ${
+                        INGESTION_POLL_INTERVAL_MS / 1000
+                    }s before retry)`
             );
-            await new Promise((r) => setTimeout(r, 30000));
+            await new Promise((r) => setTimeout(r, INGESTION_POLL_INTERVAL_MS));
         }
     }
 };
