@@ -27,6 +27,25 @@
         },
         "stack": {
             "type": "string"
+        },
+        "cause": {
+            "type": "array",
+            "description": "Chain of Error.cause values. Each entry contains the type, message, and stack of a cause in the chain.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "stack": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            }
         }
     },
     "additionalProperties": false,
