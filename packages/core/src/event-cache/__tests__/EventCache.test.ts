@@ -228,7 +228,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata: `{"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                metadata: `{"title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}`,
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ]);
@@ -254,7 +254,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata: `{"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"],"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+                metadata: `{"customPageAttributeString":"customPageAttributeValue","customPageAttributeNumber":1,"customPageAttributeBoolean":true,"title":"","pageId":"/rum/home","pageTags":["pageGroup1"]}`,
                 details: '{"version":"1.0.0","pageId":"/rum/home"}'
             }
         ]);
@@ -315,18 +315,12 @@ describe('EventCache tests', () => {
 
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
-        const eventBatch: RumEvent[] = eventCache.getEventBatch();
 
-        // Assert
-        expect(eventBatch).toEqual([
-            {
-                id: expect.stringMatching(/[0-9a-f\-]+/),
-                timestamp: new Date(),
-                type: EVENT1_SCHEMA,
-                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_SCRIPT}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
-                details: '{}'
-            }
-        ]);
+        // Assert — installation method is in common metadata
+        expect(eventCache.getCommonMetadata()).toMatchObject({
+            'aws:client': INSTALL_SCRIPT,
+            'aws:clientVersion': WEB_CLIENT_VERSION
+        });
     });
 
     test('is web client installed using module, append installation method set as module to metadata', async () => {
@@ -334,18 +328,12 @@ describe('EventCache tests', () => {
 
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
-        const eventBatch: RumEvent[] = eventCache.getEventBatch();
 
-        // Assert
-        expect(eventBatch).toEqual([
-            {
-                id: expect.stringMatching(/[0-9a-f\-]+/),
-                timestamp: new Date(),
-                type: EVENT1_SCHEMA,
-                metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
-                details: '{}'
-            }
-        ]);
+        // Assert — installation method is in common metadata
+        expect(eventCache.getCommonMetadata()).toMatchObject({
+            'aws:client': INSTALL_MODULE,
+            'aws:clientVersion': WEB_CLIENT_VERSION
+        });
     });
 
     test('when a session is not sampled then return false', async () => {
@@ -412,18 +400,20 @@ describe('EventCache tests', () => {
         // Init
         const bus = new EventBus();
         const eventCache: EventCache = createEventCache(DEFAULT_CONFIG, bus);
-        const event = {
-            id: expect.stringMatching(/[0-9a-f\-]+/),
-            timestamp: new Date(),
-            type: EVENT1_SCHEMA,
-            metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
-            details: '{}'
-        };
 
         // Run
         eventCache.recordEvent(EVENT1_SCHEMA, {});
         const eventBatch = eventCache.getEventBatch();
-        expect(eventBatch).toEqual([event]);
+        expect(eventBatch).toEqual([
+            {
+                id: expect.stringMatching(/[0-9a-f\-]+/),
+                timestamp: new Date(),
+                type: EVENT1_SCHEMA,
+                metadata: '{}',
+                details: '{}'
+            }
+        ]);
+        // Parsed event dispatched to subscribers has per-event metadata only
         // eslint-disable-next-line
         expect(bus.dispatch).toHaveBeenCalledWith(
             Topic.EVENT,
@@ -431,11 +421,7 @@ describe('EventCache tests', () => {
                 id: expect.stringMatching(/[0-9a-f\-]+/),
                 timestamp: new Date(),
                 type: EVENT1_SCHEMA,
-                metadata: expect.objectContaining({
-                    version: '1.0.0',
-                    'aws:client': INSTALL_MODULE,
-                    'aws:clientVersion': WEB_CLIENT_VERSION
-                }),
+                metadata: expect.objectContaining({}),
                 details: expect.objectContaining({})
             })
         );

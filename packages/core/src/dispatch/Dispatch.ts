@@ -324,6 +324,7 @@ export class Dispatch {
             BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
+            Metadata: JSON.stringify(this.eventCache.getCommonMetadata()),
             RumEvents: this.eventCache.getEventBatch(flush),
             Alias: this.config.alias
         };

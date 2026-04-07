@@ -72,6 +72,9 @@
         },
         "aws:clientVersion": {
             "type": "string"
+        },
+        "aws:userAgent": {
+            "type": "string"
         }
     },
     "patternProperties": {

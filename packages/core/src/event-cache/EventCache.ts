@@ -343,6 +343,16 @@ export class EventCache {
         this.events.push(event);
     };
 
+    /** Returns session-level metadata common to all events in a batch. */
+    public getCommonMetadata(): MetaData {
+        return {
+            ...this.sessionManager.getAttributes(),
+            version: '1.0.0',
+            'aws:client': this.installationMethod,
+            'aws:clientVersion': webClientVersion
+        } as MetaData;
+    }
+
     /** Creates a RumEvent and a ParsedRumEvent from a type and details. */
     private createEvent = (
         type: string,
@@ -352,13 +362,14 @@ export class EventCache {
         // RUM agent data model, where sessions and pages are first class
         // objects with their own attribute sets. Instead, we store session
         // attributes and page attributes together as 'meta data'.
-        const metadata = {
-            ...this.sessionManager.getAttributes(),
-            ...this.pageManager.getAttributes(),
-            version: '1.0.0',
-            'aws:client': this.installationMethod,
-            'aws:clientVersion': webClientVersion
-        } as MetaData;
+        //
+        // As of 3.0, session-level attributes (browser, OS, domain, etc.) are
+        // sent once in the payload-level Metadata field. Event-level metadata
+        // contains only per-event (page) attributes. Consumers merge:
+        //   { ...request.Metadata, ...event.metadata }
+        const eventMetadata = {
+            ...this.pageManager.getAttributes()
+        };
 
         const partialEvent = {
             id: v4(),
@@ -370,12 +381,12 @@ export class EventCache {
             {
                 ...partialEvent,
                 details: JSON.stringify(details),
-                metadata: JSON.stringify(metadata)
+                metadata: JSON.stringify(eventMetadata)
             } as RumEvent,
             {
                 ...partialEvent,
                 details,
-                metadata
+                metadata: eventMetadata
             } as ParsedRumEvent
         ];
     };

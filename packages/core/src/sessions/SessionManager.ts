@@ -3,8 +3,6 @@ import { storeCookie, getCookie } from '../utils/cookies-utils';
 import { v4 } from 'uuid';
 import { Config } from '../orchestration/config';
 import { Page, PageManager } from './PageManager';
-
-import { UAParser } from 'ua-parser-js';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
 import { AppMonitorDetails } from '../dispatch/dataplane';
 import { RecordEvent } from '../plugins/types';
@@ -31,10 +29,10 @@ export type Attributes = {
     // The custom release id, to match a source map
     'aws:releaseId'?: string;
     browserLanguage: string;
-    browserName: string;
-    browserVersion: string;
-    osName: string;
-    osVersion: string;
+    browserName?: string;
+    browserVersion?: string;
+    osName?: string;
+    osVersion?: string;
     // Possible device types include {console, mobile, tablet, smarttv, wearable, embedded}. If the device
     // type is undefined, there was no information indicating the device is anything other than a desktop,
     // so we assume the device is a desktop.
@@ -281,22 +279,23 @@ export class SessionManager {
     }
 
     private collectAttributes() {
-        const ua = new UAParser(navigator.userAgent).getResult();
+        const ua = this.config.userAgentProvider?.();
         this.attributes = {
             browserLanguage: navigator.language,
-            browserName: ua.browser.name ? ua.browser.name : UNKNOWN,
-            browserVersion: ua.browser.version ? ua.browser.version : UNKNOWN,
-            osName: ua.os.name ? ua.os.name : UNKNOWN,
-            osVersion: ua.os.version ? ua.os.version : UNKNOWN,
-            // Possible device types include {console, mobile, tablet, smarttv, wearable, embedded}. If the device
-            // type is undefined, there was no information indicating the device is anything other than a desktop,
-            // so we assume the device is a desktop.
-            deviceType: ua.device.type ? ua.device.type : DESKTOP_DEVICE_TYPE,
-            // This client is used exclusively in web applications.
+            browserName: ua?.browserName,
+            browserVersion: ua?.browserVersion,
+            osName: ua?.osName,
+            osVersion: ua?.osVersion,
+            deviceType: ua?.deviceType ?? DESKTOP_DEVICE_TYPE,
             platformType: WEB_PLATFORM_TYPE,
             domain: window.location.hostname,
             'aws:releaseId': this.config.releaseId
         };
+        // When no userAgentProvider resolved UA fields, include the raw
+        // User-Agent string so the server can parse it.
+        if (!ua) {
+            this.attributes['aws:userAgent'] = navigator.userAgent;
+        }
     }
 
     /**

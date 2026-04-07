@@ -32,4 +32,5 @@ export interface MetaData {
     pageTags?: string[];
     'aws:client'?: string;
     'aws:clientVersion'?: string;
+    'aws:userAgent'?: string;
 }
