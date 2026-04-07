@@ -14,6 +14,7 @@
     ],
     "scripts": {
         "prepare": "husky install",
+        "pretest": "npm run build:schemas",
         "test": "jest -c jest.unit.config.js",
         "test:coverage": "jest -c jest.unit.config.js --coverage",
         "build:dev": "webpack --config packages/aws-rum-web/webpack/webpack.dev.js && webpack --config packages/aws-rum-slim/webpack/webpack.dev.js",
