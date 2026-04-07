@@ -6,7 +6,7 @@ var config = {
     forbidOnly: !!process.env.CI,
     reporter: 'list',
     workers: process.env.CI ? 4 : undefined,
-    testDir: 'src/__smoke-test__',
+    testDir: 'packages/core/src/__smoke-test__',
     retries: 3,
     timeout: 300000,
     use: {

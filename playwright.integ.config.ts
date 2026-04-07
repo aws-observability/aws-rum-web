@@ -34,6 +34,15 @@ export default defineConfig({
                 baseURL: 'http://localhost:8080'
             }
         },
+        // aws-rum-web (edge)
+        {
+            name: 'aws-rum-web:msedge',
+            use: {
+                ...devices['Desktop Edge'],
+                channel: 'msedge',
+                baseURL: 'http://localhost:8080'
+            }
+        },
         // aws-rum-slim
         {
             name: 'aws-rum-slim:chromium',
@@ -53,6 +62,15 @@ export default defineConfig({
             name: 'aws-rum-slim:webkit',
             use: {
                 ...devices['Desktop Safari'],
+                baseURL: 'http://localhost:8081'
+            }
+        },
+        // aws-rum-slim (edge)
+        {
+            name: 'aws-rum-slim:msedge',
+            use: {
+                ...devices['Desktop Edge'],
+                channel: 'msedge',
                 baseURL: 'http://localhost:8081'
             }
         }

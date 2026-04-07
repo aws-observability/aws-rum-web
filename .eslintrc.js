@@ -29,7 +29,7 @@ module.exports = {
                 default: 'array'
             }
         ],
-        '@typescript-eslint/no-restricted-types': [
+        '@typescript-eslint/ban-types': [
             'error',
             {
                 types: {
@@ -140,10 +140,7 @@ module.exports = {
         '@typescript-eslint/no-this-alias': 'warn',
         '@typescript-eslint/no-unnecessary-type-assertion': 'off',
         '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
-        '@typescript-eslint/prefer-promise-reject-errors': 'warn',
         '@typescript-eslint/no-base-to-string': 'warn',
-        '@typescript-eslint/only-throw-error': 'warn',
-        '@typescript-eslint/no-require-imports': 'warn',
         '@typescript-eslint/member-ordering': 'off',
         '@typescript-eslint/triple-slash-reference': [
             'error',
