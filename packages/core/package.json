@@ -7,6 +7,25 @@
     "module": "dist/es/index.js",
     "types": "dist/es/index.d.ts",
     "sideEffects": false,
+    "exports": {
+        ".": {
+            "import": "./dist/es/index.js",
+            "require": "./dist/cjs/index.js",
+            "types": "./dist/es/index.d.ts"
+        },
+        "./*": {
+            "import": "./dist/es/*.js",
+            "require": "./dist/cjs/*.js",
+            "types": "./dist/es/*.d.ts"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": [
+                "dist/es/*"
+            ]
+        }
+    },
     "files": [
         "dist/"
     ],

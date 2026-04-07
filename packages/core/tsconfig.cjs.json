@@ -5,5 +5,12 @@
         "module": "commonjs",
         "outDir": "./dist/cjs"
     },
-    "include": ["src/index.ts"]
+    "include": ["src/**/*"],
+    "exclude": [
+        "src/**/__tests__/**",
+        "src/**/__integ__/**",
+        "src/**/__smoke-test__/**",
+        "src/**/__mocks__/**",
+        "src/test-utils/**"
+    ]
 }

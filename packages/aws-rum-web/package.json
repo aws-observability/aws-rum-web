@@ -20,7 +20,9 @@
     },
     "scripts": {
         "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
-        "build": "npm-run-all -s build:webpack:prod"
+        "build:dist:es": "tsc --project ./tsconfig.es.json",
+        "build:dist:cjs": "tsc --project ./tsconfig.cjs.json",
+        "build": "npm-run-all -s build:dist:* build:webpack:prod"
     },
     "dependencies": {
         "@aws-rum-web/core": "3.0.0",
