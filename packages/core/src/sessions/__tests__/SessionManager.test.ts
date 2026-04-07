@@ -624,16 +624,16 @@ describe('SessionManager tests', () => {
 
     test('session attributes include user agent', async () => {
         // Init
-        Object.defineProperty(navigator, 'userAgent', {
-            get() {
-                return MOBILE_USER_AGENT;
-            },
-            configurable: true
-        });
-
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            ...{ allowCookies: false }
+            allowCookies: false,
+            userAgentProvider: () => ({
+                browserName: 'Mobile Safari',
+                browserVersion: '13.0.1',
+                osName: 'iOS',
+                osVersion: '13.1.3',
+                deviceType: 'mobile'
+            })
         });
 
         // Run
@@ -646,16 +646,16 @@ describe('SessionManager tests', () => {
 
     test("when user agent has no device type, then device type is 'desktop'", async () => {
         // Init
-        Object.defineProperty(navigator, 'userAgent', {
-            get() {
-                return DESKTOP_USER_AGENT;
-            },
-            configurable: true
-        });
-
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            ...{ allowCookies: false }
+            allowCookies: false,
+            userAgentProvider: () => ({
+                browserName: 'Chrome',
+                browserVersion: '20.0.1132.57',
+                osName: 'Mac OS',
+                osVersion: '10.7.3',
+                deviceType: 'desktop'
+            })
         });
 
         // Run
@@ -664,6 +664,76 @@ describe('SessionManager tests', () => {
 
         // Assert
         expect(attributes).toEqual(DESKTOP_USER_AGENT_META_DATA);
+    });
+
+    test('when no userAgentProvider and no userAgentData, UA fields are undefined and raw userAgent is set', async () => {
+        // Init — ensure no userAgentData
+        const origUAD = (navigator as any).userAgentData;
+        delete (navigator as any).userAgentData;
+
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: false
+        });
+
+        // Run
+        sessionManager.getSession();
+        const attributes: Attributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(attributes.browserName).toBeUndefined();
+        expect(attributes.browserVersion).toBeUndefined();
+        expect(attributes.osName).toBeUndefined();
+        expect(attributes.osVersion).toBeUndefined();
+        expect(attributes.deviceType).toEqual('desktop');
+        expect(attributes['aws:userAgent']).toEqual(navigator.userAgent);
+
+        // Restore
+        if (origUAD !== undefined) {
+            (navigator as any).userAgentData = origUAD;
+        }
+    });
+
+    test('when userAgentDataProvider is set and userAgentData available, uses userAgentData', async () => {
+        // Init — mock userAgentData
+        const origUAD = (navigator as any).userAgentData;
+        (navigator as any).userAgentData = {
+            brands: [
+                { brand: 'Chromium', version: '144' },
+                { brand: 'Google Chrome', version: '144' }
+            ],
+            mobile: false,
+            platform: 'macOS'
+        };
+
+        const { userAgentDataProvider } = await import(
+            '../../orchestration/config'
+        );
+
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: false,
+            userAgentProvider: userAgentDataProvider
+        });
+
+        // Run
+        sessionManager.getSession();
+        const attributes: Attributes = sessionManager.getAttributes();
+
+        // Assert
+        expect(attributes.browserName).toEqual('Google Chrome');
+        expect(attributes.browserVersion).toEqual('144');
+        expect(attributes.osName).toEqual('macOS');
+        expect(attributes.osVersion).toBeUndefined();
+        expect(attributes.deviceType).toEqual('desktop');
+        expect(attributes['aws:userAgent']).toBeUndefined();
+
+        // Restore
+        if (origUAD !== undefined) {
+            (navigator as any).userAgentData = origUAD;
+        } else {
+            delete (navigator as any).userAgentData;
+        }
     });
 
     test('userIdRetentionDays defaults to zero and the the nil UUID', async () => {

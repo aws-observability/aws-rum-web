@@ -3,9 +3,7 @@ export {
     Orchestration as AwsRum,
     type PartialCookieAttributes,
     type PageIdFormat,
-    PageIdFormatEnum,
-    type Telemetry,
-    TelemetryEnum
+    PageIdFormatEnum
 } from './orchestration/Orchestration';
 export type { ClientBuilder } from '@aws-rum-web/core/dispatch/Dispatch';
 export type { PageAttributes } from '@aws-rum-web/core/sessions/PageManager';

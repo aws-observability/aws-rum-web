@@ -1,4 +1,5 @@
 export {
+<<<<<<< HEAD
     type Config,
     type PartialConfig,
     type CookieAttributes,
@@ -7,6 +8,16 @@ export {
     type Telemetry,
     type PageIdFormat,
     type UserAgentDetails,
+=======
+    Config,
+    PartialConfig,
+    CookieAttributes,
+    PartialCookieAttributes,
+    CompressionStrategy,
+    Telemetry,
+    PageIdFormat,
+    UserAgentDetails,
+>>>>>>> 61a7f83 (feat(slim): replace ua-parser with native userAgentData API)
     userAgentDataProvider
 } from './orchestration/config';
 export { type ClientBuilder } from './dispatch/Dispatch';

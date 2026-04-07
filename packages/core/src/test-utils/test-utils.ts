@@ -94,8 +94,7 @@ export const DEFAULT_CONFIG: Config = {
     telemetries: [],
     useBeacon: true,
     userIdRetentionDays: 30,
-    enableW3CTraceId: false,
-    legacySPASupport: false
+    enableW3CTraceId: false
 };
 
 export const createDefaultEventCache = (): EventCache => {
@@ -273,22 +272,26 @@ export const createExpectedEvents = (types: string[], expect: any) =>
         id: expect.stringMatching(/[0-9a-f\-]+/),
         timestamp: new Date(),
         type,
-        metadata: `{"version":"1.0.0","aws:client":"${INSTALL_MODULE}","aws:clientVersion":"${WEB_CLIENT_VERSION}"}`,
+        metadata: '{}',
         details: '{}'
     }));
 
 export const testMetaData = {
+    pageId: '/console/home',
+    title: ''
+};
+
+export const testCommonMetaData = {
     version: '1.0.0',
     'aws:client': INSTALL_MODULE,
     'aws:clientVersion': WEB_CLIENT_VERSION,
     domain: 'us-east-1.console.aws.amazon.com',
     browserLanguage: 'en-US',
-    browserName: 'WebKit',
-    browserVersion: '537.36',
-    osName: 'unknown',
-    osVersion: 'unknown',
+    browserName: undefined,
+    browserVersion: undefined,
+    osName: undefined,
+    osVersion: undefined,
     deviceType: 'desktop',
     platformType: 'web',
-    pageId: '/console/home',
-    title: ''
+    'aws:userAgent': navigator.userAgent
 };

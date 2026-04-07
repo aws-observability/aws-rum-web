@@ -175,7 +175,8 @@ describe('Orchestration tests', () => {
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             ...DEFAULT_CONFIG,
             candidatesCacheSize: 10,
-            fetchFunction: fetch
+            fetchFunction: fetch,
+            userAgentProvider: expect.any(Function)
         });
     });
 
@@ -192,7 +193,8 @@ describe('Orchestration tests', () => {
         expect(EventCache).toHaveBeenCalledTimes(1);
         expect((EventCache as any).mock.calls[0][1]).toEqual({
             ...DEFAULT_CONFIG,
-            fetchFunction: fetch
+            fetchFunction: fetch,
+            userAgentProvider: expect.any(Function)
         });
     });
 
@@ -643,6 +645,5 @@ describe('defaultConfig tests', () => {
         expect(config.userIdRetentionDays).toBe(30);
         expect(config.enableW3CTraceId).toBe(false);
         expect(config.candidatesCacheSize).toBe(10);
-        expect(config.legacySPASupport).toBe(false);
     });
 });
