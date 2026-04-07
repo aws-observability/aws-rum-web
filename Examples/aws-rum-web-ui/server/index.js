@@ -161,7 +161,7 @@ app.all(
                     event: event
                 };
 
-                if (event.type === 'com.amazon.rum.rrweb') {
+                if (event.type === 'com.amazon.rum.rrweb_event') {
                     // 3. Write session replay events to session-replay-events.jsonl
                     let sessionReplayData;
                     try {
