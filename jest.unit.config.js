@@ -14,7 +14,8 @@ module.exports = {
         '**/packages/aws-rum-web/src/**/__tests__/**/*.ts'
     ],
     moduleNameMapper: {
-        '^@aws-rum-web/core/(.*)$': '<rootDir>/packages/core/src/$1'
+        '^@aws-rum-web/core/(.*)$': '<rootDir>/packages/core/src/$1',
+        '^@aws-rum-web/slim/(.*)$': '<rootDir>/packages/aws-rum-slim/src/$1'
     },
     transform: {
         '^.+\\.tsx?$': [

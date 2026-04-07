@@ -75,7 +75,6 @@ export interface Config {
     alias?: string;
     headers?: Record<string, string>;
     enableW3CTraceId: boolean;
-    userAgentProvider?: () => UserAgentDetails | undefined;
 }
 
 export interface PartialConfig
