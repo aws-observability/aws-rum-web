@@ -20,6 +20,11 @@ logs
 app/smoke_local.html
 app/smoke_w3c_format_enabled_local.html
 
+# Generated smoke test artifacts
+app/serve/
+processed_smoke*.html
+smoke/**/src/*-tmp*.ts
+
 # Playwright
 playwright-report/
 test-results/
