@@ -22,23 +22,16 @@ import { RRWEB_EVENT_TYPE } from '../utils/constant';
 import { InternalLogger } from '../../utils/InternalLogger';
 import { record } from 'rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
-import type { RRWebEvent } from '../../events/rrweb-event';
+import type { RRWebEvent as RRWebEventPayload } from '../../events/rrweb-event';
 
 /** A single rrweb event as defined by the RRWebEvent schema. */
-type RRWebRecordEvent = RRWebEvent['events'][number];
+type RRWebRecordEvent = RRWebEventPayload['events'][number];
 
 export const RRWEB_PLUGIN_ID = 'rrweb';
 
 /** Configuration options for {@link RRWebPlugin}. */
 export type RRWebPluginConfig = {
-    /**
-     * Probability (0–1) of recording replay for a session, applied on top
-     * of the global `sessionSampleRate`.
-     *
-     * Effective replay rate = sessionSampleRate × additionalSampleRate.
-     * Example: 0.5 sessionSampleRate × 0.05 additionalSampleRate = 2.5%
-     * of all visits are recorded with replay.
-     */
+    /** Probability (0–1) of recording replay for a session, applied on top of sessionSampleRate. */
     additionalSampleRate: number;
     /** Number of rrweb events to buffer before automatically flushing a batch. */
     batchSize: number;
@@ -68,6 +61,17 @@ export const RRWEB_CONFIG_PROD: RRWebPluginConfig = {
         maskAllInputs: true,
         maskTextSelector: '*'
     }
+};
+
+/** Development defaults — privacy masking disabled for easier debugging. */
+export const RRWEB_CONFIG_DEV: RRWebPluginConfig = {
+    ...RRWEB_CONFIG_PROD,
+    recordOptions: {
+        ...RRWEB_CONFIG_PROD.recordOptions,
+        maskAllInputs: false,
+        maskTextSelector: undefined,
+        maskInputOptions: {}
+    } as recordOptions<unknown>
 };
 
 const defaultConfig = RRWEB_CONFIG_PROD;
@@ -262,7 +266,7 @@ export class RRWebPlugin extends InternalPlugin {
     }
 
     /**
-     * Drain the event buffer into a single {@link RRWebEvent} and
+     * Drain the event buffer into a single {@link RRWebEventPayload} and
      * record it via `context.record()`. No-op when the buffer is empty.
      *
      * Called automatically by the web client during page unload
@@ -284,7 +288,7 @@ export class RRWebPlugin extends InternalPlugin {
 
         const events = [...this.recordingEvents];
 
-        const eventData: RRWebEvent = {
+        const eventData: RRWebEventPayload = {
             version: '1.0.0',
             events,
             eventCount: events.length
