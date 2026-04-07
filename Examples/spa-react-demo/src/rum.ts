@@ -1,5 +1,13 @@
-import { AwsRum, type AwsRumConfig } from '@aws-rum-web/slim';
-import { FetchPlugin, RRWebPlugin } from '@aws-rum-web/core';
+import {
+    AwsRum,
+    type AwsRumConfig,
+    FetchPlugin,
+    NavigationPlugin,
+    ResourcePlugin,
+    WebVitalsPlugin,
+    JsErrorPlugin,
+    RRWebPlugin
+} from '@aws-rum-web/slim';
 
 try {
     const config: AwsRumConfig = {
@@ -25,8 +33,12 @@ try {
         eventPluginsToLoad: [
             new FetchPlugin({
                 recordAllRequests: true
-            })
-            // new RRWebPlugin()
+            }),
+            new WebVitalsPlugin(),
+            new ResourcePlugin(),
+            new NavigationPlugin(),
+            new JsErrorPlugin(),
+            new RRWebPlugin()
         ]
 =======
         compressionStrategy: { enabled: true }
