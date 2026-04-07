@@ -1,7 +1,3 @@
-import {
-    AwsCredentialIdentity,
-    AwsCredentialIdentityProvider
-} from '@aws-sdk/types';
 import { INSTALL_SCRIPT } from '@aws-rum-web/core/utils/constants';
 import {
     CommandQueue as SlimCommandQueue,
@@ -19,18 +15,11 @@ export type AwsRumClientInit = Omit<SlimAwsRumClientInit, 'c'> & {
 };
 
 /**
- * Full-featured CommandQueue extending slim with setAwsCredentials
- * and remote-config support.
+ * Full-featured CommandQueue extending slim with remote-config support.
  */
 export class CommandQueue extends SlimCommandQueue {
     constructor() {
         super();
-        // Add setAwsCredentials command handler
-        this.commandHandlerMap.setAwsCredentials = (
-            payload: AwsCredentialIdentity | AwsCredentialIdentityProvider
-        ): void => {
-            this.orchestration.setAwsCredentials(payload);
-        };
     }
 
     /**

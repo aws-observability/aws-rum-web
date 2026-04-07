@@ -45,6 +45,7 @@ jobs:
 
     integ-test:
         name: Run Integ Tests (${{ matrix.browser }} on ${{ matrix.os }})
+        needs: unit-test
         runs-on: ${{ matrix.os }}
         permissions: read-all
         env:

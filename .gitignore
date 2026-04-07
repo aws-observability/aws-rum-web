@@ -9,6 +9,9 @@ node_modules
 npm-debug.log
 src/events
 packages/*/src/events
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.js.map
+*.tgz
 integ-test-results
 .DS_Store
 *.swp
