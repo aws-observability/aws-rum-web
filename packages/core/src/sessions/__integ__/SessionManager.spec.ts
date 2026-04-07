@@ -89,8 +89,11 @@ test.describe('Session Handler usage', () => {
         expect(responseStatus).toBe('202');
         expect(metadata['aws:releaseId']).toBeUndefined();
 
-        // navigator.userAgentData is only available on Chromium browsers
-        if (testInfo.project.name.includes('chromium')) {
+        // navigator.userAgentData is available on Chromium-based browsers (Chrome, Edge)
+        const isChromium =
+            testInfo.project.name.includes('chromium') ||
+            testInfo.project.name.includes('msedge');
+        if (isChromium) {
             expect(metadata.browserName).toBeDefined();
             expect(metadata.browserVersion).toBeDefined();
             expect(metadata.osName).toBeDefined();

@@ -1,3 +1,7 @@
+import {
+    AwsCredentialIdentity,
+    AwsCredentialIdentityProvider
+} from '@aws-sdk/types';
 import { INSTALL_SCRIPT } from '@aws-rum-web/core/utils/constants';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 
@@ -65,6 +69,11 @@ export class CommandQueue {
             } else {
                 throw new Error('IncorrectParametersException');
             }
+        },
+        setAwsCredentials: (
+            payload: AwsCredentialIdentity | AwsCredentialIdentityProvider
+        ): void => {
+            this.orchestration.setAwsCredentials(payload);
         }
     };
 
