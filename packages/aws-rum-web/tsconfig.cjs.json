@@ -1,9 +1,14 @@
 {
-    "extends": "./tsconfig.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
         "noEmit": false,
         "module": "commonjs",
-        "outDir": "./dist/cjs"
+        "declaration": true,
+        "rootDir": "src",
+        "outDir": "./dist/cjs",
+        "preserveSymlinks": true,
+        "paths": {}
     },
-    "include": ["src/index.ts"]
+    "include": ["src/**/*"],
+    "exclude": ["src/**/__tests__/**", "src/**/__integ__/**"]
 }

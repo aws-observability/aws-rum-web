@@ -1,8 +1,13 @@
 {
-    "extends": "./tsconfig.json",
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
         "noEmit": false,
-        "outDir": "./dist/es"
+        "declaration": true,
+        "rootDir": "src",
+        "outDir": "./dist/es",
+        "preserveSymlinks": true,
+        "paths": {}
     },
-    "include": ["src/index.ts"]
+    "include": ["src/**/*"],
+    "exclude": ["src/**/__tests__/**", "src/**/__integ__/**"]
 }

@@ -13,15 +13,17 @@
             "require": "./dist/cjs/index.js",
             "types": "./dist/es/index.d.ts"
         },
-        "./CommandQueue": {
-            "import": "./src/CommandQueue.ts",
-            "require": "./src/CommandQueue.ts",
-            "types": "./src/CommandQueue.ts"
-        },
-        "./orchestration/Orchestration": {
-            "import": "./src/orchestration/Orchestration.ts",
-            "require": "./src/orchestration/Orchestration.ts",
-            "types": "./src/orchestration/Orchestration.ts"
+        "./*": {
+            "import": "./dist/es/*.js",
+            "require": "./dist/cjs/*.js",
+            "types": "./dist/es/*.d.ts"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": [
+                "dist/es/*"
+            ]
         }
     },
     "sideEffects": false,
@@ -37,7 +39,9 @@
     },
     "scripts": {
         "build:webpack:prod": "webpack --config webpack/webpack.prod.js",
-        "build": "npm-run-all -s build:webpack:prod",
+        "build:dist:es": "tsc --project ./tsconfig.es.json",
+        "build:dist:cjs": "tsc --project ./tsconfig.cjs.json",
+        "build": "npm-run-all -s build:dist:* build:webpack:prod",
         "stats": "webpack --config webpack/webpack.stats.js"
     },
     "dependencies": {
