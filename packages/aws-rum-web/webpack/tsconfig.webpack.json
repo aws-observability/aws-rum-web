@@ -1,0 +1,12 @@
+{
+    "extends": "../../../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": "../../..",
+        "module": "es2020",
+        "outDir": "../../../dist/webpack",
+        "sourceMap": true,
+        "skipLibCheck": true
+    },
+    "files": [],
+    "include": []
+}

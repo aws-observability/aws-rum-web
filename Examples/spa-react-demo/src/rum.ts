@@ -1,4 +1,5 @@
-import { AwsRum, RRWebPlugin, type AwsRumConfig } from 'aws-rum-web';
+import { AwsRum, type AwsRumConfig } from '@aws-rum-web/slim';
+import { FetchPlugin, RRWebPlugin } from '@aws-rum-web/core';
 
 try {
     const config: AwsRumConfig = {
@@ -6,17 +7,17 @@ try {
         sessionEventLimit: 0,
         sessionLengthSeconds: 30,
         endpoint: 'http://localhost:3000',
-        telemetries: [
-            'errors',
-            // 'performance',
-            ['http', { recordAllRequests: false }]
-        ],
         allowCookies: true,
         enableXRay: false,
         debug: true,
         signing: false,
         compressionStrategy: { enabled: true },
-        eventPluginsToLoad: [new RRWebPlugin()]
+        eventPluginsToLoad: [
+            new FetchPlugin({
+                recordAllRequests: true
+            })
+            // new RRWebPlugin()
+        ]
     };
 
     const APPLICATION_ID: string = '93755407-009b-4396-9280-0104beb732a9';

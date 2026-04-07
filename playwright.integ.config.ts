@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-    testDir: './src',
+    testDir: './packages',
     testMatch: '**/__integ__/**/*.spec.ts',
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
@@ -9,30 +9,64 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'html',
     use: {
-        baseURL: 'http://localhost:8080',
         trace: 'on-first-retry'
     },
     projects: [
+        // aws-rum-web (full distribution)
         {
-            name: 'chromium',
-            use: { ...devices['Desktop Chrome'] }
+            name: 'aws-rum-web:chromium',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: 'http://localhost:8080'
+            }
         },
         {
-            name: 'firefox',
-            use: { ...devices['Desktop Firefox'] }
+            name: 'aws-rum-web:firefox',
+            use: {
+                ...devices['Desktop Firefox'],
+                baseURL: 'http://localhost:8080'
+            }
         },
         {
-            name: 'webkit',
-            use: { ...devices['Desktop Safari'] }
+            name: 'aws-rum-web:webkit',
+            use: {
+                ...devices['Desktop Safari'],
+                baseURL: 'http://localhost:8080'
+            }
+        },
+        // aws-rum-slim
+        {
+            name: 'aws-rum-slim:chromium',
+            use: {
+                ...devices['Desktop Chrome'],
+                baseURL: 'http://localhost:8081'
+            }
         },
         {
-            name: 'msedge',
-            use: { ...devices['Desktop Edge'], channel: 'msedge' }
+            name: 'aws-rum-slim:firefox',
+            use: {
+                ...devices['Desktop Firefox'],
+                baseURL: 'http://localhost:8081'
+            }
+        },
+        {
+            name: 'aws-rum-slim:webkit',
+            use: {
+                ...devices['Desktop Safari'],
+                baseURL: 'http://localhost:8081'
+            }
         }
     ],
-    webServer: {
-        command: 'http-server ./build/dev -s -p 8080',
-        port: 8080,
-        reuseExistingServer: !process.env.CI
-    }
+    webServer: [
+        {
+            command: 'http-server ./packages/aws-rum-web/build/dev -s -p 8080',
+            port: 8080,
+            reuseExistingServer: !process.env.CI
+        },
+        {
+            command: 'http-server ./packages/aws-rum-slim/build/dev -s -p 8081',
+            port: 8081,
+            reuseExistingServer: !process.env.CI
+        }
+    ]
 });

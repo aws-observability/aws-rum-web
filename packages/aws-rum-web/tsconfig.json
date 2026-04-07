@@ -1,0 +1,13 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "rootDir": "src",
+        "noEmit": true,
+        "paths": {
+            "@aws-rum-web/core": ["../core/src"],
+            "@aws-rum-web/core/*": ["../core/src/*"]
+        }
+    },
+    "include": ["src/**/*"]
+}

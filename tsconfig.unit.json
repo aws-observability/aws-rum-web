@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "baseUrl": "src",
+        "baseUrl": ".",
         "downlevelIteration": true,
         "esModuleInterop": true,
         "lib": ["es2018", "dom"],
@@ -8,7 +8,15 @@
         "noEmit": true,
         "strict": false,
         "target": "es2018",
-        "types": ["node", "jest", "@testing-library/jest-dom"]
+        "types": ["node", "jest", "@testing-library/jest-dom"],
+        "paths": {
+            "@aws-rum-web/core": ["./packages/core/src"],
+            "@aws-rum-web/core/*": ["./packages/core/src/*"]
+        }
     },
-    "include": ["types", "**/__tests__/**/*.ts", "**/__mocks__/**/*.ts"]
+    "include": [
+        "types",
+        "packages/core/src/**/*.ts",
+        "packages/aws-rum-web/src/**/*.ts"
+    ]
 }

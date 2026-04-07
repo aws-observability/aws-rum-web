@@ -41,7 +41,7 @@ jobs:
               run: npm run lint:errors
 
             - name: Run Unit Tests
-              run: npm run test
+              run: npm test
 
     integ-test:
         name: Run Integ Tests (${{ matrix.browser }} on ${{ matrix.os }})
@@ -83,6 +83,9 @@ jobs:
 
             - name: Install Playwright Browsers
               run: npx playwright install
+
+            - name: Build
+              run: npm run build
 
             - name: Run Integration Tests
               run: npm run integ:${{ matrix.browser }}
