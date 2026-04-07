@@ -23,6 +23,7 @@
         "build": "npm-run-all -s build:webpack:prod"
     },
     "dependencies": {
-        "@aws-rum-web/core": "3.0.0"
+        "@aws-rum-web/core": "3.0.0",
+        "@aws-rum-web/slim": "3.0.0"
     }
 }

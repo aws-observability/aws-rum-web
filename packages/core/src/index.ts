@@ -6,6 +6,7 @@ export {
     type PartialCookieAttributes,
     type CompressionStrategy,
     type Telemetry,
+<<<<<<< HEAD
     type PageIdFormat,
     type UserAgentDetails,
 =======
@@ -19,6 +20,9 @@ export {
     UserAgentDetails,
 >>>>>>> 61a7f83 (feat(slim): replace ua-parser with native userAgentData API)
     userAgentDataProvider
+=======
+    type PageIdFormat
+>>>>>>> cf4f1ae (feat: make aws-rum-web extend slim as shared base package)
 } from './orchestration/config';
 export { type ClientBuilder } from './dispatch/Dispatch';
 export { type CognitoCredentialProviderFactory } from './dispatch/Dispatch';

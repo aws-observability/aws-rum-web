@@ -12,6 +12,7 @@ import {
 import * as uuid from 'uuid';
 import { navigationEvent } from '../../test-utils/mock-data';
 import { Config } from '../../orchestration/config';
+import * as configModule from '../../orchestration/config';
 import { mockRandom } from 'jest-mock-random';
 import { PageManager } from '../PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../../utils/constants';
@@ -624,16 +625,17 @@ describe('SessionManager tests', () => {
 
     test('session attributes include user agent', async () => {
         // Init
+        jest.spyOn(configModule, 'userAgentDataProvider').mockReturnValue({
+            browserName: 'Mobile Safari',
+            browserVersion: '13.0.1',
+            osName: 'iOS',
+            osVersion: '13.1.3',
+            deviceType: 'mobile'
+        });
+
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            allowCookies: false,
-            userAgentProvider: () => ({
-                browserName: 'Mobile Safari',
-                browserVersion: '13.0.1',
-                osName: 'iOS',
-                osVersion: '13.1.3',
-                deviceType: 'mobile'
-            })
+            allowCookies: false
         });
 
         // Run
@@ -646,16 +648,17 @@ describe('SessionManager tests', () => {
 
     test("when user agent has no device type, then device type is 'desktop'", async () => {
         // Init
+        jest.spyOn(configModule, 'userAgentDataProvider').mockReturnValue({
+            browserName: 'Chrome',
+            browserVersion: '20.0.1132.57',
+            osName: 'Mac OS',
+            osVersion: '10.7.3',
+            deviceType: 'desktop'
+        });
+
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            allowCookies: false,
-            userAgentProvider: () => ({
-                browserName: 'Chrome',
-                browserVersion: '20.0.1132.57',
-                osName: 'Mac OS',
-                osVersion: '10.7.3',
-                deviceType: 'desktop'
-            })
+            allowCookies: false
         });
 
         // Run
@@ -666,10 +669,11 @@ describe('SessionManager tests', () => {
         expect(attributes).toEqual(DESKTOP_USER_AGENT_META_DATA);
     });
 
-    test('when no userAgentProvider and no userAgentData, UA fields are undefined and raw userAgent is set', async () => {
-        // Init — ensure no userAgentData
-        const origUAD = (navigator as any).userAgentData;
-        delete (navigator as any).userAgentData;
+    test('when no userAgentData available, UA fields are undefined and raw userAgent is set', async () => {
+        // Init
+        jest.spyOn(configModule, 'userAgentDataProvider').mockReturnValue(
+            undefined
+        );
 
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
@@ -687,33 +691,20 @@ describe('SessionManager tests', () => {
         expect(attributes.osVersion).toBeUndefined();
         expect(attributes.deviceType).toEqual('desktop');
         expect(attributes['aws:userAgent']).toEqual(navigator.userAgent);
-
-        // Restore
-        if (origUAD !== undefined) {
-            (navigator as any).userAgentData = origUAD;
-        }
     });
 
-    test('when userAgentDataProvider is set and userAgentData available, uses userAgentData', async () => {
-        // Init — mock userAgentData
-        const origUAD = (navigator as any).userAgentData;
-        (navigator as any).userAgentData = {
-            brands: [
-                { brand: 'Chromium', version: '144' },
-                { brand: 'Google Chrome', version: '144' }
-            ],
-            mobile: false,
-            platform: 'macOS'
-        };
-
-        const { userAgentDataProvider } = await import(
-            '../../orchestration/config'
-        );
+    test('when userAgentData is available, uses userAgentData', async () => {
+        // Init
+        jest.spyOn(configModule, 'userAgentDataProvider').mockReturnValue({
+            browserName: 'Google Chrome',
+            browserVersion: '144',
+            osName: 'macOS',
+            deviceType: 'desktop'
+        });
 
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
-            allowCookies: false,
-            userAgentProvider: userAgentDataProvider
+            allowCookies: false
         });
 
         // Run
@@ -727,13 +718,6 @@ describe('SessionManager tests', () => {
         expect(attributes.osVersion).toBeUndefined();
         expect(attributes.deviceType).toEqual('desktop');
         expect(attributes['aws:userAgent']).toBeUndefined();
-
-        // Restore
-        if (origUAD !== undefined) {
-            (navigator as any).userAgentData = origUAD;
-        } else {
-            delete (navigator as any).userAgentData;
-        }
     });
 
     test('userIdRetentionDays defaults to zero and the the nil UUID', async () => {
