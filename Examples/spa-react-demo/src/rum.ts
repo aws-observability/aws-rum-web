@@ -15,20 +15,10 @@ try {
         sessionEventLimit: 0,
         sessionLengthSeconds: 30,
         endpoint: 'http://localhost:3000',
-<<<<<<< HEAD
-=======
-        // this does not exist in slim
-        // telemetries: [
-        //     'errors',
-        //     // 'performance',
-        //     ['http', { recordAllRequests: false }]
-        // ],
->>>>>>> 61a7f83 (feat(slim): replace ua-parser with native userAgentData API)
         allowCookies: true,
         enableXRay: false,
         debug: true,
         signing: false,
-<<<<<<< HEAD
         compressionStrategy: { enabled: true },
         eventPluginsToLoad: [
             new FetchPlugin({
@@ -40,10 +30,6 @@ try {
             new JsErrorPlugin(),
             new RRWebPlugin()
         ]
-=======
-        compressionStrategy: { enabled: true }
-        // eventPluginsToLoad: [new RRWebPlugin()]
->>>>>>> 61a7f83 (feat(slim): replace ua-parser with native userAgentData API)
     };
 
     const APPLICATION_ID: string = '93755407-009b-4396-9280-0104beb732a9';
