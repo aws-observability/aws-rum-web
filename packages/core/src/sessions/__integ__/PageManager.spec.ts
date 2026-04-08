@@ -195,10 +195,10 @@ test.describe('PageViewEventPlugin', () => {
         await page.click('#back');
         await page.click('#dispatch');
 
+        await expect(page.locator('#request_body')).toContainText('BatchId');
         const requestBodyText = await page
             .locator('#request_body')
             .textContent();
-        expect(requestBodyText).toContain('BatchId');
 
         const requestBody = JSON.parse(requestBodyText || '{}');
         const pages = requestBody.RumEvents.filter(

@@ -56,7 +56,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         allowCookies: false,
         batchLimit: 100,
         client: INSTALL_MODULE,
-        compressionStrategy: { enabled: false },
+        compressionStrategy: { enabled: true },
         cookieAttributes,
         debug: false,
         disableAutoPageView: false,

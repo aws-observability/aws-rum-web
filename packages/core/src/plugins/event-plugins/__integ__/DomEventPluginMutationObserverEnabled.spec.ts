@@ -13,10 +13,10 @@ test.describe('DomEventPluginMutationObserverEnabled', () => {
         await page.click('#button4');
         await page.click('#dispatch');
 
+        await expect(page.locator('#request_body')).toContainText('BatchId');
         const requestBodyText = await page
             .locator('#request_body')
             .textContent();
-        expect(requestBodyText).toContain('BatchId');
 
         const events = JSON.parse(requestBodyText || '{}').RumEvents.filter(
             (e: any) =>
@@ -45,10 +45,10 @@ test.describe('DomEventPluginMutationObserverEnabled', () => {
         await page.click('#button4');
         await page.click('#dispatch');
 
+        await expect(page.locator('#request_body')).toContainText('BatchId');
         const requestBodyText = await page
             .locator('#request_body')
             .textContent();
-        expect(requestBodyText).toContain('BatchId');
 
         const events = JSON.parse(requestBodyText || '{}').RumEvents.filter(
             (e: any) =>
@@ -79,10 +79,10 @@ test.describe('DomEventPluginMutationObserverEnabled', () => {
         await page.click('#button2');
         await page.click('#dispatch');
 
+        await expect(page.locator('#request_body')).toContainText('BatchId');
         const requestBodyText = await page
             .locator('#request_body')
             .textContent();
-        expect(requestBodyText).toContain('BatchId');
 
         const events = JSON.parse(requestBodyText || '{}').RumEvents.filter(
             (e: any) =>
