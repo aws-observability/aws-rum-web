@@ -19,7 +19,8 @@ export enum TelemetryEnum {
     Errors = 'errors',
     Performance = 'performance',
     Interaction = 'interaction',
-    Http = 'http'
+    Http = 'http',
+    Replay = 'replay'
 }
 
 export enum PageIdFormatEnum {

@@ -17,6 +17,7 @@ import { ResourcePlugin } from '@aws-rum-web/core/plugins/event-plugins/Resource
 import { WebVitalsPlugin } from '@aws-rum-web/core/plugins/event-plugins/WebVitalsPlugin';
 import { XhrPlugin } from '@aws-rum-web/core/plugins/event-plugins/XhrPlugin';
 import { FetchPlugin } from '@aws-rum-web/core/plugins/event-plugins/FetchPlugin';
+import { RRWebPlugin } from '@aws-rum-web/core/plugins/event-plugins/RRWebPlugin';
 import { InternalLogger } from '@aws-rum-web/core/utils/InternalLogger';
 import { createSigningConfig } from '../dispatch/signing';
 import { Orchestration as SlimOrchestration } from '@aws-rum-web/slim/orchestration/Orchestration';
@@ -177,6 +178,9 @@ export class Orchestration extends SlimOrchestration {
             },
             [TelemetryEnum.Http]: (config: object): InternalPlugin[] => {
                 return [new XhrPlugin(config), new FetchPlugin(config)];
+            },
+            [TelemetryEnum.Replay]: (config: object): InternalPlugin[] => {
+                return [new RRWebPlugin(config)];
             }
         };
     }

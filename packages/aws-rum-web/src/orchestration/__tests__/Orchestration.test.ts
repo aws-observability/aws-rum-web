@@ -329,6 +329,42 @@ describe('Orchestration tests', () => {
         expect(actual.sort()).toEqual(expected.sort());
     });
 
+    test('when replay data collection is set then the rrweb plugin is instantiated', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            telemetries: ['replay']
+        });
+        const expected = [
+            'com.amazonaws.rum.rrweb',
+            'com.amazonaws.rum.page-view'
+        ];
+        const actual = [];
+
+        // Assert
+        expect(addPlugin).toHaveBeenCalledTimes(expected.length);
+
+        addPlugin.mock.calls.forEach((call) => {
+            actual.push(call[0].getPluginId());
+        });
+
+        expect(actual.sort()).toEqual(expected.sort());
+    });
+
+    test('when a config is passed to the replay data collection then the config is added as a constructor arg', async () => {
+        // Init
+        const orchestration = new Orchestration('a', 'c', 'us-east-1', {
+            telemetries: [['replay', { batchSize: 50 }]]
+        });
+
+        // Assert
+        addPlugin.mock.calls.forEach((call) => {
+            const plugin: any = call[0];
+            if (plugin.getPluginId() === 'com.amazonaws.rum.rrweb') {
+                expect(plugin.config.batchSize).toEqual(50);
+            }
+        });
+    });
+
     test('the page view plugin is instantiated by default', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {

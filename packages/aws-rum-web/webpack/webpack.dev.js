@@ -91,6 +91,10 @@ module.exports = merge(common, {
         loader_session_replay: path.join(
             coreSrc,
             'loader/loader-session-replay.js'
+        ),
+        loader_session_replay_telemetry: path.join(
+            coreSrc,
+            'loader/loader-session-replay-telemetry.js'
         )
     },
     resolve: {
