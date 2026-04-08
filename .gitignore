@@ -41,3 +41,7 @@ playwright/.cache/
 # Vibe coding
 .kiro/
 save
+
+# Noisy
+Examples/spa-react-demo/package-lock.json
+Examples/aws-rum-web-ui/package-lock.json

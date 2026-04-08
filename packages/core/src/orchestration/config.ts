@@ -69,7 +69,6 @@ export interface Config {
     sessionEventLimit: number;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
-    telemetries: Telemetry[];
     useBeacon: boolean;
     userIdRetentionDays: number;
     alias?: string;

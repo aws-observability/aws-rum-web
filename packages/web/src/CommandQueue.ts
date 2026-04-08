@@ -3,7 +3,7 @@ import {
     CommandQueue as SlimCommandQueue,
     type AwsRumClientInit as SlimAwsRumClientInit
 } from '@aws-rum/web-slim/CommandQueue';
-import { PartialConfig } from '@aws-rum/web-core/orchestration/config';
+import { PartialConfig } from './orchestration/config';
 import { Orchestration } from './orchestration/Orchestration';
 import { getRemoteConfig } from './remote-config/remote-config';
 

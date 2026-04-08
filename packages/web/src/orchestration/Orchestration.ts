@@ -21,8 +21,7 @@ import { RRWebPlugin } from '@aws-rum/web-core/plugins/event-plugins/RRWebPlugin
 import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
 import { createSigningConfig } from '../dispatch/signing';
 import { Orchestration as SlimOrchestration } from '@aws-rum/web-slim/orchestration/Orchestration';
-import { TelemetryEnum } from './config';
-import { PartialConfig } from '@aws-rum/web-core/orchestration/config';
+import { TelemetryEnum, Config, PartialConfig } from './config';
 
 // Re-export config types for public API
 export {
@@ -50,6 +49,8 @@ interface TelemetriesFunctor {
  * the telemetries plugin system.
  */
 export class Orchestration extends SlimOrchestration {
+    protected declare config: Config;
+
     constructor(
         applicationId: string,
         applicationVersion: string,
@@ -57,16 +58,18 @@ export class Orchestration extends SlimOrchestration {
         partialConfig: PartialConfig = {}
     ) {
         // Merge signing: true into config before passing to slim base
+        // telemetries is passed through so it's on this.config before
+        // initPluginManager runs during super()
         super(applicationId, applicationVersion, region, {
             signing: true,
             ...partialConfig,
             candidatesCacheSize: 10
-        });
+        } as any);
 
         InternalLogger.info(`RUM client initialized for app: ${applicationId}`);
         InternalLogger.info(
             `Telemetries enabled: ${
-                this.config.telemetries.join(', ') || 'none'
+                (this.config.telemetries ?? []).join(', ') || 'none'
             }`
         );
     }
@@ -138,7 +141,7 @@ export class Orchestration extends SlimOrchestration {
         let plugins: InternalPlugin[] = [];
         const functor: TelemetriesFunctor = this.telemetryFunctor();
 
-        this.config.telemetries.forEach((type) => {
+        (this.config.telemetries ?? []).forEach((type) => {
             if (typeof type === 'string' && functor[type.toLowerCase()]) {
                 plugins = [...plugins, ...functor[type.toLowerCase()]({})];
             } else if (
