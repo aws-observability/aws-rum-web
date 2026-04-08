@@ -91,7 +91,6 @@ export const DEFAULT_CONFIG: Config = {
     sessionEventLimit: 200,
     sessionLengthSeconds: 60 * 30,
     sessionSampleRate: 1,
-    telemetries: [],
     useBeacon: true,
     userIdRetentionDays: 30,
     enableW3CTraceId: false

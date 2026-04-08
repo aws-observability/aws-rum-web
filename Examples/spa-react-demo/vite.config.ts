@@ -24,23 +24,23 @@ export default defineConfig({
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
         alias: [
             {
-                find: /^@aws-rum-web\/slim$/,
+                find: /^@aws-rum\/web-slim$/,
                 replacement: path.resolve(
                     __dirname,
-                    '../../packages/aws-rum-slim/src/index.ts'
+                    '../../packages/slim/src/index.ts'
                 )
             },
             {
-                find: /^@aws-rum-web\/core\/(.*)/,
+                find: /^@aws-rum\/web-core\/(.*)/,
                 replacement: `${coreSrc}/$1`
             },
             {
-                find: /^@aws-rum-web\/core$/,
+                find: /^@aws-rum\/web-core$/,
                 replacement: `${coreSrc}/index.ts`
             }
         ]
     },
     optimizeDeps: {
-        exclude: ['@aws-rum-web/slim', '@aws-rum-web/core']
+        exclude: ['@aws-rum/web-slim', '@aws-rum/web-core']
     }
 });

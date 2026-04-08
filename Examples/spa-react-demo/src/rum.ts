@@ -7,7 +7,7 @@ import {
     WebVitalsPlugin,
     JsErrorPlugin,
     RRWebPlugin
-} from '@aws-rum-web/slim';
+} from '@aws-rum/web-slim';
 
 try {
     const config: AwsRumConfig = {

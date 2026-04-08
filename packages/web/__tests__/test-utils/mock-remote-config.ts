@@ -1,5 +1,5 @@
-import { INSTALL_SCRIPT } from '../utils/constants';
-import { PartialConfig } from '../orchestration/config';
+import { INSTALL_SCRIPT } from '@aws-rum/web-core/utils/constants';
+import { PartialConfig } from '../../src/orchestration/config';
 
 const IDENTITY_POOL_ID = 'us-west-2:a-b-c-d-e';
 const ENDPOINT = 'https://dataplane.rum.us-west-2.amazonaws.com/';

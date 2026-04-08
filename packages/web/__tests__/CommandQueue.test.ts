@@ -6,7 +6,7 @@ import {
     mockPartialOtaConfigFile,
     mockPartialOtaConfigObject,
     dummyOtaConfigURL
-} from '@aws-rum/web-core/test-utils/mock-remote-config';
+} from './test-utils/mock-remote-config';
 import { Response } from 'node-fetch';
 import * as RemoteConfig from '../src/remote-config/remote-config';
 import { INSTALL_SCRIPT } from '@aws-rum/web-core/utils/constants';

@@ -27,8 +27,8 @@ export {
     type PageIdFormat
 } from '@aws-rum/web-core/orchestration/config';
 
-/** Slim config omits `telemetries` — use `eventPluginsToLoad` instead. */
-export type PartialConfig = Omit<CorePartialConfig, 'telemetries'>;
+/** Slim config — use `eventPluginsToLoad` for plugins. */
+export type PartialConfig = CorePartialConfig;
 
 export type PartialCookieAttributes = Partial<CookieAttributes>;
 
@@ -79,7 +79,6 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
-        telemetries: [],
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,

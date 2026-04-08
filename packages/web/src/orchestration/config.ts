@@ -1,19 +1,27 @@
 import {
-    Config,
-    CookieAttributes
+    Config as CoreConfig,
+    CookieAttributes,
+    Telemetry
 } from '@aws-rum/web-core/orchestration/config';
 import { INSTALL_MODULE } from '@aws-rum/web-core/utils/constants';
 
 // Re-export core types for backward compatibility
 export {
-    Config,
-    PartialConfig,
     CookieAttributes,
     PartialCookieAttributes,
     CompressionStrategy,
     Telemetry,
     PageIdFormat
 } from '@aws-rum/web-core/orchestration/config';
+
+export interface Config extends CoreConfig {
+    telemetries: Telemetry[];
+}
+
+export interface PartialConfig
+    extends Omit<Partial<Config>, 'cookieAttributes'> {
+    cookieAttributes?: Partial<CookieAttributes>;
+}
 
 export enum TelemetryEnum {
     Errors = 'errors',
