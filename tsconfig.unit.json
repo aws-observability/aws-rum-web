@@ -10,14 +10,18 @@
         "target": "es2018",
         "types": ["node", "jest", "@testing-library/jest-dom"],
         "paths": {
-            "@aws-rum-web/core": ["./packages/core/src"],
-            "@aws-rum-web/core/*": ["./packages/core/src/*"],
-            "@aws-rum-web/slim/*": ["./packages/aws-rum-slim/src/*"]
+            "@aws-rum/web-core": ["./packages/core/src"],
+            "@aws-rum/web-core/*": ["./packages/core/src/*"],
+            "@aws-rum/web-slim/*": ["./packages/slim/src/*"]
         }
     },
     "include": [
         "types",
         "packages/core/src/**/*.ts",
-        "packages/aws-rum-web/src/**/*.ts"
+        "packages/core/__tests__/**/*.ts",
+        "packages/web/src/**/*.ts",
+        "packages/web/__tests__/**/*.ts",
+        "packages/slim/src/**/*.ts",
+        "packages/slim/__tests__/**/*.ts"
     ]
 }

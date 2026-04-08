@@ -1,5 +1,5 @@
 {
-    "name": "@aws-rum-web/core",
+    "name": "@aws-rum/web-core",
     "version": "3.0.0",
     "description": "Core telemetry engine for the Amazon CloudWatch RUM web client.",
     "license": "Apache-2.0",

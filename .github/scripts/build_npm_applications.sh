@@ -2,9 +2,9 @@ PRE_OR_POST_RELEASE=$1
 MODULE_TYPE=$2
 
 REPO_ROOT="/home/runner/work/aws-rum-web/aws-rum-web"
-PACK_DIR="$REPO_ROOT/packages/aws-rum-web"
+PACK_DIR="$REPO_ROOT/packages/web"
 CORE_DIR="$REPO_ROOT/packages/core"
-SLIM_DIR="$REPO_ROOT/packages/aws-rum-slim"
+SLIM_DIR="$REPO_ROOT/packages/slim"
 
 if [ "$PRE_OR_POST_RELEASE" = "PRE" ]; then 
     if [ "$MODULE_TYPE" = "NPM-ES" ]; then  

@@ -6,12 +6,12 @@ bucket=$1
 echo "current-version=$version" >> $GITHUB_OUTPUT
 
 # Upload full distribution (cwr.js)
-aws s3api put-object --bucket $bucket --key "content/$version/cwr.js" --body packages/aws-rum-web/build/assets/cwr.js --cache-control max-age=604800 --content-type "text/javascript"
-aws s3api put-object --bucket $bucket --key "content/$version/cwr.js.map" --body packages/aws-rum-web/build/assets/cwr.js.map --cache-control max-age=604800
+aws s3api put-object --bucket $bucket --key "content/$version/cwr.js" --body packages/web/build/assets/cwr.js --cache-control max-age=604800 --content-type "text/javascript"
+aws s3api put-object --bucket $bucket --key "content/$version/cwr.js.map" --body packages/web/build/assets/cwr.js.map --cache-control max-age=604800
 
 # Upload slim distribution (cwr-slim.js)
-aws s3api put-object --bucket $bucket --key "content/$version/cwr-slim.js" --body packages/aws-rum-slim/build/assets/cwr-slim.js --cache-control max-age=604800 --content-type "text/javascript"
-aws s3api put-object --bucket $bucket --key "content/$version/cwr-slim.js.map" --body packages/aws-rum-slim/build/assets/cwr-slim.js.map --cache-control max-age=604800
+aws s3api put-object --bucket $bucket --key "content/$version/cwr-slim.js" --body packages/slim/build/assets/cwr-slim.js --cache-control max-age=604800 --content-type "text/javascript"
+aws s3api put-object --bucket $bucket --key "content/$version/cwr-slim.js.map" --body packages/slim/build/assets/cwr-slim.js.map --cache-control max-age=604800
 
 aws s3api put-object --bucket $bucket --key "content/$version/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY --cache-control max-age=604800
 aws s3api put-object --bucket $bucket --key "content/$version/LICENSE" --body LICENSE --cache-control max-age=604800
@@ -21,18 +21,18 @@ then
     echo $version | aws s3 cp - s3://$bucket/content/current
 
     minorUpdate=$(echo $version | sed -En "s/^([0-9]+\.)[0-9]+\.[0-9]+/\1x/p")
-    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr.js" --body packages/aws-rum-web/build/assets/cwr.js --cache-control max-age=7200 --content-type "text/javascript"
-    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr.js.map" --body packages/aws-rum-web/build/assets/cwr.js.map --cache-control max-age=7200
-    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr-slim.js" --body packages/aws-rum-slim/build/assets/cwr-slim.js --cache-control max-age=7200 --content-type "text/javascript"
-    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr-slim.js.map" --body packages/aws-rum-slim/build/assets/cwr-slim.js.map --cache-control max-age=7200
+    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr.js" --body packages/web/build/assets/cwr.js --cache-control max-age=7200 --content-type "text/javascript"
+    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr.js.map" --body packages/web/build/assets/cwr.js.map --cache-control max-age=7200
+    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr-slim.js" --body packages/slim/build/assets/cwr-slim.js --cache-control max-age=7200 --content-type "text/javascript"
+    aws s3api put-object --bucket $bucket --key "content/$minorUpdate/cwr-slim.js.map" --body packages/slim/build/assets/cwr-slim.js.map --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$minorUpdate/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$minorUpdate/LICENSE" --body LICENSE --cache-control max-age=7200
 
     patchUpdate=$(echo $version | sed -En "s/^([0-9]+\.[0-9]+\.)[0-9]+/\1x/p")
-    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr.js" --body packages/aws-rum-web/build/assets/cwr.js --cache-control max-age=7200 --content-type "text/javascript"
-    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr.js.map" --body packages/aws-rum-web/build/assets/cwr.js.map --cache-control max-age=7200
-    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr-slim.js" --body packages/aws-rum-slim/build/assets/cwr-slim.js --cache-control max-age=7200 --content-type "text/javascript"
-    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr-slim.js.map" --body packages/aws-rum-slim/build/assets/cwr-slim.js.map --cache-control max-age=7200
+    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr.js" --body packages/web/build/assets/cwr.js --cache-control max-age=7200 --content-type "text/javascript"
+    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr.js.map" --body packages/web/build/assets/cwr.js.map --cache-control max-age=7200
+    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr-slim.js" --body packages/slim/build/assets/cwr-slim.js --cache-control max-age=7200 --content-type "text/javascript"
+    aws s3api put-object --bucket $bucket --key "content/$patchUpdate/cwr-slim.js.map" --body packages/slim/build/assets/cwr-slim.js.map --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$patchUpdate/LICENSE-THIRD-PARTY" --body LICENSE-THIRD-PARTY --cache-control max-age=7200
     aws s3api put-object --bucket $bucket --key "content/$patchUpdate/LICENSE" --body LICENSE --cache-control max-age=7200
 

@@ -1,0 +1,17 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "rootDir": "src",
+        "noEmit": true,
+        "paths": {
+            "@aws-rum/web-core": ["../core/src"],
+            "@aws-rum/web-core/*": ["../core/src/*"],
+            "@aws-rum/web-slim/CommandQueue": ["../slim/src/CommandQueue"],
+            "@aws-rum/web-slim/orchestration/Orchestration": [
+                "../slim/src/orchestration/Orchestration"
+            ]
+        }
+    },
+    "include": ["src/**/*"]
+}
