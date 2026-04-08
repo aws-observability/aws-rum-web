@@ -9,9 +9,9 @@
         "target": "es2017",
         "skipLibCheck": true,
         "paths": {
-            "@aws-rum-web/core": ["./packages/core/src"],
-            "@aws-rum-web/core/*": ["./packages/core/src/*"],
-            "@aws-rum-web/slim/*": ["./packages/aws-rum-slim/src/*"],
+            "@aws-rum/web-core": ["./packages/core/src"],
+            "@aws-rum/web-core/*": ["./packages/core/src/*"],
+            "@aws-rum/web-slim/*": ["./packages/slim/src/*"],
             "test-utils/*": ["./packages/core/src/test-utils/*"]
         }
     }

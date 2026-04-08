@@ -104,12 +104,12 @@ export default defineConfig({
     ],
     webServer: [
         {
-            command: 'http-server ./packages/aws-rum-web/build/dev -s -p 8080',
+            command: 'http-server ./packages/web/build/dev -s -p 8080',
             port: 8080,
             reuseExistingServer: !process.env.CI
         },
         {
-            command: 'http-server ./packages/aws-rum-slim/build/dev -s -p 8081',
+            command: 'http-server ./packages/slim/build/dev -s -p 8081',
             port: 8081,
             reuseExistingServer: !process.env.CI
         }

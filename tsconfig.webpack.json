@@ -7,11 +7,11 @@
         "sourceMap": true
     },
     "include": [
-        "packages/aws-rum-web/src/index-browser.ts",
-        "packages/aws-rum-web/src/orchestration/**/*.ts",
-        "packages/aws-rum-web/src/remote-config/**/*.ts",
-        "packages/aws-rum-web/src/CommandQueue.ts",
-        "packages/aws-rum-slim/src/**/*.ts"
+        "packages/web/src/index-browser.ts",
+        "packages/web/src/orchestration/**/*.ts",
+        "packages/web/src/remote-config/**/*.ts",
+        "packages/web/src/CommandQueue.ts",
+        "packages/slim/src/**/*.ts"
     ],
     "exclude": [
         "**/__tests__/**",
