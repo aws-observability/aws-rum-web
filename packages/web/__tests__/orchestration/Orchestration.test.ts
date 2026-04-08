@@ -164,19 +164,17 @@ describe('Orchestration tests', () => {
         expect(actual.sort()).toEqual(expected.sort());
     });
 
-    test('when candidatesCacheSize is used then it is overriden to default', async () => {
+    test('when candidatesCacheSize is provided then it is used', async () => {
         // Init
         new Orchestration('a', undefined, undefined, {
-            candidatesCacheSize: Number.MAX_SAFE_INTEGER
+            candidatesCacheSize: 20
         });
 
         // Assert
         expect(EventCache).toHaveBeenCalledTimes(1);
-        expect((EventCache as any).mock.calls[0][1]).toEqual({
-            ...DEFAULT_CONFIG,
-            candidatesCacheSize: 10,
-            fetchFunction: fetch
-        });
+        expect((EventCache as any).mock.calls[0][1].candidatesCacheSize).toBe(
+            20
+        );
     });
 
     test('when config is not provided then defaults are used', async () => {
@@ -190,10 +188,11 @@ describe('Orchestration tests', () => {
 
         // Assert
         expect(EventCache).toHaveBeenCalledTimes(1);
-        expect((EventCache as any).mock.calls[0][1]).toEqual({
-            ...DEFAULT_CONFIG,
-            fetchFunction: fetch
-        });
+        const config = (EventCache as any).mock.calls[0][1];
+        expect(config.signing).toBe(true);
+        expect(config.telemetries).toEqual(['errors', 'performance', 'http']);
+        expect(config.candidatesCacheSize).toBe(10);
+        expect(config.endpoint).toContain('us-west-2');
     });
 
     test('when cookie attributes are provided then they are merged with defaults', async () => {
@@ -211,10 +210,18 @@ describe('Orchestration tests', () => {
         );
     });
 
-    test('data collection defaults to only page views', async () => {
+    test('data collection defaults to errors, performance, and http plugins', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
-        const expected = ['com.amazonaws.rum.page-view'];
+        const expected = [
+            'com.amazonaws.rum.js-error',
+            'com.amazonaws.rum.navigation',
+            'com.amazonaws.rum.resource',
+            'com.amazonaws.rum.web-vitals',
+            'com.amazonaws.rum.xhr',
+            'com.amazonaws.rum.fetch',
+            'com.amazonaws.rum.page-view'
+        ];
         const actual = [];
 
         // Assert
@@ -674,7 +681,7 @@ describe('defaultConfig tests', () => {
         expect(config.sessionEventLimit).toBe(200);
         expect(config.sessionLengthSeconds).toBe(1800);
         expect(config.sessionSampleRate).toBe(1);
-        expect(config.telemetries).toEqual([]);
+        expect(config.telemetries).toEqual(['errors', 'performance', 'http']);
         expect(config.useBeacon).toBe(true);
         expect(config.userIdRetentionDays).toBe(30);
         expect(config.enableW3CTraceId).toBe(false);

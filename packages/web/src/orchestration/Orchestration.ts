@@ -57,19 +57,25 @@ export class Orchestration extends SlimOrchestration {
         region: string,
         partialConfig: PartialConfig = {}
     ) {
-        // Merge signing: true into config before passing to slim base
-        // telemetries is passed through so it's on this.config before
-        // initPluginManager runs during super()
+        // Set default telemetries if not provided, then pass to slim base
+        const telemetries = partialConfig.telemetries ?? [
+            'errors',
+            'performance',
+            'http'
+        ];
         super(applicationId, applicationVersion, region, {
             signing: true,
             ...partialConfig,
-            candidatesCacheSize: 10
+            telemetries
         } as any);
+
+        // Ensure telemetries is accessible on the extended config
+        this.config.telemetries = telemetries;
 
         InternalLogger.info(`RUM client initialized for app: ${applicationId}`);
         InternalLogger.info(
             `Telemetries enabled: ${
-                (this.config.telemetries ?? []).join(', ') || 'none'
+                this.config.telemetries.join(', ') || 'none'
             }`
         );
     }
@@ -146,7 +152,7 @@ export class Orchestration extends SlimOrchestration {
         let plugins: InternalPlugin[] = [];
         const functor: TelemetriesFunctor = this.telemetryFunctor();
 
-        (this.config.telemetries ?? []).forEach((type) => {
+        this.config.telemetries.forEach((type) => {
             if (typeof type === 'string' && functor[type.toLowerCase()]) {
                 plugins = [...plugins, ...functor[type.toLowerCase()]({})];
             } else if (
