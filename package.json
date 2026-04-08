@@ -29,7 +29,7 @@
         "integ:webkit": "npm run integ -- --project=aws-rum-web:webkit --project=aws-rum-slim:webkit",
         "integ:edge": "npm run integ -- --project=aws-rum-web:msedge --project=aws-rum-slim:msedge",
         "prebuild": "npm run build:schemas",
-        "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/aws-rum-slim && npm run build --workspace=packages/aws-rum-web",
+        "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/slim && npm run build --workspace=packages/web",
         "build:schemas": "node scripts/generate-schema-ts.js",
         "lint": "eslint --ext .ts packages/core/src/",
         "lint:errors": "npm run lint -- --quiet",
