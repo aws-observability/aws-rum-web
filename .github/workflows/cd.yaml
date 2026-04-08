@@ -116,7 +116,10 @@ jobs:
               timeout-minutes: 20
 
             - name: Publish to NPM
-              run: npm publish --provenance
+              run: |
+                  cd packages/core && npm publish --access public --provenance && cd ../..
+                  cd packages/aws-rum-slim && npm publish --access public --provenance && cd ../..
+                  cd packages/aws-rum-web && npm publish --access public --provenance && cd ../..
 
             - name: Build Smoke Test Application - NPM/ES (Post NPM Release)
               id: build-npm-es-application-post-release
