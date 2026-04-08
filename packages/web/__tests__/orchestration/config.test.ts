@@ -23,9 +23,9 @@ describe('web config', () => {
         expect(config.compressionStrategy.enabled).toBe(true);
     });
 
-    test('defaultConfig has empty telemetries', () => {
+    test('defaultConfig has standard telemetries enabled', () => {
         const config = defaultConfig(defaultCookieAttributes());
-        expect(config.telemetries).toEqual([]);
+        expect(config.telemetries).toEqual(['errors', 'performance', 'http']);
     });
 
     test('defaultConfig has candidatesCacheSize overridden to 10', () => {

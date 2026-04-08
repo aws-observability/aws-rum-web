@@ -77,7 +77,6 @@ export const DEFAULT_CONFIG: Config = {
     endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
     endpointUrl: new URL('https://dataplane.rum.us-west-2.amazonaws.com'),
     eventCacheSize: 1000,
-    candidatesCacheSize: 10,
     eventPluginsToLoad: [],
     pageIdFormat: 'PATH',
     pagesToExclude: [],
@@ -93,7 +92,8 @@ export const DEFAULT_CONFIG: Config = {
     sessionSampleRate: 1,
     useBeacon: true,
     userIdRetentionDays: 30,
-    enableW3CTraceId: false
+    enableW3CTraceId: false,
+    candidatesCacheSize: 10
 };
 
 export const createDefaultEventCache = (): EventCache => {

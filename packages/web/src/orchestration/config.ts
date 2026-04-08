@@ -3,7 +3,7 @@ import {
     CookieAttributes,
     Telemetry
 } from '@aws-rum/web-core/orchestration/config';
-import { INSTALL_MODULE } from '@aws-rum/web-core/utils/constants';
+import { defaultConfig as slimDefaultConfig } from '@aws-rum/web-slim/orchestration/Orchestration';
 
 // Re-export core types for backward compatibility
 export {
@@ -39,55 +39,12 @@ export enum PageIdFormatEnum {
     PathAndHash = 'PATH_AND_HASH'
 }
 
-const DEFAULT_REGION = 'us-west-2';
-const DEFAULT_ENDPOINT = `https://dataplane.rum.${DEFAULT_REGION}.amazonaws.com`;
-
-const internalConfigOverrides = {
-    candidatesCacheSize: 10
-};
-
-export const defaultCookieAttributes = (): CookieAttributes => {
-    return {
-        unique: false,
-        domain: window.location.hostname,
-        path: '/',
-        sameSite: 'Strict',
-        secure: true
-    };
-};
+export { defaultCookieAttributes } from '@aws-rum/web-slim/orchestration/Orchestration';
 
 export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
     return {
-        allowCookies: false,
-        batchLimit: 100,
-        client: INSTALL_MODULE,
-        compressionStrategy: { enabled: true },
-        cookieAttributes,
-        debug: false,
-        disableAutoPageView: false,
-        dispatchInterval: 5 * 1000,
-        enableRumClient: true,
-        enableXRay: false,
-        endpoint: DEFAULT_ENDPOINT,
-        endpointUrl: new URL(DEFAULT_ENDPOINT),
-        eventCacheSize: 1000,
-        eventPluginsToLoad: [],
-        pageIdFormat: PageIdFormatEnum.Path,
-        pagesToExclude: [],
-        pagesToInclude: [/.*/],
+        ...slimDefaultConfig(cookieAttributes),
         signing: true,
-        recordResourceUrl: true,
-        retries: 2,
-        routeChangeComplete: 100,
-        routeChangeTimeout: 10000,
-        sessionAttributes: {},
-        sessionEventLimit: 200,
-        sessionLengthSeconds: 60 * 30,
-        sessionSampleRate: 1,
-        telemetries: [],
-        useBeacon: true,
-        userIdRetentionDays: 30,
-        enableW3CTraceId: false,
-        ...internalConfigOverrides
+        telemetries: ['errors', 'performance', 'http']
     };
 };
