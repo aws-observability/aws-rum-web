@@ -710,14 +710,15 @@ describe('Dispatch tests', () => {
             {
                 ...DEFAULT_CONFIG,
                 ...{
-                    dispatchInterval: Utils.AUTO_DISPATCH_OFF,
-                    identityPoolId:
-                        'us-west-2:12345678-1234-1234-1234-123456789012',
-                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole'
+                    dispatchInterval: Utils.AUTO_DISPATCH_OFF
                 }
             }
         );
         dispatch.setCognitoCredentialProviderFactory(mockCognitoFactory);
+        dispatch.setCognitoCredentials(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
         dispatch.setAwsCredentials(mockCredentialProvider);
 
         // Run
@@ -832,9 +833,6 @@ describe('Dispatch tests', () => {
                 ...DEFAULT_CONFIG,
                 ...{
                     dispatchInterval: Utils.AUTO_DISPATCH_OFF,
-                    identityPoolId:
-                        'us-west-2:12345678-1234-1234-1234-123456789012',
-                    guestRoleArn: 'arn:aws:iam::123456789012:role/TestRole',
                     cookieAttributes: {
                         ...DEFAULT_CONFIG.cookieAttributes,
                         unique: true
@@ -843,6 +841,10 @@ describe('Dispatch tests', () => {
             }
         );
         dispatch.setCognitoCredentialProviderFactory(mockCognitoFactory);
+        dispatch.setCognitoCredentials(
+            'us-west-2:12345678-1234-1234-1234-123456789012',
+            'arn:aws:iam::123456789012:role/TestRole'
+        );
         dispatch.setAwsCredentials(mockCredentialProvider);
 
         // Run

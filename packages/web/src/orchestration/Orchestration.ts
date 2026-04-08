@@ -83,11 +83,16 @@ export class Orchestration extends SlimOrchestration {
         // Inject Cognito credential provider factory
         dispatch.setCognitoCredentialProviderFactory(
             (config, appId, identityPoolId, guestRoleArn) => {
+                const authConfig = {
+                    identityPoolId,
+                    guestRoleArn,
+                    cookieAttributes: config.cookieAttributes
+                };
                 if (identityPoolId && guestRoleArn) {
-                    return new BasicAuthentication(config, appId)
+                    return new BasicAuthentication(authConfig, appId)
                         .ChainAnonymousCredentialsProvider;
                 }
-                return new EnhancedAuthentication(config, appId)
+                return new EnhancedAuthentication(authConfig, appId)
                     .ChainAnonymousCredentialsProvider;
             }
         );

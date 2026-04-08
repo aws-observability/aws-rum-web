@@ -15,12 +15,12 @@ const zlib = require('zlib');
 
 const BUNDLES = {
     full: {
-        js: 'packages/aws-rum-web/build/assets/cwr.js',
-        map: 'packages/aws-rum-web/build/assets/cwr.js.map'
+        js: 'packages/web/build/assets/cwr.js',
+        map: 'packages/web/build/assets/cwr.js.map'
     },
     slim: {
-        js: 'packages/aws-rum-slim/build/assets/cwr-slim.js',
-        map: 'packages/aws-rum-slim/build/assets/cwr-slim.js.map'
+        js: 'packages/slim/build/assets/cwr-slim.js',
+        map: 'packages/slim/build/assets/cwr-slim.js.map'
     }
 };
 

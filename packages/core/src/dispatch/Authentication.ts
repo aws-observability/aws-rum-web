@@ -1,17 +1,23 @@
 import { CognitoIdentityClient } from './CognitoIdentityClient';
-import { Config } from '../orchestration/config';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { CRED_KEY, CRED_RENEW_MS } from '../utils/constants';
 
+/** Minimal config needed by auth classes — avoids depending on full Config. */
+export interface AuthConfig {
+    identityPoolId: string;
+    guestRoleArn?: string;
+    cookieAttributes: { unique: boolean };
+}
+
 export abstract class Authentication {
     protected cognitoIdentityClient: CognitoIdentityClient;
-    protected config: Config;
+    protected config: AuthConfig;
     protected credentials: AwsCredentialIdentity | undefined;
     protected credentialStorageKey: string;
 
-    constructor(config: Config, applicationId: string) {
-        const region: string = config.identityPoolId!.split(':')[0];
+    constructor(config: AuthConfig, applicationId: string) {
+        const region: string = config.identityPoolId.split(':')[0];
         this.config = config;
         this.cognitoIdentityClient = new CognitoIdentityClient({
             fetchRequestHandler: new FetchHttpHandler(),
