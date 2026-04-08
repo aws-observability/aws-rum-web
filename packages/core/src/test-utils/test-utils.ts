@@ -61,7 +61,7 @@ export const DEFAULT_CONFIG: Config = {
     allowCookies: false,
     batchLimit: 100,
     client: 'arw-module',
-    compressionStrategy: { enabled: false },
+    compressionStrategy: { enabled: true },
     cookieAttributes: {
         unique: false,
         domain: window.location.hostname,

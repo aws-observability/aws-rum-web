@@ -13,6 +13,7 @@ test.describe('NavigationEvent Plugin', () => {
         await page.keyboard.press('Delete');
         await page.click('#submit');
 
+        await expect(page.locator('#request_body')).toContainText('BatchId');
         const requestBodyText = await page
             .locator('#request_body')
             .textContent();

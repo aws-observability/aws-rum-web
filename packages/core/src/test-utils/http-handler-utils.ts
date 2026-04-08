@@ -1,5 +1,6 @@
 import { HttpRequest, HttpResponse } from '@smithy/protocol-http';
 import { HeaderBag } from '@aws-sdk/types';
+import { ungzip } from 'pako';
 
 const setElementText = (name: string, text: string) => {
     const element = document.getElementById(name);
@@ -33,12 +34,11 @@ export const logRequestToPage = (request: HttpRequest) => {
 
     // Handle both string and Uint8Array (compressed) bodies
     if (request.body instanceof Uint8Array) {
-        setElementText(
-            'request_body',
-            `[compressed: ${request.body.length} bytes]`
-        );
+        const text = ungzip(request.body, { to: 'string' });
+        setElementText('request_body', text);
         setElementText('request_compressed', 'true');
         setElementText('request_compressed_size', String(request.body.length));
+        setElementText('request_uncompressed_size', String(text.length));
     } else {
         setElementText('request_body', request.body);
         setElementText('request_compressed', 'false');
