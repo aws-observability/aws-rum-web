@@ -3,7 +3,6 @@ import { HttpHandler, HttpRequest } from '@smithy/protocol-http';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { responseToJson } from './utils';
 import { IDENTITY_KEY } from '../utils/constants';
-import { Config } from '../orchestration/config';
 import { InternalLogger } from '../utils/InternalLogger';
 
 const METHOD = 'POST';
@@ -41,7 +40,7 @@ interface GetIdResponse {
 export declare type CognitoIdentityClientConfig = {
     fetchRequestHandler: HttpHandler;
     region?: string;
-    clientConfig?: Config;
+    clientConfig?: any;
     applicationId?: string;
 };
 
@@ -49,7 +48,7 @@ export class CognitoIdentityClient {
     private fetchRequestHandler: HttpHandler;
     private hostname: string;
     private identityStorageKey: string;
-    private config?: Config;
+    private config?: any;
 
     constructor(config: CognitoIdentityClientConfig) {
         this.hostname = `cognito-identity.${config.region}.amazonaws.com`;

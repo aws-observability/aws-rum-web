@@ -1,4 +1,4 @@
-import { Config } from '../orchestration/config';
+import { AuthConfig } from './Authentication';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import { StsClient } from './StsClient';
@@ -8,7 +8,7 @@ import { InternalLogger } from '../utils/InternalLogger';
 export class BasicAuthentication extends Authentication {
     private stsClient: StsClient;
 
-    constructor(config: Config, applicationId: string) {
+    constructor(config: AuthConfig, applicationId: string) {
         super(config, applicationId);
         const region: string = config.identityPoolId!.split(':')[0];
         this.stsClient = new StsClient({
@@ -33,7 +33,7 @@ export class BasicAuthentication extends Authentication {
                 try {
                     const getIdResponse =
                         await this.cognitoIdentityClient.getId({
-                            IdentityPoolId: this.config.identityPoolId as string
+                            IdentityPoolId: this.config.identityPoolId
                         });
 
                     const getOpenIdTokenResponse =
@@ -43,7 +43,7 @@ export class BasicAuthentication extends Authentication {
 
                     const credentials =
                         await this.stsClient.assumeRoleWithWebIdentity({
-                            RoleArn: this.config.guestRoleArn as string,
+                            RoleArn: this.config.guestRoleArn!,
                             RoleSessionName: 'cwr',
                             WebIdentityToken: getOpenIdTokenResponse.Token
                         });

@@ -15,6 +15,8 @@ export {
 } from '@aws-rum/web-core/orchestration/config';
 
 export interface Config extends CoreConfig {
+    guestRoleArn?: string;
+    identityPoolId?: string;
     telemetries: Telemetry[];
 }
 

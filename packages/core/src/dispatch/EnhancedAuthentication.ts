@@ -1,10 +1,10 @@
-import { Config } from '../orchestration/config';
+import { AuthConfig } from './Authentication';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { Authentication } from './Authentication';
 import { InternalLogger } from '../utils/InternalLogger';
 
 export class EnhancedAuthentication extends Authentication {
-    constructor(config: Config, applicationId: string) {
+    constructor(config: AuthConfig, applicationId: string) {
         super(config, applicationId);
     }
     /**
@@ -23,7 +23,7 @@ export class EnhancedAuthentication extends Authentication {
                 try {
                     const getIdResponse =
                         await this.cognitoIdentityClient.getId({
-                            IdentityPoolId: this.config.identityPoolId as string
+                            IdentityPoolId: this.config.identityPoolId
                         });
 
                     const credentials =

@@ -74,6 +74,8 @@ export class Dispatch {
     private identityStorageKey: string;
     private cognitoCredentialProviderFactory?: CognitoCredentialProviderFactory;
     private signingConfigFactory?: SigningConfigFactory;
+    private identityPoolId?: string;
+    private guestRoleArn?: string;
 
     constructor(
         applicationId: string,
@@ -186,6 +188,8 @@ export class Dispatch {
         identityPoolId: string,
         guestRoleArn?: string
     ) {
+        this.identityPoolId = identityPoolId;
+        this.guestRoleArn = guestRoleArn;
         if (!this.cognitoCredentialProviderFactory) {
             return;
         }
@@ -389,15 +393,12 @@ export class Dispatch {
         InternalLogger.warn('Removing credentials from local storage');
         localStorage.removeItem(this.credentialStorageKey);
 
-        if (this.config.identityPoolId) {
+        if (this.identityPoolId) {
             InternalLogger.info(
                 'Rebuilding client with fresh cognito credentials'
             );
             localStorage.removeItem(this.identityStorageKey);
-            this.setCognitoCredentials(
-                this.config.identityPoolId,
-                this.config.guestRoleArn
-            );
+            this.setCognitoCredentials(this.identityPoolId, this.guestRoleArn);
         } else if (this.credentialProvider) {
             InternalLogger.info(
                 'Rebuilding client with most recently passed provider'

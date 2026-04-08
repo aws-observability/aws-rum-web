@@ -56,8 +56,6 @@ export interface Config {
         input: RequestInfo,
         init?: RequestInit
     ) => Promise<Response>;
-    guestRoleArn?: string;
-    identityPoolId?: string;
     pageIdFormat: PageIdFormat;
     pagesToExclude: RegExp[];
     pagesToInclude: RegExp[];
