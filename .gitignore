@@ -23,6 +23,10 @@ logs
 .idea
 app/smoke_local.html
 app/smoke_w3c_format_enabled_local.html
+*.tgz
+**-tmp-**
+**-tmp.**
+**processed_**
 
 # Generated smoke test artifacts
 app/serve/
