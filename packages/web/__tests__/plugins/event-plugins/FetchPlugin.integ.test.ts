@@ -1,7 +1,7 @@
 import { Orchestration } from '../../../src/orchestration/Orchestration';
 import { createAwsCredentials } from '@aws-rum/web-core/test-utils/test-utils';
 import { HttpPluginConfig } from '@aws-rum/web-core/plugins/utils/http-utils';
-import { FetchPlugin } from '@aws-rum/web-core/plugins/event-plugins/FetchPlugin';
+import { FetchPlugin } from '@aws-rum/web-core';
 
 const mockFetch = jest.fn(
     (input: RequestInfo, init?: RequestInit) =>

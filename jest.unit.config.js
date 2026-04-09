@@ -36,7 +36,9 @@ module.exports = {
         '**/packages/slim/__tests__/**/*.test.ts'
     ],
     moduleNameMapper: {
+        '^@aws-rum/web-core$': '<rootDir>/packages/core/src',
         '^@aws-rum/web-core/(.*)$': '<rootDir>/packages/core/src/$1',
+        '^@aws-rum/web-slim$': '<rootDir>/packages/slim/src',
         '^@aws-rum/web-slim/(.*)$': '<rootDir>/packages/slim/src/$1'
     },
     transform: {

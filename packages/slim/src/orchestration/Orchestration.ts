@@ -1,21 +1,20 @@
-import { InternalPluginContext } from '@aws-rum/web-core/plugins/types';
-import { PluginManager } from '@aws-rum/web-core/plugins/PluginManager';
-import { EventCache } from '@aws-rum/web-core/event-cache/EventCache';
 import {
+    type InternalPluginContext,
+    PluginManager,
+    EventCache,
     Dispatch,
-    SigningConfigFactory
-} from '@aws-rum/web-core/dispatch/Dispatch';
-import { PageViewPlugin } from '@aws-rum/web-core/plugins/event-plugins/PageViewPlugin';
-import { PageAttributes } from '@aws-rum/web-core/sessions/PageManager';
-import { INSTALL_MODULE } from '@aws-rum/web-core/utils/constants';
-import EventBus, { Topic } from '@aws-rum/web-core/event-bus/EventBus';
-import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
-import { Plugin } from '@aws-rum/web-core/plugins/Plugin';
-import {
+    type SigningConfigFactory,
+    PageViewPlugin,
+    type PageAttributes,
+    type Plugin,
     type Config,
     type PartialConfig as CorePartialConfig,
-    type CookieAttributes
-} from '@aws-rum/web-core/orchestration/config';
+    type CookieAttributes,
+    INSTALL_MODULE,
+    EventBus,
+    Topic,
+    InternalLogger
+} from '@aws-rum/web-core';
 import {
     AwsCredentialIdentityProvider,
     AwsCredentialIdentity
@@ -25,7 +24,7 @@ export {
     type Config,
     type CookieAttributes,
     type PageIdFormat
-} from '@aws-rum/web-core/orchestration/config';
+} from '@aws-rum/web-core';
 
 /** Slim config — use `eventPluginsToLoad` for plugins. */
 export type PartialConfig = CorePartialConfig;

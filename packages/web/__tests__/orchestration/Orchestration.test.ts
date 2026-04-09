@@ -4,13 +4,15 @@ import {
     defaultCookieAttributes
 } from '../../src/orchestration/Orchestration';
 import { TelemetryEnum } from '../../src/orchestration/config';
-import { Dispatch } from '@aws-rum/web-core/dispatch/Dispatch';
-import { EventCache } from '@aws-rum/web-core/event-cache/EventCache';
-import { DomEventPlugin } from '@aws-rum/web-core/plugins/event-plugins/DomEventPlugin';
-import { JsErrorPlugin } from '@aws-rum/web-core/plugins/event-plugins/JsErrorPlugin';
-import { PluginManager } from '@aws-rum/web-core/plugins/PluginManager';
-import { PageAttributes } from '@aws-rum/web-core/sessions/PageManager';
-import { INSTALL_SCRIPT } from '@aws-rum/web-core/utils/constants';
+import {
+    Dispatch,
+    EventCache,
+    DomEventPlugin,
+    JsErrorPlugin,
+    PluginManager,
+    type PageAttributes,
+    INSTALL_SCRIPT
+} from '@aws-rum/web-core';
 import { performanceEvent } from '@aws-rum/web-core/test-utils/mock-data';
 import { DEFAULT_CONFIG } from '@aws-rum/web-core/test-utils/test-utils';
 
