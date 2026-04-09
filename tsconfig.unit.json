@@ -5,6 +5,7 @@
         "esModuleInterop": true,
         "lib": ["es2018", "dom"],
         "moduleResolution": "node",
+        "resolveJsonModule": true,
         "noEmit": true,
         "strict": false,
         "target": "es2018",
