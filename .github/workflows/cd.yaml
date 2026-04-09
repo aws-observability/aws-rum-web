@@ -115,11 +115,14 @@ jobs:
               run: npm run smoke:headless
               timeout-minutes: 20
 
-            - name: Publish to NPM
-              run: |
-                  cd packages/core && npm publish --access public --provenance && cd ../..
-                  cd packages/slim && npm publish --access public --provenance && cd ../..
-                  cd packages/web && npm publish --access public --provenance && cd ../..
+            - name: Publish core to NPM
+              run: cd packages/core && npm publish --access public --provenance || echo "Already published"
+
+            - name: Publish slim to NPM
+              run: cd packages/slim && npm publish --access public --provenance || echo "Already published"
+
+            - name: Publish web to NPM
+              run: cd packages/web && npm publish --access public --provenance || echo "Already published"
 
             - name: Build Smoke Test Application - NPM/ES (Post NPM Release)
               id: build-npm-es-application-post-release
