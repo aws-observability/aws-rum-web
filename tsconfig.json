@@ -7,6 +7,7 @@
         "moduleResolution": "node",
         "strict": true,
         "target": "es2017",
+        "resolveJsonModule": true,
         "skipLibCheck": true,
         "paths": {
             "@aws-rum/web-core": ["./packages/core/src"],
