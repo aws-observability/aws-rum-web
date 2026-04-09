@@ -21,7 +21,13 @@ import { RRWebPlugin } from '@aws-rum/web-core/plugins/event-plugins/RRWebPlugin
 import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
 import { createSigningConfig } from '../dispatch/signing';
 import { Orchestration as SlimOrchestration } from '@aws-rum/web-slim/orchestration/Orchestration';
-import { TelemetryEnum, Config, PartialConfig } from './config';
+import {
+    TelemetryEnum,
+    Config,
+    PartialConfig,
+    defaultConfig,
+    defaultCookieAttributes
+} from './config';
 
 // Re-export config types for public API
 export {
@@ -57,20 +63,10 @@ export class Orchestration extends SlimOrchestration {
         region: string,
         partialConfig: PartialConfig = {}
     ) {
-        // Set default telemetries if not provided, then pass to slim base
-        const telemetries = partialConfig.telemetries ?? [
-            'errors',
-            'performance',
-            'http'
-        ];
         super(applicationId, applicationVersion, region, {
-            signing: true,
-            ...partialConfig,
-            telemetries
+            ...defaultConfig(defaultCookieAttributes()),
+            ...partialConfig
         } as any);
-
-        // Ensure telemetries is accessible on the extended config
-        this.config.telemetries = telemetries;
 
         InternalLogger.info(`RUM client initialized for app: ${applicationId}`);
         InternalLogger.info(
