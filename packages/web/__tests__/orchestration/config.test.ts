@@ -1,6 +1,7 @@
 import {
     defaultConfig,
-    defaultCookieAttributes
+    defaultCookieAttributes,
+    TelemetryEnum
 } from '../../src/orchestration/config';
 
 describe('web config', () => {
@@ -25,7 +26,12 @@ describe('web config', () => {
 
     test('defaultConfig has standard telemetries enabled', () => {
         const config = defaultConfig(defaultCookieAttributes());
-        expect(config.telemetries).toEqual(['errors', 'performance', 'http']);
+        expect(config.telemetries).toEqual([
+            TelemetryEnum.Errors,
+            TelemetryEnum.Performance,
+            TelemetryEnum.Http,
+            TelemetryEnum.Replay
+        ]);
     });
 
     test('defaultConfig has candidatesCacheSize overridden to 10', () => {

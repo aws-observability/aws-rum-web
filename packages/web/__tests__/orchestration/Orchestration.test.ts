@@ -3,6 +3,7 @@ import {
     defaultConfig,
     defaultCookieAttributes
 } from '../../src/orchestration/Orchestration';
+import { TelemetryEnum } from '../../src/orchestration/config';
 import { Dispatch } from '@aws-rum/web-core/dispatch/Dispatch';
 import { EventCache } from '@aws-rum/web-core/event-cache/EventCache';
 import { DomEventPlugin } from '@aws-rum/web-core/plugins/event-plugins/DomEventPlugin';
@@ -190,7 +191,12 @@ describe('Orchestration tests', () => {
         expect(EventCache).toHaveBeenCalledTimes(1);
         const config = (EventCache as any).mock.calls[0][1];
         expect(config.signing).toBe(true);
-        expect(config.telemetries).toEqual(['errors', 'performance', 'http']);
+        expect(config.telemetries).toEqual([
+            TelemetryEnum.Errors,
+            TelemetryEnum.Performance,
+            TelemetryEnum.Http,
+            TelemetryEnum.Replay
+        ]);
         expect(config.candidatesCacheSize).toBe(10);
         expect(config.endpoint).toContain('us-west-2');
     });
@@ -210,7 +216,7 @@ describe('Orchestration tests', () => {
         );
     });
 
-    test('data collection defaults to errors, performance, and http plugins', async () => {
+    test('data collection defaults to errors, performance, http, and replay plugins', async () => {
         // Init
         const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
         const expected = [
@@ -220,7 +226,8 @@ describe('Orchestration tests', () => {
             'com.amazonaws.rum.web-vitals',
             'com.amazonaws.rum.xhr',
             'com.amazonaws.rum.fetch',
-            'com.amazonaws.rum.page-view'
+            'com.amazonaws.rum.page-view',
+            'com.amazonaws.rum.rrweb'
         ];
         const actual = [];
 
@@ -681,7 +688,12 @@ describe('defaultConfig tests', () => {
         expect(config.sessionEventLimit).toBe(200);
         expect(config.sessionLengthSeconds).toBe(1800);
         expect(config.sessionSampleRate).toBe(1);
-        expect(config.telemetries).toEqual(['errors', 'performance', 'http']);
+        expect(config.telemetries).toEqual([
+            TelemetryEnum.Errors,
+            TelemetryEnum.Performance,
+            TelemetryEnum.Http,
+            TelemetryEnum.Replay
+        ]);
         expect(config.useBeacon).toBe(true);
         expect(config.userIdRetentionDays).toBe(30);
         expect(config.enableW3CTraceId).toBe(false);

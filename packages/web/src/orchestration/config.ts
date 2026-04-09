@@ -45,6 +45,11 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
     return {
         ...slimDefaultConfig(cookieAttributes),
         signing: true,
-        telemetries: ['errors', 'performance', 'http']
+        telemetries: [
+            TelemetryEnum.Errors,
+            TelemetryEnum.Performance,
+            TelemetryEnum.Http,
+            TelemetryEnum.Replay
+        ]
     };
 };
