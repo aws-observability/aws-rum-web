@@ -39,11 +39,11 @@
         "build": "npm-run-all -s build:schemas build:dist:*"
     },
     "dependencies": {
-        "@aws-crypto/sha256-js": "^3.0.0",
-        "@smithy/fetch-http-handler": "^4.1.0",
-        "@smithy/protocol-http": "^4.1.6",
-        "@smithy/querystring-builder": "^4.2.13",
-        "@smithy/signature-v4": "^4.2.2",
+        "@aws-crypto/sha256-js": "^5.2.0",
+        "@smithy/querystring-builder": "^4.0.0",
+        "@smithy/fetch-http-handler": "^5.0.0",
+        "@smithy/protocol-http": "^5.0.0",
+        "@smithy/signature-v4": "^5.0.0",
         "@smithy/util-hex-encoding": "^3.0.0",
         "rrweb": "2.0.0-alpha.4",
         "shimmer": "^1.2.1",

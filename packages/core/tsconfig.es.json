@@ -3,7 +3,8 @@
     "compilerOptions": {
         "noEmit": false,
         "declaration": true,
-        "outDir": "./dist/es"
+        "outDir": "./dist/es",
+        "types": ["node"]
     },
     "include": ["src/**/*"],
     "exclude": [
