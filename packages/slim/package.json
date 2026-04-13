@@ -6,7 +6,7 @@
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
     "main": "dist/cjs/index.js",
     "module": "dist/es/index.js",
-    "types": "dist/es/index.d.ts",
+    "types": "index.d.ts",
     "exports": {
         ".": {
             "import": "./dist/es/index.js",
@@ -29,6 +29,7 @@
     "sideEffects": false,
     "files": [
         "dist/",
+        "index.d.ts",
         "CHANGELOG.md",
         "NOTICE",
         "LICENSE-THIRD-PARTY"

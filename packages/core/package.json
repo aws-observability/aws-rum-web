@@ -5,7 +5,7 @@
     "license": "Apache-2.0",
     "main": "dist/cjs/index.js",
     "module": "dist/es/index.js",
-    "types": "dist/es/index.d.ts",
+    "types": "index.d.ts",
     "sideEffects": false,
     "exports": {
         ".": {
@@ -27,7 +27,8 @@
         }
     },
     "files": [
-        "dist/"
+        "dist/",
+        "index.d.ts"
     ],
     "scripts": {
         "pretest": "npm run build:schemas",
