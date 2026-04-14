@@ -1,18 +1,18 @@
 import {
-    Config as CoreConfig,
-    CookieAttributes,
-    Telemetry
-} from '@aws-rum/web-core/orchestration/config';
-import { defaultConfig as slimDefaultConfig } from '@aws-rum/web-slim/orchestration/Orchestration';
+    type Config as CoreConfig,
+    type CookieAttributes,
+    type Telemetry
+} from '@aws-rum/web-core';
+import { defaultConfig as slimDefaultConfig } from '@aws-rum/web-slim';
 
 // Re-export core types for backward compatibility
 export {
-    CookieAttributes,
-    PartialCookieAttributes,
-    CompressionStrategy,
-    Telemetry,
-    PageIdFormat
-} from '@aws-rum/web-core/orchestration/config';
+    type CookieAttributes,
+    type PartialCookieAttributes,
+    type CompressionStrategy,
+    type Telemetry,
+    type PageIdFormat
+} from '@aws-rum/web-core';
 
 export interface Config extends CoreConfig {
     guestRoleArn?: string;
@@ -39,7 +39,7 @@ export enum PageIdFormatEnum {
     PathAndHash = 'PATH_AND_HASH'
 }
 
-export { defaultCookieAttributes } from '@aws-rum/web-slim/orchestration/Orchestration';
+export { defaultCookieAttributes } from '@aws-rum/web-slim';
 
 export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
     return {

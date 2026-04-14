@@ -1,26 +1,24 @@
-import { InternalPlugin } from '@aws-rum/web-core/plugins/InternalPlugin';
-import { BasicAuthentication } from '@aws-rum/web-core/dispatch/BasicAuthentication';
-import { EnhancedAuthentication } from '@aws-rum/web-core/dispatch/EnhancedAuthentication';
-import { PluginManager } from '@aws-rum/web-core/plugins/PluginManager';
-import { Dispatch } from '@aws-rum/web-core/dispatch/Dispatch';
 import {
+    InternalPlugin,
+    BasicAuthentication,
+    EnhancedAuthentication,
+    PluginManager,
+    Dispatch,
     DomEventPlugin,
     DOM_EVENT_PLUGIN_ID,
-    TargetDomEvent
-} from '@aws-rum/web-core/plugins/event-plugins/DomEventPlugin';
-import {
+    TargetDomEvent,
     JsErrorPlugin,
-    JS_ERROR_EVENT_PLUGIN_ID
-} from '@aws-rum/web-core/plugins/event-plugins/JsErrorPlugin';
-import { NavigationPlugin } from '@aws-rum/web-core/plugins/event-plugins/NavigationPlugin';
-import { ResourcePlugin } from '@aws-rum/web-core/plugins/event-plugins/ResourcePlugin';
-import { WebVitalsPlugin } from '@aws-rum/web-core/plugins/event-plugins/WebVitalsPlugin';
-import { XhrPlugin } from '@aws-rum/web-core/plugins/event-plugins/XhrPlugin';
-import { FetchPlugin } from '@aws-rum/web-core/plugins/event-plugins/FetchPlugin';
-import { RRWebPlugin } from '@aws-rum/web-core/plugins/event-plugins/RRWebPlugin';
-import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
+    JS_ERROR_EVENT_PLUGIN_ID,
+    NavigationPlugin,
+    ResourcePlugin,
+    WebVitalsPlugin,
+    XhrPlugin,
+    FetchPlugin,
+    RRWebPlugin,
+    InternalLogger
+} from '@aws-rum/web-core';
 import { createSigningConfig } from '../dispatch/signing';
-import { Orchestration as SlimOrchestration } from '@aws-rum/web-slim/orchestration/Orchestration';
+import { Orchestration as SlimOrchestration } from '@aws-rum/web-slim';
 import {
     TelemetryEnum,
     Config,

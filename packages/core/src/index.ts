@@ -7,13 +7,27 @@ export {
     type Telemetry,
     type PageIdFormat
 } from './orchestration/config';
-export { type ClientBuilder } from './dispatch/Dispatch';
-export { type CognitoCredentialProviderFactory } from './dispatch/Dispatch';
-export { type SigningConfigFactory } from './dispatch/Dispatch';
+export {
+    type ClientBuilder,
+    type CognitoCredentialProviderFactory,
+    type SigningConfigFactory,
+    Dispatch
+} from './dispatch/Dispatch';
 export { type SigningConfig } from './dispatch/DataPlaneClient';
+export { BasicAuthentication } from './dispatch/BasicAuthentication';
+export { EnhancedAuthentication } from './dispatch/EnhancedAuthentication';
 export { type PageAttributes } from './sessions/PageManager';
 export { type Plugin } from './plugins/Plugin';
-export { type PluginContext } from './plugins/types';
+export { InternalPlugin } from './plugins/InternalPlugin';
+export {
+    type PluginContext,
+    type InternalPluginContext
+} from './plugins/types';
+export { PluginManager } from './plugins/PluginManager';
+export { EventCache } from './event-cache/EventCache';
+export { default as EventBus, Topic } from './event-bus/EventBus';
+export { InternalLogger } from './utils/InternalLogger';
+export { INSTALL_SCRIPT, INSTALL_MODULE } from './utils/constants';
 export { TTIPlugin } from './plugins/event-plugins/TTIPlugin';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';

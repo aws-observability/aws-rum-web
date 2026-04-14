@@ -7,11 +7,13 @@ export {
     Telemetry,
     TelemetryEnum
 } from './orchestration/Orchestration';
-export { ClientBuilder } from '@aws-rum/web-core/dispatch/Dispatch';
-export { PageAttributes } from '@aws-rum/web-core/sessions/PageManager';
-export { Plugin } from '@aws-rum/web-core/plugins/Plugin';
-export { PluginContext } from '@aws-rum/web-core/plugins/types';
-export { TTIPlugin } from '@aws-rum/web-core/plugins/event-plugins/TTIPlugin';
+export {
+    type ClientBuilder,
+    type PageAttributes,
+    type Plugin,
+    type PluginContext,
+    TTIPlugin
+} from '@aws-rum/web-core';
 export * from '@aws-rum/web-core/plugins/event-plugins/DomEventPlugin';
 export * from '@aws-rum/web-core/plugins/event-plugins/JsErrorPlugin';
 export * from '@aws-rum/web-core/plugins/event-plugins/NavigationPlugin';

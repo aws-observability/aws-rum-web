@@ -13,6 +13,7 @@
         "paths": {
             "@aws-rum/web-core": ["./packages/core/src"],
             "@aws-rum/web-core/*": ["./packages/core/src/*"],
+            "@aws-rum/web-slim": ["./packages/slim/src"],
             "@aws-rum/web-slim/*": ["./packages/slim/src/*"]
         }
     },

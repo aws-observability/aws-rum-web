@@ -2,7 +2,7 @@ import {
     AwsCredentialIdentity,
     AwsCredentialIdentityProvider
 } from '@aws-sdk/types';
-import { INSTALL_SCRIPT } from '@aws-rum/web-core/utils/constants';
+import { INSTALL_SCRIPT } from '@aws-rum/web-core';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 
 export type CommandFunction = (payload?: any) => void;
