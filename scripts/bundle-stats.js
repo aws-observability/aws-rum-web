@@ -6,7 +6,12 @@
  * Module sizes are EXACT (based on sourceMappingURL character ranges).
  * Gzip estimates are ESTIMATED (individual module gzip != sum of parts).
  *
- * Usage: node scripts/bundle-stats.js [--full | --slim | --both]
+ * Usage:
+ *   node scripts/bundle-stats.js [--full | --slim | --both]
+ *   node scripts/bundle-stats.js --diff <base-ref>
+ *
+ * --diff mode compares the current build against <base-ref> and outputs
+ * a Markdown table suitable for PR comments.
  */
 
 const fs = require('fs');
@@ -225,8 +230,100 @@ function analyze(name) {
     console.log();
 }
 
+// --- Diff mode: compare HEAD build against a base ref ---
+
+const { execSync } = require('child_process');
+const os = require('os');
+
+function getBundleSizes(root) {
+    const results = {};
+    for (const [name, bundle] of Object.entries(BUNDLES)) {
+        const jsPath = path.join(root, bundle.js);
+        if (!fs.existsSync(jsPath)) {
+            results[name] = null;
+            continue;
+        }
+        const buf = fs.readFileSync(jsPath);
+        results[name] = { raw: buf.length, gzip: zlib.gzipSync(buf).length };
+    }
+    return results;
+}
+
+function fmtKB(bytes) {
+    if (bytes == null) return '—';
+    return `${(bytes / 1024).toFixed(2)} KB`;
+}
+
+function fmtDiff(head, base) {
+    if (head == null || base == null) return '';
+    const delta = head - base;
+    if (delta === 0) return ' (±0)';
+    const sign = delta > 0 ? '+' : '';
+    const pct =
+        base !== 0 ? ` / ${sign}${((delta / base) * 100).toFixed(1)}%` : '';
+    return ` (${sign}${(delta / 1024).toFixed(2)} KB${pct})`;
+}
+
+function diffBundles(baseRef) {
+    const headSizes = getBundleSizes(ROOT);
+
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-diff-'));
+    let baseSizes = {};
+    try {
+        execSync(`git worktree add "${tmp}" "${baseRef}" --detach`, {
+            cwd: ROOT,
+            stdio: 'pipe'
+        });
+        execSync('npm ci && npm run release', {
+            cwd: tmp,
+            stdio: 'pipe',
+            timeout: 180_000
+        });
+        baseSizes = getBundleSizes(tmp);
+    } catch (e) {
+        console.error('Failed to build base branch:', e.message);
+    } finally {
+        try {
+            execSync(`git worktree remove "${tmp}" --force`, {
+                cwd: ROOT,
+                stdio: 'pipe'
+            });
+        } catch {
+            // best-effort
+        }
+    }
+
+    const lines = [
+        '## 📦 Bundle Size Report',
+        '',
+        '| Bundle | Raw | Gzip |',
+        '|--------|-----|------|'
+    ];
+
+    for (const [name, bundle] of Object.entries(BUNDLES)) {
+        const h = headSizes[name];
+        const b = baseSizes[name];
+        const rawStr = `${fmtKB(h?.raw)}${fmtDiff(h?.raw, b?.raw)}`;
+        const gzipStr = `${fmtKB(h?.gzip)}${fmtDiff(h?.gzip, b?.gzip)}`;
+        lines.push(`| ${path.basename(bundle.js)} | ${rawStr} | ${gzipStr} |`);
+    }
+
+    return lines.join('\n');
+}
+
 // CLI
 const arg = process.argv[2] || '--both';
+
+if (arg === '--diff') {
+    const baseRef = process.argv[3];
+    if (!baseRef) {
+        console.error('Usage: node scripts/bundle-stats.js --diff <base-ref>');
+        process.exit(1);
+    }
+    console.log(diffBundles(baseRef));
+    process.exit(0);
+}
+
 const reportDir = path.join(ROOT, 'reports');
 if (!fs.existsSync(reportDir)) fs.mkdirSync(reportDir, { recursive: true });
 
