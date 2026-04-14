@@ -3,7 +3,7 @@ name: Bundle Size Report
 on:
     pull_request:
         types: [opened, ready_for_review]
-        branches: [main, release/*]
+        branches: [main, release/*.*.*]
 
 permissions:
     pull-requests: write
