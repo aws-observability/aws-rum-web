@@ -16,8 +16,6 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v5
-              with:
-                  fetch-depth: 0
 
             - name: Setup Node
               uses: actions/setup-node@v5
@@ -32,7 +30,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-node-
 
-            - name: Build PR
+            - name: Build
               run: |
                   npm ci
                   npm run release
@@ -40,9 +38,9 @@ jobs:
             - name: Generate bundle stats
               id: stats
               run: |
-                  REPORT=$(node scripts/bundle-stats.js --diff ${{ github.event.pull_request.base.sha }})
+                  node scripts/bundle-stats.js --both > /tmp/report.txt
                   echo "report<<EOF" >> "$GITHUB_OUTPUT"
-                  echo "$REPORT" >> "$GITHUB_OUTPUT"
+                  cat /tmp/report.txt >> "$GITHUB_OUTPUT"
                   echo "EOF" >> "$GITHUB_OUTPUT"
 
             - name: Comment on PR
@@ -50,7 +48,8 @@ jobs:
               with:
                   script: |
                       const marker = '<!-- bundlestats -->';
-                      const body = `${marker}\n${{ steps.stats.outputs.report }}`;
+                      const report = `${{ steps.stats.outputs.report }}`;
+                      const body = `${marker}\n\`\`\`\n${report}\n\`\`\``;
                       const { data: comments } = await github.rest.issues.listComments({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
