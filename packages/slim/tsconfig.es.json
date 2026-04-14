@@ -6,7 +6,6 @@
         "rootDir": "src",
         "outDir": "./dist/es",
         "preserveSymlinks": true,
-        "types": ["node"],
         "paths": {}
     },
     "include": ["src/**/*"],

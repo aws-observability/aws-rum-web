@@ -7,7 +7,6 @@
         "rootDir": "src",
         "outDir": "./dist/cjs",
         "preserveSymlinks": true,
-        "types": ["node"],
         "paths": {}
     },
     "include": ["src/**/*"],
