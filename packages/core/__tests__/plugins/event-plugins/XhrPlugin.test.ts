@@ -1630,13 +1630,71 @@ describe('XhrPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 
-    test('when eventURLNormalizer is present then HTTP event URL is modified by it - On Success', async () => {
-        // Init
-        const URL_NORMALIZED = 'example.com';
+    test('when urlNormalizer is present then HTTP event URL is normalized on success', async () => {
         const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true,
-            eventURLNormalizer: () => {
-                return URL_NORMALIZED;
+            urlNormalizer: (url) =>
+                url.replace(/response\.json/, '/api/{resource}')
+        };
+
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOffContext);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'GET',
+                url: expect.stringContaining('/api/{resource}')
+            },
+            response: { status: 200 }
+        });
+    });
+
+    test('when urlNormalizer is present then HTTP event URL is normalized on error', async () => {
+        const config: Partial<HttpPluginConfig> = {
+            recordAllRequests: true,
+            urlNormalizer: (url) =>
+                url.replace(/response\.json/, '/api/{resource}')
+        };
+
+        mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
+
+        const plugin: XhrPlugin = new XhrPlugin(config);
+        plugin.load(xRayOffContext);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './response.json', true);
+        xhr.send();
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        plugin.disable();
+
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: {
+                method: 'GET',
+                url: expect.stringContaining('/api/{resource}')
+            },
+            error: { type: 'XMLHttpRequest error' }
+        });
+    });
+
+    test('when urlNormalizer throws then the original URL is recorded', async () => {
+        const config: Partial<HttpPluginConfig> = {
+            recordAllRequests: true,
+            urlNormalizer: () => {
+                throw new Error('normalizer error');
             }
         };
 
@@ -1647,69 +1705,40 @@ describe('XhrPlugin tests', () => {
         const plugin: XhrPlugin = new XhrPlugin(config);
         plugin.load(xRayOffContext);
 
-        // Run
         const xhr = new XMLHttpRequest();
         xhr.open('GET', './response.json', true);
         xhr.send();
 
-        // Yield to the event queue so the event listeners can run
         await new Promise((resolve) => setTimeout(resolve, 0));
-
         plugin.disable();
 
-        // Assert
-        expect(record).toHaveBeenCalledTimes(1);
-        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
-            request: {
-                method: 'GET',
-                url: URL_NORMALIZED
-            },
-            response: {
-                status: 200,
-                statusText: 'OK'
-            }
+            request: { url: expect.stringContaining('response.json') }
         });
     });
 
-    test('when eventURLNormalizer is present then HTTP event URL is modified by it - On Error', async () => {
-        // Init
-        const URL_NORMALIZED = 'example.com';
+    test('when urlNormalizer returns empty string then the original URL is recorded', async () => {
         const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true,
-            eventURLNormalizer: () => {
-                return URL_NORMALIZED;
-            }
+            urlNormalizer: () => ''
         };
 
-        mock.get(/.*/, () => Promise.reject(new Error('Network failure')));
+        mock.get(/.*/, {
+            body: JSON.stringify({ message: 'Hello World!' })
+        });
 
         const plugin: XhrPlugin = new XhrPlugin(config);
         plugin.load(xRayOffContext);
 
-        // Run
         const xhr = new XMLHttpRequest();
         xhr.open('GET', './response.json', true);
         xhr.send();
 
-        // Yield to the event queue so the event listeners can run
         await new Promise((resolve) => setTimeout(resolve, 0));
-
         plugin.disable();
 
-        // Assert
-        expect(record).toHaveBeenCalledTimes(1);
-        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
-            request: {
-                method: 'GET',
-                url: URL_NORMALIZED
-            },
-            error: {
-                version: '1.0.0',
-                type: 'XMLHttpRequest error',
-                message: '0'
-            }
+            request: { url: expect.stringContaining('response.json') }
         });
     });
 });

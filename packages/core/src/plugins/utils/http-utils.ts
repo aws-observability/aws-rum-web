@@ -35,23 +35,20 @@ export type HttpPluginConfig = {
     // it in a production environment.
     addXRayTraceIdHeader: boolean | RegExp[];
     /**
-     * Use this function to normalize URLs before recording the HTTP Event in RUM.
-     * This is useful when you want to obfuscate sensitive information in the URL or group URLs with similar patterns together (i.e. path parameters)
-     * Or even, to have a clearer naming for known services.
+     * Normalize URLs before recording HTTP events.
      *
-     * Example use cases:
+     * Useful for grouping URLs with path parameters or removing
+     * sensitive information from the recorded URL.
      *
-     * @example normalizing path params
-     *  /users/1234
-     *  /users/5678
-     * can be normalized to
-     *  /users/{userId}
      * @example
-     *  /users/1234
-     * can be normalized to
-     *  GetUsersById
+     * // Normalize path parameters
+     * urlNormalizer: (url) => url.replace(/\/users\/\d+/, '/users/{userId}')
+     *
+     * @example
+     * // Map to operation names
+     * urlNormalizer: (url) => url.includes('/users/') ? 'GetUserById' : url
      */
-    eventURLNormalizer?: (url: string) => string;
+    urlNormalizer?: (url: string) => string;
 };
 
 export const isTraceIdHeaderEnabled = (
@@ -280,6 +277,21 @@ export const getTraceHeader = (
     }
     return traceHeader;
 };
+/**
+ * Apply the user-provided URL normalizer, falling back to the original URL
+ * if the normalizer is not set, throws, or returns a falsy value.
+ */
+export const normalizeUrl = (url: string, config: HttpPluginConfig): string => {
+    if (!config.urlNormalizer) {
+        return url;
+    }
+    try {
+        return config.urlNormalizer(url) || url;
+    } catch {
+        return url;
+    }
+};
+
 /**
  * Extracts an URL string from the fetch resource parameter.
  */

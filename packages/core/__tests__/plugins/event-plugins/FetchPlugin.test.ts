@@ -1405,36 +1405,75 @@ describe('FetchPlugin tests', () => {
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
 
-    test('when eventURLNormalizer is present then HTTP event URL is modified by it', async () => {
-        // Init
-        const URL_NORMALIZED = 'example.com';
+    test('when urlNormalizer is present then HTTP event URL is normalized', async () => {
         const config: Partial<HttpPluginConfig> = {
             recordAllRequests: true,
-            eventURLNormalizer: () => {
-                return URL_NORMALIZED;
+            urlNormalizer: (url) =>
+                url.replace(/\/users\/\d+/, '/users/{userId}')
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        await fetch('https://aws.amazon.com/users/1234');
+        plugin.disable();
+
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: { url: 'https://aws.amazon.com/users/{userId}' }
+        });
+    });
+
+    test('when urlNormalizer is not set then the original URL is recorded', async () => {
+        const config: Partial<HttpPluginConfig> = {
+            recordAllRequests: true
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        await fetch(URL);
+        plugin.disable();
+
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: { url: URL }
+        });
+    });
+
+    test('when urlNormalizer throws then the original URL is recorded', async () => {
+        const config: Partial<HttpPluginConfig> = {
+            recordAllRequests: true,
+            urlNormalizer: () => {
+                throw new Error('normalizer error');
             }
         };
 
         const plugin: FetchPlugin = new FetchPlugin(config);
         plugin.load(xRayOffContext);
 
-        // Run
         await fetch(URL);
         plugin.disable();
 
-        // Assert
-        expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(record).toHaveBeenCalledTimes(1);
-        expect(record.mock.calls[0][0]).toEqual(HTTP_EVENT_TYPE);
         expect(record.mock.calls[0][1]).toMatchObject({
-            request: {
-                method: 'GET',
-                url: URL_NORMALIZED
-            },
-            response: {
-                status: 200,
-                statusText: 'OK'
-            }
+            request: { url: URL }
+        });
+    });
+
+    test('when urlNormalizer returns empty string then the original URL is recorded', async () => {
+        const config: Partial<HttpPluginConfig> = {
+            recordAllRequests: true,
+            urlNormalizer: () => ''
+        };
+
+        const plugin: FetchPlugin = new FetchPlugin(config);
+        plugin.load(xRayOffContext);
+
+        await fetch(URL);
+        plugin.disable();
+
+        expect(record.mock.calls[0][1]).toMatchObject({
+            request: { url: URL }
         });
     });
 });

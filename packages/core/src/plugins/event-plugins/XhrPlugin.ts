@@ -13,6 +13,7 @@ import {
     HttpPluginConfig,
     createXRaySubsegment,
     requestInfoToHostname,
+    normalizeUrl,
     is429,
     is4xx,
     is5xx,
@@ -253,16 +254,12 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
     }
 
     private createHttpEvent(xhrDetails: XhrDetails): HttpEvent {
-        const url = xhrDetails.url;
-
-        const normalizedUrl =
-            typeof this.config.eventURLNormalizer === 'function'
-                ? this.config.eventURLNormalizer(url)
-                : url;
-
         return {
             version: '1.0.0',
-            request: { method: xhrDetails.method, url: normalizedUrl }
+            request: {
+                method: xhrDetails.method,
+                url: normalizeUrl(xhrDetails.url, this.config)
+            }
         };
     }
 
