@@ -17,7 +17,7 @@ export class VisuallyReadySearch {
     private timeIntervals = 0;
     private fcpSupported = false;
     private lcpSupported = false;
-    private visualReadyInterval: NodeJS.Timeout;
+    private visualReadyInterval: ReturnType<typeof setInterval>;
 
     private cleanupVisuallyReadySearch = false;
 
@@ -30,7 +30,7 @@ export class VisuallyReadySearch {
         this.visualReadyInterval = this.startVisualReadyInterval();
     }
 
-    private startVisualReadyInterval(): NodeJS.Timeout {
+    private startVisualReadyInterval(): ReturnType<typeof setInterval> {
         return setInterval(this.visualReadyIntervalHandler, this.CHECK_PERIOD);
     }
 

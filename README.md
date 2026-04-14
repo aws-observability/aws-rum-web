@@ -41,7 +41,7 @@ See [CONTRIBUTING](./CONTRIBUTING.md)
 
 ## Build from Source
 
-The CloudWatch RUM web client is developed and built using Node.js version 16 or higher.
+The CloudWatch RUM web client is developed and built using Node.js version 20 or higher.
 
 To build the CloudWatch RUM web client, run the release process:
 

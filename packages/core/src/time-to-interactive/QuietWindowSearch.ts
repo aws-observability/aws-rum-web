@@ -11,7 +11,7 @@ export class QuietWindowSearch {
     private ttiResolved = false;
     private onReport: TTIReportCallback;
 
-    private ttiInterval!: NodeJS.Timeout;
+    private ttiInterval!: ReturnType<typeof setInterval>;
     private startBucket = 0;
     private currBucket = 0;
     private acceptedIntervals = 0;
