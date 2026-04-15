@@ -222,6 +222,15 @@ app.all(
                         }
 
                         const recordingId = sessionReplayData.recordingId;
+                        if (
+                            recordingId === '__proto__' ||
+                            recordingId === 'constructor' ||
+                            recordingId === 'prototype'
+                        ) {
+                            return res
+                                .status(400)
+                                .json({ error: 'Invalid recordingId' });
+                        }
                         if (!recordingsMap[recordingId]) {
                             recordingsMap[recordingId] = {
                                 recordingId,
