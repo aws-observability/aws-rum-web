@@ -81,203 +81,194 @@ app.use(
 );
 app.use(express.text({ type: (req) => (isNotGzip(req) ? 'text/*' : false) }));
 app.use(express.raw({ type: (req) => isNotGzip(req), limit: '10mb' }));
+app.use(rateLimiter);
 
-app.all(
-    '/appmonitors/:appmonitorId',
-    rateLimiter,
-    decompressGzip,
-    (req, res) => {
-        const { UserDetails } = req.body || {};
+app.all('/appmonitors/:appmonitorId', decompressGzip, (req, res) => {
+    const { UserDetails } = req.body || {};
 
-        const requestEntry = {
-            timestamp: new Date().toISOString(),
-            method: req.method,
-            appmonitorId: req.params.appmonitorId,
-            sessionId: UserDetails?.sessionId,
-            headers: req.headers,
-            body: req.body,
-            query: req.query,
-            compression: req.compressionMeta || null
-        };
+    const requestEntry = {
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        appmonitorId: req.params.appmonitorId,
+        sessionId: UserDetails?.sessionId,
+        headers: req.headers,
+        body: req.body,
+        query: req.query,
+        compression: req.compressionMeta || null
+    };
 
-        // 1. Write full request to requests.jsonl
-        fs.appendFile(
-            path.join(__dirname, 'api/requests.jsonl'),
-            JSON.stringify(requestEntry) + '\n',
-            (err) => {
-                if (err) console.error('Failed to write request:', err);
+    // 1. Write full request to requests.jsonl
+    fs.appendFile(
+        path.join(__dirname, 'api/requests.jsonl'),
+        JSON.stringify(requestEntry) + '\n',
+        (err) => {
+            if (err) console.error('Failed to write request:', err);
+        }
+    );
+
+    // 2. Process individual RUM events if present
+    if (req.body && req.body.RumEvents && Array.isArray(req.body.RumEvents)) {
+        const { AppMonitorDetails, UserDetails, Metadata } = req.body;
+
+        // Payload-level Metadata contains session-level fields common
+        // to all events in the batch (browser, OS, domain, etc.).
+        // Merge into each event's metadata so consumers see the full
+        // picture: { ...payloadMetadata, ...eventMetadata }
+        let payloadMetadata = {};
+        if (Metadata) {
+            try {
+                payloadMetadata =
+                    typeof Metadata === 'string'
+                        ? JSON.parse(Metadata)
+                        : Metadata;
+            } catch (e) {
+                console.error('Failed to parse payload Metadata:', e);
             }
-        );
+        }
 
-        // 2. Process individual RUM events if present
-        if (
-            req.body &&
-            req.body.RumEvents &&
-            Array.isArray(req.body.RumEvents)
-        ) {
-            const { AppMonitorDetails, UserDetails, Metadata } = req.body;
-
-            // Payload-level Metadata contains session-level fields common
-            // to all events in the batch (browser, OS, domain, etc.).
-            // Merge into each event's metadata so consumers see the full
-            // picture: { ...payloadMetadata, ...eventMetadata }
-            let payloadMetadata = {};
-            if (Metadata) {
+        req.body.RumEvents.forEach((event) => {
+            // Inherit payload-level metadata into event metadata
+            if (event.metadata) {
                 try {
-                    payloadMetadata =
-                        typeof Metadata === 'string'
-                            ? JSON.parse(Metadata)
-                            : Metadata;
+                    const eventMeta =
+                        typeof event.metadata === 'string'
+                            ? JSON.parse(event.metadata)
+                            : event.metadata;
+                    event.metadata = JSON.stringify({
+                        ...payloadMetadata,
+                        ...eventMeta
+                    });
                 } catch (e) {
-                    console.error('Failed to parse payload Metadata:', e);
+                    // leave as-is if parse fails
                 }
+            } else if (Object.keys(payloadMetadata).length) {
+                event.metadata = JSON.stringify(payloadMetadata);
             }
 
-            req.body.RumEvents.forEach((event) => {
-                // Inherit payload-level metadata into event metadata
-                if (event.metadata) {
-                    try {
-                        const eventMeta =
-                            typeof event.metadata === 'string'
-                                ? JSON.parse(event.metadata)
-                                : event.metadata;
-                        event.metadata = JSON.stringify({
-                            ...payloadMetadata,
-                            ...eventMeta
-                        });
-                    } catch (e) {
-                        // leave as-is if parse fails
-                    }
-                } else if (Object.keys(payloadMetadata).length) {
-                    event.metadata = JSON.stringify(payloadMetadata);
+            const eventEntry = {
+                appmonitorId: req.params.appmonitorId,
+                requestTimestamp: requestEntry.timestamp,
+                sessionId: UserDetails?.sessionId,
+                userId: UserDetails?.userId,
+                appMonitorId: AppMonitorDetails?.id,
+                event: event
+            };
+
+            if (event.type === 'com.amazon.rum.rrweb_event') {
+                // 3. Write session replay events to session-replay-events.jsonl
+                let sessionReplayData;
+                try {
+                    const details =
+                        typeof event.details === 'string'
+                            ? JSON.parse(event.details)
+                            : event.details;
+
+                    const events = details.events || [];
+
+                    sessionReplayData = {
+                        sessionId: UserDetails?.sessionId,
+                        recordingId: UserDetails?.sessionId || event.id,
+                        timestamp: event.timestamp,
+                        events: events,
+                        metadata: details.metadata || {}
+                    };
+                } catch (err) {
+                    console.error(
+                        'Failed to parse session replay details:',
+                        err
+                    );
+                    sessionReplayData = {
+                        sessionId: UserDetails?.sessionId,
+                        recordingId: event.id,
+                        timestamp: event.timestamp,
+                        events: [],
+                        metadata: {},
+                        rawDetails: event.details
+                    };
                 }
 
-                const eventEntry = {
-                    appmonitorId: req.params.appmonitorId,
-                    requestTimestamp: requestEntry.timestamp,
-                    sessionId: UserDetails?.sessionId,
-                    userId: UserDetails?.userId,
-                    appMonitorId: AppMonitorDetails?.id,
-                    event: event
-                };
+                fs.appendFile(
+                    path.join(__dirname, 'api/sessionreplay.jsonl'),
+                    JSON.stringify(sessionReplayData) + '\n',
+                    (err) => {
+                        if (err)
+                            console.error(
+                                'Failed to write session replay event:',
+                                err
+                            );
+                    }
+                );
 
-                if (event.type === 'com.amazon.rum.rrweb_event') {
-                    // 3. Write session replay events to session-replay-events.jsonl
-                    let sessionReplayData;
-                    try {
-                        const details =
-                            typeof event.details === 'string'
-                                ? JSON.parse(event.details)
-                                : event.details;
-
-                        const events = details.events || [];
-
-                        sessionReplayData = {
-                            sessionId: UserDetails?.sessionId,
-                            recordingId: UserDetails?.sessionId || event.id,
-                            timestamp: event.timestamp,
-                            events: events,
-                            metadata: details.metadata || {}
-                        };
-                    } catch (err) {
-                        console.error(
-                            'Failed to parse session replay details:',
-                            err
-                        );
-                        sessionReplayData = {
-                            sessionId: UserDetails?.sessionId,
-                            recordingId: event.id,
-                            timestamp: event.timestamp,
-                            events: [],
-                            metadata: {},
-                            rawDetails: event.details
-                        };
+                // Update recording IDs index
+                const recordingIdsPath = path.join(
+                    __dirname,
+                    'api/recordingids.json'
+                );
+                fs.readFile(recordingIdsPath, 'utf8', (err, data) => {
+                    let recordingsMap = {};
+                    if (!err && data) {
+                        try {
+                            recordingsMap = JSON.parse(data);
+                        } catch (e) {
+                            recordingsMap = {};
+                        }
                     }
 
-                    fs.appendFile(
-                        path.join(__dirname, 'api/sessionreplay.jsonl'),
-                        JSON.stringify(sessionReplayData) + '\n',
+                    const recordingId = sessionReplayData.recordingId;
+                    if (
+                        recordingId === '__proto__' ||
+                        recordingId === 'constructor' ||
+                        recordingId === 'prototype'
+                    ) {
+                        return res
+                            .status(400)
+                            .json({ error: 'Invalid recordingId' });
+                    }
+                    if (!recordingsMap[recordingId]) {
+                        recordingsMap[recordingId] = {
+                            recordingId,
+                            timestamp: sessionReplayData.timestamp,
+                            eventCount: sessionReplayData.events.length
+                        };
+                    } else {
+                        recordingsMap[recordingId].eventCount +=
+                            sessionReplayData.events.length;
+                        if (
+                            sessionReplayData.timestamp <
+                            recordingsMap[recordingId].timestamp
+                        ) {
+                            recordingsMap[recordingId].timestamp =
+                                sessionReplayData.timestamp;
+                        }
+                    }
+
+                    fs.writeFile(
+                        recordingIdsPath,
+                        JSON.stringify(recordingsMap, null, 2),
                         (err) => {
                             if (err)
                                 console.error(
-                                    'Failed to write session replay event:',
+                                    'Failed to update recording IDs:',
                                     err
                                 );
                         }
                     );
+                });
+            }
 
-                    // Update recording IDs index
-                    const recordingIdsPath = path.join(
-                        __dirname,
-                        'api/recordingids.json'
-                    );
-                    fs.readFile(recordingIdsPath, 'utf8', (err, data) => {
-                        let recordingsMap = {};
-                        if (!err && data) {
-                            try {
-                                recordingsMap = JSON.parse(data);
-                            } catch (e) {
-                                recordingsMap = {};
-                            }
-                        }
-
-                        const recordingId = sessionReplayData.recordingId;
-                        if (
-                            recordingId === '__proto__' ||
-                            recordingId === 'constructor' ||
-                            recordingId === 'prototype'
-                        ) {
-                            return res
-                                .status(400)
-                                .json({ error: 'Invalid recordingId' });
-                        }
-                        if (!recordingsMap[recordingId]) {
-                            recordingsMap[recordingId] = {
-                                recordingId,
-                                timestamp: sessionReplayData.timestamp,
-                                eventCount: sessionReplayData.events.length
-                            };
-                        } else {
-                            recordingsMap[recordingId].eventCount +=
-                                sessionReplayData.events.length;
-                            if (
-                                sessionReplayData.timestamp <
-                                recordingsMap[recordingId].timestamp
-                            ) {
-                                recordingsMap[recordingId].timestamp =
-                                    sessionReplayData.timestamp;
-                            }
-                        }
-
-                        fs.writeFile(
-                            recordingIdsPath,
-                            JSON.stringify(recordingsMap, null, 2),
-                            (err) => {
-                                if (err)
-                                    console.error(
-                                        'Failed to update recording IDs:',
-                                        err
-                                    );
-                            }
-                        );
-                    });
+            // Write individual to events.jsonl
+            fs.appendFile(
+                path.join(__dirname, 'api/events.jsonl'),
+                JSON.stringify(eventEntry) + '\n',
+                (err) => {
+                    if (err) console.error('Failed to write log event:', err);
                 }
-
-                // Write individual to events.jsonl
-                fs.appendFile(
-                    path.join(__dirname, 'api/events.jsonl'),
-                    JSON.stringify(eventEntry) + '\n',
-                    (err) => {
-                        if (err)
-                            console.error('Failed to write log event:', err);
-                    }
-                );
-            });
-        }
-
-        res.status(202).json({ success: true });
+            );
+        });
     }
-);
+
+    res.status(202).json({ success: true });
+});
 
 app.get('/api/requests', (req, res) => {
     try {
