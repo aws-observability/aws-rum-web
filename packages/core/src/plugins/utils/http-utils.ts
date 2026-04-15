@@ -34,6 +34,21 @@ export type HttpPluginConfig = {
     // the X-Amzn-Trace-Id header should test their applications before enabling
     // it in a production environment.
     addXRayTraceIdHeader: boolean | RegExp[];
+    /**
+     * Normalize URLs before recording HTTP events.
+     *
+     * Useful for grouping URLs with path parameters or removing
+     * sensitive information from the recorded URL.
+     *
+     * @example
+     * // Normalize path parameters
+     * urlNormalizer: (url) => url.replace(/\/users\/\d+/, '/users/{userId}')
+     *
+     * @example
+     * // Map to operation names
+     * urlNormalizer: (url) => url.includes('/users/') ? 'GetUserById' : url
+     */
+    urlNormalizer?: (url: string) => string;
 };
 
 export const isTraceIdHeaderEnabled = (
@@ -262,6 +277,21 @@ export const getTraceHeader = (
     }
     return traceHeader;
 };
+/**
+ * Apply the user-provided URL normalizer, falling back to the original URL
+ * if the normalizer is not set, throws, or returns a falsy value.
+ */
+export const normalizeUrl = (url: string, config: HttpPluginConfig): string => {
+    if (!config.urlNormalizer) {
+        return url;
+    }
+    try {
+        return config.urlNormalizer(url) || url;
+    } catch {
+        return url;
+    }
+};
+
 /**
  * Extracts an URL string from the fetch resource parameter.
  */
