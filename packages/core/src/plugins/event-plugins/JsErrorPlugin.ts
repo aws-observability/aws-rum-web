@@ -1,8 +1,15 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
+import { JSErrorEvent } from '../../events/js-error-event';
 
 export const JS_ERROR_EVENT_PLUGIN_ID = 'js-error';
+
+export type ErrorEventDetails = {
+    [key: string]: unknown;
+} & {
+    [K in keyof JSErrorEvent]?: never;
+};
 
 export type PartialJsErrorPluginConfig = {
     stackTraceLength?: number;
@@ -43,11 +50,16 @@ export class JsErrorPlugin extends InternalPlugin {
         this.enabled = false;
     }
 
-    record(error: any): void {
+    record(data: any): void {
+        const error = data?.error !== undefined ? data.error : data;
+        const eventDetails: ErrorEventDetails | undefined = data?.eventDetails;
         if (error instanceof ErrorEvent) {
-            this.recordJsErrorEvent(error);
+            this.recordJsErrorEvent(error, eventDetails);
         } else {
-            this.recordJsErrorEvent({ type: 'error', error } as ErrorEvent);
+            this.recordJsErrorEvent(
+                { type: 'error', error } as ErrorEvent,
+                eventDetails
+            );
         }
     }
 
@@ -70,10 +82,17 @@ export class JsErrorPlugin extends InternalPlugin {
         }
     };
 
-    private recordJsErrorEvent(error: ErrorEvent) {
+    private recordJsErrorEvent(
+        error: ErrorEvent,
+        eventDetails?: ErrorEventDetails
+    ) {
+        const eventData = errorEventToJsErrorEvent(
+            error,
+            this.config.stackTraceLength
+        );
         this.context?.record(
             JS_ERROR_EVENT_TYPE,
-            errorEventToJsErrorEvent(error, this.config.stackTraceLength)
+            eventDetails ? { ...eventData, ...eventDetails } : eventData
         );
     }
 

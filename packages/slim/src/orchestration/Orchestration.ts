@@ -13,7 +13,8 @@ import {
     INSTALL_MODULE,
     EventBus,
     Topic,
-    InternalLogger
+    InternalLogger,
+    type ErrorEventDetails
 } from '@aws-rum/web-core';
 import {
     AwsCredentialIdentityProvider,
@@ -212,8 +213,11 @@ export class Orchestration {
         this.eventCache.recordPageView(payload);
     }
 
-    public recordError(error: any) {
-        this.pluginManager.record('com.amazonaws.rum.js-error', error);
+    public recordError(error: any, eventDetails?: ErrorEventDetails) {
+        this.pluginManager.record('com.amazonaws.rum.js-error', {
+            error,
+            eventDetails
+        });
     }
 
     public registerDomEvents(events: any[]) {

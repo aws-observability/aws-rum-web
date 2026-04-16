@@ -9,6 +9,7 @@ import {
     TargetDomEvent,
     JsErrorPlugin,
     JS_ERROR_EVENT_PLUGIN_ID,
+    type ErrorEventDetails,
     NavigationPlugin,
     ResourcePlugin,
     WebVitalsPlugin,
@@ -127,9 +128,15 @@ export class Orchestration extends SlimOrchestration {
 
     /**
      * Record an error using the JS error plugin.
+     *
+     * @param error An ErrorEvent, Error or primitive.
+     * @param eventDetails Optional additional details to include in the error event.
      */
-    public recordError(error: any) {
-        this.pluginManager.record(JS_ERROR_EVENT_PLUGIN_ID, error);
+    public recordError(error: any, eventDetails?: ErrorEventDetails) {
+        this.pluginManager.record(JS_ERROR_EVENT_PLUGIN_ID, {
+            error,
+            eventDetails
+        });
     }
 
     /**
