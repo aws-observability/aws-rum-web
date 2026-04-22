@@ -53,7 +53,7 @@
         "@types/ua-parser-js": "^0.7.35",
         "@types/uuid": "^9.0.0",
         "@typescript-eslint/eslint-plugin": "^5.38.0",
-        "@typescript-eslint/parser": "^5.38.0",
+        "@typescript-eslint/parser": "^8.59.0",
         "@webpack-cli/serve": "^3.0.1",
         "case-sensitive-paths-webpack-plugin": "^2.4.0",
         "copy-webpack-plugin": "^14.0.0",
