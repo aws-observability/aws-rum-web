@@ -4,6 +4,7 @@ import {
     RUMClient
 } from '@aws-sdk/client-rum';
 import { expect, Response } from '@playwright/test';
+import { ungzip } from 'pako';
 
 const INGESTION_READ_ATTEMPTS = 15;
 const INGESTION_POLL_INTERVAL_MS = 10000;
@@ -40,6 +41,20 @@ export const getEventsByType = (
     eventType: string
 ) => {
     return requestBody.RumEvents.filter((e) => e.type === eventType);
+};
+
+/**
+ * Parses the request body from a dataplane response, asserting it was sent
+ * gzipped (compression is enabled by default) and decompressing before JSON parse.
+ */
+export const parseRequestBody = (response: Response): { RumEvents: any[] } => {
+    const request = response.request();
+    expect(request.headers()['content-encoding']).toEqual('gzip');
+    const buffer = request.postDataBuffer();
+    if (!buffer) {
+        throw new Error('Request has no post data');
+    }
+    return JSON.parse(ungzip(buffer, { to: 'string' }));
 };
 
 /** Returns an array of eventIds */
