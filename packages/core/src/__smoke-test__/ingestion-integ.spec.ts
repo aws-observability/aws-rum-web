@@ -19,6 +19,7 @@ import {
     getEventsByType,
     getUrl,
     isDataPlaneRequest,
+    parseRequestBody,
     verifyIngestionWithRetry
 } from 'test-utils/smoke-test-utils';
 
@@ -60,7 +61,7 @@ test('when session start event is sent then event is ingested', async ({
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const session = getEventsByType(requestBody, SESSION_START_EVENT_TYPE);
     const eventIds = getEventIds(session);
@@ -86,7 +87,7 @@ test('when resource event is sent then event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const resource = getEventsByType(
         requestBody,
@@ -117,7 +118,7 @@ test('when LCP event is sent then event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const lcp = getEventsByType(requestBody, LCP_EVENT_TYPE);
     const eventIds = getEventIds(lcp);
@@ -146,7 +147,7 @@ test('when FID event is sent then event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const fid = getEventsByType(requestBody, FID_EVENT_TYPE);
     const eventIds = getEventIds(fid);
@@ -177,7 +178,7 @@ test('when navigation events are sent then events are ingested', async ({
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const navigation = getEventsByType(
         requestBody,
@@ -212,7 +213,7 @@ test('when page view event is sent then the event is ingested', async ({
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const pageViews = getEventsByType(requestBody, PAGE_VIEW_EVENT_TYPE);
     const eventIds = getEventIds(pageViews);
@@ -248,7 +249,7 @@ test('when error events are sent then the events are ingested', async ({
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const errors = getEventsByType(requestBody, JS_ERROR_EVENT_TYPE);
     const eventIds = getEventIds(errors);
@@ -282,7 +283,7 @@ test('when http events are sent then the events are ingested', async ({
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const httpEvents = getEventsByType(requestBody, HTTP_EVENT_TYPE);
     const eventIds = getEventIds(httpEvents);
@@ -317,7 +318,7 @@ test('when CLS event is sent then the event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const clsEvents = getEventsByType(requestBody, CLS_EVENT_TYPE);
     const eventIds = getEventIds(clsEvents);
@@ -349,7 +350,7 @@ test('when dom event is sent then the event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const domEvent = getEventsByType(requestBody, DOM_EVENT_TYPE);
     const eventIds = getEventIds(domEvent);
@@ -379,7 +380,7 @@ test('when xray event is sent then the event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const xrayEvent = getEventsByType(requestBody, XRAY_TRACE_EVENT_TYPE);
     const eventIds = getEventIds(xrayEvent);
@@ -411,7 +412,7 @@ test('when xray event is sent with w3c trace id then the event is ingested', asy
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const xrayEvent = getEventsByType(requestBody, XRAY_TRACE_EVENT_TYPE);
     const eventIds = getEventIds(xrayEvent);
@@ -446,7 +447,7 @@ test('when event with custom attributes is sent then the event is ingested', asy
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const pageViews = getEventsByType(requestBody, PAGE_VIEW_EVENT_TYPE);
     const eventIds = getEventIds(pageViews);
@@ -501,7 +502,7 @@ test('when INP event is sent then event is ingested', async ({ page }) => {
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const inp = getEventsByType(requestBody, INP_EVENT_TYPE);
     const eventIds = getEventIds(inp);
@@ -536,7 +537,7 @@ test('when http events are sent with w3c format enabled then the events are inge
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const httpEvents = getEventsByType(requestBody, HTTP_EVENT_TYPE);
     const eventIds = getEventIds(httpEvents);
