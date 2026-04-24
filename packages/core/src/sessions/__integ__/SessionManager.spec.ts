@@ -82,7 +82,7 @@ test.describe('Session Handler usage', () => {
 
         // Session-level attributes are in the top-level Metadata field
         const requestBody = JSON.parse(requestBodyText || '{}');
-        const metadata = JSON.parse(requestBody.Metadata || '{}');
+        const metadata = JSON.parse(requestBody.SessionMetadata || '{}');
 
         expect(metadata.browserLanguage).toBeDefined();
         expect(metadata.platformType).toBeDefined();
@@ -126,7 +126,7 @@ test.describe('Session Handler usage', () => {
 
         // Session attributes are in the top-level Metadata field
         const requestBody = JSON.parse(requestBodyText || '{}');
-        const metadata = JSON.parse(requestBody.Metadata || '{}');
+        const metadata = JSON.parse(requestBody.SessionMetadata || '{}');
 
         expect(metadata.customAttributeAtInit).toBe(
             'customAttributeAtInitValue'
@@ -155,7 +155,7 @@ test.describe('Session Handler usage', () => {
 
         // Runtime session attributes are in the top-level Metadata field
         const requestBody = JSON.parse(requestBodyText || '{}');
-        const metadata = JSON.parse(requestBody.Metadata || '{}');
+        const metadata = JSON.parse(requestBody.SessionMetadata || '{}');
 
         expect(metadata.customPageAttributeAtRuntimeString).toBe(
             'stringCustomAttributeAtRunTimeValue'
