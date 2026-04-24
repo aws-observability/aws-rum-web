@@ -22,8 +22,7 @@ try {
             'content-type': 'application/json'
         },
         useBeacon: false,
-        enableW3CTraceId: true,
-        legacySPASupport: true
+        enableW3CTraceId: true
     };
 
     const APPLICATION_ID: string = $MONITOR_ID;
