@@ -11,7 +11,7 @@ export interface PutRumEventsRequest {
     BatchId: string;
     AppMonitorDetails: AppMonitorDetails;
     UserDetails: UserDetails;
-    Metadata?: string;
+    SessionMetadata?: string;
     RumEvents: RumEvent[];
     Alias?: string;
 }

@@ -39,7 +39,7 @@ declare type SerializedPutRumEventsRequest = {
     BatchId: string;
     AppMonitorDetails: AppMonitorDetails;
     UserDetails: UserDetails;
-    Metadata?: string;
+    SessionMetadata?: string;
     RumEvents: SerializedRumEvent[];
     Alias?: string;
 };
@@ -193,10 +193,10 @@ export const serializeRequest = (
         UserDetails: request.UserDetails,
         RumEvents: serializedRumEvents
     };
-    if (request.Metadata) {
+    if (request.SessionMetadata) {
         serializedRequest = {
             ...serializedRequest,
-            Metadata: request.Metadata
+            SessionMetadata: request.SessionMetadata
         };
     }
     if (request.Alias) {
