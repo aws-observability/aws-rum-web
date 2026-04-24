@@ -29,7 +29,7 @@ module.exports = {
     },
     resolve: {
         extensions: ['.ts', '.js', '.json'],
-        mainFields: ['main', 'module', 'browser']
+        mainFields: ['module', 'main', 'browser']
     },
     plugins: [
         new CopyWebpackPlugin({
