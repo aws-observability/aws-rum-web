@@ -169,8 +169,6 @@ test('when navigation events are sent then events are ingested', async ({
 
     // Open page
     await page.goto(TEST_URL);
-    const clearButton = page.locator('[id=pushStateOneToHistory]');
-    await clearButton.click();
 
     // Test will timeout if no successful dataplane request is found
     const response = await page.waitForResponse(async (response) =>
@@ -186,8 +184,8 @@ test('when navigation events are sent then events are ingested', async ({
     );
     const eventIds = getEventIds(navigation);
 
-    // One initial load, one route change
-    expect(eventIds.length).toEqual(2);
+    // Initial page load
+    expect(eventIds.length).toEqual(1);
     const isIngestionCompleted = await verifyIngestionWithRetry(
         rumClient,
         eventIds,
