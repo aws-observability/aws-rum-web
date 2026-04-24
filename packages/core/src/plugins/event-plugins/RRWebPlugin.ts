@@ -20,9 +20,21 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { RRWEB_EVENT_TYPE } from '../utils/constant';
 import { InternalLogger } from '../../utils/InternalLogger';
-import { record } from 'rrweb';
+// Import rrweb via its explicit ESM entry to work around a packaging bug in
+// rrweb@2.0.0-alpha.4: its package.json sets `"type": "module"` while
+// `"main"` points to a CommonJS file (lib/rrweb-all.js) that uses bare
+// `exports.foo` references. Webpack (and other bundlers that honor
+// `type: module`) then treat the CJS file as ESM and throw
+// `ReferenceError: exports is not defined` at runtime in consumer bundles.
+// Pointing at the real ESM entry avoids the mismatch.
+// @ts-expect-error rrweb does not ship type declarations for this ESM path;
+// rely on the types from the 'rrweb' import below.
+import { record as rrwebRecord } from 'rrweb/es/rrweb/packages/rrweb/src/entries/all.js';
+import type { record as recordType } from 'rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
 import type { RRWebEvent as RRWebEventPayload } from '../../events/rrweb-event';
+
+const record: typeof recordType = rrwebRecord;
 
 /** A single rrweb event as defined by the RRWebEvent schema. */
 type RRWebRecordEvent = RRWebEventPayload['events'][number];

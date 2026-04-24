@@ -39,7 +39,12 @@ module.exports = {
         '^@aws-rum/web-core$': '<rootDir>/packages/core/src',
         '^@aws-rum/web-core/(.*)$': '<rootDir>/packages/core/src/$1',
         '^@aws-rum/web-slim$': '<rootDir>/packages/slim/src',
-        '^@aws-rum/web-slim/(.*)$': '<rootDir>/packages/slim/src/$1'
+        '^@aws-rum/web-slim/(.*)$': '<rootDir>/packages/slim/src/$1',
+        // rrweb is imported via its explicit ESM path in source for runtime
+        // compatibility with webpack (see RRWebPlugin.ts). Jest can't parse
+        // those ES module files, so map them back to the package's CJS entry
+        // for tests only.
+        '^rrweb/es/.*$': 'rrweb'
     },
     transform: {
         '^.+\\.tsx?$': [
