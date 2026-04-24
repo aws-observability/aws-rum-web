@@ -3,6 +3,7 @@ import { RecordEvent } from '../plugins/types';
 import { PageViewEvent } from '../events/page-view-event';
 import { PAGE_VIEW_EVENT_TYPE } from '../plugins/utils/constant';
 import { InternalLogger } from '../utils/InternalLogger';
+import { VirtualPageLoadTimer } from './VirtualPageLoadTimer';
 
 export type Page = {
     pageId: string;
@@ -50,6 +51,8 @@ export class PageManager {
     private resumed: boolean;
     private attributes: Attributes | undefined;
     private timeOnParentPage: number | undefined;
+    private virtualPageLoadTimer: VirtualPageLoadTimer | undefined;
+    private TIMEOUT = 1000;
 
     /**
      * A flag which keeps track of whether or not cookies have been enabled.
@@ -65,6 +68,13 @@ export class PageManager {
         this.page = undefined;
         this.resumed = false;
         this.recordInteraction = false;
+        if (config.legacySPASupport) {
+            this.virtualPageLoadTimer = new VirtualPageLoadTimer(
+                this,
+                config,
+                record
+            );
+        }
     }
 
     public getPage(): Page | undefined {
