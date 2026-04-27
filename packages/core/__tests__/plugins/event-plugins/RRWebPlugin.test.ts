@@ -3,8 +3,7 @@
  */
 import {
     RRWebPlugin,
-    RRWEB_CONFIG_PROD,
-    RRWEB_CONFIG_DEV
+    RRWEB_CONFIG_PROD
 } from '@aws-rum/web-core/plugins/event-plugins/RRWebPlugin';
 import {
     context,
@@ -50,9 +49,14 @@ describe('RRWebPlugin', () => {
         jest.useRealTimers();
     });
 
-    test('uses RRWEB_CONFIG_PROD by default', () => {
+    test('uses RRWEB_CONFIG_PROD defaults with enforced privacy', () => {
         const p = new RRWebPlugin();
-        expect(p['config']).toEqual(RRWEB_CONFIG_PROD);
+        expect(p['config'].recordOptions).toMatchObject({
+            ...RRWEB_CONFIG_PROD.recordOptions,
+            maskAllInputs: true,
+            maskTextSelector: '*',
+            maskInputOptions: undefined
+        });
     });
 
     test('RRWEB_CONFIG_PROD has expected values', () => {
@@ -65,23 +69,22 @@ describe('RRWebPlugin', () => {
                 inlineStylesheet: true,
                 inlineImages: false,
                 collectFonts: true,
-                recordCrossOriginIframes: false,
-                maskAllInputs: true,
-                maskTextSelector: '*'
+                recordCrossOriginIframes: false
             }
         });
     });
 
-    test('RRWEB_CONFIG_DEV disables privacy masking', () => {
-        expect(RRWEB_CONFIG_DEV).toEqual({
-            ...RRWEB_CONFIG_PROD,
+    test('enforces privacy masking even when customer tries to override', () => {
+        const p = new RRWebPlugin({
             recordOptions: {
-                ...RRWEB_CONFIG_PROD.recordOptions,
                 maskAllInputs: false,
                 maskTextSelector: undefined,
                 maskInputOptions: {}
-            }
+            } as any
         });
+        expect(p['config'].recordOptions.maskAllInputs).toBe(true);
+        expect(p['config'].recordOptions.maskTextSelector).toBe('*');
+        expect(p['config'].recordOptions.maskInputOptions).toBeUndefined();
     });
 
     test('merges custom config with defaults', () => {
@@ -93,9 +96,12 @@ describe('RRWebPlugin', () => {
         expect(p['config'].flushInterval).toEqual(
             RRWEB_CONFIG_PROD.flushInterval
         );
-        expect(p['config'].recordOptions).toEqual(
+        expect(p['config'].recordOptions).toMatchObject(
             RRWEB_CONFIG_PROD.recordOptions
         );
+        // Privacy fields are still enforced
+        expect(p['config'].recordOptions.maskAllInputs).toBe(true);
+        expect(p['config'].recordOptions.maskTextSelector).toBe('*');
     });
 
     test('enable starts rrweb recording', () => {

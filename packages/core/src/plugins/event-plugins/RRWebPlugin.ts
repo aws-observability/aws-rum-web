@@ -29,6 +29,15 @@ type RRWebRecordEvent = RRWebEventPayload['events'][number];
 
 export const RRWEB_PLUGIN_ID = 'rrweb';
 
+/**
+ * Privacy-related rrweb options that are enforced and cannot be overridden.
+ * These are always set to mask all text and inputs in the recording.
+ */
+type EnforcedPrivacyKeys =
+    | 'maskAllInputs'
+    | 'maskTextSelector'
+    | 'maskInputOptions';
+
 /** Configuration options for {@link RRWebPlugin}. */
 export type RRWebPluginConfig = {
     /** Probability (0–1) of recording replay for a session, applied on top of sessionSampleRate. */
@@ -37,12 +46,19 @@ export type RRWebPluginConfig = {
     batchSize: number;
     /** Milliseconds between automatic flushes of buffered events. */
     flushInterval: number;
-    /** Options forwarded directly to the rrweb `record()` function. */
-    recordOptions: recordOptions<unknown>;
+    /** Options forwarded directly to the rrweb `record()` function. Privacy masking options are enforced and cannot be overridden. */
+    recordOptions: Omit<recordOptions<unknown>, EnforcedPrivacyKeys>;
 };
 
+/** Enforced privacy options — always applied, cannot be overridden by customers. */
+const ENFORCED_PRIVACY_OPTIONS = {
+    maskAllInputs: true,
+    maskTextSelector: '*',
+    maskInputOptions: undefined
+} as const;
+
 /**
- * Production-safe defaults. Privacy masking is enabled; heavy options
+ * Production-safe defaults. Privacy masking is enforced; heavy options
  * (inlineImages, cross-origin iframes) are disabled.
  */
 export const RRWEB_CONFIG_PROD: RRWebPluginConfig = {
@@ -55,26 +71,17 @@ export const RRWEB_CONFIG_PROD: RRWebPluginConfig = {
         inlineStylesheet: true,
         inlineImages: false,
         collectFonts: true,
-        recordCrossOriginIframes: false,
-        // Privacy — mask all text and inputs by default
-        // NOTE: blockSelector crashes rrweb 2.0.0-alpha.4 (node.matches bug on text nodes)
-        maskAllInputs: true,
-        maskTextSelector: '*'
+        recordCrossOriginIframes: false
+        // Privacy masking is enforced via ENFORCED_PRIVACY_OPTIONS
     }
 };
 
-/** Development defaults — privacy masking disabled for easier debugging. */
-export const RRWEB_CONFIG_DEV: RRWebPluginConfig = {
-    ...RRWEB_CONFIG_PROD,
-    recordOptions: {
-        ...RRWEB_CONFIG_PROD.recordOptions,
-        maskAllInputs: false,
-        maskTextSelector: undefined,
-        maskInputOptions: {}
-    } as recordOptions<unknown>
-};
-
 const defaultConfig = RRWEB_CONFIG_PROD;
+
+/** Internal config type that includes enforced privacy fields for runtime use. */
+type InternalRRWebPluginConfig = Omit<RRWebPluginConfig, 'recordOptions'> & {
+    recordOptions: recordOptions<unknown>;
+};
 
 /**
  * Session replay plugin that records DOM snapshots and mutations via rrweb.
@@ -90,7 +97,7 @@ const defaultConfig = RRWEB_CONFIG_PROD;
  * 4. `disable()` — stops recording and flushes remaining events
  */
 export class RRWebPlugin extends InternalPlugin {
-    private config: RRWebPluginConfig;
+    private config: InternalRRWebPluginConfig;
     /** Buffer of rrweb events waiting to be flushed. */
     private recordingEvents: RRWebRecordEvent[] = [];
     private isRecording = false;
@@ -104,9 +111,15 @@ export class RRWebPlugin extends InternalPlugin {
         // Merge record options separately so individual fields can be overridden
         const recordOptions: recordOptions<unknown> = {
             ...defaultConfig.recordOptions,
-            ...config?.recordOptions
+            ...config?.recordOptions,
+            // Enforce privacy — these cannot be overridden
+            ...ENFORCED_PRIVACY_OPTIONS
         };
-        this.config = { ...defaultConfig, ...config, recordOptions };
+        this.config = {
+            ...defaultConfig,
+            ...config,
+            recordOptions
+        } as InternalRRWebPluginConfig;
 
         InternalLogger.info('RRWebPlugin initialized', {
             additionalSampleRate: this.config.additionalSampleRate,
