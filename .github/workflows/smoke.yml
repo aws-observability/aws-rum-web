@@ -2,7 +2,8 @@ name: AWS RUM Web Client Smoke Tests
 
 on:
     push:
-        branches: [main, release/*.*.*]
+        # TODO: remove fix/smoke before merging — temporary to validate rrweb fix
+        branches: [main, release/*.*.*, fix/smoke]
     workflow_call:
     workflow_dispatch:
 
