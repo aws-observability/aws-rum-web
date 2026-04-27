@@ -13,9 +13,9 @@ import {
 } from '@aws-rum/web-core/test-utils/test-utils';
 import { RRWEB_EVENT_TYPE } from '@aws-rum/web-core/plugins/utils/constant';
 import type { RRWebEvent } from '@aws-rum/web-core/events/rrweb-event';
-import { record as rrwebRecord } from 'rrweb';
+import { record as rrwebRecord } from '@rrweb/record';
 
-jest.mock('rrweb', () => ({
+jest.mock('@rrweb/record', () => ({
     record: jest.fn()
 }));
 

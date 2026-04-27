@@ -20,7 +20,13 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { RRWEB_EVENT_TYPE } from '../utils/constant';
 import { InternalLogger } from '../../utils/InternalLogger';
-import { record } from 'rrweb';
+// Use @rrweb/record instead of rrweb directly. rrweb@2.0.0-alpha.4 ships a
+// broken package.json (type:module with a CJS main), which makes consumer
+// bundlers throw `ReferenceError: exports is not defined` at runtime.
+// @rrweb/record has a proper exports map with separate import/require
+// conditions and bundles all rrweb code inline, so CJS and ESM consumers
+// both work.
+import { record } from '@rrweb/record';
 import type { recordOptions } from 'rrweb/typings/types';
 import type { RRWebEvent as RRWebEventPayload } from '../../events/rrweb-event';
 
