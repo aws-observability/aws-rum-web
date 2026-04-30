@@ -15,9 +15,9 @@ import {
     XhrPlugin,
     FetchPlugin,
     RRWebPlugin,
-    InternalLogger
+    InternalLogger,
+    createSigningConfig
 } from '@aws-rum/web-core';
-import { createSigningConfig } from '../dispatch/signing';
 import { Orchestration as SlimOrchestration } from '@aws-rum/web-slim';
 import {
     TelemetryEnum,

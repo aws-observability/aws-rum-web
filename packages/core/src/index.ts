@@ -14,6 +14,7 @@ export {
     Dispatch
 } from './dispatch/Dispatch';
 export { type SigningConfig } from './dispatch/DataPlaneClient';
+export { createSigningConfig } from './dispatch/signing';
 export { BasicAuthentication } from './dispatch/BasicAuthentication';
 export { EnhancedAuthentication } from './dispatch/EnhancedAuthentication';
 export { type PageAttributes } from './sessions/PageManager';
