@@ -366,7 +366,7 @@ export class EventCache {
         // As of 3.0, session-level attributes (browser, OS, domain, etc.) are
         // sent once in the payload-level Metadata field. Event-level metadata
         // contains only per-event (page) attributes. Consumers merge:
-        //   { ...request.Metadata, ...event.metadata }
+        //   { ...request.SessionMetadata, ...event.metadata }
         const eventMetadata = {
             ...this.pageManager.getAttributes()
         };

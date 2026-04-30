@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import {
     getEventsByType,
     getUrl,
-    isDataPlaneRequest
+    isDataPlaneRequest,
+    parseRequestBody
 } from 'test-utils/smoke-test-utils';
 import {
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
@@ -65,7 +66,7 @@ test('when web client calls PutRumEvents then the payload contains all events', 
     );
 
     // Parse payload to verify event count
-    const requestBody = JSON.parse(response.request().postData());
+    const requestBody = parseRequestBody(response);
 
     const session = getEventsByType(requestBody, SESSION_START_EVENT_TYPE);
     const navigation = getEventsByType(

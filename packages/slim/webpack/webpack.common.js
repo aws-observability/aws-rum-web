@@ -7,7 +7,9 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.js', '.json'],
         alias: {
-            '@aws-rum/web-core': path.resolve(__dirname, '../../core/src')
+            '@aws-rum/web-core': path.resolve(__dirname, '../../core/src'),
+            // See packages/web/webpack/webpack.common.js for rationale.
+            '@rrweb/record$': 'rrweb/es/rrweb/packages/rrweb/src/index.js'
         }
     },
     plugins: [new CaseSensitivePathsPlugin()],

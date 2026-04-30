@@ -45,6 +45,7 @@
         "@smithy/protocol-http": "^5.0.0",
         "@smithy/signature-v4": "^5.0.0",
         "@smithy/util-hex-encoding": "^3.0.0",
+        "@rrweb/record": "2.0.0-alpha.20",
         "rrweb": "2.0.0-alpha.4",
         "shimmer": "^1.2.1",
         "uuid": "^9.0.0",
