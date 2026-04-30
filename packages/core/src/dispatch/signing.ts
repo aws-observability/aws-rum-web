@@ -7,7 +7,7 @@ import {
 } from '@aws-sdk/types';
 import { Sha256 } from '@aws-crypto/sha256-js';
 import { HttpRequest } from '@smithy/protocol-http';
-import { type SigningConfig } from '@aws-rum/web-core';
+import { type SigningConfig } from './DataPlaneClient';
 
 const SERVICE = 'rum';
 const REQUEST_PRESIGN_ARGS: RequestPresigningArguments = { expiresIn: 60 };
