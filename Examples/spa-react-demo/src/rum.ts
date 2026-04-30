@@ -1,28 +1,48 @@
-import {
-    AwsRum,
-    type AwsRumConfig,
-    FetchPlugin,
-    NavigationPlugin,
-    ResourcePlugin,
-    WebVitalsPlugin,
-    JsErrorPlugin,
-    RRWebPlugin
-} from '@aws-rum/web-slim';
+// Validation harness — exercise both install modes against the same AppMonitor.
+//
+// Select which one to run via ?rum=slim (default) or ?rum=full on any URL.
+// - slim: @aws-rum/web-slim + BYO auth (Cognito creds + SigV4 factory)
+// - full: aws-rum-web with built-in Cognito via identityPoolId config
+const REGION = 'us-east-1';
+const IDENTITY_POOL_ID = 'us-east-1:295d05fe-a1cb-4ea1-93e0-9c9a7b8460f0';
+const APPLICATION_ID = 'c6850c37-b146-4409-b8a9-8d40182ccd4c';
+const APPLICATION_VERSION = '1.0.0';
+const ENDPOINT = `https://dataplane.rum.${REGION}.amazonaws.com`;
 
-try {
-    const config: AwsRumConfig = {
+const mode = new URLSearchParams(window.location.search).get('rum') ?? 'slim';
+
+async function initSlim() {
+    const [
+        {
+            AwsRum,
+            FetchPlugin,
+            NavigationPlugin,
+            ResourcePlugin,
+            WebVitalsPlugin,
+            JsErrorPlugin,
+            RRWebPlugin
+        },
+        { fromCognitoIdentityPool },
+        { createSigningConfig }
+    ] = await Promise.all([
+        import('@aws-rum/web-slim'),
+        import('@aws-sdk/credential-providers'),
+        import('@aws-rum/web-core')
+    ]);
+
+    // Slim has no `telemetries` config — load plugins explicitly. The XRay
+    // header is configured directly on FetchPlugin.
+    const awsRum = new AwsRum(APPLICATION_ID, APPLICATION_VERSION, REGION, {
         sessionSampleRate: 1,
         sessionEventLimit: 0,
-        sessionLengthSeconds: 30,
-        endpoint: 'http://localhost:3000',
+        endpoint: ENDPOINT,
         allowCookies: true,
-        enableXRay: false,
+        enableXRay: true,
         debug: true,
-        signing: false,
-        compressionStrategy: { enabled: true },
         eventPluginsToLoad: [
             new FetchPlugin({
-                recordAllRequests: true
+                recordAllRequests: true,
+                addXRayTraceIdHeader: true
             }),
             new WebVitalsPlugin(),
             new ResourcePlugin(),
@@ -30,14 +50,52 @@ try {
             new JsErrorPlugin(),
             new RRWebPlugin()
         ]
-    };
+    });
 
-    const APPLICATION_ID: string = '93755407-009b-4396-9280-0104beb732a9';
-    const APPLICATION_VERSION: string = '1.0.0';
-    const APPLICATION_REGION: string = 'us-east-1';
+    // Slim requires BYO auth: supply the credential provider AND a signing
+    // config factory. Slim does not bundle SigV4 — we pass our own.
+    const provider = fromCognitoIdentityPool({
+        identityPoolId: IDENTITY_POOL_ID,
+        clientConfig: { region: REGION }
+    });
 
-    new AwsRum(APPLICATION_ID, APPLICATION_VERSION, APPLICATION_REGION, config);
-} catch (error) {
-    // Ignore errors thrown during CloudWatch RUM web client initialization
-    console.error(error);
+    awsRum.setSigningConfigFactory(createSigningConfig);
+    awsRum.setAwsCredentials(provider);
+    console.info(
+        '[rum-demo] initialized: @aws-rum/web-slim + BYO Cognito + SigV4'
+    );
 }
+
+async function initFull() {
+    const { AwsRum } = await import('aws-rum-web');
+
+    new AwsRum(APPLICATION_ID, APPLICATION_VERSION, REGION, {
+        sessionSampleRate: 1,
+        sessionEventLimit: 0,
+        identityPoolId: IDENTITY_POOL_ID,
+        endpoint: ENDPOINT,
+        allowCookies: true,
+        enableXRay: true,
+        debug: true,
+        telemetries: [
+            'errors',
+            'performance',
+            ['http', { addXRayTraceIdHeader: true }]
+        ]
+    });
+    console.info(
+        '[rum-demo] initialized: aws-rum-web (full) + built-in Cognito'
+    );
+}
+
+(async () => {
+    try {
+        if (mode === 'full') {
+            await initFull();
+        } else {
+            await initSlim();
+        }
+    } catch (error) {
+        console.error(error);
+    }
+})();

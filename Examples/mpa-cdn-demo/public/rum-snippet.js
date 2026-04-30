@@ -26,16 +26,22 @@
     document.head.insertBefore(z, document.getElementsByTagName('script')[0]);
 })(
     'cwr',
-    '93755407-009b-4396-9280-0104beb732a9',
+    'c6850c37-b146-4409-b8a9-8d40182ccd4c',
     '1.0.0',
     'us-east-1',
     '/cdn/cwr.js',
     {
         sessionSampleRate: 1,
-        endpoint: 'http://localhost:3000',
-        telemetries: ['errors', 'performance', 'http', 'replay'],
+        identityPoolId: 'us-east-1:295d05fe-a1cb-4ea1-93e0-9c9a7b8460f0',
+        endpoint: 'https://dataplane.rum.us-east-1.amazonaws.com',
+        telemetries: [
+            'errors',
+            'performance',
+            ['http', { addXRayTraceIdHeader: true }],
+            'replay'
+        ],
         allowCookies: true,
-        signing: false,
+        enableXRay: true,
         debug: true
     }
 );
