@@ -60,7 +60,7 @@ Two distributions, same `AwsRum` class. Pick full unless bundle size is load-bea
 | Package | Minified | Gzipped | Included out of the box |
 | --- | --- | --- | --- |
 | [`aws-rum-web`](docs/npm_installation.md) (full) | ~162 KB | ~50 KB | Cognito auth, SigV4 signing, default telemetries (`errors`, `performance`, `http`, `replay`), remote config |
-| [`@aws-rum/web-slim`](docs/packages/slim.md) | ~32 KB | ~10 KB | Page view plugin only. BYO auth via `setAwsCredentials`, opt-in signing via `setSigningConfigFactory`, load plugins explicitly via `eventPluginsToLoad` |
+| [`@aws-rum/web-slim`](docs/packages/slim.md) | ~32 KB | ~10 KB | Page views and sessions only out of the box. BYO auth via `setAwsCredentials`, opt-in signing via `setSigningConfigFactory`, load plugins explicitly via `eventPluginsToLoad` |
 
 Slim is ~5× smaller. The trade-off is that you wire up auth and plugins yourself — see the [slim reference](docs/packages/slim.md) and the [full→slim migration guide](docs/migration_full_to_slim.md).
 
