@@ -2,12 +2,12 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta http-equiv="refresh" content="0; url=/top.html" />
         <title>HN</title>
     </head>
     <body>
         <script>
-            location.replace('/top.html');
+            // Preserve ?scenario= (and any other query) when bouncing to /top.html.
+            location.replace('/top.html' + window.location.search);
         </script>
     </body>
 </html>
