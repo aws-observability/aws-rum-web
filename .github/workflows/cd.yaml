@@ -5,7 +5,7 @@ on:
 
 permissions:
     id-token: write
-    contents: read
+    contents: write
 
 jobs:
     gamma-smoke-test:
@@ -116,13 +116,37 @@ jobs:
               timeout-minutes: 20
 
             - name: Publish core to NPM
-              run: cd packages/core && npm publish --access public --provenance || echo "Already published"
+              run: |
+                  cd packages/core
+                  VERSION=$(npm pkg get version | tr -d '"')
+                  NAME=$(npm pkg get name | tr -d '"')
+                  if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
+                      echo "$NAME@$VERSION already published, skipping"
+                  else
+                      npm publish --access public --provenance
+                  fi
 
             - name: Publish slim to NPM
-              run: cd packages/slim && npm publish --access public --provenance || echo "Already published"
+              run: |
+                  cd packages/slim
+                  VERSION=$(npm pkg get version | tr -d '"')
+                  NAME=$(npm pkg get name | tr -d '"')
+                  if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
+                      echo "$NAME@$VERSION already published, skipping"
+                  else
+                      npm publish --access public --provenance
+                  fi
 
             - name: Publish web to NPM
-              run: cd packages/web && npm publish --access public --provenance || echo "Already published"
+              run: |
+                  cd packages/web
+                  VERSION=$(npm pkg get version | tr -d '"')
+                  NAME=$(npm pkg get name | tr -d '"')
+                  if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
+                      echo "$NAME@$VERSION already published, skipping"
+                  else
+                      npm publish --access public --provenance
+                  fi
 
             - name: Build Smoke Test Application - NPM/ES (Post NPM Release)
               id: build-npm-es-application-post-release
@@ -138,12 +162,12 @@ jobs:
 
             - name: Create GitHub Release
               id: create_release
-              uses: actions/create-release@v1
+              uses: softprops/action-gh-release@v2
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tag_name: 'v${{ steps.publish-cdn-prod.outputs.current-version }}'
-                  release_name: 'Release ${{ steps.publish-cdn-prod.outputs.current-version }}'
+                  name: 'Release ${{ steps.publish-cdn-prod.outputs.current-version }}'
                   body: 'See [CHANGELOG](https://github.com/aws-observability/aws-rum-web/blob/main/CHANGELOG.md) for details.'
                   draft: true
                   prerelease: false
