@@ -21,12 +21,12 @@ npm run dev
 This starts:
 
 -   Server on port 3000 (captures RUM requests)
--   React UI on port 5173 (visualizes logs)
+-   React UI on port 5200 (visualizes logs)
 
 ## Usage
 
 1. Configure your RUM client endpoint to `http://localhost:3000`
-2. Open `http://localhost:5173` to view captured telemetry
+2. Open `http://localhost:5200` to view captured telemetry
 3. Logs are stored in `server/logs.jsonl`
 
 ## API Endpoints

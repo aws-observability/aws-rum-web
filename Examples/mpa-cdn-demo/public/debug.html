@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Debug | HN</title>
+        <link rel="stylesheet" href="/styles.css" />
+        <script src="/rum-snippet.js"></script>
+        <script src="/app.js"></script>
+    </head>
+    <body>
+        <script src="/header.js"></script>
+        <main>
+            <div class="card">
+                <h1>JavaScript Error Generator</h1>
+                <p class="desc">
+                    Generate various JavaScript errors to test RUM error
+                    monitoring. Mirrors the /debug route in spa-react-demo.
+                </p>
+
+                <label for="types"
+                    >Error Types (Ctrl/Cmd-click for multiple)</label
+                >
+                <select id="types" multiple>
+                    <option value="ERROR" selected>ERROR</option>
+                    <option value="TYPE_ERROR">TYPE_ERROR</option>
+                    <option value="REFERENCE_ERROR">REFERENCE_ERROR</option>
+                    <option value="RANGE_ERROR">RANGE_ERROR</option>
+                    <option value="SYNTAX_ERROR">SYNTAX_ERROR</option>
+                    <option value="EVAL_ERROR">EVAL_ERROR</option>
+                    <option value="URI_ERROR">URI_ERROR</option>
+                    <option value="AGGREGATE_ERROR">AGGREGATE_ERROR</option>
+                </select>
+
+                <label for="msg">Custom Error Message (optional)</label>
+                <input
+                    id="msg"
+                    type="text"
+                    placeholder="Leave empty for defaults"
+                />
+
+                <label for="repeat">Repeat Count</label>
+                <input id="repeat" type="number" min="1" value="1" />
+
+                <label for="delay">Delay Between Errors (ms)</label>
+                <input id="delay" type="number" min="0" value="500" />
+
+                <button id="go" class="primary">Generate Error(s)</button>
+                <div id="status"></div>
+
+                <hr
+                    style="
+                        margin: 1.5rem 0;
+                        border: 0;
+                        border-top: 1px solid #e5e7eb;
+                    "
+                />
+                <button id="custom" class="primary" style="background: #6b7280">
+                    Record custom event via cwr()
+                </button>
+            </div>
+        </main>
+        <script>
+            initDebugPage();
+        </script>
+    </body>
+</html>

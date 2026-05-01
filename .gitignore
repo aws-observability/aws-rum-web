@@ -37,6 +37,7 @@ smoke/**/src/*-tmp*.ts
 playwright-report/
 test-results/
 playwright/.cache/
+.playwright-mcp
 
 # Vibe coding
 .kiro/

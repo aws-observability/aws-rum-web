@@ -1,4 +1,6 @@
-# Installing as a JavaScript Module
+# NPM installation — details
+
+> **New here?** Start with **[Getting started](./getting_started.md)** for the 3-step install. This page covers constructor arguments, the slim build, and advanced setup.
 
 The CloudWatch RUM web client can be built into the application's JavaScript bundle using the provided CommonJS or ES modules. The recommended method to consume and manage the web client dependency is to use the web client's [NPM package](https://www.npmjs.com/package/aws-rum-web).
 
@@ -68,3 +70,10 @@ const config: AwsRumConfig = {
 ```
 
 For a complete list of configuration options, see [Application-specific Configurations](configuration.md).
+
+## Next steps
+
+-   [Configuration reference](./configuration.md)
+-   [API reference](./reference/api.md)
+-   [Packages: full vs slim vs core](./concepts/packages.md)
+-   [Troubleshooting](./cdn_troubleshooting.md)

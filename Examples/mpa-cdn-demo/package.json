@@ -1,0 +1,13 @@
+{
+    "name": "mpa-cdn-demo",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Multi-page app that loads the CloudWatch RUM web client via the embedded CDN snippet. Points at the local aws-rum-web-ui debug server.",
+    "scripts": {
+        "dev": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2"
+    }
+}

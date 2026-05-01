@@ -1,132 +1,120 @@
 # Amazon CloudWatch RUM Web Client
 
-This is the CloudWatch RUM web client source code repository. It hosts a JavaScript library which performs real user monitoring (RUM) telemetry on web applications. Data collected by the RUM web client includes page load timing, JavaScript errors and HTTP requests.
+The CloudWatch RUM web client is a JavaScript library that performs real user monitoring (RUM) on web applications. It captures page load timing, web vitals (LCP, FID, CLS, INP), JavaScript errors, HTTP requests, session replays, and custom events, then ships them to [Amazon CloudWatch RUM](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html).
 
-## Install as a JavaScript Module
+## Quick start
 
-See [Installing as a JavaScript Module](docs/npm_installation.md).
+**1. Create an app monitor.** Follow [Set up an app monitor](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-get-started.html) in the CloudWatch RUM user guide. You will receive an application ID, a region, and (optionally) a Cognito identity pool ID.
 
-## Install as an Embedded Script
+**2. Install and initialize.**
 
-See [Installing as an Embedded Script](docs/cdn_installation.md).
+NPM:
 
-## Additional Documentation:
+```bash
+npm install aws-rum-web
+```
 
-1. [Configuring the web client](docs/configuration.md)
-1. [Executing commands](docs/cdn_commands.md)
-1. [Using the web client with Angular](docs/cdn_angular.md)
-1. [Using the web client with React](docs/cdn_react.md)
-1. [Troubleshooting](docs/cdn_troubleshooting.md)
+```typescript
+import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
-## Getting Help
+try {
+    const config: AwsRumConfig = {
+        sessionSampleRate: 1,
+        identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
+        endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+        telemetries: ['performance', 'errors', 'http'],
+        allowCookies: true,
+        enableXRay: false
+    };
 
-Use the following community resources for getting help with the SDK. We use the GitHub issues for tracking bugs and feature requests.
+    const APPLICATION_ID = '00000000-0000-0000-0000-000000000000';
+    const APPLICATION_VERSION = '1.0.0';
+    const APPLICATION_REGION = 'us-west-2';
 
--   View the [CloudWatch RUM documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html).
--   Ask a question in the [Amazon CloudWatch forum](https://forums.aws.amazon.com/forum.jspa?forumID=138)
--   Open a support ticket with [AWS Support](https://docs.aws.amazon.com/awssupport/latest/user/getting-started.html).
--   If you think you may have found a bug, open an [issue](https://github.com/aws-observability/aws-rum-web/issues/new).
+    const awsRum: AwsRum = new AwsRum(
+        APPLICATION_ID,
+        APPLICATION_VERSION,
+        APPLICATION_REGION,
+        config
+    );
+} catch (error) {
+    // Ignore errors thrown during CloudWatch RUM web client initialization
+}
+```
 
-## Opening Issues
+CDN (embedded script): paste the snippet from the RUM console into your `<head>`, or see [CDN installation](docs/cdn_installation.md).
 
-If you encounter a bug with the CloudWatch RUM web client, we want to hear about it. Before opening a new issue, [search the existing issues](https://github.com/aws-observability/aws-rum-web/issues?q=is%3Aissue) to see if others are also experiencing the issue. Include the version of the CloudWatch RUM web client, Node.js runtime, and other dependencies if applicable. In addition, include the repro case when appropriate.
+**3. Verify it works.** Open your app, trigger a page view or throw a test error, then open the CloudWatch RUM console. Events appear within ~1 minute. If nothing shows up, enable `debug: true` in the config and check the browser console — every dispatch is logged.
 
-The GitHub issues are intended for bug reports and feature requests. For help and questions about using the CloudWatch RUM web client, use the resources listed in the Getting Help section. Keeping the list of open issues lean helps us respond in a timely manner.
+```javascript
+// Throw a test error to verify errors telemetry
+setTimeout(() => {
+    throw new Error('rum-verify');
+}, 0);
+```
+
+## Documentation
+
+Start at **[docs/README.md](docs/README.md)** for the full index. Common entry points:
+
+-   [Install as a JavaScript module (NPM)](docs/npm_installation.md)
+-   [Install as an embedded script (CDN)](docs/cdn_installation.md)
+-   [Configuration reference](docs/configuration.md)
+-   [Commands / API reference](docs/cdn_commands.md)
+-   [Framework guides: React](docs/cdn_react.md) · [Angular](docs/cdn_angular.md)
+-   [Troubleshooting](docs/cdn_troubleshooting.md)
+-   [Examples](docs/examples.md)
+
+## Getting help
+
+-   [CloudWatch RUM user guide](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM.html)
+-   [Amazon CloudWatch forum](https://forums.aws.amazon.com/forum.jspa?forumID=138)
+-   [AWS Support](https://docs.aws.amazon.com/awssupport/latest/user/getting-started.html)
+-   [File a bug](https://github.com/aws-observability/aws-rum-web/issues/new) — please search [existing issues](https://github.com/aws-observability/aws-rum-web/issues?q=is%3Aissue) first and include the web client version and a repro case.
 
 ## Contributing
 
-We support and accept PRs from the community.
+PRs welcome. See [CONTRIBUTING](./CONTRIBUTING.md).
 
-See [CONTRIBUTING](./CONTRIBUTING.md)
+### Build from source
 
-## Build from Source
+Requires Node.js 20+.
 
-The CloudWatch RUM web client is developed and built using Node.js version 20 or higher.
-
-To build the CloudWatch RUM web client, run the release process:
-
-```
+```bash
 npm install
 npm run release
 ```
 
-The release process creates (1) a web bundle and a debug map for distribution via CDN, and (2) JavaScript modules and TypeScript declaration files for distribution via NPM.
+Outputs:
 
-The CDN files are:
+-   CDN bundle: `./build/assets/cwr.js`, `./build/assets/cwr.map.js`
+-   NPM (ES + CJS): `./dist/es/index.js`, `./dist/cjs/index.js` and matching `.d.ts` files
 
-```
-./build/assets/cwr.js
-./build/assets/cwr.map.js
-```
+### Run tests
 
-The NPM files are:
-
-```
-./dist/es/index.js
-./dist/es/index.d.ts
-./dist/cjs/index.js
-./dist/cjs/index.d.ts
+```bash
+npm run test           # Jest unit tests
+npm run integ          # Playwright integration tests
+npm run smoke:headless # Playwright smoke tests
 ```
 
-## Run Tests from Source
+Dev server (for exploratory testing at http://localhost:9000):
 
-To perform exploratory testing, run the Webpack DevServer:
-
-```
-npm install
+```bash
 npm run server
 ```
 
-In a browser, navigate to http://localhost:9000.
+### Pre-commit
 
-To run (Jest) unit tests:
-
-```
-npm run test
-```
-
-To run (TestCafe) browser integration tests:
-
-```
-npm run integ:headless
-npm run integ:browser
-```
-
-To run (TestCafe) integration tests for a specific browser:
-
-```
-npm run integ -- (browserName)
-# for example
-npm run integ -- chrome:headless
-npm run integ -- chrome
-```
-
-Some features perform monkey patching which is incompatible with TestCafe. In these cases, run Nightwatch as a separate browser integration test target:
-
-```
-npm run integ:local:nightwatch
-```
-
-## Pre-commit Tasks
-
-The CloudWatch RUM web client uses pre-commit tasks to lint and format its source code. Before submitting code, check that all linter and formatter warnings have been resolved.
-
-Attempt to automatically repair linter warnings:
-
-```
+```bash
 npm run lint:fix
-```
-
-Format code:
-
-```
 npm run prettier:fix
 ```
 
 ## Security
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications).
 
 ## License
 
-This project is licensed under the Apache-2.0 License.
+Apache-2.0.

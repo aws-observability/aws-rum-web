@@ -14,11 +14,15 @@ This example demonstrates RUM telemetry collection in a React SPA environment, f
 ## Quick Start
 
 ```bash
-npm install
-npm run dev
+# 1. Build the local web client packages (REQUIRED — see "Prerequisite" below)
+cd ../../packages/web && npm run build
+cd ../../packages/slim && npm run build
+
+# 2. Start this demo
+cd ../../Examples/spa-react-demo && npm install && npm run dev
 ```
 
-Open http://localhost:5173 to view the app with RUM telemetry enabled.
+Open <http://localhost:5210> to view the app with RUM telemetry enabled. Depends on [`aws-rum-web-ui`](../aws-rum-web-ui) running (server on :3000, UI on :5200).
 
 ## Tech Stack
 
@@ -30,9 +34,64 @@ Open http://localhost:5173 to view the app with RUM telemetry enabled.
 
 ## RUM Integration
 
-The RUM client is configured in `src/rum.ts` and initialized in `src/main.tsx`. Telemetry data is sent to a local endpoint for debugging. ├── store/index.ts # Redux store configuration ├── routes/ │ ├── Home.tsx # Story list page │ └── Story.tsx # Story detail with comments ├── features/ │ ├── stories/ │ │ ├── StoryList.tsx # Virtualized story list │ │ └── StoryCard.tsx # Individual story card │ └── comments/ │ ├── CommentTree.tsx # Comment tree container │ └── CommentNode.tsx # Recursive comment node ├── components/ │ ├── Layout.tsx # App layout with navigation │ └── ErrorBoundary.tsx # Error handling ├── types/hn.ts # TypeScript interfaces └── utils/ ├── constants.ts # App constants └── formatters.ts # Utility functions
+The RUM client is configured in [`src/rum.ts`](./src/rum.ts) and initialized in [`src/main.tsx`](./src/main.tsx). Telemetry is sent to the local debug endpoint on `:3000` and can be inspected in the UI on `:5200`.
 
-````
+Captured out of the box:
+
+-   Page views on every route change
+-   HTTP requests (fetch) to the HN API
+-   JS errors via `JsErrorPlugin` (test via `/debug`)
+-   Web vitals and resource timings
+-   Session replay via `RRWebPlugin` (text and input values are masked)
+
+### Prerequisite: local web-client build
+
+This example depends on the unbundled packages via `file:` paths in [`package.json`](./package.json):
+
+```json
+"@aws-rum/web-slim": "file:../../packages/slim",
+"aws-rum-web": "file:../../packages/web"
+```
+
+Build those once before `npm install` here, and again any time you change their source:
+
+```bash
+cd ../../packages/web && npm run build
+cd ../../packages/slim && npm run build
+```
+
+## Verify telemetry is flowing
+
+Click around the app (or open `/debug` and generate an error), then:
+
+-   Open <http://localhost:5200/> and filter by session.
+-   Or tail the raw capture: `tail -f ../aws-rum-web-ui/server/api/events.jsonl`.
+
+## Project layout
+
+```text
+src/
+├── rum.ts                 # RUM client config + init
+├── main.tsx               # React entry; imports rum.ts
+├── store/index.ts         # Redux store configuration
+├── routes/
+│   ├── Home.tsx           # Story list page
+│   └── Story.tsx          # Story detail with comments
+├── features/
+│   ├── stories/
+│   │   ├── StoryList.tsx  # Virtualized story list
+│   │   └── StoryCard.tsx  # Individual story card
+│   └── comments/
+│       ├── CommentTree.tsx
+│       └── CommentNode.tsx
+├── components/
+│   ├── Layout.tsx         # App layout with navigation
+│   └── ErrorBoundary.tsx  # Error handling
+├── types/hn.ts            # TypeScript interfaces
+└── utils/
+    ├── constants.ts
+    └── formatters.ts
+```
 
 ## Routes
 
@@ -53,36 +112,9 @@ The RUM client is configured in `src/rum.ts` and initialized in `src/main.tsx`. 
 -   **Collapsible**: Click username or [−] to collapse threads
 -   **Tree Visualization**: Border-left styling shows hierarchy
 
-## Development
-
-```bash
-npm install
-npm run dev
-````
-
 ## Build
 
 ```bash
 npm run build
 npm run preview
 ```
-
-## Production Patterns
-
-1. **API Caching**: RTK Query caches all API responses with automatic invalidation
-2. **Request Deduplication**: Multiple components requesting same data = single API call
-3. **Virtual Scrolling**: Only renders visible items for performance
-4. **Code Splitting**: Routes are lazy-loaded (can be added)
-5. **Error Boundaries**: Graceful error handling at route level
-6. **Loading States**: Skeleton screens during data fetching
-7. **Deep Linking**: All state in URL for shareability
-
-## RUM Integration Points
-
-Ready for AWS RUM integration:
-
--   Page view tracking on route changes
--   Custom events for story/comment clicks
--   Error tracking for API failures
--   Performance monitoring for list rendering
--   Session replay for user interactions

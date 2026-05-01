@@ -42,5 +42,9 @@ export default defineConfig({
     },
     optimizeDeps: {
         exclude: ['@aws-rum/web-slim', '@aws-rum/web-core']
+    },
+    server: {
+        port: 5210,
+        strictPort: true
     }
 });
