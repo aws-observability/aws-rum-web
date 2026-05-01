@@ -49,6 +49,6 @@
         "rrweb": "2.0.0-alpha.4",
         "shimmer": "^1.2.1",
         "uuid": "^9.0.0",
-        "web-vitals": "^4.0.0"
+        "web-vitals": "^5.2.0"
     }
 }
