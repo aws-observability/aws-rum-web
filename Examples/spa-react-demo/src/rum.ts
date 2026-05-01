@@ -1,17 +1,103 @@
-// Validation harness — exercise both install modes against the same AppMonitor.
+// Scenario-driven RUM init for the 8-cell matrix:
+//   (auth | noauth) x (npm) x (full | slim)
+// The CDN matrix lives in Examples/mpa-cdn-demo.
 //
-// Select which one to run via ?rum=slim (default) or ?rum=full on any URL.
-// - slim: @aws-rum/web-slim + BYO auth (Cognito creds + SigV4 factory)
-// - full: aws-rum-web with built-in Cognito via identityPoolId config
-const REGION = 'us-east-1';
-const IDENTITY_POOL_ID = 'us-east-1:295d05fe-a1cb-4ea1-93e0-9c9a7b8460f0';
-const APPLICATION_ID = 'c6850c37-b146-4409-b8a9-8d40182ccd4c';
-const APPLICATION_VERSION = '1.0.0';
-const ENDPOINT = `https://dataplane.rum.${REGION}.amazonaws.com`;
+// Select via ?scenario=<key> (default: noauth-npm-slim).
+//   - *-full    -> aws-rum-web (full) with built-in Cognito guest auth.
+//   - *-slim    -> @aws-rum/web-slim + BYO Cognito + @aws-rum/web-core SigV4.
+//   - auth-*    -> pre-authenticate against a Cognito User Pool using
+//                  localStorage.rumExUsername / rumExPassword, then hand the
+//                  Cognito JWT to fromCognitoIdentityPool's `logins` map.
+//                  Only meaningful on slim; full's built-in Cognito always
+//                  uses guest creds.
 
-const mode = new URLSearchParams(window.location.search).get('rum') ?? 'slim';
+type ScenarioConfig = {
+    appMonitorId: string;
+    identityPoolId: string;
+    userPoolId?: string;
+    userPoolClientId?: string;
+};
 
-async function initSlim() {
+type RumConfig = {
+    region: string;
+    endpoint: string;
+    scenarios: Record<string, ScenarioConfig>;
+};
+
+declare global {
+    interface Window {
+        __RUM_CONFIG__?: RumConfig;
+    }
+}
+
+function getScenario(): {
+    key: string;
+    scenario: ScenarioConfig;
+    region: string;
+    endpoint: string;
+} {
+    const cfg = window.__RUM_CONFIG__;
+    if (!cfg) {
+        throw new Error(
+            '[rum-demo] window.__RUM_CONFIG__ not set. Run Examples/infra/scripts/write-configs.js.'
+        );
+    }
+    const key =
+        new URLSearchParams(window.location.search).get('scenario') ??
+        'noauth-npm-slim';
+    const scenario = cfg.scenarios[key];
+    if (!scenario) {
+        throw new Error(
+            `[rum-demo] unknown scenario "${key}". Available: ${Object.keys(
+                cfg.scenarios
+            ).join(', ')}`
+        );
+    }
+    return { key, scenario, region: cfg.region, endpoint: cfg.endpoint };
+}
+
+async function loginCognitoUser(
+    region: string,
+    userPoolId: string,
+    userPoolClientId: string
+): Promise<{ logins: Record<string, string> }> {
+    const username = localStorage.getItem('rumExUsername');
+    const password = localStorage.getItem('rumExPassword');
+    if (!username || !password) {
+        throw new Error(
+            '[rum-demo] auth-* scenario requires localStorage.rumExUsername / rumExPassword. See README.'
+        );
+    }
+    const { CognitoIdentityProviderClient, InitiateAuthCommand } = await import(
+        '@aws-sdk/client-cognito-identity-provider'
+    );
+    const client = new CognitoIdentityProviderClient({ region });
+    const res = await client.send(
+        new InitiateAuthCommand({
+            AuthFlow: 'USER_PASSWORD_AUTH',
+            ClientId: userPoolClientId,
+            AuthParameters: { USERNAME: username, PASSWORD: password }
+        })
+    );
+    const idToken = res.AuthenticationResult?.IdToken;
+    if (!idToken) {
+        throw new Error(
+            '[rum-demo] Cognito InitiateAuth succeeded but no IdToken returned.'
+        );
+    }
+    return {
+        logins: {
+            [`cognito-idp.${region}.amazonaws.com/${userPoolId}`]: idToken
+        }
+    };
+}
+
+async function initSlim(
+    key: string,
+    scenario: ScenarioConfig,
+    region: string,
+    endpoint: string
+) {
     const [
         {
             AwsRum,
@@ -30,12 +116,10 @@ async function initSlim() {
         import('@aws-rum/web-core')
     ]);
 
-    // Slim has no `telemetries` config — load plugins explicitly. The XRay
-    // header is configured directly on FetchPlugin.
-    const awsRum = new AwsRum(APPLICATION_ID, APPLICATION_VERSION, REGION, {
+    const awsRum = new AwsRum(scenario.appMonitorId, '1.0.0', region, {
         sessionSampleRate: 1,
         sessionEventLimit: 0,
-        endpoint: ENDPOINT,
+        endpoint,
         allowCookies: true,
         enableXRay: true,
         debug: true,
@@ -52,48 +136,79 @@ async function initSlim() {
         ]
     });
 
-    // Slim requires BYO auth: supply the credential provider AND a signing
-    // config factory. Slim does not bundle SigV4 — we pass our own.
-    const provider = fromCognitoIdentityPool({
-        identityPoolId: IDENTITY_POOL_ID,
-        clientConfig: { region: REGION }
-    });
+    const providerOpts: {
+        identityPoolId: string;
+        clientConfig: { region: string };
+        logins?: Record<string, string>;
+    } = {
+        identityPoolId: scenario.identityPoolId,
+        clientConfig: { region }
+    };
+
+    if (key.startsWith('auth-')) {
+        if (!scenario.userPoolId || !scenario.userPoolClientId) {
+            throw new Error(
+                `[rum-demo] scenario ${key} missing userPoolId/userPoolClientId in config.`
+            );
+        }
+        const { logins } = await loginCognitoUser(
+            region,
+            scenario.userPoolId,
+            scenario.userPoolClientId
+        );
+        providerOpts.logins = logins;
+    }
+
+    const provider = fromCognitoIdentityPool(providerOpts);
 
     awsRum.setSigningConfigFactory(createSigningConfig);
     awsRum.setAwsCredentials(provider);
     console.info(
-        '[rum-demo] initialized: @aws-rum/web-slim + BYO Cognito + SigV4'
+        `[rum-demo] initialized slim: ${key} -> ${scenario.appMonitorId}`
     );
 }
 
-async function initFull() {
+async function initFull(
+    key: string,
+    scenario: ScenarioConfig,
+    region: string,
+    endpoint: string
+) {
     const { AwsRum } = await import('aws-rum-web');
 
-    new AwsRum(APPLICATION_ID, APPLICATION_VERSION, REGION, {
+    if (key.startsWith('auth-')) {
+        console.warn(
+            '[rum-demo] full build uses built-in Cognito with guest creds only — auth-*-full will behave as noauth-*-full. Use auth-*-slim for true authenticated Cognito.'
+        );
+    }
+
+    new AwsRum(scenario.appMonitorId, '1.0.0', region, {
         sessionSampleRate: 1,
         sessionEventLimit: 0,
-        identityPoolId: IDENTITY_POOL_ID,
-        endpoint: ENDPOINT,
+        identityPoolId: scenario.identityPoolId,
+        endpoint,
         allowCookies: true,
         enableXRay: true,
         debug: true,
         telemetries: [
             'errors',
             'performance',
-            ['http', { addXRayTraceIdHeader: true }]
+            ['http', { addXRayTraceIdHeader: true }],
+            'replay'
         ]
     });
     console.info(
-        '[rum-demo] initialized: aws-rum-web (full) + built-in Cognito'
+        `[rum-demo] initialized full: ${key} -> ${scenario.appMonitorId}`
     );
 }
 
 (async () => {
     try {
-        if (mode === 'full') {
-            await initFull();
+        const { key, scenario, region, endpoint } = getScenario();
+        if (key.endsWith('-slim')) {
+            await initSlim(key, scenario, region, endpoint);
         } else {
-            await initSlim();
+            await initFull(key, scenario, region, endpoint);
         }
     } catch (error) {
         console.error(error);

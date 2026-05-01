@@ -41,6 +41,37 @@ The snippet will look similar to the following:
 </script>
 ```
 
+## CDN bundle URLs
+
+The web client is published to the CDN as two bundles:
+
+| Bundle | URL (major-pinned, recommended) |
+| --- | --- |
+| `cwr.js` (full) | `https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js` |
+| `cwr-slim.js` (slim) | `https://client.rum.us-east-1.amazonaws.com/3.x/cwr-slim.js` |
+
+### Version pinning
+
+The CDN hosts every published version and supports three levels of precision. Pin at the level that matches your update tolerance:
+
+| Pin | Example | Resolves to |
+| --- | --- | --- |
+| Major (`N.x`) | `https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js` | Latest `3.*.*` release. **Recommended** — picks up backwards-compatible fixes and features automatically. |
+| Minor (`N.M.x`) | `https://client.rum.us-east-1.amazonaws.com/3.0.x/cwr.js` | Latest `3.0.*` patch. Use when you want patches but not new minor-version features. |
+| Exact (`N.M.P`) | `https://client.rum.us-east-1.amazonaws.com/3.0.0/cwr.js` | That exact release only. Use for reproducibility; you must manually bump to get fixes. |
+
+The same three levels apply to `cwr-slim.js` (e.g. `3.x/cwr-slim.js`, `3.0.x/cwr-slim.js`, `3.0.0/cwr-slim.js`).
+
+> **:warning: `*.x` URLs update automatically on every new release**
+>
+> `3.x` and `3.0.x` are floating pointers. The moment a new matching version is published to the CDN, every page that loads that URL begins serving the new bundle on its next cache-miss — no action from you, no rollout window, no canary. For most apps this is desirable (you get fixes for free), but it also means:
+>
+> -   Regressions introduced in a new release reach your users automatically.
+> -   Two browsers loading your page minutes apart may run different web-client versions.
+> -   The `3.x` bundle will eventually cross a minor-version boundary (e.g. `3.0.x` → `3.1.0`), bringing new features and any behavior changes allowed under semver-minor.
+>
+> If you need change control — staged rollouts, QA sign-off per version, or byte-for-byte reproducibility across users — pin to an **exact** version (`3.0.0/cwr.js`) and bump it deliberately in your own deploy pipeline.
+
 ## Instrument the application
 
 Copy the code snippet into the `<head>` tag of each HTML file in the web application.
