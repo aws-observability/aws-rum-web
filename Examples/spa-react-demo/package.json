@@ -10,6 +10,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@aws-rum/web-slim": "file:../../packages/slim",
         "@reduxjs/toolkit": "^2.11.2",
         "aws-rum-web": "file:../../packages/web",
         "lucide-react": "^0.563.0",
@@ -17,12 +18,11 @@
         "react-dom": "^19.2.0",
         "react-redux": "^9.2.0",
         "react-router-dom": "^7.13.0",
-        "react-virtuoso": "^4.18.1",
-        "@aws-rum/web-slim": "file:../../packages/slim"
+        "react-virtuoso": "^4.18.1"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
-        "@tailwindcss/postcss": "^4.1.18",
+        "@tailwindcss/postcss": "^4.2.4",
         "@types/node": "^24.10.1",
         "@types/react": "^19.2.5",
         "@types/react-dom": "^19.2.3",

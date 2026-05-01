@@ -1,126 +1,104 @@
-# Using the CloudWatch RUM Web Client with Angular 12
+# Angular
 
-## Add the snippet to index.html
+Install and initialize per **[Getting started](./getting_started.md)** (both NPM and CDN work the same). This page covers the three Angular-specific integration points.
 
-To install the web client in an Angular application, add the snippet inside the \<head\> tag of `index.html`.
+For NPM installs, wrap the client in an injectable service so it can be reused across components:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <script>
-            (function (n, i, v, r, s, c, u, x, z) {
-                x = window.AwsRumClient = {
-                    q: [],
-                    n: n,
-                    i: i,
-                    v: v,
-                    r: r,
-                    c: c,
-                    u: u
-                };
-                window[n] = function (c, p) {
-                    x.q.push({ c: c, p: p });
-                };
-                z = document.createElement('script');
-                z.async = true;
-                z.src = s;
-                document.head.insertBefore(
-                    z,
-                    document.getElementsByTagName('script')[0]
-                );
-            })(
-                'cwr',
+```typescript
+// src/app/rum.service.ts
+import { Injectable } from '@angular/core';
+import { AwsRum, AwsRumConfig } from 'aws-rum-web';
+
+@Injectable({ providedIn: 'root' })
+export class RumService {
+    readonly awsRum: AwsRum | undefined;
+
+    constructor() {
+        try {
+            const config: AwsRumConfig = {
+                sessionSampleRate: 1,
+                identityPoolId:
+                    'us-west-2:00000000-0000-0000-0000-000000000000',
+                endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+                telemetries: ['errors', 'performance', 'http', 'replay'],
+                allowCookies: true
+            };
+            this.awsRum = new AwsRum(
                 '00000000-0000-0000-0000-000000000000',
                 '1.0.0',
                 'us-west-2',
-                'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
-                {
-                    sessionSampleRate: 1,
-                    identityPoolId:
-                        'us-west-2:00000000-0000-0000-0000-000000000000',
-                    endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
-                    telemetries: ['errors', 'http', 'performance'],
-                    allowCookies: true
-                }
+                config
             );
-        </script>
-        ...
-    </head>
-    <body>
-        ...
-    </body>
-</html>
+        } catch (error) {
+            // ignore — don't let RUM init crash the app
+        }
+    }
+}
 ```
 
-## Instrument Routing to Record Page Views
+## Record custom page IDs on route changes
 
-If your application contains arguments in the URL's path, you likely want to record custom page IDs so that the arguments can be removed and the pages will be properly aggregated in CloudWatch. For example, if we have two URLs `https://amazonaws.com/user/123` and `https://amazonaws.com/user/456`, we likely want to remove the user ID from the path so that the page ID is `/user` for both URLs.
+SPA routes often contain dynamic segments (`/user/123`, `/user/456`). Subscribe to `NavigationEnd` and record page IDs yourself so the RUM console can aggregate them.
 
-For Angular applications, we can subscribe to the `NavigationEnd` event, and record a custom page ID using the URL provided by the router:
+Set `disableAutoPageView: true` in the config so the web client doesn't also record `history.pushState` events.
 
 ```typescript
+import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
+import { RumService } from './rum.service';
 
-declare function cwr(operation: string, payload: any): void;
-
-export class MyComponent implements OnInit {
-    constructor(private router: Router) {}
+@Component({
+    /* ... */
+})
+export class AppComponent implements OnInit {
+    constructor(private router: Router, private rum: RumService) {}
 
     ngOnInit(): void {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
-                console.log('this.router.url');
-                cwr('recordPageView', this.router.url);
+                this.rum.awsRum?.recordPageView(this.router.url);
             }
         });
     }
 }
 ```
 
-## Instrument Error Handling to Record Errors
+CDN equivalent: replace `this.rum.awsRum?.recordPageView(...)` with `cwr('recordPageView', this.router.url)`.
 
-Angular intercepts uncaught JavaScript errors that originate within the Angular application. Because Angular intercepts these errors, they will not be recorded by the web client. This can be fixed by creating an error handler that records uncaught errors using the web client's `recordError` command:
+## Forward errors caught by Angular
 
-### 1. Create an error handler
-
-`src/app/cwr-error-handler.ts`
+Angular intercepts uncaught errors thrown from components and they never reach `window.onerror`, so `JsErrorPlugin` can't see them. Install a custom `ErrorHandler`:
 
 ```typescript
-import { ErrorHandler } from '@angular/core';
+// src/app/rum-error-handler.ts
+import { ErrorHandler, Injectable } from '@angular/core';
+import { RumService } from './rum.service';
 
-declare function cwr(operation: string, payload: any): void;
-
+@Injectable()
 export class RumErrorHandler implements ErrorHandler {
-    handleError(error: any) {
-        cwr('recordError', error);
+    constructor(private rum: RumService) {}
+
+    handleError(error: any): void {
+        this.rum.awsRum?.recordError(error);
     }
 }
 ```
 
-### 2. Install the error handler in the root module:
-
-`src/app/app.module.ts`
+Register it in the root module:
 
 ```typescript
-import { RumErrorHandler } from './cwr-error-handler';
-@NgModule({
-  imports: [
-      ...
-  ],
-  declarations: [
-      ...
-  ],
-  bootstrap: [
-      ...
-  ],
-  providers: [
-    {
-      provide: ErrorHandler,
-      useClass: RumErrorHandler
-    }
-  ]
-})
-export class AppModule { }
+import { ErrorHandler, NgModule } from '@angular/core';
+import { RumErrorHandler } from './rum-error-handler';
 
+@NgModule({
+    providers: [{ provide: ErrorHandler, useClass: RumErrorHandler }]
+})
+export class AppModule {}
 ```
+
+CDN equivalent: replace `this.rum.awsRum?.recordError(error)` with `cwr('recordError', error)`.
+
+## See also
+
+-   [API reference](./reference/api.md)
+-   [Configuration](./configuration.md)

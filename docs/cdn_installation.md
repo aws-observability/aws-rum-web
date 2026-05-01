@@ -1,4 +1,6 @@
-# Installing as an Embedded Script
+# CDN installation — details
+
+> **New here?** Start with **[Getting started](./getting_started.md)** for the 3-step install. This page covers the snippet reference, arguments, and advanced setup (self-hosting `cwr.js`, ad-blocker mitigations).
 
 The CloudWatch RUM web client can be dynamically loaded into the application using a code snippet. The code snippet is a self-executing function created by the CloudWatch RUM console. The snippet (1) asynchronously downloads the web client from a content delivery network (CDN) or the application server and (2) configures the web client for the application it is monitoring.
 
@@ -27,7 +29,7 @@ The snippet will look similar to the following:
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js',
         {
             sessionSampleRate: 1,
             identityPoolId: 'us-west-2:00000000-0000-0000-0000-000000000000',
@@ -51,7 +53,7 @@ Modify the arguments to match your AppMonitor. See [Arguments](#arguments) for d
 >
 > To mitigate this we recommend one of the following:
 >
-> 1. Have the web application host the CloudWatch RUM web client:<br/> a) Copy [`cwr.js`](https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js) to the assets directory of the web application<br/> b) Modify the code snippet to use the copy of `cwr.js` from (a).
+> 1. Have the web application host the CloudWatch RUM web client:<br/> a) Copy [`cwr.js`](https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js) to the assets directory of the web application<br/> b) Modify the code snippet to use the copy of `cwr.js` from (a).
 > 2. Install the CloudWatch RUM web client as a [JavaScript module](https://www.npmjs.com/package/aws-rum-web).
 
 Modify the `config` object to configure how the web client should behave. At a minimum, configure the following: (1) how the data will be authenticated, and (2) what aspects of the application will be monitored. See [Application-specific Configurations](configuration.md) for details.
@@ -67,7 +69,7 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js',
         { /* configuration */ }
     );
 </script>
@@ -79,7 +81,7 @@ The code snippet accepts six arguments. The snippet below shows these arguments 
 | 2 | AppMonitor ID | String | A globally unique identifier for the CloudWatch RUM AppMonitor which monitors your application. |
 | 3 | Application Version | String | Your application's semantic version. If you do not wish to use this field then add any placeholder, such as `'0.0.0'`. |
 | 4 | Region | String | The AWS region of the AppMonitor. For example, `'us-east-1'` or '`eu-west-2'`. |
-| 5 | Web Client URL | String | The URL of the web client bundle. For example, `'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js'` |
+| 5 | Web Client URL | String | The URL of the web client bundle. For example, `'https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js'` |
 | 6 | Configuration | [Configuration](configuration.md) | An application-specific configuration for the web client. |
 
 ## Configuring the CloudWatch RUM web client
@@ -95,7 +97,7 @@ The snippet below shows several configuration options with the body of the snipp
         '00000000-0000-0000-0000-000000000000',
         '1.0.0',
         'us-west-2',
-        'https://client.rum.us-east-1.amazonaws.com/1.x/cwr.js',
+        'https://client.rum.us-east-1.amazonaws.com/3.x/cwr.js',
         {
             sessionSampleRate:1,
             identityPoolId:'us-west-2:00000000-0000-0000-0000-000000000000',
@@ -108,3 +110,9 @@ The snippet below shows several configuration options with the body of the snipp
 ```
 
 For a complete list of configuration options, see [Application-specific Configurations](configuration.md).
+
+## Next steps
+
+-   [Configuration reference](./configuration.md)
+-   [CDN commands (`cwr(...)`) reference](./cdn_commands.md)
+-   [Troubleshooting](./cdn_troubleshooting.md)

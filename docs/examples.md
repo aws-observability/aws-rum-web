@@ -1,5 +1,17 @@
 # Usage Examples
 
+## Runnable demos
+
+The [`Examples/`](../Examples) directory ships three end-to-end demos that run against a local debug server with no AWS account required:
+
+| Demo | Install path | Port | What it shows |
+| --- | --- | --- | --- |
+| [`aws-rum-web-ui`](../Examples/aws-rum-web-ui) | — | `5200` (UI) / `3000` (data plane) | Local Express receiver + React UI that captures and visualizes RUM payloads. Start this first. |
+| [`spa-react-demo`](../Examples/spa-react-demo) | NPM (`@aws-rum/web-slim`) | `5210` | Single-page React app. Validates SPA page-view tracking, route changes, fetch instrumentation, and session replay. |
+| [`mpa-cdn-demo`](../Examples/mpa-cdn-demo) | CDN snippet | `5220` | Plain multi-page site that loads `cwr.js` via the embedded snippet. Validates hard navigations, the `cwr(...)` command queue, and session continuity across page loads. |
+
+See each demo's `README.md` for setup.
+
 ## Record custom events using `recordEvent`
 
 > **:warning: The CloudWatch RUM app monitor must have custom events enabled.**
@@ -20,7 +32,7 @@ cwr('recordEvent', {type: 'your_event_type', data: {field1: 1, field2: 2}})
 awsRum.recordEvent('your_event_type', {field1: 1, field2: 2})
 ```
 
-See [Executing Commands: Events](cdn_commands.md#Events).
+See [API reference: Event](./reference/api.md#event).
 
 ## Record custom events using a plugin
 
@@ -117,5 +129,5 @@ Alternatively, you can install the plugin after initializing the web client by c
 
 ```typescript
 const myScrollEventPlugin: MyScrollEventPlugin = new MyScrollEventPlugin();
-awsRum.addplugin(myScrollEventPlugin);
+awsRum.addPlugin(myScrollEventPlugin);
 ```

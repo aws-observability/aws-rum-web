@@ -41,14 +41,18 @@ For example, the config object may look similar to the following:
 | sessionEventLimit | Number | `200` | The maximum number of events to record during a single session. If set to `0`, the limit is removed and all events in the session will be recorded. |
 | sessionSampleRate | Number | `1` | The proportion of sessions that will be recorded by the web client, specified as a unit interval (a number greater than or equal to 0 and less than or equal to 1). When this field is `0`, no sessions will be recorded. When this field is `1`, all sessions will be recorded. |
 | signing | Boolean | true | When this field is `true`, the web client signs [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html) using [SigV4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).<br/><br/>When this field is `false`, the web client does not sign [RUM data](https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumEvents.html).<br/><br/>Set this field to `false` only when sending RUM data to CloudWatch RUM through an unauthenticated proxy. This field **must be `true`** when sending RUM data directly to CloudWatch RUM. |
-| telemetries | [Telemetry Config Array](#telemetry-config-array) | `[]` | See [Telemetry Config Array](#telemetry-config-array) |
+| telemetries | [Telemetry Config Array](#telemetry-config-array) | `['errors', 'performance', 'http', 'replay']` | **Full build only.** The slim build has no `telemetries` system — load plugins directly via `eventPluginsToLoad` and configure them via each plugin's constructor (e.g., `new FetchPlugin({ addXRayTraceIdHeader: true })`). See [Telemetry Config Array](#telemetry-config-array). |
 | batchLimit | Number | `100` | The maximum number of events that will be sent in one batch of RUM events. |
 | dispatchInterval | Number | `5000` | The frequency (in milliseconds) in which the webclient will dispatch a batch of RUM events. RUM events are first cached and then automatically dispatched at this set interval. |
 | eventCacheSize | Number | `1000` | The maximum number of events the cache can contain before dropping events. Each event is typically 1KB in size, so we recommend a default limit of 1000 events -> 1 MB to balance performance against capturing all observed events. If necessary, feel free to enable debug mode to get detailed logs on how to optimize cache size depending on your application behavior. |
 | sessionLengthSeconds | Number | `1800` | The duration of a session (in seconds). |
 | headers | Object | `{}` | The **headers** configuration is optional and allows you to include custom headers in an HTTP request. For example, you can use it to pass `Authorization` and `x-api-key` headers.<br/><br/>For more details, see: [MDN - Request Headers](https://developer.mozilla.org/en-US/docs/Glossary/Request_header). |
-| compressionStrategy | Object | `{ enabled: false }` | Configuration for gzip compression of dispatch payloads.<br/><br/>`enabled` (Boolean): When `true`, payloads exceeding 2KB (~10+ RUM events) are compressed using gzip before sending. Compression is only used if it achieves at least 20% size reduction; otherwise the original payload is sent. Compressed payloads include the `Content-Encoding: gzip` header. RUM JSON data typically achieves 60-80% size reduction. |
-| legacySPASupport | Boolean | `false` | When this field is `true`, then legacy NavigationEvents with initiatorType=route_change will be recorded for single page applications. **Warning:** This is a legacy feature that is no longer supported. Please enable with caution in debugging mode first to see if it is relevant for your web application before enabling it in prod. See [#723](https://github.com/aws-observability/aws-rum-web/issues/723) for more details. |
+| compressionStrategy | Object | `{ enabled: true }` | Configuration for gzip compression of dispatch payloads.<br/><br/>`enabled` (Boolean): When `true`, payloads exceeding 2KB (~10+ RUM events) are compressed using gzip before sending. Compression is only used if it achieves at least 20% size reduction; otherwise the original payload is sent. Compressed payloads include the `Content-Encoding: gzip` header. RUM JSON data typically achieves 60-80% size reduction. |
+| candidatesCacheSize | Number | `10` | The maximum number of candidate events (used by Web Vitals) retained while waiting to finalize metrics like LCP, CLS, and INP. |
+| useBeacon | Boolean | `true` | When `true`, the web client prefers `navigator.sendBeacon` to flush the event cache on `visibilitychange` and `pagehide`, falling back to `fetch`. When `false`, the order is reversed. |
+| userIdRetentionDays | Number | `30` | How long the anonymous user cookie (`cwr_u`) is retained, in days. Set to `0` to disable the user cookie — the web client will use a nil UUID for all users. |
+| fetchFunction | Function | `window.fetch` | Override the `fetch` implementation used to dispatch events. Primarily intended for testing or for environments where the global `fetch` is unavailable. |
+| clientBuilder | Function | `undefined` | Advanced: override the factory that builds the CloudWatch RUM `DataPlaneClient`. Used for custom signing, transports, or proxies. |
 
 ## CookieAttributes
 
@@ -56,9 +60,9 @@ For example, the config object may look similar to the following:
 | --- | --- | --- | --- |
 | domain | String | `window.location.hostname` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | path | String | `/` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
-| sameSite | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
+| sameSite | String | `'Strict'` | One of `'Strict'`, `'Lax'`, or `'None'`. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
 | secure | Boolean | `true` | See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#define_where_cookies_are_sent |
-| unique | Boolean | `false` | When this field is `false`, the session cookie name is `cwr_s` and the credential cookie name is `cwr_c`. When this field is `true`, the session cookie name is `cwr_s_[AppMonitor Id]` and the credential cookie name is `cwr_c_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users. |
+| unique | Boolean | `false` | When `false`, the web client uses the base storage names (`cwr_s`, `cwr_u` cookies; `cwr_c`, `cwr_i` localStorage keys). When `true`, all four are suffixed with `_[AppMonitor Id]`.<br/><br/>Set this field to `true` when multiple AppMonitors will monitor the same page. For example, this might be the case if one AppMonitor is used for logged-in users, and a second AppMonitor is used for guest users.<br/><br/>Note: `cwr_c` (credentials) and `cwr_i` (identity) are stored in `localStorage`, not cookies. See [Cookies and storage](./concepts/cookies-and-storage.md). |
 
 ## MetadataAttributes
 
@@ -100,6 +104,7 @@ telemetries: [
 | http | Record HTTP requests. By default, this telemetry will only record failed requests; i.e., requests that have network failures, or whose responses contain a non-2xx status code. See [HTTP](#http) <br/><br/> This telemetry is required to enable X-Ray tracing. |
 | interaction | Record DOM events. By default, this telemetry will not record data. The telemetry must be configured to record specific DOM events. See [Interaction](#interaction) |
 | performance | Record performance data including page load timing, web vitals, and resource load timing. See [Performance](#performance) |
+| replay | Record a session replay using [rrweb](https://github.com/rrweb-io/rrweb). By default all text and input content is masked to protect PII. See the [RRWebPlugin docs](./plugins/RRWebPlugin.md). |
 
 ## Errors
 

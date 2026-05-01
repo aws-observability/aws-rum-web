@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Story | HN</title>
+        <link rel="stylesheet" href="/styles.css" />
+        <script src="/rum-snippet.js"></script>
+        <script src="/app.js"></script>
+    </head>
+    <body>
+        <script src="/header.js"></script>
+        <main>
+            <a href="/top.html" class="back">← Back</a>
+            <div id="story"><div class="skeleton"></div></div>
+            <div id="comments"></div>
+        </main>
+        <script>
+            initStoryPage().catch((err) => {
+                document.getElementById(
+                    'story'
+                ).innerHTML = `<div class="status warn">Failed to load story: ${err.message}</div>`;
+                throw err;
+            });
+        </script>
+    </body>
+</html>

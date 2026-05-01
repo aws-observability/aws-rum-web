@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>New | HN</title>
+        <link rel="stylesheet" href="/styles.css" />
+        <script src="/rum-snippet.js"></script>
+        <script src="/app.js"></script>
+    </head>
+    <body>
+        <script src="/header.js"></script>
+        <main>
+            <div class="sort-bar" id="sort-host"></div>
+            <div id="stories" class="story-list">
+                <div class="skeleton"></div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </main>
+        <script>
+            initStoriesPage('new').catch((err) => {
+                document.getElementById(
+                    'stories'
+                ).innerHTML = `<div class="status warn">Failed to load stories: ${err.message}</div>`;
+                throw err;
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,402 @@
+/* Shared styles for the HN-style MPA demo. Mirrors spa-react-demo's look. */
+* {
+    box-sizing: border-box;
+}
+body {
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+    margin: 0;
+    background: #f9fafb;
+    color: #111827;
+}
+
+/* Header / nav */
+header.hn {
+    background: #f97316;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+header.hn .inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+header.hn .brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-right: 2rem;
+    color: white;
+    text-decoration: none;
+}
+header.hn nav {
+    display: flex;
+    gap: 1.5rem;
+}
+header.hn nav a {
+    color: white;
+    text-decoration: none;
+}
+header.hn nav a:hover {
+    text-decoration: underline;
+}
+header.hn nav a.active {
+    font-weight: 700;
+}
+
+main {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+/* Sort dropdown */
+.sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.sort-label {
+    font-weight: 500;
+    color: #374151;
+}
+.dropdown {
+    position: relative;
+}
+.dropdown-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font: inherit;
+    cursor: pointer;
+}
+.dropdown-btn:hover {
+    background: #f9fafb;
+}
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    min-width: 140px;
+    overflow: hidden;
+    z-index: 10;
+}
+.dropdown-menu a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #111827;
+    text-decoration: none;
+}
+.dropdown-menu a:hover {
+    background: #f3f4f6;
+}
+.dropdown-menu a.active {
+    background: #fff7ed;
+    color: #ea580c;
+    font-weight: 500;
+}
+
+/* Story list cards */
+.story-list {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    padding: 0 1rem;
+}
+.story-card {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.story-card:last-child {
+    border-bottom: 0;
+}
+.story-card:hover {
+    background: #f9fafb;
+}
+.story-card .rank {
+    color: #9ca3af;
+    font-family: ui-monospace, monospace;
+    font-size: 0.875rem;
+    width: 2rem;
+    text-align: right;
+    flex-shrink: 0;
+}
+.story-card .story-body {
+    flex: 1;
+    min-width: 0;
+}
+.title-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.title-line h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #111827;
+}
+a.title {
+    color: #111827;
+    text-decoration: none;
+    font-weight: 500;
+}
+a.title:hover {
+    color: #ea580c;
+}
+.domain {
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+.domain:hover {
+    text-decoration: underline;
+}
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+.meta a {
+    color: #6b7280;
+    text-decoration: none;
+}
+.meta a:hover {
+    text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+.page-btn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    color: #111827;
+    text-decoration: none;
+}
+.page-btn:hover:not(.disabled) {
+    background: #f9fafb;
+}
+.page-btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.page-info {
+    padding: 0.5rem 1rem;
+    color: #374151;
+}
+
+/* Cards — story detail, user, debug */
+.card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    margin-bottom: 1.5rem;
+}
+.card h1 {
+    margin: 0 0 0.5rem;
+}
+.card h2 {
+    margin: 0 0 1rem;
+}
+.card .body {
+    color: #1f2937;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    line-height: 1.5;
+}
+.card .body p {
+    margin: 0 0 0.75rem;
+}
+
+/* Comments (recursive) */
+.comment-node {
+    margin: 0.5rem 0;
+}
+.comment-node .comment {
+    border-left: 2px solid #e5e7eb;
+    padding-left: 1rem;
+}
+.comment-node.depth-0 > .comment {
+    border-left: 0;
+    padding-left: 0;
+}
+.comment .cmeta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+.comment .cmeta .by {
+    color: #374151;
+    font-weight: 500;
+    text-decoration: none;
+}
+.comment .cmeta .by:hover {
+    color: #ea580c;
+}
+.comment .cmeta .toggle {
+    background: none;
+    border: 0;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+}
+.comment .cbody {
+    color: #1f2937;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+.comment .cbody p {
+    margin: 0 0 0.5rem;
+}
+.comment .ckids {
+    margin-left: 1rem;
+}
+.show-more {
+    background: none;
+    border: 0;
+    color: #ea580c;
+    font-size: 0.875rem;
+    cursor: pointer;
+    margin: 0.25rem 0 0.5rem 1rem;
+    padding: 0;
+}
+.show-more:hover {
+    text-decoration: underline;
+}
+.empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 2rem;
+}
+
+/* User submissions */
+.submission {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.submission:last-child {
+    border-bottom: 0;
+}
+.submission a.title {
+    font-weight: 500;
+}
+
+/* Skeletons */
+.skeleton {
+    height: 4rem;
+    background: #e5e7eb;
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+.skeleton.small {
+    height: 2rem;
+}
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Debug form */
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #374151;
+}
+select,
+input[type='text'],
+input[type='number'] {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font: inherit;
+    margin-bottom: 1rem;
+}
+select[multiple] {
+    height: 12rem;
+}
+button.primary {
+    background: #f97316;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+}
+button.primary:hover {
+    background: #ea580c;
+}
+button.primary:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+.status {
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+}
+.status.ok {
+    background: #ecfdf5;
+    color: #065f46;
+}
+.status.warn {
+    background: #fef3c7;
+    color: #92400e;
+}
+.status.info {
+    background: #eff6ff;
+    color: #1e40af;
+}
+.back {
+    color: #ea580c;
+    text-decoration: none;
+    font-weight: 500;
+}
+.back:hover {
+    text-decoration: underline;
+}
