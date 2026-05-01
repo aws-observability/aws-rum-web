@@ -28,7 +28,14 @@ export { PluginManager } from './plugins/PluginManager';
 export { EventCache } from './event-cache/EventCache';
 export { default as EventBus, Topic } from './event-bus/EventBus';
 export { InternalLogger } from './utils/InternalLogger';
-export { INSTALL_SCRIPT, INSTALL_MODULE } from './utils/constants';
+export {
+    INSTALL_SCRIPT,
+    INSTALL_MODULE,
+    CRED_KEY,
+    SESSION_COOKIE_NAME,
+    USER_COOKIE_NAME
+} from './utils/constants';
+export { removeCookie } from './utils/cookies-utils';
 export { TTIPlugin } from './plugins/event-plugins/TTIPlugin';
 export * from './plugins/event-plugins/DomEventPlugin';
 export * from './plugins/event-plugins/JsErrorPlugin';

@@ -13,7 +13,11 @@ import {
     INSTALL_MODULE,
     EventBus,
     Topic,
-    InternalLogger
+    InternalLogger,
+    removeCookie,
+    CRED_KEY,
+    SESSION_COOKIE_NAME,
+    USER_COOKIE_NAME
 } from '@aws-rum/web-core';
 import {
     AwsCredentialIdentityProvider,
@@ -100,6 +104,7 @@ export class Orchestration {
     protected dispatchManager: Dispatch;
     protected config: Config;
     protected eventBus = new EventBus<Topic>();
+    protected applicationId: string;
 
     constructor(
         applicationId: string,
@@ -113,6 +118,8 @@ export class Orchestration {
         if (typeof region === 'undefined') {
             region = 'us-west-2';
         }
+
+        this.applicationId = applicationId;
 
         const cookieAttributes: CookieAttributes = {
             ...defaultCookieAttributes(),
@@ -206,6 +213,25 @@ export class Orchestration {
 
     public allowCookies(allow: boolean) {
         this.config.allowCookies = allow;
+    }
+
+    /**
+     * Purge all RUM cookies for this client (session, user, and cached
+     * credentials), including the application-id-suffixed variants used
+     * when `cookieAttributes.unique` is set. Intended for test setup so a
+     * fresh page load starts a brand-new session.
+     */
+    public clearCookies(): void {
+        const attrs = this.config.cookieAttributes;
+        const names = [
+            SESSION_COOKIE_NAME,
+            USER_COOKIE_NAME,
+            CRED_KEY,
+            `${SESSION_COOKIE_NAME}_${this.applicationId}`,
+            `${USER_COOKIE_NAME}_${this.applicationId}`,
+            `${CRED_KEY}_${this.applicationId}`
+        ];
+        names.forEach((n) => removeCookie(n, attrs));
     }
 
     public recordPageView(payload: string | PageAttributes) {

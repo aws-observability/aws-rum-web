@@ -173,6 +173,31 @@ describe('Slim Orchestration tests', () => {
         expect(setSigningConfigFactory).toHaveBeenCalledWith(factory);
     });
 
+    test('clearCookies purges session, user, cred cookies and appId-suffixed variants', async () => {
+        const appId = 'app-xyz';
+        // Seed all six cookie names the client may have written.
+        document.cookie = 'cwr_s=session-val; Path=/';
+        document.cookie = 'cwr_u=user-val; Path=/';
+        document.cookie = 'cwr_c=cred-val; Path=/';
+        document.cookie = `cwr_s_${appId}=session-unique; Path=/`;
+        document.cookie = `cwr_u_${appId}=user-unique; Path=/`;
+        document.cookie = `cwr_c_${appId}=cred-unique; Path=/`;
+
+        const orch = new Orchestration(appId, '1.0', 'us-east-1', {
+            cookieAttributes: { domain: '', path: '/', sameSite: 'Strict' }
+        } as any);
+
+        orch.clearCookies();
+
+        const remaining = document.cookie;
+        expect(remaining).not.toContain('cwr_s=');
+        expect(remaining).not.toContain('cwr_u=');
+        expect(remaining).not.toContain('cwr_c=');
+        expect(remaining).not.toContain(`cwr_s_${appId}=`);
+        expect(remaining).not.toContain(`cwr_u_${appId}=`);
+        expect(remaining).not.toContain(`cwr_c_${appId}=`);
+    });
+
     test('addSessionAttributes delegates to eventCache', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
         orch.addSessionAttributes({ key: 'value' });

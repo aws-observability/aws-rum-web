@@ -63,6 +63,9 @@ export class CommandQueue {
         disable: (): void => {
             this.orchestration.disable();
         },
+        clearCookies: (): void => {
+            this.orchestration.clearCookies();
+        },
         allowCookies: (allow: boolean): void => {
             if (typeof allow === 'boolean') {
                 this.orchestration.allowCookies(allow);

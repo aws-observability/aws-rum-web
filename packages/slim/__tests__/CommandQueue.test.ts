@@ -8,6 +8,7 @@ const disable = jest.fn();
 const dispatch = jest.fn();
 const dispatchBeacon = jest.fn();
 const allowCookies = jest.fn();
+const clearCookies = jest.fn();
 const recordPageView = jest.fn();
 const recordError = jest.fn();
 const registerDomEvents = jest.fn();
@@ -23,6 +24,7 @@ jest.mock('../src/orchestration/Orchestration', () => ({
         dispatch,
         dispatchBeacon,
         allowCookies,
+        clearCookies,
         recordPageView,
         recordError,
         registerDomEvents,
@@ -138,6 +140,13 @@ describe('Slim CommandQueue tests', () => {
         await expect(cq.push({ c: 'allowCookies', p: 'yes' })).rejects.toThrow(
             'IncorrectParametersException'
         );
+    });
+
+    test('clearCookies calls Orchestration.clearCookies', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'clearCookies', p: undefined });
+        expect(clearCookies).toHaveBeenCalled();
     });
 
     test('recordEvent validates payload shape', async () => {
