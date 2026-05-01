@@ -12,9 +12,13 @@ JavaScript library for real user monitoring on web apps. Captures page load timi
 -   **[API reference](./reference/api.md)** — every method on `AwsRum` with slim/full build notes.
 -   **[CDN commands](./cdn_commands.md)** — `cwr(...)` command queue signatures.
 
+## Packages
+
+-   **[Packages overview](./concepts/packages.md)** — `aws-rum-web` vs `@aws-rum/web-slim` vs `@aws-rum/web-core`.
+-   **[`@aws-rum/web-slim`](./packages/slim.md)** — ~10 KB gzipped build. BYO auth, explicit plugin loading.
+
 ## Concepts
 
--   **[Packages](./concepts/packages.md)** — `aws-rum-web` vs `@aws-rum/web-slim` vs `@aws-rum/web-core`.
 -   **[Sessions and sampling](./concepts/sessions.md)** — lifecycle, identity, cookies vs localStorage.
 -   **[Authentication](./concepts/auth.md)** — Cognito enhanced/basic, custom credentials, unsigned.
 -   **[Dispatch and batching](./concepts/dispatch.md)** — batching, flushing, compression.
@@ -49,9 +53,10 @@ Defaults apply to the full build. The slim build has no default telemetries — 
 -   **[Troubleshooting](./cdn_troubleshooting.md)** — 403s, CSP, ad blockers, SPA routing, region mismatch, CORS.
 -   First thing to try: enable `debug: true` and watch the browser console.
 
-## Migrating from 2.x
+## Migration guides
 
--   **[2.x → 3.x migration guide](./migration_v2_to_v3.md)** — monorepo split, ES2017 target, replay-on-by-default, other breaking changes.
+-   **[2.x → 3.x](./migration_v2_to_v3.md)** — monorepo split, ES2017 target, replay-on-by-default, other breaking changes.
+-   **[`aws-rum-web` → `@aws-rum/web-slim`](./migration_full_to_slim.md)** — switching to the smaller build: BYO auth, explicit plugin loading.
 
 ## Contributing
 
