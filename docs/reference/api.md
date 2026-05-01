@@ -37,6 +37,7 @@ Each row shows the NPM method and the equivalent CDN command.
 | **registerDomEvents** | `awsRum.registerDomEvents([{...}])` | `cwr('registerDomEvents', [{...}])` | Append DOM events recorded by `DomEventPlugin`. See [Interaction](../configuration.md#interaction). |
 | **setAwsCredentials** | `awsRum.setAwsCredentials(provider)` | `cwr('setAwsCredentials', creds)` | Forward AWS credentials to the web client. Required when `identityPoolId` is unset. |
 | **allowCookies** | `awsRum.allowCookies(true)` | `cwr('allowCookies', true)` | Toggle cookie usage at runtime. When `false`, session and user IDs live only in memory. |
+| **clearCookies** | `awsRum.clearCookies()` | `cwr('clearCookies')` | Purge all RUM cookies (`cwr_s`, `cwr_u`, `cwr_c`, and the `_${applicationId}`-suffixed variants used when `cookieAttributes.unique` is set). Intended for automated test setup so the next init starts a fresh session. Does not affect in-memory state — call before `new AwsRum(...)` or before a navigation. |
 | **enable** / **disable** | `awsRum.enable()` / `awsRum.disable()` | `cwr('enable')` / `cwr('disable')` | Start or stop recording and dispatching. Useful for pause/resume in response to user consent. |
 | **dispatch** | `awsRum.dispatch()` | `cwr('dispatch')` | Flush the event cache via `fetch`. Returns a promise. |
 | **dispatchBeacon** | `awsRum.dispatchBeacon()` | `cwr('dispatchBeacon')` | Flush via `navigator.sendBeacon`. Falls back to `fetch`. Preferred for `visibilitychange`/`pagehide`. |
