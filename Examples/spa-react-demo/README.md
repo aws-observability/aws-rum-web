@@ -14,15 +14,44 @@ This example demonstrates RUM telemetry collection in a React SPA environment, f
 ## Quick Start
 
 ```bash
-# 1. Build the local web client packages (REQUIRED — see "Prerequisite" below)
-cd ../../packages/web && npm run build
-cd ../../packages/slim && npm run build
+# 1. Deploy the shared CDK stack (first time) and generate config.local.js
+cd ../infra && npm install && npm run deploy && npm run write-configs
 
 # 2. Start this demo
-cd ../../Examples/spa-react-demo && npm install && npm run dev
+cd ../spa-react-demo && npm install && npm run dev
 ```
 
-Open <http://localhost:5210> to view the app with RUM telemetry enabled. Depends on [`aws-rum-web-ui`](../aws-rum-web-ui) running (server on :3000, UI on :5200).
+Then open one of the scenarios:
+
+-   <http://localhost:5210/?scenario=noauth-npm-full>
+-   <http://localhost:5210/?scenario=noauth-npm-slim>
+-   <http://localhost:5210/?scenario=auth-npm-slim> (requires a Cognito user — see "Auth scenarios" below)
+-   <http://localhost:5210/?scenario=auth-npm-full>
+
+Inspect telemetry in the CloudWatch RUM console for the corresponding app monitor (`rum-ex-3x-noauth-npm-full`, etc.).
+
+## Dependencies
+
+Uses the **published 3.0.0** RUM packages from npm:
+
+```json
+"aws-rum-web": "^3.0.0",
+"@aws-rum/web-core": "^3.0.0",
+"@aws-rum/web-slim": "^3.0.0"
+```
+
+## Auth scenarios
+
+Auth scenarios pick up a Cognito login token before handing credentials to the identity pool. Set credentials via the browser console before reloading an `auth-*` page:
+
+```js
+localStorage.setItem('rumExUsername', 'testuser');
+localStorage.setItem('rumExPassword', '<password>');
+```
+
+The `RumExamples3xStack` creates the user pool + client but does not provision users. Create one via the Cognito console (or `aws cognito-idp admin-create-user`) and confirm it.
+
+**Note on `auth-npm-full`**: the `aws-rum-web` full package's built-in Cognito integration always uses guest credentials. The demo emits a console warning in that case. For true authenticated, use `auth-npm-slim` (BYO Cognito).
 
 ## Tech Stack
 
@@ -44,28 +73,9 @@ Captured out of the box:
 -   Web vitals and resource timings
 -   Session replay via `RRWebPlugin` (text and input values are masked)
 
-### Prerequisite: local web-client build
-
-This example depends on the unbundled packages via `file:` paths in [`package.json`](./package.json):
-
-```json
-"@aws-rum/web-slim": "file:../../packages/slim",
-"aws-rum-web": "file:../../packages/web"
-```
-
-Build those once before `npm install` here, and again any time you change their source:
-
-```bash
-cd ../../packages/web && npm run build
-cd ../../packages/slim && npm run build
-```
-
 ## Verify telemetry is flowing
 
-Click around the app (or open `/debug` and generate an error), then:
-
--   Open <http://localhost:5200/> and filter by session.
--   Or tail the raw capture: `tail -f ../aws-rum-web-ui/server/api/events.jsonl`.
+Click around the app (or open `/debug` and generate an error), then open the CloudWatch RUM console in the deploying account and inspect the relevant app monitor's events.
 
 ## Project layout
 
