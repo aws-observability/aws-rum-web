@@ -1,0 +1,26 @@
+{
+    "name": "rum-examples-3x-infra",
+    "version": "0.1.0",
+    "private": true,
+    "bin": {
+        "infra": "bin/infra.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc -w",
+        "synth": "cdk synth",
+        "diff": "cdk diff",
+        "deploy": "cdk deploy",
+        "write-configs": "node scripts/write-configs.js",
+        "validate-matrix": "node scripts/validate-matrix.mjs"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "aws-cdk": "^2.160.0",
+        "typescript": "~5.4.0"
+    },
+    "dependencies": {
+        "aws-cdk-lib": "^2.160.0",
+        "constructs": "^10.3.0"
+    }
+}

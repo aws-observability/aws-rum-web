@@ -46,3 +46,12 @@ save
 # Noisy
 Examples/spa-react-demo/package-lock.json
 Examples/aws-rum-web-ui/package-lock.json
+Examples/mpa-cdn-demo/package-lock.json
+Examples/infra/package-lock.json
+
+# RUM matrix validation — transient evidence + secret-bearing local state
+validate-matrix-results.json
+tmp/
+Examples/infra/cdk.out/
+Examples/infra/.env.local
+Examples/**/public/config.local.js
