@@ -113,6 +113,8 @@ In the CloudWatch RUM console, create an AppMonitor and copy the generated `<scr
 </script>
 ```
 
+The `3.x` in the bundle URL is a **major-pinned** pointer — it auto-updates to the latest `3.*.*` release. If you need change control, pin to a minor (`3.0.x`) or exact (`3.0.0`) version instead. See [CDN bundle URLs](./cdn_installation.md#cdn-bundle-urls).
+
 ### 2. Install
 
 Paste the snippet into the `<head>` of every HTML document you want to monitor — as early as possible, ideally before any other `<script>` tag.
