@@ -63,7 +63,11 @@ function extractEventTypes(req) {
     if (direct) return direct;
     // base64 (beacon path sometimes)
     try {
-        return tryParse(Buffer.from(buf.toString('utf8'), 'base64').toString('utf8')) || [];
+        return (
+            tryParse(
+                Buffer.from(buf.toString('utf8'), 'base64').toString('utf8')
+            ) || []
+        );
     } catch {
         return [];
     }
@@ -80,7 +84,8 @@ const args = Object.fromEntries(
 
 const USERNAME = args.username || 'testuser';
 const PASSWORD = args.password || 'TestP@ssw0rd!';
-const OUT = args.out || resolve(__dirname, '../../../validate-matrix-results.json');
+const OUT =
+    args.out || resolve(__dirname, '../../../validate-matrix-results.json');
 const HEADLESS = args.headless !== 'false';
 
 // Load config to resolve appMonitorId per scenario.
@@ -100,10 +105,30 @@ const SCENARIOS = [
     { key: 'noauth-npm-slim', port: 5210, path: '/?scenario=noauth-npm-slim' },
     { key: 'noauth-cdn-full', port: 5220, path: '/?scenario=noauth-cdn-full' },
     { key: 'noauth-cdn-slim', port: 5220, path: '/?scenario=noauth-cdn-slim' },
-    { key: 'auth-npm-full', port: 5210, path: '/?scenario=auth-npm-full', auth: true },
-    { key: 'auth-npm-slim', port: 5210, path: '/?scenario=auth-npm-slim', auth: true },
-    { key: 'auth-cdn-full', port: 5220, path: '/?scenario=auth-cdn-full', auth: true },
-    { key: 'auth-cdn-slim', port: 5220, path: '/?scenario=auth-cdn-slim', auth: true }
+    {
+        key: 'auth-npm-full',
+        port: 5210,
+        path: '/?scenario=auth-npm-full',
+        auth: true
+    },
+    {
+        key: 'auth-npm-slim',
+        port: 5210,
+        path: '/?scenario=auth-npm-slim',
+        auth: true
+    },
+    {
+        key: 'auth-cdn-full',
+        port: 5220,
+        path: '/?scenario=auth-cdn-full',
+        auth: true
+    },
+    {
+        key: 'auth-cdn-slim',
+        port: 5220,
+        path: '/?scenario=auth-cdn-slim',
+        auth: true
+    }
 ];
 
 // How long to wait for the first PutRumEvents POST after navigation.
@@ -159,8 +184,8 @@ async function runOne(browser, scenario) {
                 signing: queryPresigned
                     ? 'query-presigned'
                     : headerSigned
-                      ? 'header-sigv4'
-                      : 'unsigned',
+                    ? 'header-sigv4'
+                    : 'unsigned',
                 eventTypes,
                 hasSessionStart: eventTypes.includes(SESSION_START_TYPE)
             });
@@ -168,7 +193,9 @@ async function runOne(browser, scenario) {
     });
 
     const consoleLogs = [];
-    page.on('console', (msg) => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));
+    page.on('console', (msg) =>
+        consoleLogs.push(`[${msg.type()}] ${msg.text()}`)
+    );
 
     let error;
     try {
@@ -189,7 +216,9 @@ async function runOne(browser, scenario) {
     let sessionId;
     if (sessionCookie) {
         try {
-            sessionId = JSON.parse(decodeURIComponent(sessionCookie.value)).sessionId;
+            sessionId = JSON.parse(
+                decodeURIComponent(sessionCookie.value)
+            ).sessionId;
         } catch {
             sessionId = sessionCookie.value;
         }
@@ -223,13 +252,17 @@ async function main() {
             results.push(r);
             const firstOk = r.posts.find((p) => p.status === 200);
             const reason = !firstOk
-                ? `no 200 POST to ${r.monitorId}${r.error ? ` (${r.error})` : ''}`
+                ? `no 200 POST to ${r.monitorId}${
+                      r.error ? ` (${r.error})` : ''
+                  }`
                 : !r.sawSessionStart
-                  ? `200 POST present but no session_start_event — session isolation failed`
-                  : '';
+                ? `200 POST present but no session_start_event — session isolation failed`
+                : '';
             console.log(
                 r.success
-                    ? `✅ ${firstOk.status} (${firstOk.signing}) sessionStart=yes session=${r.sessionId ?? '?'}`
+                    ? `✅ ${firstOk.status} (${
+                          firstOk.signing
+                      }) sessionStart=yes session=${r.sessionId ?? '?'}`
                     : `❌ ${reason}`
             );
         }
@@ -238,7 +271,14 @@ async function main() {
     }
 
     mkdirSync(dirname(OUT), { recursive: true });
-    writeFileSync(OUT, JSON.stringify({ generatedAt: new Date().toISOString(), results }, null, 2));
+    writeFileSync(
+        OUT,
+        JSON.stringify(
+            { generatedAt: new Date().toISOString(), results },
+            null,
+            2
+        )
+    );
     console.log(`\nResults written: ${OUT}`);
 
     const failed = results.filter((r) => !r.success);
