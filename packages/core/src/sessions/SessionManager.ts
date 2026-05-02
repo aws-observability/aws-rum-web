@@ -1,6 +1,5 @@
 import { storeCookie, getCookie } from '../utils/cookies-utils';
 
-import { v4 } from 'uuid';
 import { Config, userAgentDataProvider } from '../orchestration/config';
 import { Page, PageManager } from './PageManager';
 import { SESSION_COOKIE_NAME, USER_COOKIE_NAME } from '../utils/constants';
@@ -8,6 +7,7 @@ import { AppMonitorDetails } from '../dispatch/dataplane';
 import { RecordEvent } from '../plugins/types';
 import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
 import { InternalLogger } from '../utils/InternalLogger';
+import { generateUUID } from '../utils/random';
 
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -176,10 +176,10 @@ export class SessionManager {
             this.userId = '00000000-0000-0000-0000-000000000000';
         } else if (this.useCookies()) {
             userId = this.getUserIdCookie();
-            this.userId = userId ? userId : v4();
+            this.userId = userId ? userId : generateUUID();
             this.createOrRenewUserCookie(userId, this.userExpiry);
         } else {
-            this.userId = v4();
+            this.userId = generateUUID();
         }
     }
 
@@ -244,7 +244,7 @@ export class SessionManager {
         // We ensure the nil session and new session created right after initialization have the same sampling decision.
         // Otherwise, we will always reevaluate the sample decision.
         this.session = {
-            sessionId: v4(),
+            sessionId: generateUUID(),
             record:
                 this.session.sessionId === NIL_UUID
                     ? this.session.record
