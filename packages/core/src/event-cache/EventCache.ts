@@ -1,4 +1,5 @@
 import { Session, SessionManager } from '../sessions/SessionManager';
+import { v4 } from 'uuid';
 import { MetaData } from '../events/meta-data';
 import { Config } from '../orchestration/config';
 import { PageAttributes, PageManager } from '../sessions/PageManager';
@@ -12,7 +13,6 @@ import EventBus, { Topic } from '../event-bus/EventBus';
 import { RecordEvent } from '../plugins/types';
 import { SESSION_START_EVENT_TYPE } from '../plugins/utils/constant';
 import { InternalLogger } from '../utils/InternalLogger';
-import { generateUUID } from '../utils/random';
 
 import { WEB_CLIENT_VERSION } from '../utils/version';
 
@@ -372,7 +372,7 @@ export class EventCache {
         };
 
         const partialEvent = {
-            id: generateUUID(),
+            id: v4(),
             timestamp: new Date(),
             type
         };

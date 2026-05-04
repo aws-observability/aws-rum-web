@@ -9,10 +9,10 @@ import { BeaconHttpHandler } from './BeaconHttpHandler';
 import { FetchHttpHandler } from './FetchHttpHandler';
 import { PutRumEventsRequest } from './dataplane';
 import { Config } from '../orchestration/config';
+import { v4 } from 'uuid';
 import { RetryHttpHandler } from './RetryHttpHandler';
 import { InternalLogger } from '../utils/InternalLogger';
 import { CRED_KEY, IDENTITY_KEY } from '../utils/constants';
-import { generateUUID } from '../utils/random';
 
 type SendFunction = (
     putRumEventsRequest: PutRumEventsRequest
@@ -325,7 +325,7 @@ export class Dispatch {
 
     private createRequest(flush = false): PutRumEventsRequest {
         return {
-            BatchId: generateUUID(),
+            BatchId: v4(),
             AppMonitorDetails: this.eventCache.getAppMonitorDetails(),
             UserDetails: this.eventCache.getUserDetails(),
             SessionMetadata: JSON.stringify(
