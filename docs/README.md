@@ -15,7 +15,7 @@ JavaScript library for real user monitoring on web apps. Captures page load timi
 ## Packages
 
 -   **[Packages overview](./concepts/packages.md)** — `aws-rum-web` vs `@aws-rum/web-slim` vs `@aws-rum/web-core`.
--   **[`@aws-rum/web-slim`](./packages/slim.md)** — ~10 KB gzipped build. BYO auth, explicit plugin loading.
+-   **[`@aws-rum/web-slim`](../packages/slim/README.md)** — ~10 KB gzipped build. BYO auth, explicit plugin loading.
 
 ## Concepts
 

@@ -2,7 +2,7 @@
 
 Slim is a smaller, imperative build of the RUM web client — ~10 KB gzipped vs ~50 KB for the full distribution. Migrating is mostly a matter of changing the import and doing explicitly what the full build did implicitly.
 
-If you haven't already, skim [`packages/slim.md`](./packages/slim.md) for the full picture of what slim does and doesn't include.
+If you haven't already, skim the [`@aws-rum/web-slim` README](../packages/slim/README.md) for the full picture of what slim does and doesn't include.
 
 ## TL;DR
 
@@ -160,7 +160,7 @@ Verify the same way as a fresh install: open the app, trigger a page view or thr
 
 ## See also
 
--   [`packages/slim.md`](./packages/slim.md) — full slim reference
+-   [`@aws-rum/web-slim` README](../packages/slim/README.md) — full slim reference
 -   [`concepts/packages.md`](./concepts/packages.md) — slim vs full vs core
 -   [`reference/api.md`](./reference/api.md) — API reference (both builds)
 -   [`configuration.md`](./configuration.md) — every config option

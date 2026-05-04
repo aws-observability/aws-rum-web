@@ -30,6 +30,10 @@
         "dist/",
         "index.d.ts"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aws-observability/aws-rum-web.git"
+    },
     "scripts": {
         "pretest": "npm run build:schemas",
         "test": "jest -c ../../jest.unit.config.js",
