@@ -136,5 +136,5 @@ The resource-policy flow and the unsigned proxy flow don't cache anything — th
 ## See also
 
 -   [`troubleshooting`](../cdn_troubleshooting.md) — 403 causes and fixes.
--   [`packages/slim.md`](../packages/slim.md) — the resource-policy flow pairs naturally with the slim distribution: unsigned + no Cognito = the smallest possible bundle.
+-   [`@aws-rum/web-slim`](../../packages/slim/README.md) — the resource-policy flow pairs naturally with the slim distribution: unsigned + no Cognito = the smallest possible bundle.
 -   [Attach a resource-based policy to an AppMonitor](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-resource-policy.html) — AWS user guide.
