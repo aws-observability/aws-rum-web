@@ -16,6 +16,7 @@ const recordEvent = jest.fn();
 const addSessionAttributes = jest.fn();
 const setAwsCredentials = jest.fn();
 const addPlugin = jest.fn();
+const clearEventMetadataHook = jest.fn();
 
 jest.mock('../src/orchestration/Orchestration', () => ({
     Orchestration: jest.fn().mockImplementation(() => ({
@@ -31,7 +32,8 @@ jest.mock('../src/orchestration/Orchestration', () => ({
         recordEvent,
         addSessionAttributes,
         setAwsCredentials,
-        addPlugin
+        addPlugin,
+        clearEventMetadataHook
     }))
 }));
 
@@ -156,7 +158,47 @@ describe('Slim CommandQueue tests', () => {
             c: 'recordEvent',
             p: { type: 'custom', data: { key: 1 } }
         });
-        expect(recordEvent).toHaveBeenCalledWith('custom', { key: 1 });
+        expect(recordEvent).toHaveBeenCalledWith(
+            'custom',
+            { key: 1 },
+            undefined
+        );
+    });
+
+    test('recordEvent forwards optional metadata', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({
+            c: 'recordEvent',
+            p: { type: 'custom', data: { key: 1 }, metadata: { tier: 'beta' } }
+        });
+        expect(recordEvent).toHaveBeenCalledWith(
+            'custom',
+            { key: 1 },
+            { tier: 'beta' }
+        );
+    });
+
+    test('recordEvent rejects non-object metadata', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await expect(
+            cq.push({
+                c: 'recordEvent',
+                p: { type: 'custom', data: {}, metadata: 'oops' }
+            })
+        ).rejects.toThrow('IncorrectParametersException');
+    });
+
+    test('recordEvent rejects array metadata', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await expect(
+            cq.push({
+                c: 'recordEvent',
+                p: { type: 'custom', data: {}, metadata: ['a'] }
+            })
+        ).rejects.toThrow('IncorrectParametersException');
     });
 
     test('recordEvent throws for invalid payload', async () => {
@@ -165,6 +207,13 @@ describe('Slim CommandQueue tests', () => {
         await expect(
             cq.push({ c: 'recordEvent', p: 'invalid' })
         ).rejects.toThrow('IncorrectParametersException');
+    });
+
+    test('clearEventMetadataHook delegates to orchestration', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'clearEventMetadataHook', p: undefined });
+        expect(clearEventMetadataHook).toHaveBeenCalled();
     });
 
     test('queued commands are executed on init', async () => {

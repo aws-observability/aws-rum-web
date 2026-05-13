@@ -11,6 +11,12 @@ Quick link:
     cwr('recordPageView', '/home');
     cwr('recordError', e);
     cwr('recordEvent', { type: 'my_event', data: { k: 'v' } });
+    cwr('recordEvent', {
+        type: 'my_event',
+        data: { k: 'v' },
+        metadata: { tier: 'beta' }
+    });
     cwr('addSessionAttributes', { appVersion: '1.2.3' });
+    cwr('clearEventMetadataHook');
 </script>
 ```

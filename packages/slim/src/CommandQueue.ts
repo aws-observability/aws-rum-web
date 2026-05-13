@@ -46,10 +46,25 @@ export class CommandQueue {
                 typeof payload.type === 'string' &&
                 typeof payload.data === 'object'
             ) {
-                this.orchestration.recordEvent(payload.type, payload.data);
+                if (
+                    payload.metadata !== undefined &&
+                    (typeof payload.metadata !== 'object' ||
+                        payload.metadata === null ||
+                        Array.isArray(payload.metadata))
+                ) {
+                    throw new Error('IncorrectParametersException');
+                }
+                this.orchestration.recordEvent(
+                    payload.type,
+                    payload.data,
+                    payload.metadata
+                );
             } else {
                 throw new Error('IncorrectParametersException');
             }
+        },
+        clearEventMetadataHook: (): void => {
+            this.orchestration.clearEventMetadataHook();
         },
         dispatch: (): void => {
             this.orchestration.dispatch();

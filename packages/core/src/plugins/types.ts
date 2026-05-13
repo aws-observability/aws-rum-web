@@ -2,7 +2,17 @@ import { Config } from '../orchestration/config';
 import { Session } from '../sessions/SessionManager';
 import EventBus, { Topic } from '../event-bus/EventBus';
 
-export type RecordEvent = (type: string, eventData: object) => void;
+export type EventMetadata = { [k: string]: string | number | boolean };
+export type EventMetadataHook = (
+    eventType: string,
+    eventData: object,
+    currentMetadata: Readonly<EventMetadata>
+) => EventMetadata | undefined | void;
+export type RecordEvent = (
+    type: string,
+    eventData: object,
+    metadata?: EventMetadata
+) => void;
 export type RecordPageView = (pageId: string) => void;
 export type GetSession = () => Session | undefined;
 
