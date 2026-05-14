@@ -7,7 +7,7 @@ export type EventMetadataHook = (
     eventType: string,
     eventData: object,
     currentMetadata: Readonly<EventMetadata>
-) => EventMetadata | undefined | void;
+) => EventMetadata | void;
 export type RecordEvent = (
     type: string,
     eventData: object,

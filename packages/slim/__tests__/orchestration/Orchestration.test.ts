@@ -3,6 +3,7 @@ import { Dispatch } from '@aws-rum/web-core/dispatch/Dispatch';
 import { EventCache } from '@aws-rum/web-core/event-cache/EventCache';
 import { PluginManager } from '@aws-rum/web-core/plugins/PluginManager';
 import { performanceEvent } from '@aws-rum/web-core/test-utils/mock-data';
+import type { EventMetadataHook } from '@aws-rum/web-core';
 
 global.fetch = jest.fn();
 
@@ -256,7 +257,7 @@ describe('Slim Orchestration tests', () => {
 
     test('setEventMetadataHook delegates to eventCache', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
-        const hook = jest.fn();
+        const hook: EventMetadataHook = jest.fn(() => ({}));
         orch.setEventMetadataHook(hook);
         expect(setEventMetadataHook).toHaveBeenCalledWith(hook);
     });

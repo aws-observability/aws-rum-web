@@ -463,15 +463,20 @@ export class EventCache {
         let hookOutput: EventMetadata = {};
         if (this.eventMetadataHook) {
             try {
-                const result = this.eventMetadataHook(type, details, {
+                // Freeze a shallow copy so a hook can't mutate page state. The
+                // hook's RETURN value is sanitized below — the input view
+                // exposes full page state (including reserved keys like pageId).
+                const hookCtx = Object.freeze({
                     ...pageAttrs
-                } as unknown as EventMetadata);
+                }) as unknown as Readonly<EventMetadata>;
+                const result = this.eventMetadataHook(type, details, hookCtx);
                 if (result) {
                     hookOutput = sanitizeMetadata(result, 'hook');
                 }
             } catch (err) {
                 InternalLogger.warn(
-                    `eventMetadataHook threw for type "${type}"; dropping hook output for this event. ${err}`
+                    `eventMetadataHook threw for type "${type}"; dropping hook output for this event.`,
+                    err
                 );
             }
         }

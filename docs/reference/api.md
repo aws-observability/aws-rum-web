@@ -97,7 +97,7 @@ The web client also records a set of [default attributes](https://github.com/aws
 | --- | --- | --- | --- |
 | `type` | String | **required** | Event type identifier. Must match `^[a-zA-Z0-9_.-]{1,256}$`. |
 | `data` | Object | **required** | JavaScript object, serialized as JSON. Each event (including metadata) must be under 6 KB — larger events are dropped. |
-| `metadata` | [MetadataAttributes](../configuration.md#metadataattributes) | _(optional)_ | Per-call metadata merged into the event's metadata (highest precedence: overrides hook output and page attributes). The `aws:` namespace and reserved page-state keys (`pageId`, `parentPageId`, `interaction`, `pageTags`, `title`) are dropped with a warning. |
+| `metadata` | [MetadataAttributes](../configuration.md#metadataattributes) | _(optional)_ | Per-call metadata merged into the event's metadata (highest precedence: overrides hook output and page attributes). Values must be `string`, `number`, or `boolean`; non-primitive values, the `aws:` namespace, and reserved page-state keys (`pageId`, `parentPageId`, `interaction`, `pageTags`, `title`) are dropped with a warning. |
 
 > **⚠️ Custom events must be enabled on the AppMonitor.** See [Send custom events](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html) in the user guide.
 

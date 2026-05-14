@@ -151,7 +151,7 @@ describe('Slim CommandQueue tests', () => {
         expect(clearCookies).toHaveBeenCalled();
     });
 
-    test('recordEvent validates payload shape', async () => {
+    test('recordEvent forwards type and data with undefined metadata', async () => {
         const cq = new CommandQueue();
         await cq.init(createAwsRumInit());
         await cq.push({
@@ -197,6 +197,17 @@ describe('Slim CommandQueue tests', () => {
             cq.push({
                 c: 'recordEvent',
                 p: { type: 'custom', data: {}, metadata: ['a'] }
+            })
+        ).rejects.toThrow('IncorrectParametersException');
+    });
+
+    test('recordEvent rejects null metadata', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await expect(
+            cq.push({
+                c: 'recordEvent',
+                p: { type: 'custom', data: {}, metadata: null }
             })
         ).rejects.toThrow('IncorrectParametersException');
     });

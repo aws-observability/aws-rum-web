@@ -865,8 +865,9 @@ describe('EventCache tests', () => {
                 applicationAttributes: { 'aws:client': 'spoof', app: 'web' }
             });
             const common = ec.getCommonMetadata() as Record<string, any>;
-            // The real aws:client comes from installationMethod
-            expect(common['aws:client']).not.toBe('spoof');
+            // The real aws:client comes from installationMethod (the test
+            // helper's DEFAULT_CONFIG uses 'arw-module').
+            expect(common['aws:client']).toBe('arw-module');
             expect(common.app).toBe('web');
             expect(warnSpy).toHaveBeenCalled();
         });
