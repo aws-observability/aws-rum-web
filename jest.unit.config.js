@@ -25,6 +25,14 @@ module.exports = {
         '!packages/*/src/**/loader/**',
         '!packages/*/src/**/mock-*'
     ],
+    coverageThreshold: {
+        global: {
+            lines: 90,
+            statements: 90,
+            functions: 88,
+            branches: 86
+        }
+    },
     testEnvironmentOptions: {
         url: 'https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#feedback'
     },
