@@ -46,10 +46,29 @@ export class CommandQueue {
                 typeof payload.type === 'string' &&
                 typeof payload.data === 'object'
             ) {
-                this.orchestration.recordEvent(payload.type, payload.data);
+                if (
+                    payload.metadata !== undefined &&
+                    (typeof payload.metadata !== 'object' ||
+                        payload.metadata === null ||
+                        Array.isArray(payload.metadata))
+                ) {
+                    throw new Error('IncorrectParametersException');
+                }
+                this.orchestration.recordEvent(
+                    payload.type,
+                    payload.data,
+                    payload.metadata
+                );
             } else {
                 throw new Error('IncorrectParametersException');
             }
+        },
+        // setEventMetadataHook is intentionally NOT exposed: it requires a
+        // function arg, which can't be serialized through the snippet command
+        // queue. clearEventMetadataHook is exposed so that snippet consumers
+        // can drop a hook registered by an embedded NPM build.
+        clearEventMetadataHook: (): void => {
+            this.orchestration.clearEventMetadataHook();
         },
         dispatch: (): void => {
             this.orchestration.dispatch();

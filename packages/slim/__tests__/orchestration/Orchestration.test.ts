@@ -3,6 +3,7 @@ import { Dispatch } from '@aws-rum/web-core/dispatch/Dispatch';
 import { EventCache } from '@aws-rum/web-core/event-cache/EventCache';
 import { PluginManager } from '@aws-rum/web-core/plugins/PluginManager';
 import { performanceEvent } from '@aws-rum/web-core/test-utils/mock-data';
+import type { EventMetadataHook } from '@aws-rum/web-core';
 
 global.fetch = jest.fn();
 
@@ -25,6 +26,8 @@ const disableEventCache = jest.fn();
 const recordPageView = jest.fn();
 const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
+const setEventMetadataHook = jest.fn();
+const clearEventMetadataHook = jest.fn();
 jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
@@ -32,6 +35,8 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         recordPageView,
         addSessionAttributes,
         recordEvent,
+        setEventMetadataHook,
+        clearEventMetadataHook,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -233,6 +238,33 @@ describe('Slim Orchestration tests', () => {
     test('recordEvent delegates to eventCache', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
         orch.recordEvent('custom.event', { data: 1 });
-        expect(recordEvent).toHaveBeenCalledWith('custom.event', { data: 1 });
+        expect(recordEvent).toHaveBeenCalledWith(
+            'custom.event',
+            { data: 1 },
+            undefined
+        );
+    });
+
+    test('recordEvent forwards optional metadata to eventCache', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.recordEvent('custom.event', { data: 1 }, { tier: 'beta' });
+        expect(recordEvent).toHaveBeenCalledWith(
+            'custom.event',
+            { data: 1 },
+            { tier: 'beta' }
+        );
+    });
+
+    test('setEventMetadataHook delegates to eventCache', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        const hook: EventMetadataHook = jest.fn(() => ({}));
+        orch.setEventMetadataHook(hook);
+        expect(setEventMetadataHook).toHaveBeenCalledWith(hook);
+    });
+
+    test('clearEventMetadataHook delegates to eventCache', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.clearEventMetadataHook();
+        expect(clearEventMetadataHook).toHaveBeenCalled();
     });
 });

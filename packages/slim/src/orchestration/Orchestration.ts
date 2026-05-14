@@ -10,6 +10,8 @@ import {
     type Config,
     type PartialConfig as CorePartialConfig,
     type CookieAttributes,
+    type EventMetadata,
+    type EventMetadataHook,
     INSTALL_MODULE,
     EventBus,
     Topic,
@@ -187,6 +189,20 @@ export class Orchestration {
         this.eventCache.addSessionAttributes(sessionAttributes);
     }
 
+    /**
+     * Register a hook that decorates every recorded event's metadata.
+     * Replaces any previously set hook. Manual metadata passed to
+     * `recordEvent` always wins over hook output.
+     */
+    public setEventMetadataHook(hook: EventMetadataHook): void {
+        this.eventCache.setEventMetadataHook(hook);
+    }
+
+    /** Remove a previously registered event metadata hook. */
+    public clearEventMetadataHook(): void {
+        this.eventCache.clearEventMetadataHook();
+    }
+
     public addPlugin(plugin: Plugin): void {
         this.pluginManager.addPlugin(plugin);
     }
@@ -246,8 +262,12 @@ export class Orchestration {
         this.pluginManager.updatePlugin('com.amazonaws.rum.dom-event', events);
     }
 
-    public recordEvent(eventType: string, eventData: object) {
-        this.eventCache.recordEvent(eventType, eventData);
+    public recordEvent(
+        eventType: string,
+        eventData: object,
+        metadata?: EventMetadata
+    ) {
+        this.eventCache.recordEvent(eventType, eventData, metadata);
     }
 
     protected initDispatch(region: string, applicationId: string): Dispatch {

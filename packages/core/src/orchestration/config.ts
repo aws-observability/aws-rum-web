@@ -1,5 +1,6 @@
 import { Plugin } from '../plugins/Plugin';
 import { ClientBuilder } from '../dispatch/Dispatch';
+import { EventMetadata } from '../plugins/types';
 
 export type PageIdFormat = 'PATH' | 'HASH' | 'PATH_AND_HASH';
 
@@ -42,6 +43,7 @@ export interface Config {
     compressionStrategy: CompressionStrategy;
     cookieAttributes: CookieAttributes;
     sessionAttributes: { [k: string]: string | number | boolean };
+    applicationAttributes?: EventMetadata;
     debug: boolean;
     disableAutoPageView: boolean;
     dispatchInterval: number;

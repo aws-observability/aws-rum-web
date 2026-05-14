@@ -1,4 +1,5 @@
 import { EventCache } from '@aws-rum/web-core/event-cache/EventCache';
+import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
 import { advanceTo } from 'jest-date-mock';
 import {
     createEventCache,
@@ -715,5 +716,223 @@ describe('EventCache tests', () => {
         eventCache.getEventBatch();
 
         expect(hook).not.toHaveBeenCalled();
+    });
+
+    test('getSession returns session when current URL is allowed', () => {
+        expect(eventCache.getSession()).toMatchObject({ sessionId: 'a' });
+    });
+
+    test('getSession returns undefined when current URL is not allowed', () => {
+        jest.spyOn(eventCache as any, 'isCurrentUrlAllowed').mockReturnValue(
+            false
+        );
+        expect(eventCache.getSession()).toBeUndefined();
+    });
+
+    test('getAppMonitorDetails returns the configured details', () => {
+        expect(eventCache.getAppMonitorDetails()).toEqual({
+            id: 'application123',
+            version: '1.2'
+        });
+    });
+
+    test('getUserDetails returns userId and sessionId from sessionManager', () => {
+        expect(eventCache.getUserDetails()).toEqual({
+            userId: 'b',
+            sessionId: 'a'
+        });
+    });
+
+    test('hasEvents warns when sessionLimitExceeded and session is sampled', () => {
+        const warnSpy = jest
+            .spyOn(InternalLogger, 'warn')
+            .mockImplementation(() => undefined);
+        mockEventLimit = 1;
+        const ec = createDefaultEventCache();
+        ec.recordEvent(EVENT1_SCHEMA, {});
+        ec.recordEvent(EVENT1_SCHEMA, {});
+        samplingDecision = true;
+        ec.hasEvents();
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('session limit has exceeded')
+        );
+        warnSpy.mockRestore();
+    });
+
+    test('hasEvents warns when sessionLimitExceeded and session is not sampled', () => {
+        const warnSpy = jest
+            .spyOn(InternalLogger, 'warn')
+            .mockImplementation(() => undefined);
+        mockEventLimit = 1;
+        const ec = createDefaultEventCache();
+        ec.recordEvent(EVENT1_SCHEMA, {});
+        ec.recordEvent(EVENT1_SCHEMA, {});
+        samplingDecision = false;
+        ec.hasEvents();
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('current session is not sampled')
+        );
+        warnSpy.mockRestore();
+    });
+
+    describe('metadata layers', () => {
+        let warnSpy: jest.SpyInstance;
+        beforeEach(() => {
+            warnSpy = jest
+                .spyOn(InternalLogger, 'warn')
+                .mockImplementation(() => undefined);
+        });
+        afterEach(() => {
+            warnSpy.mockRestore();
+        });
+
+        test('manual metadata appears on event', () => {
+            eventCache.recordEvent(EVENT1_SCHEMA, {}, { foo: 'bar', n: 1 });
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta).toMatchObject({ foo: 'bar', n: 1 });
+        });
+
+        test('reserved page key in manual metadata is dropped with warn', () => {
+            eventCache.recordPageView({ pageId: '/real' });
+            eventCache.recordEvent(
+                EVENT1_SCHEMA,
+                {},
+                { pageId: 'spoof', foo: 'ok' }
+            );
+            const meta = JSON.parse(eventCache.getEventBatch()[1].metadata);
+            expect(meta.pageId).toBe('/real');
+            expect(meta.foo).toBe('ok');
+            expect(warnSpy).toHaveBeenCalled();
+        });
+
+        test('aws:* prefixed manual metadata is dropped with warn', () => {
+            eventCache.recordEvent(
+                EVENT1_SCHEMA,
+                {},
+                { 'aws:client': 'spoof', kept: 'ok' }
+            );
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta['aws:client']).toBeUndefined();
+            expect(meta.kept).toBe('ok');
+            expect(warnSpy).toHaveBeenCalled();
+        });
+
+        test('non-primitive manual metadata value is dropped with warn', () => {
+            eventCache.recordEvent(
+                EVENT1_SCHEMA,
+                {},
+                { obj: { x: 1 } as any, kept: 'ok' }
+            );
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta.obj).toBeUndefined();
+            expect(meta.kept).toBe('ok');
+            expect(warnSpy).toHaveBeenCalled();
+        });
+
+        test('Config.applicationAttributes is included in getCommonMetadata', () => {
+            const ec = createEventCache({
+                applicationAttributes: { app: 'web', region: 'us-west-2' }
+            });
+            expect(ec.getCommonMetadata()).toMatchObject({
+                app: 'web',
+                region: 'us-west-2'
+            });
+        });
+
+        test('application attributes win over session attributes', () => {
+            getAttributes.mockReturnValueOnce({ app: 'session' });
+            const ec = createEventCache({
+                applicationAttributes: { app: 'web', region: 'us-west-2' }
+            });
+            expect(ec.getCommonMetadata()).toMatchObject({
+                app: 'web',
+                region: 'us-west-2'
+            });
+        });
+
+        test('applicationAttributes overrides auto-collected domain', () => {
+            getAttributes.mockReturnValueOnce({ domain: 'auto.example.com' });
+            const ec = createEventCache({
+                applicationAttributes: { domain: 'pinned.example.com' }
+            });
+            expect(ec.getCommonMetadata()).toMatchObject({
+                domain: 'pinned.example.com'
+            });
+        });
+
+        test('aws:* keys in applicationAttributes are dropped at sanitize', () => {
+            const ec = createEventCache({
+                applicationAttributes: { 'aws:client': 'spoof', app: 'web' }
+            });
+            const common = ec.getCommonMetadata() as Record<string, any>;
+            // The real aws:client comes from installationMethod (the test
+            // helper's DEFAULT_CONFIG uses 'arw-module').
+            expect(common['aws:client']).toBe('arw-module');
+            expect(common.app).toBe('web');
+            expect(warnSpy).toHaveBeenCalled();
+        });
+
+        test('event metadata hook decorates events', () => {
+            eventCache.setEventMetadataHook(() => ({ env: 'prod' }));
+            eventCache.recordEvent(EVENT1_SCHEMA, {});
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta.env).toBe('prod');
+        });
+
+        test('hook output is overridden by manual metadata', () => {
+            eventCache.setEventMetadataHook(() => ({ foo: 'hook' }));
+            eventCache.recordEvent(EVENT1_SCHEMA, {}, { foo: 'manual' });
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta.foo).toBe('manual');
+        });
+
+        test('hook overrides page attributes for non-reserved keys', () => {
+            eventCache.recordPageView({
+                pageId: '/p',
+                pageAttributes: { tier: 'page' }
+            });
+            eventCache.setEventMetadataHook(() => ({ tier: 'hook' }));
+            eventCache.recordEvent(EVENT1_SCHEMA, {});
+            const meta = JSON.parse(eventCache.getEventBatch()[1].metadata);
+            expect(meta.tier).toBe('hook');
+        });
+
+        test('hook reserved-key output is dropped with warn', () => {
+            eventCache.recordPageView({ pageId: '/real' });
+            eventCache.setEventMetadataHook(() => ({
+                pageId: 'spoof',
+                kept: 'ok'
+            }));
+            eventCache.recordEvent(EVENT1_SCHEMA, {});
+            const meta = JSON.parse(eventCache.getEventBatch()[1].metadata);
+            expect(meta.pageId).toBe('/real');
+            expect(meta.kept).toBe('ok');
+            expect(warnSpy).toHaveBeenCalled();
+        });
+
+        test('hook that throws is caught with warn and event still records', () => {
+            eventCache.setEventMetadataHook(() => {
+                throw new Error('boom');
+            });
+            eventCache.recordEvent(EVENT1_SCHEMA, {}, { manual: 'ok' });
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta.manual).toBe('ok');
+            expect(warnSpy).toHaveBeenCalled();
+        });
+
+        test('clearEventMetadataHook removes the hook', () => {
+            eventCache.setEventMetadataHook(() => ({ env: 'prod' }));
+            eventCache.clearEventMetadataHook();
+            eventCache.recordEvent(EVENT1_SCHEMA, {});
+            const meta = JSON.parse(eventCache.getEventBatch()[0].metadata);
+            expect(meta.env).toBeUndefined();
+        });
+
+        test('recordCandidate honors metadata hook and manual metadata', () => {
+            eventCache.setEventMetadataHook(() => ({ env: 'prod' }));
+            eventCache.recordCandidate(EVENT1_SCHEMA, {}, { foo: 'manual' });
+            const meta = JSON.parse(eventCache.getEventBatch(true)[0].metadata);
+            expect(meta).toMatchObject({ env: 'prod', foo: 'manual' });
+        });
     });
 });

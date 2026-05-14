@@ -22,7 +22,9 @@ export { type Plugin } from './plugins/Plugin';
 export { InternalPlugin } from './plugins/InternalPlugin';
 export {
     type PluginContext,
-    type InternalPluginContext
+    type InternalPluginContext,
+    type EventMetadata,
+    type EventMetadataHook
 } from './plugins/types';
 export { PluginManager } from './plugins/PluginManager';
 export { EventCache } from './event-cache/EventCache';

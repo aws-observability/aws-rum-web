@@ -32,7 +32,57 @@ cwr('recordEvent', {type: 'your_event_type', data: {field1: 1, field2: 2}})
 awsRum.recordEvent('your_event_type', {field1: 1, field2: 2})
 ```
 
-See [API reference: Event](./reference/api.md#event).
+### Attach per-call metadata
+
+Pass an optional metadata object to tag a single event with key/value attributes that are queryable in CloudWatch RUM. Manual metadata wins over the hook output and page attributes.
+
+```
+// CDN
+cwr('recordEvent', {
+    type: 'checkout.completed',
+    data: { total: 42 },
+    metadata: { tier: 'beta', traceId: 'abc-9' }
+});
+
+// NPM
+awsRum.recordEvent('checkout.completed', { total: 42 }, { tier: 'beta', traceId: 'abc-9' });
+```
+
+### Decorate every event with a metadata hook
+
+Register a hook to attach context known only at runtime (current route, A/B bucket, feature flag) to every recorded event without per-call boilerplate. The hook receives `(eventType, eventData, currentMetadata)` and returns an `EventMetadata` object. Replaces any previously set hook.
+
+```typescript
+import type { EventMetadata } from 'aws-rum-web';
+
+awsRum.setEventMetadataHook(
+    (eventType, eventData, currentMetadata): EventMetadata => ({
+        route: window.location.pathname,
+        abBucket: window.localStorage.getItem('ab-bucket') ?? 'control'
+    })
+);
+
+// Later, to remove the hook:
+awsRum.clearEventMetadataHook();
+```
+
+If the hook throws, the SDK logs a warning and drops the hook's output for that event — the event still records with page attributes and any manual metadata.
+
+### Pin application-wide attributes (and override auto-collected values)
+
+Use `applicationAttributes` for immutable, set-once values like the deployed `domain`, app name, or build ID. The web client freezes this object at construction. Unlike `sessionAttributes`, `applicationAttributes` **wins over** session attributes and auto-collected attributes (`domain`, `browserName`, etc.) on key collision — making it the right place to pin a CDN-fronted hostname when `window.location.hostname` would otherwise be auto-collected as the `domain`.
+
+```typescript
+const awsRum = new AwsRum(applicationId, applicationVersion, region, {
+    applicationAttributes: {
+        domain: 'my-cdn.example.com', // overrides auto-collected window.location.hostname
+        appName: 'checkout',
+        buildId: process.env.BUILD_ID!
+    }
+});
+```
+
+See [API reference: Event](./reference/api.md#event) for the full metadata-precedence chain.
 
 ## Record custom events using a plugin
 

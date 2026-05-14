@@ -43,6 +43,14 @@ jobs:
             - name: Run Unit Tests
               run: npm test
 
+            - name: Upload coverage report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: coverage/
+                  retention-days: 14
+
     integ-test:
         name: Run Integ Tests (${{ matrix.browser }} on ${{ matrix.os }})
         needs: unit-test
