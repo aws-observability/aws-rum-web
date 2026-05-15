@@ -22,6 +22,36 @@ A **session** is a period of activity by a single anonymous user. Every RUM even
 
 Sampling is applied to the session, not to individual events. Once a session is in, all of its events are recorded up to `sessionEventLimit` (default 200). Set `sessionEventLimit: 0` to disable the per-session cap.
 
+## Starting a session at runtime
+
+Most hosts let the SDK manage session boundaries automatically — a session expires after `sessionLengthSeconds` of inactivity and the next event mints a new one. Some hosts, however, know about boundaries the SDK can't detect: a long-lived kiosk page that hands off between users at sign-out, a single-page app that completes an authentication flow mid-session, or a leader instance that wants to rotate the shared session ID across all followers atomically.
+
+`startSession()` begins a new session immediately:
+
+```typescript
+// Mint a fresh session — fresh UUID, fresh sampling roll, session_start emitted.
+const newId = awsRum.startSession();
+```
+
+By default the call mints a new UUID, re-rolls the sampling decision against `sessionSampleRate`, resets `eventCount`, disengages session manual mode (so the SDK resumes auto-rotation on expiry), and emits a `session_start` event subject to `suppressSessionStartEvent`. The new session ID is returned.
+
+Optional overrides let a leader hand the SDK a pre-chosen ID and rotate the user identity in the same call:
+
+```typescript
+// Leader-driven rotation: pick the new IDs, then broadcast them to followers.
+const newSessionId = awsRum.startSession({
+    sessionId: 'host-chosen-uuid',
+    userId: 'host-chosen-user-uuid'
+});
+// host.broadcast({ sessionId: newSessionId, userId: '...' })
+```
+
+When `sessionId` is supplied, manual mode engages (same stickiness as `setSessionId()`) so the SDK never auto-mints again until the host calls `startSession()` without an override. When `userId` is supplied, manual mode engages for the user identity (same stickiness as `setUserId()`); no `user_start` event exists, so the rotation is silent.
+
+A `session_start` event IS emitted on every `startSession()` call (subject to `suppressSessionStartEvent`) — this is the leader-side rotation API. Followers should keep using `setSessionId()`, which adopts an ID without emitting `session_start` and so cannot duplicate the leader's start event.
+
+Empty-string overrides are rejected with a warn log; `startSession({ sessionId: '' })` falls back to minting a fresh UUID, and `startSession({ userId: '' })` preserves the existing user identity.
+
 ## User identity
 
 In addition to the session ID, the web client persists an anonymous **user ID** in the `cwr_u` cookie for `userIdRetentionDays` days (default 30). This lets CloudWatch RUM count returning visitors.

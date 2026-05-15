@@ -30,6 +30,7 @@ const setEventMetadataHook = jest.fn();
 const clearEventMetadataHook = jest.fn();
 const getSessionId = jest.fn();
 const setSessionId = jest.fn();
+const startSession = jest.fn();
 const getUserId = jest.fn();
 const setUserId = jest.fn();
 jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
@@ -43,6 +44,7 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         clearEventMetadataHook,
         getSessionId,
         setSessionId,
+        startSession,
         getUserId,
         setUserId,
         setPluginFlushHook: jest.fn()
@@ -340,5 +342,22 @@ describe('Slim Orchestration tests', () => {
         });
         const config = (EventCache as any).mock.calls[0][1];
         expect(config.userId).toBe('seeded-user');
+    });
+
+    test('startSession delegates to eventCache with no args', async () => {
+        startSession.mockReturnValueOnce('new-session-id');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        const result = orch.startSession();
+        expect(result).toBe('new-session-id');
+        expect(startSession).toHaveBeenCalledWith(undefined);
+    });
+
+    test('startSession forwards sessionId and userId overrides to eventCache', async () => {
+        startSession.mockReturnValueOnce('shared-session');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        const opts = { sessionId: 'shared-session', userId: 'shared-user' };
+        const result = orch.startSession(opts);
+        expect(result).toBe('shared-session');
+        expect(startSession).toHaveBeenCalledWith(opts);
     });
 });

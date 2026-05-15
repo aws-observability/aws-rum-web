@@ -222,6 +222,27 @@ export class Orchestration {
     }
 
     /**
+     * Begin a new session immediately. Use at logical session boundaries
+     * the SDK can't detect on its own — sign-in, sign-out, kiosk handoff.
+     * Returns the new session ID for broadcast to follower contexts.
+     *
+     * No args: mints a fresh UUID, re-rolls sampling, disengages session
+     * manual mode, and emits session_start (subject to
+     * suppressSessionStartEvent).
+     *
+     * Optional `sessionId` adopts a host-chosen ID and engages manual
+     * mode. Optional `userId` rotates the user identity in the same call
+     * (same stickiness as setUserId). Empty-string overrides are rejected
+     * with a warn log; the existing value is preserved.
+     */
+    public startSession(options?: {
+        sessionId?: string;
+        userId?: string;
+    }): string {
+        return this.eventCache.startSession(options);
+    }
+
+    /**
      * Returns the current anonymous user ID. Use to read the leader's
      * user ID for broadcast to follower contexts so a single human is
      * not counted as N anonymous users in CloudWatch RUM.

@@ -26,6 +26,7 @@ import {
     mockFetch
 } from '@aws-rum/web-core/test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '@aws-rum/web-core/plugins/utils/constant';
+import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
 
 global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
@@ -1194,5 +1195,164 @@ describe('SessionManager tests', () => {
         navigatorCookieEnabled = false;
 
         expect(sessionManager.getUserId()).toEqual(adopted);
+    });
+
+    test('startSession mints a fresh sessionId, resets eventCount, and emits session_start', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        });
+
+        const before = sessionManager.getSession().sessionId;
+        sessionManager.incrementSessionEventCount();
+        mockRecord.mockClear();
+
+        const newId = sessionManager.startSession();
+
+        expect(newId).not.toEqual(before);
+        const session = sessionManager.getSession();
+        expect(session.sessionId).toEqual(newId);
+        expect(session.eventCount).toEqual(0);
+        expect(mockRecord).toHaveBeenCalledWith(SESSION_START_EVENT_TYPE, {
+            version: '1.0.0'
+        });
+    });
+
+    test('startSession with no args disengages session manual mode', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: 'seeded-id',
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.startSession();
+        const fresh = sessionManager.getSession().sessionId;
+        expect(fresh).not.toEqual('seeded-id');
+
+        // After expiry, the SDK should auto-rotate (manual mode is off).
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+        const after = sessionManager.getSession().sessionId;
+        expect(after).not.toEqual(fresh);
+        jest.useRealTimers();
+    });
+
+    test('startSession with sessionId override adopts that id and engages manual mode', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.getSession();
+        mockRecord.mockClear();
+
+        const newId = sessionManager.startSession({
+            sessionId: 'host-chosen-id'
+        });
+        expect(newId).toEqual('host-chosen-id');
+        expect(sessionManager.getSession().sessionId).toEqual('host-chosen-id');
+        // session_start IS emitted on the leader-side rotation.
+        expect(mockRecord).toHaveBeenCalledWith(SESSION_START_EVENT_TYPE, {
+            version: '1.0.0'
+        });
+
+        // Manual mode engaged — id stays put across expiry.
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+        expect(sessionManager.getSession().sessionId).toEqual('host-chosen-id');
+        jest.useRealTimers();
+    });
+
+    test('startSession with userId override rotates the user identity silently', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const beforeUser = sessionManager.getUserId();
+        mockRecord.mockClear();
+
+        sessionManager.startSession({ userId: 'new-user-id' });
+
+        expect(sessionManager.getUserId()).toEqual('new-user-id');
+        expect(sessionManager.getUserId()).not.toEqual(beforeUser);
+        // No user_start event exists; only session_start fires.
+        const calls = mockRecord.mock.calls.filter(
+            (c) => c[0] === 'user_start'
+        );
+        expect(calls).toHaveLength(0);
+    });
+
+    test('startSession with both sessionId and userId rotates atomically', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        sessionManager.startSession({
+            sessionId: 'shared-session',
+            userId: 'shared-user'
+        });
+
+        expect(sessionManager.getSession().sessionId).toEqual('shared-session');
+        expect(sessionManager.getUserId()).toEqual('shared-user');
+    });
+
+    test('startSession with empty sessionId override falls back to a fresh mint and warns', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        });
+        const warnSpy = jest
+            .spyOn(InternalLogger, 'warn')
+            .mockImplementation(() => {});
+
+        const before = sessionManager.getSession().sessionId;
+        const newId = sessionManager.startSession({ sessionId: '' });
+
+        expect(newId).not.toEqual('');
+        expect(newId).not.toEqual(before);
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('empty sessionId')
+        );
+        warnSpy.mockRestore();
+    });
+
+    test('startSession with empty userId override warns and preserves existing user', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+        const warnSpy = jest
+            .spyOn(InternalLogger, 'warn')
+            .mockImplementation(() => {});
+
+        const beforeUser = sessionManager.getUserId();
+        sessionManager.startSession({ userId: '' });
+
+        expect(sessionManager.getUserId()).toEqual(beforeUser);
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('empty userId')
+        );
+        warnSpy.mockRestore();
+    });
+
+    test('startSession respects suppressSessionStartEvent', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            suppressSessionStartEvent: true
+        });
+
+        sessionManager.getSession();
+        mockRecord.mockClear();
+
+        sessionManager.startSession();
+
+        expect(mockRecord).not.toHaveBeenCalled();
     });
 });

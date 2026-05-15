@@ -252,6 +252,16 @@ export class EventCache {
     };
 
     /**
+     * Begin a new session immediately. Delegates to SessionManager.
+     */
+    public startSession = (options?: {
+        sessionId?: string;
+        userId?: string;
+    }): string => {
+        return this.sessionManager.startSession(options);
+    };
+
+    /**
      * Returns the current anonymous user ID, or NIL_UUID when cookies are
      * disabled and no manual userId has been seeded.
      */

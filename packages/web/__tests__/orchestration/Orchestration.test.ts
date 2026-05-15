@@ -54,6 +54,7 @@ const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
 const getSessionId = jest.fn();
 const setSessionId = jest.fn();
+const startSession = jest.fn();
 const getUserId = jest.fn();
 const setUserId = jest.fn();
 
@@ -69,6 +70,7 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         isSessionSampled,
         getSessionId,
         setSessionId,
+        startSession,
         getUserId,
         setUserId,
         setPluginFlushHook: jest.fn()
@@ -734,5 +736,19 @@ describe('defaultConfig tests', () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
         orch.setUserId('user-xyz');
         expect(setUserId).toHaveBeenCalledWith('user-xyz');
+    });
+
+    test('web Orchestration inherits startSession from slim', async () => {
+        startSession.mockReturnValueOnce('new-session-id');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        const result = orch.startSession({
+            sessionId: 'shared-session',
+            userId: 'shared-user'
+        });
+        expect(result).toBe('new-session-id');
+        expect(startSession).toHaveBeenCalledWith({
+            sessionId: 'shared-session',
+            userId: 'shared-user'
+        });
     });
 });

@@ -216,6 +216,69 @@ export class SessionManager {
         this.adoptSession(sessionId);
     }
 
+    /**
+     * Begin a new session immediately. Use when the host knows a logical
+     * session boundary has occurred (sign-in, sign-out, kiosk handoff)
+     * and wants the next event to belong to a fresh session.
+     *
+     * Default behavior (no args) mints a fresh UUID, re-rolls sampling,
+     * disengages session manual mode, and emits a session_start event
+     * (subject to suppressSessionStartEvent). Returns the new session ID
+     * for broadcast to follower contexts.
+     *
+     * Optional overrides let a leader hand a pre-chosen ID to the SDK and
+     * rotate the user identity in the same call. `sessionId` adopts that
+     * ID as the new session and engages session manual mode (same
+     * stickiness as setSessionId). session_start is still emitted —
+     * startSession is the leader-side rotation API; followers should keep
+     * using setSessionId for silent adoption. `userId` rotates the user
+     * identity (same stickiness as setUserId). No user_start event exists,
+     * so the rotation is silent regardless.
+     *
+     * Empty-string overrides are rejected with a warn log; the existing
+     * value is preserved and the rest of the call still proceeds.
+     */
+    public startSession(options?: {
+        sessionId?: string;
+        userId?: string;
+    }): string {
+        if (options?.userId !== undefined) {
+            if (!options.userId) {
+                InternalLogger.warn(
+                    'startSession called with empty userId; ignoring user rotation.'
+                );
+            } else {
+                this.isUserIdManual = true;
+                if (options.userId !== this.userId) {
+                    this.adoptUser(options.userId);
+                }
+            }
+        }
+
+        if (options?.sessionId !== undefined) {
+            if (!options.sessionId) {
+                InternalLogger.warn(
+                    'startSession called with empty sessionId; minting a fresh session.'
+                );
+                this.isSessionIdManual = false;
+                this.createSession();
+            } else {
+                this.isSessionIdManual = true;
+                this.adoptSession(options.sessionId);
+                if (!this.config.suppressSessionStartEvent) {
+                    this.recordEvent(SESSION_START_EVENT_TYPE, {
+                        version: '1.0.0'
+                    });
+                }
+            }
+        } else {
+            this.isSessionIdManual = false;
+            this.createSession();
+        }
+
+        return this.session.sessionId;
+    }
+
     public getUserId(): string {
         if (this.isUserIdManual) {
             // Manual mode: host owns the identity. Return it regardless of
