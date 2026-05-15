@@ -937,7 +937,13 @@ describe('SessionManager tests', () => {
         const cookieSessionId = uuid.v4();
         storeCookie(
             SESSION_COOKIE_NAME,
-            btoa(JSON.stringify({ sessionId: cookieSessionId, record: true })),
+            btoa(
+                JSON.stringify({
+                    sessionId: cookieSessionId,
+                    record: true,
+                    eventCount: 0
+                })
+            ),
             config.cookieAttributes,
             SESSION_COOKIE_EXPIRES
         );
@@ -1030,6 +1036,7 @@ describe('SessionManager tests', () => {
         expect(sessionB.sessionId).toEqual(seeded);
         // Frozen renewal must not fire session_start.
         expect(mockRecord).not.toHaveBeenCalled();
+        jest.useRealTimers();
     });
 
     test('when seeded host calls setSessionId then subsequent getSession returns the new id', async () => {
@@ -1063,5 +1070,26 @@ describe('SessionManager tests', () => {
         sessionManager.getSession();
 
         expect(mockRecord).not.toHaveBeenCalled();
+        jest.useRealTimers();
+    });
+
+    test('when seeded session expires then eventCount resets so sessionEventLimit applies per logical session', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: 'seeded',
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.getSession();
+        sessionManager.incrementSessionEventCount();
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.getSession().eventCount).toEqual(2);
+
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+
+        expect(sessionManager.getSession().eventCount).toEqual(0);
+        jest.useRealTimers();
     });
 });

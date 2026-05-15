@@ -47,6 +47,8 @@ See also: [`configuration.md`](../configuration.md) for the full list of related
 
 Some hosts run multiple instances of the web client in separate JavaScript contexts that can't share cookies — for example, VS Code extension webviews, Electron `BrowserWindow`s, or sandboxed micro-frontend iframes. By default each instance mints its own session ID, so one logical user session appears as N separate sessions in CloudWatch RUM with no way to correlate them.
 
+> **Session replay is not supported across shared contexts.** This feature correlates _event_ telemetry (errors, performance, http) under a single session ID. The `replay` telemetry / `RRWebPlugin` is not yet cross-context aware: each instance records its own DOM independently, recordings cannot be stitched together in the CloudWatch RUM console, and follower recordings may drop frames or fail to start depending on adoption timing (see Caveats below). If session replay is a hard requirement, run a single instance per logical session for now.
+
 To share a single session across contexts, elect one instance as the **leader** and the rest as **followers**:
 
 1. The leader constructs the client normally and reads its session ID with `getSessionId()`.
@@ -86,6 +88,6 @@ When `sessionId` is not seeded, the default renewal behavior applies: expiry min
 
 ### Caveats
 
--   `setSessionId()` does **not** re-roll sampling. Each instance independently rolls its own sampling decision at construction (via `sessionSampleRate`), so a follower's `record` flag is set locally and does not cross contexts. A follower whose session was rolled `record: false` drops its events at the cache; only the leader's events reach CloudWatch RUM under the shared ID. To guarantee that all followers record, set `sessionSampleRate: 1` (or coordinate sampling externally in the host).
--   Plugins that snapshot `session.record` at enable time (such as the session replay plugin) won't retroactively start recording when a session is adopted post-construction. To get those plugins on an adopted session, pass `sessionId` at construction time rather than calling `setSessionId()` later.
+-   `setSessionId()` does **not** re-roll sampling. Each instance decides `record` at construction — by rolling `sessionSampleRate` afresh, or by restoring from a prior cookie if `allowCookies: true` and a cached session is present. The decision does not cross contexts. A follower whose session resolved to `record: false` drops its events at the cache; only the leader's events reach CloudWatch RUM under the shared ID. To guarantee that all followers record, set `sessionSampleRate: 1` (or coordinate sampling externally in the host).
+-   Session replay (`RRWebPlugin` / the `replay` telemetry) is not cross-context aware — see the warning at the top of this section. As a secondary issue, plugins that snapshot `session.record` at enable time won't retroactively start recording when a session is adopted post-construction; pass `sessionId` at construction time rather than calling `setSessionId()` later.
 -   This feature is exposed only on the NPM API (`AwsRum` class). It is not wired into the CDN command queue.

@@ -129,10 +129,12 @@ export class SessionManager {
     public getSession(): Session {
         if (this.isSessionIdManual) {
             // Manual mode: host owns the sessionId for the life of the
-            // instance. Never auto-mint. On expiry, just bump the timestamp
-            // so we don't re-enter this branch on every event. The host
-            // rotates via setSessionId().
+            // instance. Never auto-mint. On expiry, bump the timestamp and
+            // reset eventCount so sessionEventLimit applies per logical
+            // session — matching the behavior of auto-minted rotation.
+            // The host rotates the ID itself via setSessionId().
             if (new Date() >= this.sessionExpiry) {
+                this.session.eventCount = 0;
                 this.sessionExpiry = new Date(
                     new Date().getTime() +
                         this.config.sessionLengthSeconds * 1000
