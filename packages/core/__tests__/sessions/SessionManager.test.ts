@@ -986,7 +986,9 @@ describe('SessionManager tests', () => {
         const adopted = 'adopted-session-id';
         sessionManager.setSessionId(adopted);
 
-        const persisted = JSON.parse(atob(getCookie(SESSION_COOKIE_NAME)));
+        const cookie = getCookie(SESSION_COOKIE_NAME);
+        expect(cookie).toBeTruthy();
+        const persisted = JSON.parse(atob(cookie));
         expect(persisted.sessionId).toEqual(adopted);
     });
 
@@ -1091,5 +1093,106 @@ describe('SessionManager tests', () => {
 
         expect(sessionManager.getSession().eventCount).toEqual(0);
         jest.useRealTimers();
+    });
+
+    test('when config.userId is set then getUserId returns the seeded id', async () => {
+        const seeded = 'seeded-user-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            userId: seeded
+        });
+
+        expect(sessionManager.getUserId()).toEqual(seeded);
+    });
+
+    test('when config.userId is set then it overrides userIdRetentionDays:0 NIL_UUID', async () => {
+        const seeded = 'seeded-user-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            userId: seeded,
+            userIdRetentionDays: 0
+        });
+
+        expect(sessionManager.getUserId()).toEqual(seeded);
+    });
+
+    test('when config.userId is set with cookies allowed then it is persisted to cookie', async () => {
+        const seeded = 'seeded-user-id';
+        defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30,
+            userId: seeded
+        });
+
+        expect(getCookie(USER_COOKIE_NAME)).toEqual(seeded);
+    });
+
+    test('when config.userId is set then getUserId returns it even with allowCookies false', async () => {
+        const seeded = 'seeded-user-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: false,
+            userId: seeded
+        });
+
+        expect(sessionManager.getUserId()).toEqual(seeded);
+    });
+
+    test('setUserId mutates the user id and is reflected by getUserId', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const before = sessionManager.getUserId();
+        const adopted = 'adopted-user-id';
+        sessionManager.setUserId(adopted);
+
+        expect(sessionManager.getUserId()).toEqual(adopted);
+        expect(sessionManager.getUserId()).not.toEqual(before);
+    });
+
+    test('setUserId persists the adopted id to cookie when cookies are allowed', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const adopted = 'adopted-user-id';
+        sessionManager.setUserId(adopted);
+
+        expect(getCookie(USER_COOKIE_NAME)).toEqual(adopted);
+    });
+
+    test('setUserId with empty string is a no-op', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const before = sessionManager.getUserId();
+        sessionManager.setUserId('');
+
+        expect(sessionManager.getUserId()).toEqual(before);
+    });
+
+    test('manual user mode is sticky: setUserId then disabling cookies still returns the manual id', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const adopted = 'adopted-user-id';
+        sessionManager.setUserId(adopted);
+
+        // Flip cookies off after manual mode is engaged.
+        navigatorCookieEnabled = false;
+
+        expect(sessionManager.getUserId()).toEqual(adopted);
     });
 });

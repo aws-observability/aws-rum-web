@@ -70,6 +70,10 @@ export class SessionManager {
     // session ID and the SDK must never auto-mint one. Set when a sessionId
     // is seeded at construction.
     private isSessionIdManual = false;
+    // Sticky for the life of the instance: when true, the host owns the
+    // user ID. Seeded value wins over userIdRetentionDays:0 and the
+    // useCookies() gate in getUserId().
+    private isUserIdManual = false;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
@@ -93,8 +97,13 @@ export class SessionManager {
             eventCount: 0
         };
 
-        // Initialize or restore the user
-        this.initializeUser();
+        // Initialize or restore the user. Skipped when config.userId is
+        // seeded — adoptUser() below sets userId/userExpiry/cookie itself,
+        // so initializeUser would just generate a discarded UUID and write
+        // a cookie that adoptUser immediately overwrites.
+        if (!this.config.userId) {
+            this.initializeUser();
+        }
 
         // Collect the user agent and domain
         this.collectAttributes();
@@ -114,6 +123,14 @@ export class SessionManager {
             this.isSessionIdManual = true;
             this.adoptSession(this.config.sessionId);
         }
+
+        // A construct-time seed for userId wins over the result of
+        // initializeUser() — including the userIdRetentionDays:0 NIL_UUID
+        // default. The host has explicitly named the identity.
+        if (this.config.userId) {
+            this.isUserIdManual = true;
+            this.adoptUser(this.config.userId);
+        }
     }
 
     /**
@@ -129,12 +146,14 @@ export class SessionManager {
     public getSession(): Session {
         if (this.isSessionIdManual) {
             // Manual mode: host owns the sessionId for the life of the
-            // instance. Never auto-mint. On expiry, bump the timestamp and
-            // reset eventCount so sessionEventLimit applies per logical
-            // session — matching the behavior of auto-minted rotation.
-            // The host rotates the ID itself via setSessionId().
+            // instance. Never auto-mint, never rotate the ID — only the
+            // expiry timestamp bumps. eventCount resets so the host-owned
+            // session isn't permanently event-capped at sessionEventLimit
+            // across long-lived sessions. The host rotates the ID itself
+            // via setSessionId() when it wants a new logical session.
             if (new Date() >= this.sessionExpiry) {
                 this.session.eventCount = 0;
+                this.session.page = this.pageManager.getPage();
                 this.sessionExpiry = new Date(
                     new Date().getTime() +
                         this.config.sessionLengthSeconds * 1000
@@ -188,14 +207,47 @@ export class SessionManager {
             return;
         }
         this.isSessionIdManual = true;
+        // Idempotent re-seeds (followers receiving periodic broadcasts of the
+        // current ID) must not reset eventCount or sessionEventLimit could
+        // be silently bypassed.
+        if (sessionId === this.session.sessionId) {
+            return;
+        }
         this.adoptSession(sessionId);
     }
 
     public getUserId(): string {
+        if (this.isUserIdManual) {
+            // Manual mode: host owns the identity. Return it regardless of
+            // cookie availability — a host that explicitly seeded a userId
+            // wants that identity even when cookies are disabled.
+            return this.userId;
+        }
         if (this.useCookies()) {
             return this.userId;
         }
         return NIL_UUID;
+    }
+
+    /**
+     * Adopt an externally-supplied user ID. Subsequent UserDetails payloads
+     * use this ID. Engages manual mode for the rest of the instance's
+     * lifespan: once a host has called this, the host is the source of
+     * truth for the user identity. No event is emitted (there is no
+     * user_start analogue to session_start).
+     */
+    public setUserId(userId: string): void {
+        if (!userId) {
+            InternalLogger.warn('setUserId called with empty value; ignoring.');
+            return;
+        }
+        this.isUserIdManual = true;
+        // Idempotent re-seeds must be no-ops to avoid pointless cookie writes
+        // and userExpiry refreshes when a follower receives the current ID.
+        if (userId === this.userId) {
+            return;
+        }
+        this.adoptUser(userId);
     }
 
     public incrementSessionEventCount() {
@@ -334,6 +386,18 @@ export class SessionManager {
         );
         this.storeSessionAsCookie();
         InternalLogger.info(`Adopted session: ${sessionId}`);
+    }
+
+    private adoptUser(userId: string) {
+        this.userId = userId;
+        this.userExpiry = new Date();
+        this.userExpiry.setDate(
+            this.userExpiry.getDate() + this.config.userIdRetentionDays
+        );
+        if (this.useCookies() && this.config.userIdRetentionDays > 0) {
+            this.createOrRenewUserCookie(this.userId, this.userExpiry);
+        }
+        InternalLogger.info(`Adopted user: ${userId}`);
     }
 
     private renewSession() {

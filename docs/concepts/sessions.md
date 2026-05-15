@@ -28,6 +28,16 @@ In addition to the session ID, the web client persists an anonymous **user ID** 
 
 Set `userIdRetentionDays: 0` to disable the user cookie — the client will use the nil UUID (`00000000-0000-0000-0000-000000000000`) for all users.
 
+### Manual mode
+
+The host can take ownership of the user identity by seeding `userId` at construction or calling `setUserId(id)` at runtime. Once engaged, manual mode is sticky for the life of the instance:
+
+-   `getUserId()` returns the host-supplied ID even when `allowCookies: false` or `userIdRetentionDays: 0`.
+-   No `user_start` event is ever emitted (there is no analogue to `session_start` for users).
+-   `setUserId('')` is rejected with a warn log; the existing ID is preserved.
+
+Use this when the host already knows the user identity (a signed-in account ID, a stable device ID issued by the platform, or a leader instance's anonymous ID — see below).
+
 ## Cookies vs localStorage
 
 | Storage      | Key         | Default name | Purpose                        |
@@ -93,3 +103,41 @@ When `sessionId` is not seeded, the default renewal behavior applies: expiry min
 -   This feature is exposed only on the NPM API (`AwsRum` class). It is not wired into the CDN command queue.
 -   **The SDK does not provide a transport between instances.** The host is responsible for broadcasting the leader's session ID to followers (and rotated IDs to every instance). Each transport — VS Code `postMessage`, Electron IPC, `BroadcastChannel`, sandboxed-iframe `postMessage`, micro-frontend event bus — is opinionated about message shape, lifecycle, and trust boundaries, so the SDK leaves the choice to the host. A built-in bridge could be a fast follow if a clear default emerges.
 -   **No SDK-side session-change callback yet.** Followers learn about a new ID through the same host channel that delivered it — the SDK does not fire an `onSessionChange` event when `setSessionId()` is called. If a follower needs to react locally (e.g., clear UI state tied to the old session), wire that off the host broadcast for now. An `onSessionChange(cb)` listener is a natural fast follow if the use case appears.
+-   `setSessionId('')` is rejected with a warn log; the existing ID is preserved. Pass a non-empty UUID or skip the call.
+
+## Sharing a user ID across contexts
+
+The same multi-context problem that motivates session sharing also fragments user identity: by default each instance mints (or restores from its own cookie) a separate `cwr_u` user ID, so a single human appears as N anonymous users in CloudWatch RUM. To pin user identity to match the shared session, broadcast the leader's user ID and seed it on followers — the same leader/follower pattern as session sharing.
+
+1. The leader constructs the client normally and reads its user ID with `getUserId()`.
+2. The host process broadcasts that ID to follower contexts (typically alongside the session ID — see [Sharing a session across contexts](#sharing-a-session-across-contexts)).
+3. Each follower constructs the client with `userId` (the seeded ID).
+
+```typescript
+// Leader context
+const leader = new AwsRum(appId, version, region, config);
+const sharedSessionId = leader.getSessionId();
+const sharedUserId = leader.getUserId();
+// host.broadcast({ sessionId: sharedSessionId, userId: sharedUserId })
+
+// Follower context
+const follower = new AwsRum(appId, version, region, {
+    ...config,
+    sessionId: sharedSessionId,
+    userId: sharedUserId
+});
+```
+
+To rotate at runtime (e.g., after the host learns a more authoritative identity), broadcast the new ID and call `setUserId(newId)` on every instance — including the leader.
+
+```typescript
+awsRum.setUserId(newId);
+```
+
+### Caveats
+
+-   No `user_start` event exists, so there is no suppression flag to set on followers — the seed is always silent.
+-   Manual mode is sticky for the life of the instance: once a host has seeded `userId` or called `setUserId()`, the SDK never falls back to the cookie or to a freshly-minted UUID for that instance, even if `allowCookies` is later flipped on or the cookie is cleared.
+-   This feature is exposed only on the NPM API (`AwsRum` class). It is not wired into the CDN command queue.
+-   **The SDK does not provide a transport between instances.** The same constraints described in the session-sharing caveats apply — broadcasting the user ID is the host's responsibility.
+-   **No SDK-side user-change callback yet.** Followers learn about a new ID through the same host channel that delivered it.

@@ -72,6 +72,7 @@ export interface Config {
     sessionSampleRate: number;
     suppressSessionStartEvent?: boolean;
     useBeacon: boolean;
+    userId?: string;
     userIdRetentionDays: number;
     alias?: string;
     headers?: Record<string, string>;

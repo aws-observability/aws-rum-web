@@ -54,6 +54,8 @@ const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
 const getSessionId = jest.fn();
 const setSessionId = jest.fn();
+const getUserId = jest.fn();
+const setUserId = jest.fn();
 
 let samplingDecision = true;
 const isSessionSampled = jest.fn().mockImplementation(() => samplingDecision);
@@ -67,6 +69,8 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         isSessionSampled,
         getSessionId,
         setSessionId,
+        getUserId,
+        setUserId,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -717,5 +721,18 @@ describe('defaultConfig tests', () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
         orch.setSessionId('session-xyz');
         expect(setSessionId).toHaveBeenCalledWith('session-xyz');
+    });
+
+    test('web Orchestration inherits getUserId from slim', async () => {
+        getUserId.mockReturnValueOnce('user-abc');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        expect(orch.getUserId()).toBe('user-abc');
+        expect(getUserId).toHaveBeenCalledTimes(1);
+    });
+
+    test('web Orchestration inherits setUserId from slim', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.setUserId('user-xyz');
+        expect(setUserId).toHaveBeenCalledWith('user-xyz');
     });
 });

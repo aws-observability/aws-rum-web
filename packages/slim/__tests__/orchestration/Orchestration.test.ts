@@ -30,6 +30,8 @@ const setEventMetadataHook = jest.fn();
 const clearEventMetadataHook = jest.fn();
 const getSessionId = jest.fn();
 const setSessionId = jest.fn();
+const getUserId = jest.fn();
+const setUserId = jest.fn();
 jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
@@ -41,6 +43,8 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         clearEventMetadataHook,
         getSessionId,
         setSessionId,
+        getUserId,
+        setUserId,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -302,9 +306,39 @@ describe('Slim Orchestration tests', () => {
         expect(config.suppressSessionStartEvent).toBe(true);
     });
 
+    test('config.sessionId leaves explicit suppressSessionStartEvent:true unchanged', async () => {
+        new Orchestration('a', 'c', 'us-east-1', {
+            sessionId: 'seeded-session',
+            suppressSessionStartEvent: true
+        });
+        const config = (EventCache as any).mock.calls[0][1];
+        expect(config.suppressSessionStartEvent).toBe(true);
+    });
+
     test('without sessionId, suppressSessionStartEvent default is preserved', async () => {
         new Orchestration('a', 'c', 'us-east-1', {});
         const config = (EventCache as any).mock.calls[0][1];
         expect(config.suppressSessionStartEvent).toBe(false);
+    });
+
+    test('getUserId delegates to eventCache', async () => {
+        getUserId.mockReturnValueOnce('user-abc');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        expect(orch.getUserId()).toBe('user-abc');
+        expect(getUserId).toHaveBeenCalledTimes(1);
+    });
+
+    test('setUserId delegates to eventCache', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.setUserId('user-xyz');
+        expect(setUserId).toHaveBeenCalledWith('user-xyz');
+    });
+
+    test('config.userId is forwarded to EventCache', async () => {
+        new Orchestration('a', 'c', 'us-east-1', {
+            userId: 'seeded-user'
+        });
+        const config = (EventCache as any).mock.calls[0][1];
+        expect(config.userId).toBe('seeded-user');
     });
 });

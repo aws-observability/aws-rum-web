@@ -252,6 +252,21 @@ export class EventCache {
     };
 
     /**
+     * Returns the current anonymous user ID, or NIL_UUID when cookies are
+     * disabled and no manual userId has been seeded.
+     */
+    public getUserId = (): string => {
+        return this.sessionManager.getUserId();
+    };
+
+    /**
+     * Adopt an externally-supplied user ID. Delegates to SessionManager.
+     */
+    public setUserId = (userId: string): void => {
+        this.sessionManager.setUserId(userId);
+    };
+
+    /**
      * Returns true if there are one or more events in the cache.
      */
     public hasEvents(): boolean {

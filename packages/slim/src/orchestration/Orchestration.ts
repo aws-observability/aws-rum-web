@@ -214,10 +214,37 @@ export class Orchestration {
      * sessionId rides on UserDetails per batch, not per event.
      *
      * Does NOT emit a session_start event; followers must not duplicate
-     * the leader's session_start. Does NOT re-roll sampling.
+     * the leader's session_start. Does NOT re-roll sampling. Empty values
+     * are ignored with a warning; the existing ID is preserved.
      */
     public setSessionId(sessionId: string): void {
         this.eventCache.setSessionId(sessionId);
+    }
+
+    /**
+     * Returns the current anonymous user ID. Use to read the leader's
+     * user ID for broadcast to follower contexts so a single human is
+     * not counted as N anonymous users in CloudWatch RUM.
+     *
+     * Returns NIL_UUID when cookies are disabled and no userId has been
+     * seeded or set via setUserId().
+     */
+    public getUserId(): string {
+        return this.eventCache.getUserId();
+    }
+
+    /**
+     * Adopt an externally-supplied user ID. Subsequent dispatches carry
+     * this ID. Engages manual mode: the host becomes the source of truth
+     * for the user identity, overriding the userIdRetentionDays:0
+     * NIL_UUID default and the useCookies() gate.
+     *
+     * No event is emitted — there is no user_start analogue to
+     * session_start. Empty values are ignored with a warning; the existing
+     * ID is preserved.
+     */
+    public setUserId(userId: string): void {
+        this.eventCache.setUserId(userId);
     }
 
     /**
