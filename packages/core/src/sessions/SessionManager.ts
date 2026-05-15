@@ -66,6 +66,10 @@ export class SessionManager {
     private recordEvent: RecordEvent;
     private attributes!: Attributes;
     private sessionCookieName: string;
+    // Sticky for the life of the instance: when true, the host owns the
+    // session ID and the SDK must never auto-mint one. Set when a sessionId
+    // is seeded at construction.
+    private isSessionIdManual = false;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
@@ -100,6 +104,16 @@ export class SessionManager {
 
         // Attempt to restore the previous session
         this.getSessionFromCookie();
+
+        // A construct-time seed wins over any cookie-restored session: the
+        // host has explicitly told us which logical session this instance
+        // belongs to. Followers in multi-context deployments rely on this.
+        // Once seeded, the SDK never auto-mints a session ID for this
+        // instance — the host owns rotation via setSessionId().
+        if (this.config.sessionId) {
+            this.isSessionIdManual = true;
+            this.adoptSession(this.config.sessionId);
+        }
     }
 
     /**
@@ -113,14 +127,28 @@ export class SessionManager {
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (
-            // The session does not exist. Create a new one.
-            // If it is created before the page view is recorded, the session start event metadata will
-            // not have page attributes as the page does not exist yet.
-            this.session.sessionId === NIL_UUID ||
-            // OR the session has expired. Create a new one.
-            new Date() >= this.sessionExpiry
-        ) {
+        if (this.isSessionIdManual) {
+            // Manual mode: host owns the sessionId for the life of the
+            // instance. Never auto-mint. On expiry, just bump the timestamp
+            // so we don't re-enter this branch on every event. The host
+            // rotates via setSessionId().
+            if (new Date() >= this.sessionExpiry) {
+                this.sessionExpiry = new Date(
+                    new Date().getTime() +
+                        this.config.sessionLengthSeconds * 1000
+                );
+                this.storeSessionAsCookie();
+            }
+            return this.session;
+        }
+
+        if (this.session.sessionId === NIL_UUID) {
+            // No session yet — create one.
+            // If created before the page view is recorded, the session start
+            // event metadata will not have page attributes as the page does
+            // not exist yet.
+            this.createSession();
+        } else if (new Date() >= this.sessionExpiry) {
             this.createSession();
         }
         return this.session;
@@ -139,6 +167,26 @@ export class SessionManager {
         [k: string]: string | number | boolean;
     }) {
         this.attributes = { ...this.attributes, ...sessionAttributes };
+    }
+
+    /**
+     * Adopt an externally-minted session ID. Subsequent events use this ID.
+     * Does NOT emit session_start — followers must not duplicate the
+     * leader's session_start. Sampling decision is preserved.
+     *
+     * Engages manual mode for the rest of the instance's lifespan: once a
+     * host has called this, the SDK will not auto-mint a new session ID on
+     * expiry. The host is the sole source of truth for rotation.
+     */
+    public setSessionId(sessionId: string): void {
+        if (!sessionId) {
+            InternalLogger.warn(
+                'setSessionId called with empty value; ignoring.'
+            );
+            return;
+        }
+        this.isSessionIdManual = true;
+        this.adoptSession(sessionId);
     }
 
     public getUserId(): string {
@@ -265,9 +313,25 @@ export class SessionManager {
             );
         }
 
-        this.recordEvent(SESSION_START_EVENT_TYPE, {
-            version: '1.0.0'
-        });
+        if (!this.config.suppressSessionStartEvent) {
+            this.recordEvent(SESSION_START_EVENT_TYPE, {
+                version: '1.0.0'
+            });
+        }
+    }
+
+    private adoptSession(sessionId: string) {
+        this.session = {
+            sessionId,
+            record: this.session.record,
+            eventCount: 0
+        };
+        this.session.page = this.pageManager.getPage();
+        this.sessionExpiry = new Date(
+            new Date().getTime() + this.config.sessionLengthSeconds * 1000
+        );
+        this.storeSessionAsCookie();
+        InternalLogger.info(`Adopted session: ${sessionId}`);
     }
 
     private renewSession() {

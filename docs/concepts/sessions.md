@@ -42,3 +42,50 @@ When `cookieAttributes.unique: true`, all four names are suffixed `_<AppMonitorI
 If `allowCookies: false`, no cookies are set — the session and user IDs live only in memory for the life of the page. Credentials in localStorage are unaffected by this flag.
 
 See also: [`configuration.md`](../configuration.md) for the full list of related options.
+
+## Sharing a session across contexts
+
+Some hosts run multiple instances of the web client in separate JavaScript contexts that can't share cookies — for example, VS Code extension webviews, Electron `BrowserWindow`s, or sandboxed micro-frontend iframes. By default each instance mints its own session ID, so one logical user session appears as N separate sessions in CloudWatch RUM with no way to correlate them.
+
+To share a single session across contexts, elect one instance as the **leader** and the rest as **followers**:
+
+1. The leader constructs the client normally and reads its session ID with `getSessionId()`.
+2. The host process broadcasts that ID to follower contexts.
+3. Each follower constructs the client with `sessionId` (the seeded ID). Seeding `sessionId` automatically forces `suppressSessionStartEvent: true`, so a follower can never emit a duplicate of the leader's `session_start`.
+
+```typescript
+// Leader context
+const leader = new AwsRum(appId, version, region, config);
+const sharedId = leader.getSessionId();
+// host.broadcast(sharedId) — VS Code postMessage, Electron IPC, postMessage, etc.
+
+// Follower context — sessionId implies suppressSessionStartEvent: true
+const follower = new AwsRum(appId, version, region, {
+    ...config,
+    sessionId: sharedId
+});
+```
+
+If the host needs to rotate the session at runtime (e.g., after sign-out), broadcast the new ID and call `setSessionId(newId)` on every instance — including the leader.
+
+```typescript
+// Any context, after the host broadcasts a new ID
+awsRum.setSessionId(newId);
+```
+
+### Renewal policy
+
+When `sessionId` is seeded at construction, the host takes exclusive ownership of the session ID for the life of the instance:
+
+-   The SDK never auto-mints a session ID — not at construction, not on expiry, not on any future event path.
+-   On expiry, only the expiry timestamp bumps; the ID never rotates.
+-   `suppressSessionStartEvent` is forced to `true`, so no `session_start` is ever emitted by this instance.
+-   The host is the sole source of truth for rotation; call `setSessionId()` to rotate.
+
+When `sessionId` is not seeded, the default renewal behavior applies: expiry mints a new UUID and emits `session_start` (subject to `suppressSessionStartEvent`).
+
+### Caveats
+
+-   `setSessionId()` does **not** re-roll sampling. Each instance independently rolls its own sampling decision at construction (via `sessionSampleRate`), so a follower's `record` flag is set locally and does not cross contexts. A follower whose session was rolled `record: false` drops its events at the cache; only the leader's events reach CloudWatch RUM under the shared ID. To guarantee that all followers record, set `sessionSampleRate: 1` (or coordinate sampling externally in the host).
+-   Plugins that snapshot `session.record` at enable time (such as the session replay plugin) won't retroactively start recording when a session is adopted post-construction. To get those plugins on an adopted session, pass `sessionId` at construction time rather than calling `setSessionId()` later.
+-   This feature is exposed only on the NPM API (`AwsRum` class). It is not wired into the CDN command queue.

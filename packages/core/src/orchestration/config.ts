@@ -67,8 +67,10 @@ export interface Config {
     routeChangeComplete: number;
     routeChangeTimeout: number;
     sessionEventLimit: number;
+    sessionId?: string;
     sessionLengthSeconds: number;
     sessionSampleRate: number;
+    suppressSessionStartEvent?: boolean;
     useBeacon: boolean;
     userIdRetentionDays: number;
     alias?: string;

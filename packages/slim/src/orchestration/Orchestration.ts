@@ -84,6 +84,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
+        suppressSessionStartEvent: false,
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
@@ -133,6 +134,14 @@ export class Orchestration {
             ...defaultConfig(cookieAttributes),
             ...partialConfig
         } as Config;
+
+        // Seeding sessionId at construction implies the host owns the
+        // session lifecycle. Force-suppress session_start so a seeded
+        // follower can never emit a duplicate of the leader's start event,
+        // even if the caller forgot to set the flag.
+        if (this.config.sessionId) {
+            this.config.suppressSessionStartEvent = true;
+        }
 
         this.config.endpoint = partialConfig.endpoint
             ? partialConfig.endpoint
@@ -187,6 +196,28 @@ export class Orchestration {
         [key: string]: string | boolean | number;
     }): void {
         this.eventCache.addSessionAttributes(sessionAttributes);
+    }
+
+    /**
+     * Returns the current session ID, minting a new one if no session
+     * exists. Use to read the leader's session ID for broadcast to
+     * follower contexts (e.g. webview panels, micro-frontends, multiple
+     * BrowserWindows).
+     */
+    public getSessionId(): string {
+        return this.eventCache.getSessionId();
+    }
+
+    /**
+     * Adopt an externally-minted session ID. Subsequent dispatches use
+     * this ID. Already-buffered events inherit it at dispatch time —
+     * sessionId rides on UserDetails per batch, not per event.
+     *
+     * Does NOT emit a session_start event; followers must not duplicate
+     * the leader's session_start. Does NOT re-roll sampling.
+     */
+    public setSessionId(sessionId: string): void {
+        this.eventCache.setSessionId(sessionId);
     }
 
     /**

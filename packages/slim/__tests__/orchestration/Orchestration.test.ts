@@ -28,6 +28,8 @@ const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
 const setEventMetadataHook = jest.fn();
 const clearEventMetadataHook = jest.fn();
+const getSessionId = jest.fn();
+const setSessionId = jest.fn();
 jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
@@ -37,6 +39,8 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         recordEvent,
         setEventMetadataHook,
         clearEventMetadataHook,
+        getSessionId,
+        setSessionId,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -266,5 +270,41 @@ describe('Slim Orchestration tests', () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
         orch.clearEventMetadataHook();
         expect(clearEventMetadataHook).toHaveBeenCalled();
+    });
+
+    test('getSessionId delegates to eventCache', async () => {
+        getSessionId.mockReturnValueOnce('session-abc');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        expect(orch.getSessionId()).toBe('session-abc');
+        expect(getSessionId).toHaveBeenCalledTimes(1);
+    });
+
+    test('setSessionId delegates to eventCache', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.setSessionId('session-xyz');
+        expect(setSessionId).toHaveBeenCalledWith('session-xyz');
+    });
+
+    test('config.sessionId is forwarded to EventCache', async () => {
+        new Orchestration('a', 'c', 'us-east-1', {
+            sessionId: 'seeded-session'
+        });
+        const config = (EventCache as any).mock.calls[0][1];
+        expect(config.sessionId).toBe('seeded-session');
+    });
+
+    test('config.sessionId at construction forces suppressSessionStartEvent: true', async () => {
+        new Orchestration('a', 'c', 'us-east-1', {
+            sessionId: 'seeded-session',
+            suppressSessionStartEvent: false
+        });
+        const config = (EventCache as any).mock.calls[0][1];
+        expect(config.suppressSessionStartEvent).toBe(true);
+    });
+
+    test('without sessionId, suppressSessionStartEvent default is preserved', async () => {
+        new Orchestration('a', 'c', 'us-east-1', {});
+        const config = (EventCache as any).mock.calls[0][1];
+        expect(config.suppressSessionStartEvent).toBe(false);
     });
 });

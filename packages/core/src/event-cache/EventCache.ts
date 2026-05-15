@@ -238,6 +238,20 @@ export class EventCache {
     };
 
     /**
+     * Returns the current session ID, minting a new one if needed.
+     */
+    public getSessionId = (): string => {
+        return this.sessionManager.getSession().sessionId;
+    };
+
+    /**
+     * Adopt an externally-minted session ID. Delegates to SessionManager.
+     */
+    public setSessionId = (sessionId: string): void => {
+        this.sessionManager.setSessionId(sessionId);
+    };
+
+    /**
      * Returns true if there are one or more events in the cache.
      */
     public hasEvents(): boolean {
