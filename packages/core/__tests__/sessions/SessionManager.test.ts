@@ -958,7 +958,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getSession().sessionId).toEqual(seeded);
     });
 
-    test('setSessionId mutates sessionId, resets eventCount, and does not emit session_start', async () => {
+    test('pinSessionId mutates sessionId, resets eventCount, and does not emit session_start', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
@@ -970,7 +970,7 @@ describe('SessionManager tests', () => {
         mockRecord.mockClear();
 
         const adopted = 'adopted-session-id';
-        sessionManager.setSessionId(adopted);
+        sessionManager.pinSessionId(adopted);
 
         const session = sessionManager.getSession();
         expect(session.sessionId).toEqual(adopted);
@@ -978,14 +978,14 @@ describe('SessionManager tests', () => {
         expect(mockRecord).not.toHaveBeenCalled();
     });
 
-    test('setSessionId persists the adopted id to cookie when cookies are allowed', async () => {
+    test('pinSessionId persists the adopted id to cookie when cookies are allowed', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
         });
 
         const adopted = 'adopted-session-id';
-        sessionManager.setSessionId(adopted);
+        sessionManager.pinSessionId(adopted);
 
         const cookie = getCookie(SESSION_COOKIE_NAME);
         expect(cookie).toBeTruthy();
@@ -993,7 +993,7 @@ describe('SessionManager tests', () => {
         expect(persisted.sessionId).toEqual(adopted);
     });
 
-    test('setSessionId with empty string is a no-op', async () => {
+    test('pinSessionId with empty string is a no-op', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             ...{ allowCookies: true }
@@ -1002,7 +1002,7 @@ describe('SessionManager tests', () => {
         const before = sessionManager.getSession().sessionId;
         mockRecord.mockClear();
 
-        sessionManager.setSessionId('');
+        sessionManager.pinSessionId('');
 
         expect(sessionManager.getSession().sessionId).toEqual(before);
         expect(mockRecord).not.toHaveBeenCalled();
@@ -1042,7 +1042,7 @@ describe('SessionManager tests', () => {
         jest.useRealTimers();
     });
 
-    test('when seeded host calls setSessionId then subsequent getSession returns the new id', async () => {
+    test('when seeded host calls pinSessionId then subsequent getSession returns the new id', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             sessionId: 'first-id'
@@ -1050,7 +1050,7 @@ describe('SessionManager tests', () => {
 
         expect(sessionManager.getSession().sessionId).toEqual('first-id');
 
-        sessionManager.setSessionId('second-id');
+        sessionManager.pinSessionId('second-id');
 
         expect(sessionManager.getSession().sessionId).toEqual('second-id');
     });
@@ -1069,7 +1069,7 @@ describe('SessionManager tests', () => {
         jest.setSystemTime(new Date(dateNow.getTime() + 60000));
         sessionManager.getSession();
 
-        sessionManager.setSessionId('rotated');
+        sessionManager.pinSessionId('rotated');
         sessionManager.getSession();
 
         expect(mockRecord).not.toHaveBeenCalled();
@@ -1140,7 +1140,7 @@ describe('SessionManager tests', () => {
         expect(sessionManager.getUserId()).toEqual(seeded);
     });
 
-    test('setUserId mutates the user id and is reflected by getUserId', async () => {
+    test('pinUserId mutates the user id and is reflected by getUserId', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             allowCookies: true,
@@ -1149,13 +1149,13 @@ describe('SessionManager tests', () => {
 
         const before = sessionManager.getUserId();
         const adopted = 'adopted-user-id';
-        sessionManager.setUserId(adopted);
+        sessionManager.pinUserId(adopted);
 
         expect(sessionManager.getUserId()).toEqual(adopted);
         expect(sessionManager.getUserId()).not.toEqual(before);
     });
 
-    test('setUserId persists the adopted id to cookie when cookies are allowed', async () => {
+    test('pinUserId persists the adopted id to cookie when cookies are allowed', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             allowCookies: true,
@@ -1163,12 +1163,12 @@ describe('SessionManager tests', () => {
         });
 
         const adopted = 'adopted-user-id';
-        sessionManager.setUserId(adopted);
+        sessionManager.pinUserId(adopted);
 
         expect(getCookie(USER_COOKIE_NAME)).toEqual(adopted);
     });
 
-    test('setUserId with empty string is a no-op', async () => {
+    test('pinUserId with empty string is a no-op', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             allowCookies: true,
@@ -1176,12 +1176,12 @@ describe('SessionManager tests', () => {
         });
 
         const before = sessionManager.getUserId();
-        sessionManager.setUserId('');
+        sessionManager.pinUserId('');
 
         expect(sessionManager.getUserId()).toEqual(before);
     });
 
-    test('manual user mode is sticky: setUserId then disabling cookies still returns the manual id', async () => {
+    test('manual user mode is sticky: pinUserId then disabling cookies still returns the manual id', async () => {
         const sessionManager = defaultSessionManager({
             ...DEFAULT_CONFIG,
             allowCookies: true,
@@ -1189,7 +1189,7 @@ describe('SessionManager tests', () => {
         });
 
         const adopted = 'adopted-user-id';
-        sessionManager.setUserId(adopted);
+        sessionManager.pinUserId(adopted);
 
         // Flip cookies off after manual mode is engaged.
         navigatorCookieEnabled = false;

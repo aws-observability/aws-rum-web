@@ -217,8 +217,8 @@ export class Orchestration {
      * the leader's session_start. Does NOT re-roll sampling. Empty values
      * are ignored with a warning; the existing ID is preserved.
      */
-    public setSessionId(sessionId: string): void {
-        this.eventCache.setSessionId(sessionId);
+    public pinSessionId(sessionId: string): void {
+        this.eventCache.pinSessionId(sessionId);
     }
 
     /**
@@ -232,7 +232,7 @@ export class Orchestration {
      *
      * Optional `sessionId` adopts a host-chosen ID and engages manual
      * mode. Optional `userId` rotates the user identity in the same call
-     * (same stickiness as setUserId). Empty-string overrides are rejected
+     * (same stickiness as pinUserId). Empty-string overrides are rejected
      * with a warn log; the existing value is preserved.
      */
     public startSession(options?: {
@@ -248,7 +248,7 @@ export class Orchestration {
      * not counted as N anonymous users in CloudWatch RUM.
      *
      * Returns NIL_UUID when cookies are disabled and no userId has been
-     * seeded or set via setUserId().
+     * seeded or set via pinUserId().
      */
     public getUserId(): string {
         return this.eventCache.getUserId();
@@ -264,8 +264,8 @@ export class Orchestration {
      * session_start. Empty values are ignored with a warning; the existing
      * ID is preserved.
      */
-    public setUserId(userId: string): void {
-        this.eventCache.setUserId(userId);
+    public pinUserId(userId: string): void {
+        this.eventCache.pinUserId(userId);
     }
 
     /**

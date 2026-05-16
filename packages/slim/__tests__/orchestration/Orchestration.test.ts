@@ -29,10 +29,10 @@ const recordEvent = jest.fn();
 const setEventMetadataHook = jest.fn();
 const clearEventMetadataHook = jest.fn();
 const getSessionId = jest.fn();
-const setSessionId = jest.fn();
+const pinSessionId = jest.fn();
 const startSession = jest.fn();
 const getUserId = jest.fn();
-const setUserId = jest.fn();
+const pinUserId = jest.fn();
 jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
     EventCache: jest.fn().mockImplementation(() => ({
         enable: enableEventCache,
@@ -43,10 +43,10 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         setEventMetadataHook,
         clearEventMetadataHook,
         getSessionId,
-        setSessionId,
+        pinSessionId,
         startSession,
         getUserId,
-        setUserId,
+        pinUserId,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -285,10 +285,10 @@ describe('Slim Orchestration tests', () => {
         expect(getSessionId).toHaveBeenCalledTimes(1);
     });
 
-    test('setSessionId delegates to eventCache', async () => {
+    test('pinSessionId delegates to eventCache', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
-        orch.setSessionId('session-xyz');
-        expect(setSessionId).toHaveBeenCalledWith('session-xyz');
+        orch.pinSessionId('session-xyz');
+        expect(pinSessionId).toHaveBeenCalledWith('session-xyz');
     });
 
     test('config.sessionId is forwarded to EventCache', async () => {
@@ -330,10 +330,10 @@ describe('Slim Orchestration tests', () => {
         expect(getUserId).toHaveBeenCalledTimes(1);
     });
 
-    test('setUserId delegates to eventCache', async () => {
+    test('pinUserId delegates to eventCache', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
-        orch.setUserId('user-xyz');
-        expect(setUserId).toHaveBeenCalledWith('user-xyz');
+        orch.pinUserId('user-xyz');
+        expect(pinUserId).toHaveBeenCalledWith('user-xyz');
     });
 
     test('config.userId is forwarded to EventCache', async () => {

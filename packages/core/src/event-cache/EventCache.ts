@@ -247,8 +247,8 @@ export class EventCache {
     /**
      * Adopt an externally-minted session ID. Delegates to SessionManager.
      */
-    public setSessionId = (sessionId: string): void => {
-        this.sessionManager.setSessionId(sessionId);
+    public pinSessionId = (sessionId: string): void => {
+        this.sessionManager.pinSessionId(sessionId);
     };
 
     /**
@@ -272,8 +272,8 @@ export class EventCache {
     /**
      * Adopt an externally-supplied user ID. Delegates to SessionManager.
      */
-    public setUserId = (userId: string): void => {
-        this.sessionManager.setUserId(userId);
+    public pinUserId = (userId: string): void => {
+        this.sessionManager.pinUserId(userId);
     };
 
     /**

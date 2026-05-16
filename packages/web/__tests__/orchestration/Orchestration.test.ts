@@ -53,10 +53,10 @@ const recordPageView = jest.fn();
 const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
 const getSessionId = jest.fn();
-const setSessionId = jest.fn();
+const pinSessionId = jest.fn();
 const startSession = jest.fn();
 const getUserId = jest.fn();
-const setUserId = jest.fn();
+const pinUserId = jest.fn();
 
 let samplingDecision = true;
 const isSessionSampled = jest.fn().mockImplementation(() => samplingDecision);
@@ -69,10 +69,10 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         recordEvent,
         isSessionSampled,
         getSessionId,
-        setSessionId,
+        pinSessionId,
         startSession,
         getUserId,
-        setUserId,
+        pinUserId,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -719,10 +719,10 @@ describe('defaultConfig tests', () => {
         expect(getSessionId).toHaveBeenCalledTimes(1);
     });
 
-    test('web Orchestration inherits setSessionId from slim', async () => {
+    test('web Orchestration inherits pinSessionId from slim', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
-        orch.setSessionId('session-xyz');
-        expect(setSessionId).toHaveBeenCalledWith('session-xyz');
+        orch.pinSessionId('session-xyz');
+        expect(pinSessionId).toHaveBeenCalledWith('session-xyz');
     });
 
     test('web Orchestration inherits getUserId from slim', async () => {
@@ -732,10 +732,10 @@ describe('defaultConfig tests', () => {
         expect(getUserId).toHaveBeenCalledTimes(1);
     });
 
-    test('web Orchestration inherits setUserId from slim', async () => {
+    test('web Orchestration inherits pinUserId from slim', async () => {
         const orch = new Orchestration('a', 'c', 'us-east-1', {});
-        orch.setUserId('user-xyz');
-        expect(setUserId).toHaveBeenCalledWith('user-xyz');
+        orch.pinUserId('user-xyz');
+        expect(pinUserId).toHaveBeenCalledWith('user-xyz');
     });
 
     test('web Orchestration inherits startSession from slim', async () => {

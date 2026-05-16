@@ -118,7 +118,7 @@ export class SessionManager {
         // host has explicitly told us which logical session this instance
         // belongs to. Followers in multi-context deployments rely on this.
         // Once seeded, the SDK never auto-mints a session ID for this
-        // instance — the host owns rotation via setSessionId().
+        // instance — the host owns rotation via pinSessionId().
         if (this.config.sessionId) {
             this.isSessionIdManual = true;
             this.adoptSession(this.config.sessionId);
@@ -150,7 +150,7 @@ export class SessionManager {
             // expiry timestamp bumps. eventCount resets so the host-owned
             // session isn't permanently event-capped at sessionEventLimit
             // across long-lived sessions. The host rotates the ID itself
-            // via setSessionId() when it wants a new logical session.
+            // via pinSessionId() when it wants a new logical session.
             if (new Date() >= this.sessionExpiry) {
                 this.session.eventCount = 0;
                 this.session.page = this.pageManager.getPage();
@@ -199,10 +199,10 @@ export class SessionManager {
      * host has called this, the SDK will not auto-mint a new session ID on
      * expiry. The host is the sole source of truth for rotation.
      */
-    public setSessionId(sessionId: string): void {
+    public pinSessionId(sessionId: string): void {
         if (!sessionId) {
             InternalLogger.warn(
-                'setSessionId called with empty value; ignoring.'
+                'pinSessionId called with empty value; ignoring.'
             );
             return;
         }
@@ -229,10 +229,10 @@ export class SessionManager {
      * Optional overrides let a leader hand a pre-chosen ID to the SDK and
      * rotate the user identity in the same call. `sessionId` adopts that
      * ID as the new session and engages session manual mode (same
-     * stickiness as setSessionId). session_start is still emitted —
+     * stickiness as pinSessionId). session_start is still emitted —
      * startSession is the leader-side rotation API; followers should keep
-     * using setSessionId for silent adoption. `userId` rotates the user
-     * identity (same stickiness as setUserId). No user_start event exists,
+     * using pinSessionId for silent adoption. `userId` rotates the user
+     * identity (same stickiness as pinUserId). No user_start event exists,
      * so the rotation is silent regardless.
      *
      * Empty-string overrides are rejected with a warn log; the existing
@@ -299,9 +299,9 @@ export class SessionManager {
      * truth for the user identity. No event is emitted (there is no
      * user_start analogue to session_start).
      */
-    public setUserId(userId: string): void {
+    public pinUserId(userId: string): void {
         if (!userId) {
-            InternalLogger.warn('setUserId called with empty value; ignoring.');
+            InternalLogger.warn('pinUserId called with empty value; ignoring.');
             return;
         }
         this.isUserIdManual = true;
