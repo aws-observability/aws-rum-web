@@ -26,6 +26,7 @@ import {
     mockFetch
 } from '@aws-rum/web-core/test-utils/test-utils';
 import { SESSION_START_EVENT_TYPE } from '@aws-rum/web-core/plugins/utils/constant';
+import { InternalLogger } from '@aws-rum/web-core/utils/InternalLogger';
 
 global.fetch = mockFetch;
 const NAVIGATION = 'navigation';
@@ -916,5 +917,442 @@ describe('SessionManager tests', () => {
 
         const actualSessionAttributes = sessionManager.getAttributes();
         expect(actualSessionAttributes['aws:releaseId']).toBeUndefined();
+    });
+
+    test('when config.sessionId is set then getSession returns the seeded id and does not emit session_start', async () => {
+        const seeded = 'seeded-session-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: seeded
+        });
+
+        expect(sessionManager.getSession().sessionId).toEqual(seeded);
+        expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    test('when config.sessionId is set with a stale cookie then the seed wins', async () => {
+        const config = {
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        };
+        const cookieSessionId = uuid.v4();
+        storeCookie(
+            SESSION_COOKIE_NAME,
+            btoa(
+                JSON.stringify({
+                    sessionId: cookieSessionId,
+                    record: true,
+                    eventCount: 0
+                })
+            ),
+            config.cookieAttributes,
+            SESSION_COOKIE_EXPIRES
+        );
+
+        const seeded = 'seeded-session-id';
+        const sessionManager = defaultSessionManager({
+            ...config,
+            sessionId: seeded
+        });
+
+        expect(sessionManager.getSession().sessionId).toEqual(seeded);
+    });
+
+    test('pinSessionId mutates sessionId, resets eventCount, and does not emit session_start', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        });
+
+        sessionManager.getSession();
+        sessionManager.incrementSessionEventCount();
+        expect(mockRecord).toHaveBeenCalledTimes(1); // initial session_start
+        mockRecord.mockClear();
+
+        const adopted = 'adopted-session-id';
+        sessionManager.pinSessionId(adopted);
+
+        const session = sessionManager.getSession();
+        expect(session.sessionId).toEqual(adopted);
+        expect(session.eventCount).toEqual(0);
+        expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    test('pinSessionId persists the adopted id to cookie when cookies are allowed', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        });
+
+        const adopted = 'adopted-session-id';
+        sessionManager.pinSessionId(adopted);
+
+        const cookie = getCookie(SESSION_COOKIE_NAME);
+        expect(cookie).toBeTruthy();
+        const persisted = JSON.parse(atob(cookie));
+        expect(persisted.sessionId).toEqual(adopted);
+    });
+
+    test('pinSessionId with empty string is a no-op', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true }
+        });
+
+        const before = sessionManager.getSession().sessionId;
+        mockRecord.mockClear();
+
+        sessionManager.pinSessionId('');
+
+        expect(sessionManager.getSession().sessionId).toEqual(before);
+        expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    test('when suppressSessionStartEvent is true then session_start is not emitted', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            ...{ allowCookies: true, suppressSessionStartEvent: true }
+        });
+
+        sessionManager.getSession();
+
+        expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    test('when seeded session expires then sessionId stays the same', async () => {
+        const dateNow = new Date();
+        const seeded = 'seeded-session-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: seeded,
+            sessionLengthSeconds: 1
+        });
+
+        const sessionA = sessionManager.getSession();
+        expect(sessionA.sessionId).toEqual(seeded);
+
+        // Advance past expiry.
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+
+        const sessionB = sessionManager.getSession();
+        expect(sessionB.sessionId).toEqual(seeded);
+        // Frozen renewal must not fire session_start.
+        expect(mockRecord).not.toHaveBeenCalled();
+        jest.useRealTimers();
+    });
+
+    test('when seeded host calls pinSessionId then subsequent getSession returns the new id', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: 'first-id'
+        });
+
+        expect(sessionManager.getSession().sessionId).toEqual('first-id');
+
+        sessionManager.pinSessionId('second-id');
+
+        expect(sessionManager.getSession().sessionId).toEqual('second-id');
+    });
+
+    test('when seeded then session_start is never emitted across construction, expiry, and rotation', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: 'seeded',
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.getSession();
+
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+        sessionManager.getSession();
+
+        sessionManager.pinSessionId('rotated');
+        sessionManager.getSession();
+
+        expect(mockRecord).not.toHaveBeenCalled();
+        jest.useRealTimers();
+    });
+
+    test('when seeded session expires then eventCount resets so sessionEventLimit applies per logical session', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: 'seeded',
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.getSession();
+        sessionManager.incrementSessionEventCount();
+        sessionManager.incrementSessionEventCount();
+        expect(sessionManager.getSession().eventCount).toEqual(2);
+
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+
+        expect(sessionManager.getSession().eventCount).toEqual(0);
+        jest.useRealTimers();
+    });
+
+    test('when config.userId is set then getUserId returns the seeded id', async () => {
+        const seeded = 'seeded-user-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            userId: seeded
+        });
+
+        expect(sessionManager.getUserId()).toEqual(seeded);
+    });
+
+    test('when config.userId is set then it overrides userIdRetentionDays:0 NIL_UUID', async () => {
+        const seeded = 'seeded-user-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            userId: seeded,
+            userIdRetentionDays: 0
+        });
+
+        expect(sessionManager.getUserId()).toEqual(seeded);
+    });
+
+    test('when config.userId is set with cookies allowed then it is persisted to cookie', async () => {
+        const seeded = 'seeded-user-id';
+        defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30,
+            userId: seeded
+        });
+
+        expect(getCookie(USER_COOKIE_NAME)).toEqual(seeded);
+    });
+
+    test('when config.userId is set then getUserId returns it even with allowCookies false', async () => {
+        const seeded = 'seeded-user-id';
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: false,
+            userId: seeded
+        });
+
+        expect(sessionManager.getUserId()).toEqual(seeded);
+    });
+
+    test('pinUserId mutates the user id and is reflected by getUserId', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const before = sessionManager.getUserId();
+        const adopted = 'adopted-user-id';
+        sessionManager.pinUserId(adopted);
+
+        expect(sessionManager.getUserId()).toEqual(adopted);
+        expect(sessionManager.getUserId()).not.toEqual(before);
+    });
+
+    test('pinUserId persists the adopted id to cookie when cookies are allowed', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const adopted = 'adopted-user-id';
+        sessionManager.pinUserId(adopted);
+
+        expect(getCookie(USER_COOKIE_NAME)).toEqual(adopted);
+    });
+
+    test('pinUserId with empty string is a no-op', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const before = sessionManager.getUserId();
+        sessionManager.pinUserId('');
+
+        expect(sessionManager.getUserId()).toEqual(before);
+    });
+
+    test('manual user mode is sticky: pinUserId then disabling cookies still returns the manual id', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const adopted = 'adopted-user-id';
+        sessionManager.pinUserId(adopted);
+
+        // Flip cookies off after manual mode is engaged.
+        navigatorCookieEnabled = false;
+
+        expect(sessionManager.getUserId()).toEqual(adopted);
+    });
+
+    test('startSession mints a fresh sessionId, resets eventCount, and emits session_start', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        });
+
+        const before = sessionManager.getSession().sessionId;
+        sessionManager.incrementSessionEventCount();
+        mockRecord.mockClear();
+
+        const newId = sessionManager.startSession();
+
+        expect(newId).not.toEqual(before);
+        const session = sessionManager.getSession();
+        expect(session.sessionId).toEqual(newId);
+        expect(session.eventCount).toEqual(0);
+        expect(mockRecord).toHaveBeenCalledWith(SESSION_START_EVENT_TYPE, {
+            version: '1.0.0'
+        });
+    });
+
+    test('startSession with no args disengages session manual mode', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionId: 'seeded-id',
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.startSession();
+        const fresh = sessionManager.getSession().sessionId;
+        expect(fresh).not.toEqual('seeded-id');
+
+        // After expiry, the SDK should auto-rotate (manual mode is off).
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+        const after = sessionManager.getSession().sessionId;
+        expect(after).not.toEqual(fresh);
+        jest.useRealTimers();
+    });
+
+    test('startSession with sessionId override adopts that id and engages manual mode', async () => {
+        const dateNow = new Date();
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            sessionLengthSeconds: 1
+        });
+
+        sessionManager.getSession();
+        mockRecord.mockClear();
+
+        const newId = sessionManager.startSession({
+            sessionId: 'host-chosen-id'
+        });
+        expect(newId).toEqual('host-chosen-id');
+        expect(sessionManager.getSession().sessionId).toEqual('host-chosen-id');
+        // session_start IS emitted on the leader-side rotation.
+        expect(mockRecord).toHaveBeenCalledWith(SESSION_START_EVENT_TYPE, {
+            version: '1.0.0'
+        });
+
+        // Manual mode engaged — id stays put across expiry.
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(dateNow.getTime() + 60000));
+        expect(sessionManager.getSession().sessionId).toEqual('host-chosen-id');
+        jest.useRealTimers();
+    });
+
+    test('startSession with userId override rotates the user identity silently', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        const beforeUser = sessionManager.getUserId();
+        mockRecord.mockClear();
+
+        sessionManager.startSession({ userId: 'new-user-id' });
+
+        expect(sessionManager.getUserId()).toEqual('new-user-id');
+        expect(sessionManager.getUserId()).not.toEqual(beforeUser);
+        // No user_start event exists; only session_start fires.
+        const calls = mockRecord.mock.calls.filter(
+            (c) => c[0] === 'user_start'
+        );
+        expect(calls).toHaveLength(0);
+    });
+
+    test('startSession with both sessionId and userId rotates atomically', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+
+        sessionManager.startSession({
+            sessionId: 'shared-session',
+            userId: 'shared-user'
+        });
+
+        expect(sessionManager.getSession().sessionId).toEqual('shared-session');
+        expect(sessionManager.getUserId()).toEqual('shared-user');
+    });
+
+    test('startSession with empty sessionId override falls back to a fresh mint and warns', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true
+        });
+        const warnSpy = jest
+            .spyOn(InternalLogger, 'warn')
+            .mockImplementation(() => {});
+
+        const before = sessionManager.getSession().sessionId;
+        const newId = sessionManager.startSession({ sessionId: '' });
+
+        expect(newId).not.toEqual('');
+        expect(newId).not.toEqual(before);
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('empty sessionId')
+        );
+        warnSpy.mockRestore();
+    });
+
+    test('startSession with empty userId override warns and preserves existing user', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            allowCookies: true,
+            userIdRetentionDays: 30
+        });
+        const warnSpy = jest
+            .spyOn(InternalLogger, 'warn')
+            .mockImplementation(() => {});
+
+        const beforeUser = sessionManager.getUserId();
+        sessionManager.startSession({ userId: '' });
+
+        expect(sessionManager.getUserId()).toEqual(beforeUser);
+        expect(warnSpy).toHaveBeenCalledWith(
+            expect.stringContaining('empty userId')
+        );
+        warnSpy.mockRestore();
+    });
+
+    test('startSession respects suppressSessionStartEvent', async () => {
+        const sessionManager = defaultSessionManager({
+            ...DEFAULT_CONFIG,
+            suppressSessionStartEvent: true
+        });
+
+        sessionManager.getSession();
+        mockRecord.mockClear();
+
+        sessionManager.startSession();
+
+        expect(mockRecord).not.toHaveBeenCalled();
     });
 });

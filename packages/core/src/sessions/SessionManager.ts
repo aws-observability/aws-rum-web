@@ -66,6 +66,14 @@ export class SessionManager {
     private recordEvent: RecordEvent;
     private attributes!: Attributes;
     private sessionCookieName: string;
+    // Sticky for the life of the instance: when true, the host owns the
+    // session ID and the SDK must never auto-mint one. Set when a sessionId
+    // is seeded at construction.
+    private isSessionIdManual = false;
+    // Sticky for the life of the instance: when true, the host owns the
+    // user ID. Seeded value wins over userIdRetentionDays:0 and the
+    // useCookies() gate in getUserId().
+    private isUserIdManual = false;
 
     constructor(
         appMonitorDetails: AppMonitorDetails,
@@ -89,8 +97,13 @@ export class SessionManager {
             eventCount: 0
         };
 
-        // Initialize or restore the user
-        this.initializeUser();
+        // Initialize or restore the user. Skipped when config.userId is
+        // seeded — adoptUser() below sets userId/userExpiry/cookie itself,
+        // so initializeUser would just generate a discarded UUID and write
+        // a cookie that adoptUser immediately overwrites.
+        if (!this.config.userId) {
+            this.initializeUser();
+        }
 
         // Collect the user agent and domain
         this.collectAttributes();
@@ -100,6 +113,28 @@ export class SessionManager {
 
         // Attempt to restore the previous session
         this.getSessionFromCookie();
+
+        // A construct-time seed for userId wins over the result of
+        // initializeUser() — including the userIdRetentionDays:0 NIL_UUID
+        // default. The host has explicitly named the identity. Adopted
+        // before the session seed so adoptSession() → storeSessionAsCookie()
+        // sees a populated userId/userExpiry rather than undefined values
+        // when both seeds are supplied (the canonical leader/follower
+        // bootstrap case).
+        if (this.config.userId) {
+            this.isUserIdManual = true;
+            this.adoptUser(this.config.userId);
+        }
+
+        // A construct-time seed wins over any cookie-restored session: the
+        // host has explicitly told us which logical session this instance
+        // belongs to. Followers in multi-context deployments rely on this.
+        // Once seeded, the SDK never auto-mints a session ID for this
+        // instance — the host owns rotation via pinSessionId().
+        if (this.config.sessionId) {
+            this.isSessionIdManual = true;
+            this.adoptSession(this.config.sessionId);
+        }
     }
 
     /**
@@ -113,14 +148,32 @@ export class SessionManager {
      * Returns the session ID. If no session ID exists, one will be created.
      */
     public getSession(): Session {
-        if (
-            // The session does not exist. Create a new one.
-            // If it is created before the page view is recorded, the session start event metadata will
-            // not have page attributes as the page does not exist yet.
-            this.session.sessionId === NIL_UUID ||
-            // OR the session has expired. Create a new one.
-            new Date() >= this.sessionExpiry
-        ) {
+        if (this.isSessionIdManual) {
+            // Manual mode: host owns the sessionId for the life of the
+            // instance. Never auto-mint, never rotate the ID — only the
+            // expiry timestamp bumps. eventCount resets so the host-owned
+            // session isn't permanently event-capped at sessionEventLimit
+            // across long-lived sessions. The host rotates the ID itself
+            // via pinSessionId() when it wants a new logical session.
+            if (new Date() >= this.sessionExpiry) {
+                this.session.eventCount = 0;
+                this.session.page = this.pageManager.getPage();
+                this.sessionExpiry = new Date(
+                    new Date().getTime() +
+                        this.config.sessionLengthSeconds * 1000
+                );
+                this.storeSessionAsCookie();
+            }
+            return this.session;
+        }
+
+        if (this.session.sessionId === NIL_UUID) {
+            // No session yet — create one.
+            // If created before the page view is recorded, the session start
+            // event metadata will not have page attributes as the page does
+            // not exist yet.
+            this.createSession();
+        } else if (new Date() >= this.sessionExpiry) {
             this.createSession();
         }
         return this.session;
@@ -141,11 +194,128 @@ export class SessionManager {
         this.attributes = { ...this.attributes, ...sessionAttributes };
     }
 
+    /**
+     * Adopt an externally-minted session ID. Subsequent events use this ID.
+     * Does NOT emit session_start — followers must not duplicate the
+     * leader's session_start. Sampling decision is preserved.
+     *
+     * Engages manual mode for the rest of the instance's lifespan: once a
+     * host has called this, the SDK will not auto-mint a new session ID on
+     * expiry. The host is the sole source of truth for rotation.
+     */
+    public pinSessionId(sessionId: string): void {
+        if (!sessionId) {
+            InternalLogger.warn(
+                'pinSessionId called with empty value; ignoring.'
+            );
+            return;
+        }
+        this.isSessionIdManual = true;
+        // Idempotent re-seeds (followers receiving periodic broadcasts of the
+        // current ID) must not reset eventCount or sessionEventLimit could
+        // be silently bypassed.
+        if (sessionId === this.session.sessionId) {
+            return;
+        }
+        this.adoptSession(sessionId);
+    }
+
+    /**
+     * Begin a new session immediately. Use when the host knows a logical
+     * session boundary has occurred (sign-in, sign-out, kiosk handoff)
+     * and wants the next event to belong to a fresh session.
+     *
+     * Default behavior (no args) mints a fresh UUID, re-rolls sampling,
+     * disengages session manual mode, and emits a session_start event
+     * (subject to suppressSessionStartEvent). Returns the new session ID
+     * for broadcast to follower contexts.
+     *
+     * Optional overrides let a leader hand a pre-chosen ID to the SDK and
+     * rotate the user identity in the same call. `sessionId` adopts that
+     * ID as the new session and engages session manual mode (same
+     * stickiness as pinSessionId). session_start is still emitted —
+     * startSession is the leader-side rotation API; followers should keep
+     * using pinSessionId for silent adoption. `userId` rotates the user
+     * identity (same stickiness as pinUserId). No user_start event exists,
+     * so the rotation is silent regardless.
+     *
+     * Empty-string overrides emit a warn log. An empty `userId` is rejected
+     * (existing user identity preserved); an empty `sessionId` falls back
+     * to minting a fresh session. The rest of the call still proceeds.
+     */
+    public startSession(options?: {
+        sessionId?: string;
+        userId?: string;
+    }): string {
+        if (options?.userId !== undefined) {
+            if (!options.userId) {
+                InternalLogger.warn(
+                    'startSession called with empty userId; ignoring user rotation.'
+                );
+            } else {
+                this.isUserIdManual = true;
+                if (options.userId !== this.userId) {
+                    this.adoptUser(options.userId);
+                }
+            }
+        }
+
+        if (options?.sessionId !== undefined) {
+            if (!options.sessionId) {
+                InternalLogger.warn(
+                    'startSession called with empty sessionId; minting a fresh session.'
+                );
+                this.isSessionIdManual = false;
+                this.createSession();
+            } else {
+                this.isSessionIdManual = true;
+                this.adoptSession(options.sessionId);
+                if (!this.config.suppressSessionStartEvent) {
+                    this.recordEvent(SESSION_START_EVENT_TYPE, {
+                        version: '1.0.0'
+                    });
+                }
+            }
+        } else {
+            this.isSessionIdManual = false;
+            this.createSession();
+        }
+
+        return this.session.sessionId;
+    }
+
     public getUserId(): string {
+        if (this.isUserIdManual) {
+            // Manual mode: host owns the identity. Return it regardless of
+            // cookie availability — a host that explicitly seeded a userId
+            // wants that identity even when cookies are disabled.
+            return this.userId;
+        }
         if (this.useCookies()) {
             return this.userId;
         }
         return NIL_UUID;
+    }
+
+    /**
+     * Adopt an externally-supplied user ID. Subsequent UserDetails payloads
+     * use this ID. Engages manual mode for the rest of the instance's
+     * lifespan: once a host has called this, the host is the source of
+     * truth for the user identity. No event is emitted (there is no
+     * user_start analogue to session_start).
+     */
+    public pinUserId(userId: string): void {
+        if (!userId) {
+            InternalLogger.warn('pinUserId called with empty value; ignoring.');
+            return;
+        }
+        this.isUserIdManual = true;
+        // Idempotent re-seeds must be no-ops to avoid pointless cookie writes
+        // and userExpiry refreshes when a follower receives the current ID.
+        if (userId === this.userId) {
+            return;
+        }
+        this.adoptUser(userId);
     }
 
     public incrementSessionEventCount() {
@@ -265,9 +435,37 @@ export class SessionManager {
             );
         }
 
-        this.recordEvent(SESSION_START_EVENT_TYPE, {
-            version: '1.0.0'
-        });
+        if (!this.config.suppressSessionStartEvent) {
+            this.recordEvent(SESSION_START_EVENT_TYPE, {
+                version: '1.0.0'
+            });
+        }
+    }
+
+    private adoptSession(sessionId: string) {
+        this.session = {
+            sessionId,
+            record: this.session.record,
+            eventCount: 0
+        };
+        this.session.page = this.pageManager.getPage();
+        this.sessionExpiry = new Date(
+            new Date().getTime() + this.config.sessionLengthSeconds * 1000
+        );
+        this.storeSessionAsCookie();
+        InternalLogger.info(`Adopted session: ${sessionId}`);
+    }
+
+    private adoptUser(userId: string) {
+        this.userId = userId;
+        this.userExpiry = new Date();
+        this.userExpiry.setDate(
+            this.userExpiry.getDate() + this.config.userIdRetentionDays
+        );
+        if (this.useCookies() && this.config.userIdRetentionDays > 0) {
+            this.createOrRenewUserCookie(this.userId, this.userExpiry);
+        }
+        InternalLogger.info(`Adopted user: ${userId}`);
     }
 
     private renewSession() {

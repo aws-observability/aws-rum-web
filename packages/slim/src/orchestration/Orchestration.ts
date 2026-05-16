@@ -84,6 +84,7 @@ export const defaultConfig = (cookieAttributes: CookieAttributes): Config => {
         sessionEventLimit: 200,
         sessionLengthSeconds: 60 * 30,
         sessionSampleRate: 1,
+        suppressSessionStartEvent: false,
         useBeacon: true,
         userIdRetentionDays: 30,
         enableW3CTraceId: false,
@@ -133,6 +134,14 @@ export class Orchestration {
             ...defaultConfig(cookieAttributes),
             ...partialConfig
         } as Config;
+
+        // Seeding sessionId at construction implies the host owns the
+        // session lifecycle. Force-suppress session_start so a seeded
+        // follower can never emit a duplicate of the leader's start event,
+        // even if the caller forgot to set the flag.
+        if (this.config.sessionId) {
+            this.config.suppressSessionStartEvent = true;
+        }
 
         this.config.endpoint = partialConfig.endpoint
             ? partialConfig.endpoint
@@ -187,6 +196,76 @@ export class Orchestration {
         [key: string]: string | boolean | number;
     }): void {
         this.eventCache.addSessionAttributes(sessionAttributes);
+    }
+
+    /**
+     * Returns the current session ID, minting a new one if no session
+     * exists. Use to read the leader's session ID for broadcast to
+     * follower contexts (e.g. webview panels, micro-frontends, multiple
+     * BrowserWindows).
+     */
+    public getSessionId(): string {
+        return this.eventCache.getSessionId();
+    }
+
+    /**
+     * Adopt an externally-minted session ID. Subsequent dispatches use
+     * this ID. Already-buffered events inherit it at dispatch time —
+     * sessionId rides on UserDetails per batch, not per event.
+     *
+     * Does NOT emit a session_start event; followers must not duplicate
+     * the leader's session_start. Does NOT re-roll sampling. Empty values
+     * are ignored with a warning; the existing ID is preserved.
+     */
+    public pinSessionId(sessionId: string): void {
+        this.eventCache.pinSessionId(sessionId);
+    }
+
+    /**
+     * Begin a new session immediately. Use at logical session boundaries
+     * the SDK can't detect on its own — sign-in, sign-out, kiosk handoff.
+     * Returns the new session ID for broadcast to follower contexts.
+     *
+     * No args: mints a fresh UUID, re-rolls sampling, disengages session
+     * manual mode, and emits session_start (subject to
+     * suppressSessionStartEvent).
+     *
+     * Optional `sessionId` adopts a host-chosen ID and engages manual
+     * mode. Optional `userId` rotates the user identity in the same call
+     * (same stickiness as pinUserId). Empty-string overrides are rejected
+     * with a warn log; the existing value is preserved.
+     */
+    public startSession(options?: {
+        sessionId?: string;
+        userId?: string;
+    }): string {
+        return this.eventCache.startSession(options);
+    }
+
+    /**
+     * Returns the current anonymous user ID. Use to read the leader's
+     * user ID for broadcast to follower contexts so a single human is
+     * not counted as N anonymous users in CloudWatch RUM.
+     *
+     * Returns NIL_UUID when cookies are disabled and no userId has been
+     * seeded or set via pinUserId().
+     */
+    public getUserId(): string {
+        return this.eventCache.getUserId();
+    }
+
+    /**
+     * Adopt an externally-supplied user ID. Subsequent dispatches carry
+     * this ID. Engages manual mode: the host becomes the source of truth
+     * for the user identity, overriding the userIdRetentionDays:0
+     * NIL_UUID default and the useCookies() gate.
+     *
+     * No event is emitted — there is no user_start analogue to
+     * session_start. Empty values are ignored with a warning; the existing
+     * ID is preserved.
+     */
+    public pinUserId(userId: string): void {
+        this.eventCache.pinUserId(userId);
     }
 
     /**
