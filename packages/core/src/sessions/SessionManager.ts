@@ -114,6 +114,18 @@ export class SessionManager {
         // Attempt to restore the previous session
         this.getSessionFromCookie();
 
+        // A construct-time seed for userId wins over the result of
+        // initializeUser() — including the userIdRetentionDays:0 NIL_UUID
+        // default. The host has explicitly named the identity. Adopted
+        // before the session seed so adoptSession() → storeSessionAsCookie()
+        // sees a populated userId/userExpiry rather than undefined values
+        // when both seeds are supplied (the canonical leader/follower
+        // bootstrap case).
+        if (this.config.userId) {
+            this.isUserIdManual = true;
+            this.adoptUser(this.config.userId);
+        }
+
         // A construct-time seed wins over any cookie-restored session: the
         // host has explicitly told us which logical session this instance
         // belongs to. Followers in multi-context deployments rely on this.
@@ -122,14 +134,6 @@ export class SessionManager {
         if (this.config.sessionId) {
             this.isSessionIdManual = true;
             this.adoptSession(this.config.sessionId);
-        }
-
-        // A construct-time seed for userId wins over the result of
-        // initializeUser() — including the userIdRetentionDays:0 NIL_UUID
-        // default. The host has explicitly named the identity.
-        if (this.config.userId) {
-            this.isUserIdManual = true;
-            this.adoptUser(this.config.userId);
         }
     }
 
@@ -235,8 +239,9 @@ export class SessionManager {
      * identity (same stickiness as pinUserId). No user_start event exists,
      * so the rotation is silent regardless.
      *
-     * Empty-string overrides are rejected with a warn log; the existing
-     * value is preserved and the rest of the call still proceeds.
+     * Empty-string overrides emit a warn log. An empty `userId` is rejected
+     * (existing user identity preserved); an empty `sessionId` falls back
+     * to minting a fresh session. The rest of the call still proceeds.
      */
     public startSession(options?: {
         sessionId?: string;
