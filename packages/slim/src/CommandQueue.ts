@@ -2,7 +2,7 @@ import {
     AwsCredentialIdentity,
     AwsCredentialIdentityProvider
 } from '@aws-sdk/types';
-import { INSTALL_SCRIPT } from '@aws-rum/web-core';
+import { INSTALL_SCRIPT, InternalLogger } from '@aws-rum/web-core';
 import { PartialConfig, Orchestration } from './orchestration/Orchestration';
 
 export type CommandFunction = (payload?: any) => void;
@@ -96,6 +96,39 @@ export class CommandQueue {
             payload: AwsCredentialIdentity | AwsCredentialIdentityProvider
         ): void => {
             this.orchestration.setAwsCredentials(payload);
+        },
+        pinSessionId: (sessionId: string): void => {
+            if (typeof sessionId === 'string') {
+                this.orchestration.pinSessionId(sessionId);
+            } else {
+                InternalLogger.warn('pinSessionId expects a string; ignoring');
+            }
+        },
+        pinUserId: (userId: string): void => {
+            if (typeof userId === 'string') {
+                this.orchestration.pinUserId(userId);
+            } else {
+                InternalLogger.warn('pinUserId expects a string; ignoring');
+            }
+        },
+        // Discards the returned session ID — CDN consumers who need the
+        // new ID should pass `sessionId` themselves.
+        startSession: (payload?: {
+            sessionId?: string;
+            userId?: string;
+        }): void => {
+            if (
+                payload === undefined ||
+                (typeof payload === 'object' &&
+                    payload !== null &&
+                    !Array.isArray(payload))
+            ) {
+                this.orchestration.startSession(payload);
+            } else {
+                InternalLogger.warn(
+                    'startSession expects undefined or an options object; ignoring'
+                );
+            }
         }
     };
 

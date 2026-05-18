@@ -17,6 +17,9 @@ const addSessionAttributes = jest.fn();
 const setAwsCredentials = jest.fn();
 const addPlugin = jest.fn();
 const clearEventMetadataHook = jest.fn();
+const pinSessionId = jest.fn();
+const pinUserId = jest.fn();
+const startSession = jest.fn();
 
 jest.mock('../src/orchestration/Orchestration', () => ({
     Orchestration: jest.fn().mockImplementation(() => ({
@@ -33,7 +36,10 @@ jest.mock('../src/orchestration/Orchestration', () => ({
         addSessionAttributes,
         setAwsCredentials,
         addPlugin,
-        clearEventMetadataHook
+        clearEventMetadataHook,
+        pinSessionId,
+        pinUserId,
+        startSession
     }))
 }));
 
@@ -234,5 +240,69 @@ describe('Slim CommandQueue tests', () => {
         });
         await cq.init(init);
         expect(recordPageView).toHaveBeenCalledWith('/queued');
+    });
+
+    test('pinSessionId delegates to orchestration', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'pinSessionId', p: 'session-xyz' });
+        expect(pinSessionId).toHaveBeenCalledWith('session-xyz');
+    });
+
+    test('pinSessionId ignores non-string payload', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'pinSessionId', p: 123 });
+        expect(pinSessionId).not.toHaveBeenCalled();
+    });
+
+    test('pinUserId delegates to orchestration', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'pinUserId', p: 'user-xyz' });
+        expect(pinUserId).toHaveBeenCalledWith('user-xyz');
+    });
+
+    test('pinUserId ignores non-string payload', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'pinUserId', p: 123 });
+        expect(pinUserId).not.toHaveBeenCalled();
+    });
+
+    test('startSession with no payload delegates to orchestration', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'startSession', p: undefined });
+        expect(startSession).toHaveBeenCalledWith(undefined);
+    });
+
+    test('startSession with options delegates to orchestration', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        const opts = { sessionId: 'sid', userId: 'uid' };
+        await cq.push({ c: 'startSession', p: opts });
+        expect(startSession).toHaveBeenCalledWith(opts);
+    });
+
+    test('startSession ignores array payload', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'startSession', p: [] });
+        expect(startSession).not.toHaveBeenCalled();
+    });
+
+    test('startSession ignores string payload', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'startSession', p: 'oops' });
+        expect(startSession).not.toHaveBeenCalled();
+    });
+
+    test('startSession ignores null payload', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await cq.push({ c: 'startSession', p: null });
+        expect(startSession).not.toHaveBeenCalled();
     });
 });
