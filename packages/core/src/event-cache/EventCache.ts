@@ -238,6 +238,45 @@ export class EventCache {
     };
 
     /**
+     * Returns the current session ID, minting a new one if needed.
+     */
+    public getSessionId = (): string => {
+        return this.sessionManager.getSession().sessionId;
+    };
+
+    /**
+     * Adopt an externally-minted session ID. Delegates to SessionManager.
+     */
+    public pinSessionId = (sessionId: string): void => {
+        this.sessionManager.pinSessionId(sessionId);
+    };
+
+    /**
+     * Begin a new session immediately. Delegates to SessionManager.
+     */
+    public startSession = (options?: {
+        sessionId?: string;
+        userId?: string;
+    }): string => {
+        return this.sessionManager.startSession(options);
+    };
+
+    /**
+     * Returns the current anonymous user ID, or NIL_UUID when cookies are
+     * disabled and no manual userId has been seeded.
+     */
+    public getUserId = (): string => {
+        return this.sessionManager.getUserId();
+    };
+
+    /**
+     * Adopt an externally-supplied user ID. Delegates to SessionManager.
+     */
+    public pinUserId = (userId: string): void => {
+        this.sessionManager.pinUserId(userId);
+    };
+
+    /**
      * Returns true if there are one or more events in the cache.
      */
     public hasEvents(): boolean {

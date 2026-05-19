@@ -52,6 +52,11 @@ const disableEventCache = jest.fn();
 const recordPageView = jest.fn();
 const addSessionAttributes = jest.fn();
 const recordEvent = jest.fn();
+const getSessionId = jest.fn();
+const pinSessionId = jest.fn();
+const startSession = jest.fn();
+const getUserId = jest.fn();
+const pinUserId = jest.fn();
 
 let samplingDecision = true;
 const isSessionSampled = jest.fn().mockImplementation(() => samplingDecision);
@@ -63,6 +68,11 @@ jest.mock('@aws-rum/web-core/event-cache/EventCache', () => ({
         addSessionAttributes,
         recordEvent,
         isSessionSampled,
+        getSessionId,
+        pinSessionId,
+        startSession,
+        getUserId,
+        pinUserId,
         setPluginFlushHook: jest.fn()
     }))
 }));
@@ -700,5 +710,45 @@ describe('defaultConfig tests', () => {
         expect(config.userIdRetentionDays).toBe(30);
         expect(config.enableW3CTraceId).toBe(false);
         expect(config.candidatesCacheSize).toBe(10);
+    });
+
+    test('web Orchestration inherits getSessionId from slim', async () => {
+        getSessionId.mockReturnValueOnce('session-abc');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        expect(orch.getSessionId()).toBe('session-abc');
+        expect(getSessionId).toHaveBeenCalledTimes(1);
+    });
+
+    test('web Orchestration inherits pinSessionId from slim', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.pinSessionId('session-xyz');
+        expect(pinSessionId).toHaveBeenCalledWith('session-xyz');
+    });
+
+    test('web Orchestration inherits getUserId from slim', async () => {
+        getUserId.mockReturnValueOnce('user-abc');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        expect(orch.getUserId()).toBe('user-abc');
+        expect(getUserId).toHaveBeenCalledTimes(1);
+    });
+
+    test('web Orchestration inherits pinUserId from slim', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        orch.pinUserId('user-xyz');
+        expect(pinUserId).toHaveBeenCalledWith('user-xyz');
+    });
+
+    test('web Orchestration inherits startSession from slim', async () => {
+        startSession.mockReturnValueOnce('new-session-id');
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        const result = orch.startSession({
+            sessionId: 'shared-session',
+            userId: 'shared-user'
+        });
+        expect(result).toBe('new-session-id');
+        expect(startSession).toHaveBeenCalledWith({
+            sessionId: 'shared-session',
+            userId: 'shared-user'
+        });
     });
 });

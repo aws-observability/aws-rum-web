@@ -18,5 +18,9 @@ Quick link:
     });
     cwr('addSessionAttributes', { appVersion: '1.2.3' });
     cwr('clearEventMetadataHook');
+    cwr('pinSessionId', 'shared-uuid');
+    cwr('pinUserId', 'shared-uuid');
+    cwr('startSession');
+    cwr('startSession', { sessionId: 'shared-uuid' });
 </script>
 ```
