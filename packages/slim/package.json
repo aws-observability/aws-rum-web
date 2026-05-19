@@ -1,6 +1,6 @@
 {
     "name": "@aws-rum/web-slim",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "description": "Lightweight re-write of Amazon CloudWatch RUM web client using imperative paradigm.",
     "license": "Apache-2.0",
     "author": "Amazon CloudWatch RUM Staff <nobody@amazon.com>",
@@ -46,6 +46,6 @@
         "stats": "webpack --config webpack/webpack.stats.js"
     },
     "dependencies": {
-        "@aws-rum/web-core": "3.0.0"
+        "@aws-rum/web-core": "3.1.0"
     }
 }
