@@ -104,6 +104,83 @@ describe('RRWebPlugin', () => {
         expect(p['config'].recordOptions.maskTextSelector).toBe('*');
     });
 
+    describe('selectiveMaskingAttribute (opt-in)', () => {
+        test('default behavior is unchanged when option is omitted', () => {
+            const p = new RRWebPlugin();
+            expect(p['config'].recordOptions.maskAllInputs).toBe(true);
+            expect(p['config'].recordOptions.maskTextSelector).toBe('*');
+            expect(p['config'].recordOptions.maskInputOptions).toBeUndefined();
+            expect(p['config'].recordOptions.maskInputFn).toBeUndefined();
+        });
+
+        test('default behavior is unchanged when option is an empty string', () => {
+            const p = new RRWebPlugin({ selectiveMaskingAttribute: '' });
+            expect(p['config'].recordOptions.maskAllInputs).toBe(true);
+            expect(p['config'].recordOptions.maskTextSelector).toBe('*');
+            expect(p['config'].recordOptions.maskInputFn).toBeUndefined();
+        });
+
+        test('switches to attribute-driven masking when set', () => {
+            const p = new RRWebPlugin({
+                selectiveMaskingAttribute: 'data-rum-mask'
+            });
+            expect(p['config'].recordOptions.maskAllInputs).toBe(false);
+            expect(p['config'].recordOptions.maskTextSelector).toBe(
+                '[data-rum-mask]'
+            );
+            expect(p['config'].recordOptions.maskInputOptions).toEqual(
+                expect.objectContaining({ text: true, password: true })
+            );
+            expect(typeof p['config'].recordOptions.maskInputFn).toBe(
+                'function'
+            );
+        });
+
+        test('maskInputFn masks elements that carry the attribute', () => {
+            const p = new RRWebPlugin({
+                selectiveMaskingAttribute: 'data-rum-mask'
+            });
+            const fn = p['config'].recordOptions.maskInputFn as (
+                text: string,
+                element: HTMLElement
+            ) => string;
+
+            const masked = document.createElement('input');
+            masked.setAttribute('data-rum-mask', '');
+            const open = document.createElement('input');
+
+            expect(fn('secret123', masked)).toBe('*********');
+            expect(fn('public', open)).toBe('public');
+        });
+
+        test('escapes characters that would break the CSS selector', () => {
+            const p = new RRWebPlugin({
+                selectiveMaskingAttribute: 'data-rum-mask"]injected'
+            });
+            // Anything that would terminate the [..] selector or open a new
+            // bracket is escaped, so the resulting selector is well-formed.
+            const sel = p['config'].recordOptions.maskTextSelector as string;
+            expect(sel.startsWith('[')).toBe(true);
+            expect(sel.endsWith(']')).toBe(true);
+            // The inner literal still includes the escaped characters; the
+            // important property is that there is no unescaped `]` before the
+            // final one.
+            const inner = sel.slice(1, -1);
+            expect(/(?<!\\)\]/.test(inner)).toBe(false);
+        });
+
+        test('recordOptions cannot smuggle in maskInputFn', () => {
+            const evil = jest.fn();
+            const p = new RRWebPlugin({
+                selectiveMaskingAttribute: 'data-rum-mask',
+                recordOptions: { maskInputFn: evil } as any
+            });
+            // Plugin-managed maskInputFn wins over any value passed via
+            // recordOptions.
+            expect(p['config'].recordOptions.maskInputFn).not.toBe(evil);
+        });
+    });
+
     test('enable starts rrweb recording', () => {
         plugin.load(context);
         plugin.enable();
