@@ -1,0 +1,45 @@
+{
+    "$id": "com.amazon.rum.first_contentful_paint_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "FirstContentfulPaintEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "value": {
+            "type": "number",
+            "description": "Time until the first contentful paint in milliseconds"
+        },
+        "attribution": {
+            "type": "object",
+            "description": "Attributions for FCP",
+            "properties": {
+                "timeToFirstByte": {
+                    "type": "number",
+                    "description": "Time from navigation start until the first response byte"
+                },
+                "firstByteToFCP": {
+                    "type": "number",
+                    "description": "Delta between TTFB and FCP"
+                },
+                "loadState": {
+                    "type": "string",
+                    "enum": [
+                        "loading",
+                        "dom-interactive",
+                        "dom-content-loaded",
+                        "complete"
+                    ],
+                    "description": "Document loading state when FCP occurred"
+                }
+            },
+            "required": ["timeToFirstByte", "firstByteToFCP", "loadState"],
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "value"]
+}

@@ -3,22 +3,30 @@ import { LargestContentfulPaintEvent } from '../../events/largest-contentful-pai
 import { CumulativeLayoutShiftEvent } from '../../events/cumulative-layout-shift-event';
 import { FirstInputDelayEvent } from '../../events/first-input-delay-event';
 import { InteractionToNextPaintEvent } from '../../events/interaction-to-next-paint';
+import { FirstContentfulPaintEvent } from '../../events/first-contentful-paint-event';
+import { TimeToFirstByteEvent } from '../../events/time-to-first-byte-event';
 import {
     CLSMetricWithAttribution,
+    FCPMetricWithAttribution,
     FIDMetricWithAttribution,
     INPMetricWithAttribution,
     LCPMetricWithAttribution,
+    TTFBMetricWithAttribution,
     Metric,
     onCLS,
+    onFCP,
     onFID,
     onLCP,
-    onINP
+    onINP,
+    onTTFB
 } from 'web-vitals/attribution';
 import {
     CLS_EVENT_TYPE,
+    FCP_EVENT_TYPE,
     FID_EVENT_TYPE,
     INP_EVENT_TYPE,
     LCP_EVENT_TYPE,
+    TTFB_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
     PERFORMANCE_RESOURCE_EVENT_TYPE
 } from '../utils/constant';
@@ -65,6 +73,8 @@ export class WebVitalsPlugin extends InternalPlugin {
             reportAllChanges: true
         });
         onINP((metric) => this.handleINP(metric), { reportAllChanges: true });
+        onFCP((metric) => this.handleFCP(metric));
+        onTTFB((metric) => this.handleTTFB(metric));
     }
 
     private handleEvent = (event: ParsedRumEvent) => {
@@ -170,5 +180,33 @@ export class WebVitalsPlugin extends InternalPlugin {
                 loadState: a?.loadState
             }
         } as InteractionToNextPaintEvent);
+    }
+
+    private handleFCP(metric: FCPMetricWithAttribution | Metric) {
+        const a = (metric as FCPMetricWithAttribution).attribution;
+        this.context?.record(FCP_EVENT_TYPE, {
+            version: '1.0.0',
+            value: metric.value,
+            attribution: {
+                timeToFirstByte: a?.timeToFirstByte,
+                firstByteToFCP: a?.firstByteToFCP,
+                loadState: a?.loadState
+            }
+        } as FirstContentfulPaintEvent);
+    }
+
+    private handleTTFB(metric: TTFBMetricWithAttribution | Metric) {
+        const a = (metric as TTFBMetricWithAttribution).attribution;
+        this.context?.record(TTFB_EVENT_TYPE, {
+            version: '1.0.0',
+            value: metric.value,
+            attribution: {
+                waitingDuration: a?.waitingDuration,
+                cacheDuration: a?.cacheDuration,
+                dnsDuration: a?.dnsDuration,
+                connectionDuration: a?.connectionDuration,
+                requestDuration: a?.requestDuration
+            }
+        } as TimeToFirstByteEvent);
     }
 }
