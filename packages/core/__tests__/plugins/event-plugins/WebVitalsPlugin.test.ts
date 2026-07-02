@@ -11,11 +11,13 @@ jest.mock('@aws-rum/web-core/utils/common-utils', () => {
 import { ResourceType } from '@aws-rum/web-core/utils/common-utils';
 import {
     CLS_EVENT_TYPE,
+    FCP_EVENT_TYPE,
     FID_EVENT_TYPE,
     INP_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_EVENT_TYPE
+    PERFORMANCE_RESOURCE_EVENT_TYPE,
+    TTFB_EVENT_TYPE
 } from '@aws-rum/web-core/plugins/utils/constant';
 import {
     context,
@@ -29,7 +31,9 @@ import {
     INPMetricWithAttribution,
     CLSMetricWithAttribution,
     FIDMetricWithAttribution,
-    LCPMetricWithAttribution
+    LCPMetricWithAttribution,
+    FCPMetricWithAttribution,
+    TTFBMetricWithAttribution
 } from 'web-vitals';
 
 const mockLCPData = {
@@ -87,6 +91,32 @@ const mockINPData = {
     }
 } as INPMetricWithAttribution;
 
+const mockFCPData = {
+    delta: 1200.5,
+    id: 'v1-1621403597703-1234567890123',
+    name: 'FCP',
+    value: 1200.5,
+    attribution: {
+        timeToFirstByte: 800,
+        firstByteToFCP: 400.5,
+        loadState: 'dom-interactive'
+    }
+} as FCPMetricWithAttribution;
+
+const mockTTFBData = {
+    delta: 800.25,
+    id: 'v1-1621403597704-9876543210987',
+    name: 'TTFB',
+    value: 800.25,
+    attribution: {
+        waitingDuration: 100,
+        cacheDuration: 50,
+        dnsDuration: 150,
+        connectionDuration: 200,
+        requestDuration: 300.25
+    }
+} as TTFBMetricWithAttribution;
+
 // only need hasLatency fields
 const imagePerformanceEntry = {
     duration: 50,
@@ -128,7 +158,15 @@ jest.mock('web-vitals/attribution', () => {
         onCLS: jest
             .fn()
             .mockImplementation((callback) => callback(mockCLSData)),
-        onINP: jest.fn().mockImplementation((callback) => callback(mockINPData))
+        onINP: jest
+            .fn()
+            .mockImplementation((callback) => callback(mockINPData)),
+        onFCP: jest
+            .fn()
+            .mockImplementation((callback) => callback(mockFCPData)),
+        onTTFB: jest
+            .fn()
+            .mockImplementation((callback) => callback(mockTTFBData))
     };
 });
 
@@ -189,6 +227,53 @@ describe('WebVitalsPlugin tests', () => {
         );
     });
 
+    test('When web vitals are present then FCP is recorded with attribution', async () => {
+        // Setup
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect(record).toHaveBeenCalledWith(
+            FCP_EVENT_TYPE,
+            expect.objectContaining({
+                version: '1.0.0',
+                value: mockFCPData.value,
+                attribution: {
+                    timeToFirstByte: mockFCPData.attribution.timeToFirstByte,
+                    firstByteToFCP: mockFCPData.attribution.firstByteToFCP,
+                    loadState: mockFCPData.attribution.loadState
+                }
+            })
+        );
+    });
+
+    test('When web vitals are present then TTFB is recorded with attribution', async () => {
+        // Setup
+        const plugin: WebVitalsPlugin = new WebVitalsPlugin();
+
+        // Run
+        plugin.load(context);
+
+        // Assert
+        expect(record).toHaveBeenCalledWith(
+            TTFB_EVENT_TYPE,
+            expect.objectContaining({
+                version: '1.0.0',
+                value: mockTTFBData.value,
+                attribution: {
+                    waitingDuration: mockTTFBData.attribution.waitingDuration,
+                    cacheDuration: mockTTFBData.attribution.cacheDuration,
+                    dnsDuration: mockTTFBData.attribution.dnsDuration,
+                    connectionDuration:
+                        mockTTFBData.attribution.connectionDuration,
+                    requestDuration: mockTTFBData.attribution.requestDuration
+                }
+            })
+        );
+    });
+
     test('When web vitals are present with reportAllCLS=false then CLS is recorded with attribution as event candidate', async () => {
         // Setup
         const plugin: WebVitalsPlugin = new WebVitalsPlugin({
@@ -199,7 +284,8 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(2);
+        // LCP + FID + FCP + TTFB recorded; CLS is a candidate
+        expect(record).toHaveBeenCalledTimes(4);
         expect(recordCandidate).toHaveBeenCalledWith(
             CLS_EVENT_TYPE,
             expect.objectContaining({
@@ -231,7 +317,8 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(3);
+        // LCP + FID + FCP + TTFB + CLS (reported as a regular event)
+        expect(record).toHaveBeenCalledTimes(5);
 
         expect(record).toHaveBeenCalledWith(
             CLS_EVENT_TYPE,
@@ -392,7 +479,8 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(2);
+        // LCP + FID + FCP + TTFB recorded; INP is a candidate
+        expect(record).toHaveBeenCalledTimes(4);
         expect(recordCandidate).toHaveBeenCalledWith(
             INP_EVENT_TYPE,
             expect.objectContaining({
@@ -429,7 +517,8 @@ describe('WebVitalsPlugin tests', () => {
         plugin.load(context);
 
         // Assert
-        expect(record).toHaveBeenCalledTimes(3);
+        // LCP + FID + FCP + TTFB + INP (reported as a regular event)
+        expect(record).toHaveBeenCalledTimes(5);
         expect(record).toHaveBeenCalledWith(
             INP_EVENT_TYPE,
             expect.objectContaining({
@@ -478,6 +567,16 @@ describe('WebVitalsPlugin tests', () => {
         // Test INP with null attribution
         webVitals.onINP.mockImplementationOnce((callback) => {
             callback({ ...mockINPData, attribution: null });
+        });
+
+        // Test FCP with null attribution
+        webVitals.onFCP.mockImplementationOnce((callback) => {
+            callback({ ...mockFCPData, attribution: null });
+        });
+
+        // Test TTFB with null attribution
+        webVitals.onTTFB.mockImplementationOnce((callback) => {
+            callback({ ...mockTTFBData, attribution: null });
         });
 
         const plugin = new WebVitalsPlugin();
@@ -537,6 +636,32 @@ describe('WebVitalsPlugin tests', () => {
                     processingDuration: undefined,
                     presentationDelay: undefined,
                     loadState: undefined
+                })
+            })
+        );
+
+        // Verify FCP handles null attribution
+        expect(record).toHaveBeenCalledWith(
+            FCP_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    timeToFirstByte: undefined,
+                    firstByteToFCP: undefined,
+                    loadState: undefined
+                })
+            })
+        );
+
+        // Verify TTFB handles null attribution
+        expect(record).toHaveBeenCalledWith(
+            TTFB_EVENT_TYPE,
+            expect.objectContaining({
+                attribution: expect.objectContaining({
+                    waitingDuration: undefined,
+                    cacheDuration: undefined,
+                    dnsDuration: undefined,
+                    connectionDuration: undefined,
+                    requestDuration: undefined
                 })
             })
         );
