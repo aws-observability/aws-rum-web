@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 import {
     CLS_EVENT_TYPE,
+    FCP_EVENT_TYPE,
     INP_EVENT_TYPE,
     LCP_EVENT_TYPE,
     PERFORMANCE_NAVIGATION_EVENT_TYPE,
-    PERFORMANCE_RESOURCE_EVENT_TYPE
+    PERFORMANCE_RESOURCE_EVENT_TYPE,
+    TTFB_EVENT_TYPE
 } from '../../utils/constant';
 
 test.describe('WebVitalEvent Plugin', () => {
@@ -100,6 +102,53 @@ test.describe('WebVitalEvent Plugin', () => {
             expect(typeof inpEventDetails.value).toBe('number');
             expect(typeof inpEventDetails.attribution).toBe('object');
         }
+    });
+
+    test('WebVitalEvent records fcp and ttfb events on chrome', async ({
+        page,
+        browserName
+    }) => {
+        test.skip(
+            browserName === 'webkit' || browserName === 'firefox',
+            'Test is skipped for Safari and Firefox'
+        );
+
+        await page.goto('/web_vital_event.html');
+
+        await page.waitForTimeout(300);
+        // FCP and TTFB are reported on initial load; flush on page hide.
+        await page.click('#testButton');
+        await page.click('#makePageHidden');
+
+        const responseStatus = await page
+            .locator('#response_status')
+            .textContent();
+        const requestBodyText = await page
+            .locator('#request_body')
+            .textContent();
+
+        expect(responseStatus).toBe('202');
+        expect(requestBodyText).toContain('BatchId');
+
+        const content = requestBodyText || '{}';
+
+        const fcpEvents = JSON.parse(content).RumEvents.filter(
+            (e: any) => e.type === FCP_EVENT_TYPE
+        );
+        const ttfbEvents = JSON.parse(content).RumEvents.filter(
+            (e: any) => e.type === TTFB_EVENT_TYPE
+        );
+
+        expect(fcpEvents.length).toBeGreaterThan(0);
+        expect(ttfbEvents.length).toBeGreaterThan(0);
+
+        const fcpEventDetails = JSON.parse(fcpEvents[0].details);
+        const ttfbEventDetails = JSON.parse(ttfbEvents[0].details);
+
+        expect(typeof fcpEventDetails.value).toBe('number');
+        expect(typeof ttfbEventDetails.value).toBe('number');
+        expect(typeof fcpEventDetails.attribution).toBe('object');
+        expect(typeof ttfbEventDetails.attribution).toBe('object');
     });
 
     test('when navigation is recorded then it is attributed to lcp', async ({
