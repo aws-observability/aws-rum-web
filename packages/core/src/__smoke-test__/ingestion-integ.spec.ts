@@ -12,7 +12,9 @@ import {
     SESSION_START_EVENT_TYPE,
     DOM_EVENT_TYPE,
     XRAY_TRACE_EVENT_TYPE,
-    INP_EVENT_TYPE
+    INP_EVENT_TYPE,
+    FCP_EVENT_TYPE,
+    TTFB_EVENT_TYPE
 } from '../plugins/utils/constant';
 import {
     getEventIds,
@@ -151,6 +153,64 @@ test('when FID event is sent then event is ingested', async ({ page }) => {
 
     const fid = getEventsByType(requestBody, FID_EVENT_TYPE);
     const eventIds = getEventIds(fid);
+
+    expect(eventIds.length).not.toEqual(0);
+    const isIngestionCompleted = await verifyIngestionWithRetry(
+        rumClient,
+        eventIds,
+        timestamp,
+        MONITOR_NAME
+    );
+    expect(isIngestionCompleted).toEqual(true);
+});
+
+test('when FCP event is sent then event is ingested', async ({ page }) => {
+    const timestamp = Date.now() - 30000;
+
+    // Open page
+    await page.goto(TEST_URL);
+    const clearButton = page.locator('[id=dummyButton]');
+    await clearButton.click();
+
+    // Test will timeout if no successful dataplane request is found
+    const response = await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL)
+    );
+
+    // Parse payload to verify event count
+    const requestBody = parseRequestBody(response);
+
+    const fcp = getEventsByType(requestBody, FCP_EVENT_TYPE);
+    const eventIds = getEventIds(fcp);
+
+    expect(eventIds.length).not.toEqual(0);
+    const isIngestionCompleted = await verifyIngestionWithRetry(
+        rumClient,
+        eventIds,
+        timestamp,
+        MONITOR_NAME
+    );
+    expect(isIngestionCompleted).toEqual(true);
+});
+
+test('when TTFB event is sent then event is ingested', async ({ page }) => {
+    const timestamp = Date.now() - 30000;
+
+    // Open page
+    await page.goto(TEST_URL);
+    const clearButton = page.locator('[id=dummyButton]');
+    await clearButton.click();
+
+    // Test will timeout if no successful dataplane request is found
+    const response = await page.waitForResponse(async (response) =>
+        isDataPlaneRequest(response, TARGET_URL)
+    );
+
+    // Parse payload to verify event count
+    const requestBody = parseRequestBody(response);
+
+    const ttfb = getEventsByType(requestBody, TTFB_EVENT_TYPE);
+    const eventIds = getEventIds(ttfb);
 
     expect(eventIds.length).not.toEqual(0);
     const isIngestionCompleted = await verifyIngestionWithRetry(

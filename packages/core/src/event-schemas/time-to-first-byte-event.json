@@ -1,0 +1,53 @@
+{
+    "$id": "com.amazon.rum.time_to_first_byte_event",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "TimeToFirstByteEvent",
+    "type": "object",
+    "properties": {
+        "version": {
+            "const": "1.0.0",
+            "type": "string",
+            "description": "Schema version."
+        },
+        "value": {
+            "type": "number",
+            "description": "Time until the first byte of the response in milliseconds"
+        },
+        "attribution": {
+            "type": "object",
+            "description": "Attributions for TTFB",
+            "properties": {
+                "waitingDuration": {
+                    "type": "number",
+                    "description": "Time from user navigation until request handling begins"
+                },
+                "cacheDuration": {
+                    "type": "number",
+                    "description": "Time spent checking the HTTP cache"
+                },
+                "dnsDuration": {
+                    "type": "number",
+                    "description": "Time to resolve DNS for the requested domain"
+                },
+                "connectionDuration": {
+                    "type": "number",
+                    "description": "Time to create the connection to the requested domain"
+                },
+                "requestDuration": {
+                    "type": "number",
+                    "description": "Time from request sent until first byte received"
+                }
+            },
+            "required": [
+                "waitingDuration",
+                "cacheDuration",
+                "dnsDuration",
+                "connectionDuration",
+                "requestDuration"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "required": ["version", "value"]
+}

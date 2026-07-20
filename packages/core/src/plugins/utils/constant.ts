@@ -11,6 +11,8 @@ export const LCP_EVENT_TYPE = `${RUM_AMZ_PREFIX}.largest_contentful_paint_event`
 export const FID_EVENT_TYPE = `${RUM_AMZ_PREFIX}.first_input_delay_event`;
 export const CLS_EVENT_TYPE = `${RUM_AMZ_PREFIX}.cumulative_layout_shift_event`;
 export const INP_EVENT_TYPE = `${RUM_AMZ_PREFIX}.interaction_to_next_paint_event`;
+export const FCP_EVENT_TYPE = `${RUM_AMZ_PREFIX}.first_contentful_paint_event`;
+export const TTFB_EVENT_TYPE = `${RUM_AMZ_PREFIX}.time_to_first_byte_event`;
 
 // Page load event schemas
 export const PERFORMANCE_NAVIGATION_EVENT_TYPE = `${RUM_AMZ_PREFIX}.performance_navigation_event`;
