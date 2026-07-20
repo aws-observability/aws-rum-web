@@ -11,6 +11,7 @@
         "@babel/core": "7.16.0",
         "@babel/plugin-transform-runtime": "^7.16.0",
         "@babel/preset-env": "~7.6.3",
+        "@types/node": "^20",
         "@webpack-cli/serve": "^1.6.0",
         "babel-loader": "~8.0.6",
         "case-sensitive-paths-webpack-plugin": "^2.1.2",
@@ -24,6 +25,9 @@
     "dependencies": {
         "@babel/runtime": "^7.16.0",
         "aws-rum-web": "file:../.."
+    },
+    "overrides": {
+        "@types/node": "^20"
     },
     "browserslist": [
         "defaults"
