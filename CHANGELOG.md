@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/aws-observability/aws-rum-web/compare/v3.1.0...v3.2.0) (2026-07-21)
+
+
+### Bug Fixes
+
+* include README in aws-rum-web npm package ([#840](https://github.com/aws-observability/aws-rum-web/issues/840)) ([213c5af](https://github.com/aws-observability/aws-rum-web/commit/213c5af4a0351ec256ae37a3d5f7f9cedc93f4e5))
+* **smoke:** pin @types/node to ^20 for TS 4.9 compatibility ([#865](https://github.com/aws-observability/aws-rum-web/issues/865)) ([39a2e54](https://github.com/aws-observability/aws-rum-web/commit/39a2e54f9a506894f53d304fc542f99c5b0090a9))
+* Update CI workflow configuration ([#845](https://github.com/aws-observability/aws-rum-web/issues/845)) ([9f008ba](https://github.com/aws-observability/aws-rum-web/commit/9f008ba8a3dfde647c5b153b99d23d388e1bbf48))
+
+
+### Features
+
+* collect First Contentful Paint and Time to First Byte web vitals ([#855](https://github.com/aws-observability/aws-rum-web/issues/855)) ([13e3c3d](https://github.com/aws-observability/aws-rum-web/commit/13e3c3d537de073b72b24a570b3f9745d278b978))
+
+
+
+
+
 # [3.1.0](https://github.com/aws-observability/aws-rum-web/compare/v3.0.0...v3.1.0) (2026-05-19)
 
 
