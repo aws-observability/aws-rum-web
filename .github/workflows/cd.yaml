@@ -20,7 +20,7 @@ jobs:
         environment: cdn-prod-release
         steps:
             - name: Checkout AWS RUM Web Client Repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup Node
               uses: actions/setup-node@v5
