@@ -38,7 +38,7 @@ jobs:
 
             - name: Build Release
               run: |
-                  npm install -g npm@latest
+                  npm install -g npm@^11
                   npm ci
                   npm run release
 
