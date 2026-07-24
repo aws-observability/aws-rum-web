@@ -105,25 +105,53 @@ describe('Orchestration tests', () => {
 
     test('when region is not provided then endpoint region defaults to us-west-2', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'c', undefined, {});
+        new Orchestration('a', 'c', undefined, {});
 
-        const dispatchmock = (Dispatch as any).mock;
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
         expect((Dispatch as any).mock.calls[0][2]).toEqual(
             new URL('https://dataplane.rum.us-west-2.amazonaws.com/')
         );
+        expect((EventCache as any).mock.calls[0][1]).toMatchObject({
+            endpoint: 'https://dataplane.rum.us-west-2.amazonaws.com',
+            endpointUrl: new URL(
+                'https://dataplane.rum.us-west-2.amazonaws.com'
+            )
+        });
     });
 
     test('when region is provided then the endpoint uses that region', async () => {
         // Init
-        const orchestration = new Orchestration('a', 'c', 'us-east-1', {});
+        new Orchestration('a', 'c', 'eu-west-1', {});
 
         // Assert
         expect(Dispatch).toHaveBeenCalledTimes(1);
         expect((Dispatch as any).mock.calls[0][2]).toEqual(
-            new URL('https://dataplane.rum.us-east-1.amazonaws.com/')
+            new URL('https://dataplane.rum.eu-west-1.amazonaws.com/')
         );
+        expect((EventCache as any).mock.calls[0][1]).toMatchObject({
+            endpoint: 'https://dataplane.rum.eu-west-1.amazonaws.com',
+            endpointUrl: new URL(
+                'https://dataplane.rum.eu-west-1.amazonaws.com'
+            )
+        });
+    });
+
+    test('when custom endpoint is provided then it overrides the region endpoint', async () => {
+        // Init
+        new Orchestration('a', 'c', 'eu-west-1', {
+            endpoint: 'https://custom.endpoint.com'
+        });
+
+        // Assert
+        expect(Dispatch).toHaveBeenCalledTimes(1);
+        expect((Dispatch as any).mock.calls[0][2]).toEqual(
+            new URL('https://custom.endpoint.com')
+        );
+        expect((EventCache as any).mock.calls[0][1]).toMatchObject({
+            endpoint: 'https://custom.endpoint.com',
+            endpointUrl: new URL('https://custom.endpoint.com')
+        });
     });
 
     test('when enable is true in config then orchestration enables dispatch, pluginManager and event cache', async () => {
