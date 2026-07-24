@@ -61,8 +61,13 @@ export class Orchestration extends SlimOrchestration {
         region: string,
         partialConfig: PartialConfig = {}
     ) {
+        const { signing, telemetries } = defaultConfig(
+            defaultCookieAttributes()
+        );
+
         super(applicationId, applicationVersion, region, {
-            ...defaultConfig(defaultCookieAttributes()),
+            signing,
+            telemetries,
             ...partialConfig
         } as any);
 
