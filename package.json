@@ -82,7 +82,7 @@
         "lerna": "^9.0.0",
         "lint-staged": "^16.4.0",
         "lodash": "^4.18.1",
-        "nightwatch": "^2.0.6",
+        "nightwatch": "^3.16.0",
         "node-fetch": "^2.6.1",
         "npm-run-all": "^4.1.5",
         "prettier": "2.8.4",
