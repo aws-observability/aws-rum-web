@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.1](https://github.com/aws-observability/aws-rum-web/compare/v3.2.0...v3.2.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* derive dataplane endpoint from constructor region ([#869](https://github.com/aws-observability/aws-rum-web/issues/869)) ([5b49e6e](https://github.com/aws-observability/aws-rum-web/commit/5b49e6ea168922a309b304f934649205e7d5616c))
+
+
+
+
+
 # [3.2.0](https://github.com/aws-observability/aws-rum-web/compare/v3.1.0...v3.2.0) (2026-07-21)
 
 
