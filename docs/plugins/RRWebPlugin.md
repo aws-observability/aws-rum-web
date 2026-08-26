@@ -4,9 +4,9 @@
 
 Records DOM snapshots and user interactions using [rrweb](https://github.com/rrweb-io/rrweb) so sessions can be replayed in the CloudWatch RUM console. Emits events of type `com.amazon.rum.rrweb_event`.
 
-## Privacy (enforced, non-negotiable)
+## Privacy (enforced by default)
 
-The plugin **enforces** the following rrweb options and does not allow them to be overridden:
+The plugin **enforces** the following rrweb options by default and does not allow them to be overridden through `recordOptions`:
 
 | Option             | Value       | Effect                              |
 | ------------------ | ----------- | ----------------------------------- |
@@ -14,7 +14,33 @@ The plugin **enforces** the following rrweb options and does not allow them to b
 | `maskTextSelector` | `'*'`       | All text content is masked.         |
 | `maskInputOptions` | `undefined` | Ignored when `maskAllInputs: true`. |
 
-In other words, out of the box the replay will **not** record the text or input content of your page. This is enforced at the plugin level — customers cannot disable masking through configuration.
+In other words, out of the box the replay will **not** record the text or input content of your page.
+
+### Opt-in: selective masking
+
+Some applications need to retain non-sensitive UI context in replays (e.g. button labels, dashboard headings) while still masking PII fields. For these cases the plugin offers an opt-in `selectiveMaskingAttribute` configuration. When set, **only** elements that carry the configured attribute are masked; everything else is recorded in clear text.
+
+> ⚠️ Turning selective masking on relaxes the default. Review the masking attribute coverage of your DOM with your privacy/legal owner before enabling in production. Even when this option is set, `maskAllInputs` / `maskTextSelector` / `maskInputOptions` / `maskInputFn` cannot be supplied via `recordOptions` — those values are derived from `selectiveMaskingAttribute`.
+
+```typescript
+import { RRWebPlugin } from 'aws-rum-web';
+
+const rrweb = new RRWebPlugin({
+    // Mask any element carrying [data-rum-mask]; record the rest as text.
+    selectiveMaskingAttribute: 'data-rum-mask'
+});
+```
+
+```html
+<!-- masked in replay -->
+<input type="email" data-rum-mask />
+<p data-rum-mask>SSN: 123-45-6789</p>
+
+<!-- recorded as text -->
+<input type="text" placeholder="Search" />
+<button>Submit</button>
+<h1>Dashboard</h1>
+```
 
 ## Default behavior
 
@@ -33,7 +59,8 @@ Because `aws-rum-web` enables the `replay` telemetry by default, session replay 
 | `additionalSampleRate` | Number (0–1) | `1.0` | Extra sampling applied **on top of** `sessionSampleRate`. Use this to record replays for only a fraction of already-sampled sessions. |
 | `batchSize` | Number | `50` | Buffer this many rrweb events before flushing a batch. |
 | `flushInterval` | Number (ms) | `5000` | Timer-based flush interval for buffered events. |
-| `recordOptions` | Object | See below | Options forwarded to `rrweb.record()`. Privacy fields are enforced and cannot be overridden. |
+| `recordOptions` | Object | See below | Options forwarded to `rrweb.record()`. Privacy fields are managed by the plugin and cannot be overridden. |
+| `selectiveMaskingAttribute` | String | _unset_ | Opt-in. When set, only DOM elements carrying this attribute are masked; everything else is recorded in clear text. See [Opt-in: selective masking](#opt-in-selective-masking). |
 
 Production `recordOptions` defaults:
 
