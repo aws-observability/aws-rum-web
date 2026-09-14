@@ -158,7 +158,11 @@ export class Dispatch {
         if (typeof credentialProvider === 'function') {
             // In case a beacon in the first dispatch, we must pre-fetch credentials into a cookie so there is no delay
             // to fetch credentials while the page is closing.
-            (credentialProvider as () => Promise<AwsCredentialIdentity>)();
+            void Promise.resolve(credentialProvider()).catch(() => {
+                InternalLogger.warn(
+                    'Could not get AWS credentials. RUM may be unable to send monitoring data.'
+                );
+            });
         }
     }
 
