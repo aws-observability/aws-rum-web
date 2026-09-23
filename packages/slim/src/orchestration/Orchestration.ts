@@ -333,8 +333,19 @@ export class Orchestration {
         this.eventCache.recordPageView(payload);
     }
 
-    public recordError(error: any) {
-        this.pluginManager.record('com.amazonaws.rum.js-error', error);
+    /**
+     * Record an error using the JS error plugin.
+     *
+     * @param error An ErrorEvent, Error or primitive.
+     * @param metadata Per-call metadata to attach to the error event. Follows
+     * the same precedence and sanitization rules as recordEvent metadata.
+     */
+    public recordError(error: any, metadata?: EventMetadata) {
+        this.pluginManager.record(
+            'com.amazonaws.rum.js-error',
+            error,
+            metadata
+        );
     }
 
     public registerDomEvents(events: any[]) {

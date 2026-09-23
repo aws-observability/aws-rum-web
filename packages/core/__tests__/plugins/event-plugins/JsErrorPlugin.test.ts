@@ -427,6 +427,74 @@ describe('JsErrorPlugin tests', () => {
         );
     });
 
+    test('when the application records an error with metadata then the metadata is recorded on the error event', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        plugin.record(new Error('Something went wrong!'), {
+            traceId: 'trace-1',
+            component: 'PaymentForm'
+        });
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            version: '1.0.0',
+            type: 'Error',
+            message: 'Something went wrong!'
+        });
+        expect(record.mock.calls[0][2]).toEqual({
+            traceId: 'trace-1',
+            component: 'PaymentForm'
+        });
+    });
+
+    test('when no metadata is given then no event metadata is recorded', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+
+        // Run
+        plugin.load(context);
+        plugin.record(new Error('Something went wrong!'));
+        plugin.disable();
+
+        // Assert
+        expect(record.mock.calls[0][2]).toBeUndefined();
+    });
+
+    test('when the application records an ErrorEvent with metadata then the error fields are preserved', async () => {
+        // Init
+        const plugin: JsErrorPlugin = new JsErrorPlugin();
+        const errorEvent = new ErrorEvent('error', {
+            colno: 1,
+            error: new Error('Something went wrong!'),
+            filename: 'main.js',
+            lineno: 2
+        });
+
+        // Run
+        plugin.load(context);
+        plugin.record(errorEvent, { traceId: 'trace-1' });
+        plugin.disable();
+
+        // Assert
+        expect(record).toHaveBeenCalledTimes(1);
+        expect(record.mock.calls[0][0]).toEqual(JS_ERROR_EVENT_TYPE);
+        expect(record.mock.calls[0][1]).toMatchObject({
+            version: '1.0.0',
+            type: 'Error',
+            message: 'Something went wrong!',
+            filename: 'main.js',
+            colno: 1,
+            lineno: 2
+        });
+        expect(record.mock.calls[0][2]).toEqual({ traceId: 'trace-1' });
+    });
+
     test('when unhandledrejection error event outputs empty object as reason then message is recorded as undefined', async () => {
         // Init
         const plugin: JsErrorPlugin = new JsErrorPlugin();

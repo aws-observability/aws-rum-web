@@ -231,7 +231,20 @@ describe('Slim Orchestration tests', () => {
         orch.recordError(error);
         expect(pluginRecord).toHaveBeenCalledWith(
             'com.amazonaws.rum.js-error',
-            error
+            error,
+            undefined
+        );
+    });
+
+    test('recordError forwards metadata to pluginManager', async () => {
+        const orch = new Orchestration('a', 'c', 'us-east-1', {});
+        const error = new Error('test');
+        const metadata = { traceId: 'trace-1' };
+        orch.recordError(error, metadata);
+        expect(pluginRecord).toHaveBeenCalledWith(
+            'com.amazonaws.rum.js-error',
+            error,
+            metadata
         );
     });
 

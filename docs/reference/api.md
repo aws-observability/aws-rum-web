@@ -31,7 +31,7 @@ Each row shows the NPM method and the equivalent CDN command.
 | Command | NPM | CDN | Description |
 | --- | --- | --- | --- |
 | **recordPageView** | `awsRum.recordPageView('/home')` | `cwr('recordPageView', '/home')` | Record a page view. Accepts a string (page ID) or a `PageView` object. See [PageView](#pageview). |
-| **recordError** | `awsRum.recordError(e)` | `cwr('recordError', e)` | Record a caught error. Accepts `Error`, `ErrorEvent`, or string. |
+| **recordError** | `awsRum.recordError(e)` <br> `awsRum.recordError(e, { traceId: 'abc' })` | `cwr('recordError', e)` <br> `cwr('recordError', { error, metadata })` | Record a caught error. Accepts `Error`, `ErrorEvent`, or string. The optional 2nd arg attaches per-call metadata, same rules and precedence as [`recordEvent` metadata](#metadata-precedence). On the CDN, an object literal with own `error` and `metadata` keys is read as an envelope; every other payload is recorded as the error itself. |
 | **recordEvent** | `awsRum.recordEvent('type', { ... }, { tier: 'beta' })` | `cwr('recordEvent', { type, data, metadata })` | Record a custom event. The optional 3rd arg attaches per-call metadata (highest precedence). See [Event](#event). ⚠️ AppMonitor must have custom events enabled. |
 | **addSessionAttributes** | `awsRum.addSessionAttributes({ appVersion: '1.3.8' })` | `cwr('addSessionAttributes', { appVersion: '1.3.8' })` | Add metadata attributes to every event in the current session. See [MetadataAttributes](../configuration.md#metadataattributes). |
 | **setEventMetadataHook** | `awsRum.setEventMetadataHook((type, data, ctx) => ({ route: location.pathname }))` | _(NPM only — hooks are functions)_ | Register a function that decorates every recorded event's metadata. The hook receives `(eventType, eventData, currentMetadata)` and returns an `EventMetadata` object. Replaces any previously set hook. Manual metadata passed to `recordEvent` always wins. If the hook throws, its output is dropped for that event and the SDK logs a warning. |
@@ -117,7 +117,7 @@ Per-event metadata is composed of three layers, applied in order from lowest to 
 
 1. **Page attributes** — set via `recordPageView({ pageAttributes: ... })`.
 2. **Hook output** — set via `setEventMetadataHook(fn)`. Overrides page attributes for non-reserved keys.
-3. **Manual metadata** — passed as the 3rd argument to `recordEvent`. Overrides hook output.
+3. **Manual metadata** — passed as the 3rd argument to `recordEvent` or the 2nd argument to `recordError`. Overrides hook output.
 
 Session-level metadata travels in the request-level `Metadata` field, separate from per-event metadata. Within session-level metadata, precedence (lowest → highest) is:
 

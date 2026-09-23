@@ -1,6 +1,6 @@
 import { RUM_AWS_PREFIX } from './utils/constant';
 import { Plugin } from './Plugin';
-import { InternalPluginContext } from './types';
+import { EventMetadata, InternalPluginContext } from './types';
 
 export abstract class InternalPlugin<UpdateType = unknown>
     implements Plugin<UpdateType>
@@ -23,7 +23,7 @@ export abstract class InternalPlugin<UpdateType = unknown>
         this.context = context;
         this.onload?.();
     }
-    record?<D>(data: D): void;
+    record?(data: any, metadata?: EventMetadata): void;
     update?(updateWith: UpdateType): void;
 
     abstract enable(): void;

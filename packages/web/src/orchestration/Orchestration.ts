@@ -8,7 +8,6 @@ import {
     DOM_EVENT_PLUGIN_ID,
     TargetDomEvent,
     JsErrorPlugin,
-    JS_ERROR_EVENT_PLUGIN_ID,
     NavigationPlugin,
     ResourcePlugin,
     WebVitalsPlugin,
@@ -128,13 +127,6 @@ export class Orchestration extends SlimOrchestration {
         });
 
         return pluginManager;
-    }
-
-    /**
-     * Record an error using the JS error plugin.
-     */
-    public recordError(error: any) {
-        this.pluginManager.record(JS_ERROR_EVENT_PLUGIN_ID, error);
     }
 
     /**

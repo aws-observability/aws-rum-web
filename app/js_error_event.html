@@ -54,6 +54,13 @@
                 cwr('recordError', new Error('My error message'));
             }
 
+            function recordCaughtErrorWithMetadata() {
+                cwr('recordError', {
+                    error: new Error('My error message'),
+                    metadata: { traceId: 'trace-1' }
+                });
+            }
+
             function disable() {
                 cwr('disable');
             }
@@ -95,6 +102,12 @@
         </button>
         <button id="recordCaughtError" onclick="recordCaughtError()">
             Record caught error
+        </button>
+        <button
+            id="recordCaughtErrorWithMetadata"
+            onclick="recordCaughtErrorWithMetadata()"
+        >
+            Record caught error with metadata
         </button>
         <button id="resizeObserverLoopError" onclick="throwObserverLoopError()">
             Throw ResizeObserverLoopError
