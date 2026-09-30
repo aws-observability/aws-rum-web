@@ -1404,4 +1404,150 @@ describe('FetchPlugin tests', () => {
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
     });
+    test('ignores only configured HTTP failures and retains traces', async () => {
+        const apiBaseUrl = 'https://example.test';
+        const missingResource = `${apiBaseUrl}/api/resources/123`;
+        const reportEndpoint = `${apiBaseUrl}/api/reports`;
+        const unrelatedNotFound = `${apiBaseUrl}/api/other-resource`;
+        const unrelatedServerError = `${apiBaseUrl}/api/status`;
+        const statuses: Record<string, number> = {
+            [missingResource]: 404,
+            [reportEndpoint]: 500,
+            [unrelatedNotFound]: 404,
+            [unrelatedServerError]: 500
+        };
+        global.fetch = jest.fn((input: RequestInfo) => {
+            const status = statuses[String(input)] || 200;
+            return Promise.resolve({
+                status,
+                statusText: status === 200 ? 'OK' : 'Error',
+                headers: new Headers(),
+                ok: status === 200
+            } as Response);
+        });
+        const plugin = new FetchPlugin({
+            recordAllRequests: true,
+            ignore: (event) => {
+                const url = event.request.url || '';
+                return (
+                    (event.request.method === 'GET' &&
+                        url === missingResource &&
+                        event.response?.status === 404) ||
+                    (url === reportEndpoint &&
+                        ((event.response?.status || 0) >= 400 || !!event.error))
+                );
+            }
+        });
+        plugin.load(xRayOnContext);
+
+        for (const url of [
+            missingResource,
+            reportEndpoint,
+            unrelatedNotFound,
+            unrelatedServerError
+        ]) {
+            await fetch(url);
+        }
+        statuses[reportEndpoint] = 200;
+        await fetch(reportEndpoint);
+        plugin.disable();
+        global.fetch = mockFetch;
+
+        const httpEvents = record.mock.calls
+            .filter(([type]) => type === HTTP_EVENT_TYPE)
+            .map(([, event]) => event as HttpEvent);
+        expect(
+            httpEvents.map(({ request, response }) => [
+                request.url,
+                response?.status
+            ])
+        ).toEqual([
+            [unrelatedNotFound, 404],
+            [unrelatedServerError, 500],
+            [reportEndpoint, 200]
+        ]);
+        expect(
+            record.mock.calls.filter(([type]) => type === XRAY_TRACE_EVENT_TYPE)
+        ).toHaveLength(5);
+    });
+
+    test('can ignore a network error without changing the rejected fetch', async () => {
+        global.fetch = mockFetchWithErrorObject;
+        const error = new Error('Timeout');
+        const reportEndpoint = 'https://example.test/api/reports';
+        mockFetchWithErrorObject.mockImplementationOnce(() =>
+            Promise.reject(error)
+        );
+        const plugin = new FetchPlugin({
+            ignore: (event) =>
+                event.request.url === reportEndpoint &&
+                !!event.error &&
+                !event.response
+        });
+        plugin.load(xRayOffContext);
+
+        await expect(fetch(reportEndpoint)).rejects.toBe(error);
+        plugin.disable();
+        global.fetch = mockFetch;
+        expect(record).not.toHaveBeenCalled();
+    });
+
+    test('records a failed response if the ignore callback throws', async () => {
+        global.fetch = mockFetchWith400;
+        const plugin = new FetchPlugin({
+            ignore: () => {
+                throw new Error('predicate failed');
+            }
+        });
+        plugin.load(xRayOffContext);
+
+        await expect(
+            fetch('https://example.test/api/resources/123')
+        ).resolves.toMatchObject({
+            status: 404
+        });
+        plugin.disable();
+        global.fetch = mockFetch;
+        expect(record.mock.calls[0]).toMatchObject([
+            HTTP_EVENT_TYPE,
+            { response: { status: 404 } }
+        ]);
+    });
+
+    test('keeps complete HTTP configs without ignore compatible', async () => {
+        const legacyConfig: HttpPluginConfig = {
+            logicalServiceName: 'example.service',
+            urlsToInclude: [/.*/],
+            urlsToExclude: [],
+            stackTraceLength: 200,
+            recordAllRequests: false,
+            addXRayTraceIdHeader: false
+        };
+        const requestUrl = 'https://example.test/api/resources/123';
+        global.fetch = mockFetchWith400;
+
+        for (const config of [
+            legacyConfig,
+            { ...legacyConfig, ignore: undefined }
+        ]) {
+            const plugin = new FetchPlugin(config);
+            plugin.load(xRayOffContext);
+            await expect(fetch(requestUrl)).resolves.toMatchObject({
+                status: 404
+            });
+            plugin.disable();
+        }
+        global.fetch = mockFetch;
+
+        expect(record.mock.calls).toMatchObject([
+            [
+                HTTP_EVENT_TYPE,
+                { request: { url: requestUrl }, response: { status: 404 } }
+            ],
+            [
+                HTTP_EVENT_TYPE,
+                { request: { url: requestUrl }, response: { status: 404 } }
+            ]
+        ]);
+    });
 });

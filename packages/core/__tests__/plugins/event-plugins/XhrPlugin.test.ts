@@ -17,6 +17,7 @@ import {
 } from '@aws-rum/web-core/plugins/utils/constant';
 import { DEFAULT_CONFIG } from '@aws-rum/web-core/test-utils/test-utils';
 import { MockHeaders } from 'xhr-mock/lib/types';
+import { HttpEvent } from '@aws-rum/web-core/events/http-event';
 
 const actualUserAgent = navigator.userAgent;
 const SYNTHETIC_USER_AGENT =
@@ -1628,5 +1629,131 @@ describe('XhrPlugin tests', () => {
         // Assert
         expect(record).toHaveBeenCalledTimes(1);
         expect(record.mock.calls[0][0]).toEqual(XRAY_TRACE_EVENT_TYPE);
+    });
+
+    test('ignores only configured HTTP failures and retains traces', async () => {
+        const missingResource = './api/resources/123';
+        const reportEndpoint = './api/reports';
+        const unrelatedNotFound = './api/other-resource';
+        const unrelatedServerError = './api/status';
+        let reportRequests = 0;
+        mock.get(/.*/, (request, response) => {
+            const url = request.url().toString();
+            let status = 200;
+            if (url === reportEndpoint) {
+                reportRequests++;
+                status = reportRequests === 1 ? 500 : 200;
+            } else if (url === missingResource || url === unrelatedNotFound) {
+                status = 404;
+            } else if (url === unrelatedServerError) {
+                status = 500;
+            }
+            return response.status(status);
+        });
+        const plugin = new XhrPlugin({
+            recordAllRequests: true,
+            ignore: (event) => {
+                const url = event.request.url || '';
+                return (
+                    (event.request.method === 'GET' &&
+                        url === missingResource &&
+                        event.response?.status === 404) ||
+                    (url === reportEndpoint &&
+                        ((event.response?.status || 0) >= 400 || !!event.error))
+                );
+            }
+        });
+        plugin.load(xRayOnContext);
+
+        for (const url of [
+            missingResource,
+            reportEndpoint,
+            unrelatedNotFound,
+            unrelatedServerError,
+            reportEndpoint
+        ]) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            // The ES2018 test target has no Promise.withResolvers.
+            const completed = new Promise<void>((resolve) => {
+                xhr.addEventListener('loadend', () => resolve(), {
+                    once: true
+                });
+            });
+            xhr.send();
+            await completed;
+        }
+        plugin.disable();
+
+        const httpEvents = record.mock.calls
+            .filter(([type]) => type === HTTP_EVENT_TYPE)
+            .map(([, event]) => event as HttpEvent);
+        expect(
+            httpEvents.map(({ request, response }) => [
+                request.url,
+                response?.status
+            ])
+        ).toEqual([
+            [unrelatedNotFound, 404],
+            [unrelatedServerError, 500],
+            [reportEndpoint, 200]
+        ]);
+        expect(
+            record.mock.calls.filter(([type]) => type === XRAY_TRACE_EVENT_TYPE)
+        ).toHaveLength(5);
+    });
+
+    test('can ignore an aborted XHR and remove its tracked details', async () => {
+        mock.get(/.*/, { status: 200 });
+        const plugin = new XhrPlugin({
+            ignore: (event) =>
+                event.request.url === './api/reports' &&
+                !!event.error &&
+                !event.response
+        });
+        plugin.load(xRayOffContext);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './api/reports', true);
+        const completed = new Promise<void>((resolve) => {
+            xhr.addEventListener('loadend', () => resolve(), { once: true });
+        });
+        xhr.send();
+        xhr.abort();
+        await completed;
+        plugin.disable();
+
+        expect(xhr.status).toBe(0);
+        expect(record).not.toHaveBeenCalled();
+        // Inspect the private map to catch leaks after a suppressed abort.
+        const tracked = plugin as unknown as {
+            xhrMap: Map<XMLHttpRequest, unknown>;
+        };
+        expect(tracked.xhrMap.size).toBe(0);
+    });
+
+    test('records a failed XHR if the ignore callback throws', async () => {
+        mock.get(/.*/, { status: 404 });
+        const plugin = new XhrPlugin({
+            ignore: () => {
+                throw new Error('predicate failed');
+            }
+        });
+        plugin.load(xRayOffContext);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', './api/resources/123', true);
+        const completed = new Promise<void>((resolve) => {
+            xhr.addEventListener('loadend', () => resolve(), { once: true });
+        });
+        xhr.send();
+        await completed;
+        plugin.disable();
+
+        expect(xhr.status).toBe(404);
+        expect(record.mock.calls[0]).toMatchObject([
+            HTTP_EVENT_TYPE,
+            { response: { status: 404 } }
+        ]);
     });
 });

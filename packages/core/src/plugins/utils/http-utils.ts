@@ -3,6 +3,7 @@ import {
     Subsegment,
     XRayTraceEvent
 } from '../../events/xray-trace-event';
+import { HttpEvent } from '../../events/http-event';
 import { getRandomValues } from '../../utils/random';
 
 // All one-byte hex strings from 0x00 to 0xff.
@@ -25,6 +26,7 @@ export type HttpPluginConfig = {
     urlsToExclude: RegExp[];
     stackTraceLength: number;
     recordAllRequests: boolean;
+    ignore?: (event: HttpEvent) => boolean;
     // Adding the trace ID header to the request is risky. It may:
     // 1. Cause CORS to fail if the server's CORS configuration does not accept
     //    the X-Amzn-Trace-Id header.
@@ -62,6 +64,7 @@ export const defaultConfig: HttpPluginConfig = {
     ],
     stackTraceLength: 200,
     recordAllRequests: false,
+    ignore: () => false,
     addXRayTraceIdHeader: false
 };
 
@@ -87,6 +90,17 @@ export const isUrlAllowed = (url: string, config: HttpPluginConfig) => {
         urlPattern.test(url)
     );
     return include && !exclude;
+};
+
+export const shouldIgnoreHttpEvent = (
+    event: HttpEvent,
+    config: HttpPluginConfig
+): boolean => {
+    try {
+        return config.ignore?.(event) ?? false;
+    } catch {
+        return false;
+    }
 };
 
 /**
