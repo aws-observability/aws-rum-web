@@ -16,6 +16,7 @@
         "prepare": "husky install",
         "pretest": "npm run build:schemas",
         "test": "jest -c jest.unit.config.js",
+        "test:types": "npm exec --yes --package=typescript@5.9.3 -- tsc --project test/types/tsconfig.json",
         "test:coverage": "jest -c jest.unit.config.js --coverage",
         "server": "webpack serve --config packages/web/webpack/webpack.dev.js",
         "build:dev": "webpack --config packages/web/webpack/webpack.dev.js && webpack --config packages/slim/webpack/webpack.dev.js",
