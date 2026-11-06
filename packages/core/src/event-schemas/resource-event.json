@@ -67,6 +67,10 @@
         "responseTime": {
             "type": "number"
         },
+        "responseStatus": {
+            "description": "HTTP response status, or 0 when the status is unavailable.",
+            "type": "number"
+        },
         "duration": {
             "type": "number"
         },

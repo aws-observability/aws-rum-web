@@ -83,8 +83,9 @@ export class ResourcePlugin extends InternalPlugin {
         startTime,
         initiatorType,
         duration,
-        transferSize
-    }: PerformanceResourceTiming): void => {
+        transferSize,
+        responseStatus
+    }: PerformanceResourceTiming & { responseStatus?: number }): void => {
         if (
             isPutRumEventsCall(name, this.context.config.endpointUrl.hostname)
         ) {
@@ -103,6 +104,9 @@ export class ResourcePlugin extends InternalPlugin {
                 fileType: getResourceFileType(name, initiatorType),
                 transferSize
             };
+            if (responseStatus !== undefined) {
+                eventData.responseStatus = responseStatus;
+            }
             if (this.context.config.recordResourceUrl) {
                 eventData.targetUrl = name;
             }

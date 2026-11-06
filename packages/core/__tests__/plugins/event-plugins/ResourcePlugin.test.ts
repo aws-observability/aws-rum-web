@@ -54,7 +54,23 @@ describe('ResourcePlugin tests', () => {
                 initiatorType: resourceTiming.initiatorType
             })
         );
+        expect(record.mock.calls[0][1]).not.toHaveProperty('responseStatus');
     });
+
+    test.each([200, 404, 0])(
+        'when responseStatus is %i then it is recorded',
+        (responseStatus) => {
+            doMockPerformanceObserver([{ ...resourceTiming, responseStatus }]);
+            const plugin = buildResourcePlugin();
+
+            plugin.load(context);
+
+            expect(record).toHaveBeenCalledWith(
+                PERFORMANCE_RESOURCE_EVENT_TYPE,
+                expect.objectContaining({ responseStatus })
+            );
+        }
+    );
 
     test('when recordResourceUrl is false then the resource name is not recorded', async () => {
         const plugin: ResourcePlugin = buildResourcePlugin();
