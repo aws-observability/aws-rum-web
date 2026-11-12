@@ -30,6 +30,9 @@
         "dist/",
         "index.d.ts"
     ],
+    "engines": {
+        "node": ">=20.0.0"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/aws-observability/aws-rum-web.git"
