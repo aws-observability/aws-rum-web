@@ -36,7 +36,9 @@ export const generateUUID = (): string => {
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     // eslint-disable-next-line no-bitwise
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join(
+    // Two-digit hex without String.prototype.padStart, which needs Chrome 57
+    // and would raise the Chrome >= 55 floor in browserslist.
+    const hex = Array.from(bytes, (b) => ('0' + b.toString(16)).slice(-2)).join(
         ''
     );
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(
