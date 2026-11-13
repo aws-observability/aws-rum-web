@@ -22,7 +22,7 @@ jobs:
             contents: read
         steps:
             - name: Checkout AWS RUM Web Client Repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup Node
               uses: actions/setup-node@v5
@@ -113,7 +113,7 @@ jobs:
                 install_method: ['NPM-ES', 'NPM-CJS', 'CDN']
         steps:
             - name: Checkout AWS RUM Web Client Repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup Node
               uses: actions/setup-node@v5
