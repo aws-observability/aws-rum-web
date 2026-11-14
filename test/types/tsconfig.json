@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "lib": ["dom", "es2022", "esnext.disposable"],
+        "module": "esnext",
+        "moduleResolution": "node",
+        "strict": true,
+        "skipLibCheck": false,
+        "noEmit": true,
+        "types": ["node"]
+    },
+    "include": ["consumer.ts"]
+}

@@ -27,11 +27,57 @@ import { InternalLogger } from '../../utils/InternalLogger';
 // conditions and bundles all rrweb code inline, so CJS and ESM consumers
 // both work.
 import { record } from '@rrweb/record';
-import type { recordOptions } from 'rrweb/typings/types';
+import type {
+    blockClass,
+    DataURLOptions,
+    hooksParam,
+    KeepIframeSrcFn,
+    maskTextClass,
+    PackFn,
+    RecordPlugin,
+    SamplingStrategy
+} from '@rrweb/types';
+import type {
+    MaskInputFn,
+    MaskInputOptions,
+    MaskTextFn,
+    SlimDOMOptions
+} from 'rrweb-snapshot';
 import type { RRWebEvent as RRWebEventPayload } from '../../events/rrweb-event';
 
 /** A single rrweb event as defined by the RRWebEvent schema. */
 type RRWebRecordEvent = RRWebEventPayload['events'][number];
+
+// Keep consumer declarations independent of rrweb's replay-only types.
+type RRWebRecordOptions<T> = {
+    emit?: (event: T, isCheckout?: boolean) => void;
+    checkoutEveryNth?: number;
+    checkoutEveryNms?: number;
+    blockClass?: blockClass;
+    blockSelector?: string;
+    ignoreClass?: string;
+    maskTextClass?: maskTextClass;
+    maskTextSelector?: string;
+    maskAllInputs?: boolean;
+    maskInputOptions?: MaskInputOptions;
+    maskInputFn?: MaskInputFn;
+    maskTextFn?: MaskTextFn;
+    slimDOMOptions?: SlimDOMOptions | 'all' | true;
+    ignoreCSSAttributes?: Set<string>;
+    inlineStylesheet?: boolean;
+    hooks?: hooksParam;
+    packFn?: PackFn;
+    sampling?: SamplingStrategy;
+    dataURLOptions?: DataURLOptions;
+    recordCanvas?: boolean;
+    recordCrossOriginIframes?: boolean;
+    userTriggeredOnInput?: boolean;
+    collectFonts?: boolean;
+    inlineImages?: boolean;
+    plugins?: RecordPlugin[];
+    mousemoveWait?: number;
+    keepIframeSrcFn?: KeepIframeSrcFn;
+};
 
 export const RRWEB_PLUGIN_ID = 'rrweb';
 
@@ -53,7 +99,7 @@ export type RRWebPluginConfig = {
     /** Milliseconds between automatic flushes of buffered events. */
     flushInterval: number;
     /** Options forwarded directly to the rrweb `record()` function. Privacy masking options are enforced and cannot be overridden. */
-    recordOptions: Omit<recordOptions<unknown>, EnforcedPrivacyKeys>;
+    recordOptions: Omit<RRWebRecordOptions<unknown>, EnforcedPrivacyKeys>;
 };
 
 /** Enforced privacy options — always applied, cannot be overridden by customers. */
@@ -86,7 +132,7 @@ const defaultConfig = RRWEB_CONFIG_PROD;
 
 /** Internal config type that includes enforced privacy fields for runtime use. */
 type InternalRRWebPluginConfig = Omit<RRWebPluginConfig, 'recordOptions'> & {
-    recordOptions: recordOptions<unknown>;
+    recordOptions: RRWebRecordOptions<unknown>;
 };
 
 /**
@@ -115,7 +161,7 @@ export class RRWebPlugin extends InternalPlugin {
     constructor(config?: Partial<RRWebPluginConfig>) {
         super(RRWEB_PLUGIN_ID);
         // Merge record options separately so individual fields can be overridden
-        const recordOptions: recordOptions<unknown> = {
+        const recordOptions: RRWebRecordOptions<unknown> = {
             ...defaultConfig.recordOptions,
             ...config?.recordOptions,
             // Enforce privacy — these cannot be overridden
@@ -215,7 +261,8 @@ export class RRWebPlugin extends InternalPlugin {
 
         // rrweb.record() returns a stop function on success
         const stopFn: (() => void) | undefined = record<RRWebRecordEvent>({
-            ...(this.config.recordOptions as recordOptions<RRWebRecordEvent>),
+            ...(this.config
+                .recordOptions as RRWebRecordOptions<RRWebRecordEvent>),
             emit: this.handleRRWebEvent.bind(this)
         });
 
