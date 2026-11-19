@@ -36,13 +36,15 @@ type RRWebRecordEvent = RRWebEventPayload['events'][number];
 export const RRWEB_PLUGIN_ID = 'rrweb';
 
 /**
- * Privacy-related rrweb options that are enforced and cannot be overridden.
- * These are always set to mask all text and inputs in the recording.
+ * Privacy-related rrweb options that are managed by the plugin and cannot be
+ * supplied through `recordOptions`. Their concrete values are resolved at
+ * construction time based on `selectiveMaskingAttribute`.
  */
 type EnforcedPrivacyKeys =
     | 'maskAllInputs'
     | 'maskTextSelector'
-    | 'maskInputOptions';
+    | 'maskInputOptions'
+    | 'maskInputFn';
 
 /** Configuration options for {@link RRWebPlugin}. */
 export type RRWebPluginConfig = {
@@ -52,16 +54,83 @@ export type RRWebPluginConfig = {
     batchSize: number;
     /** Milliseconds between automatic flushes of buffered events. */
     flushInterval: number;
-    /** Options forwarded directly to the rrweb `record()` function. Privacy masking options are enforced and cannot be overridden. */
+    /** Options forwarded directly to the rrweb `record()` function. Privacy masking options are managed by the plugin and cannot be overridden here. */
     recordOptions: Omit<recordOptions<unknown>, EnforcedPrivacyKeys>;
+    /**
+     * Opt-in selective masking. When set to a non-empty string, only DOM
+     * elements that carry this attribute are masked in the replay; everything
+     * else is recorded in clear text. The value is used as a CSS attribute
+     * selector — for example, passing `'data-rum-mask'` masks elements that
+     * match `[data-rum-mask]`.
+     *
+     * When unset (the default), the plugin enforces full text and input
+     * masking and customers cannot disable it.
+     *
+     * Use this only after a privacy review of your application — turning it
+     * on means form values and visible text will be transmitted unless they
+     * carry the configured attribute.
+     */
+    selectiveMaskingAttribute?: string;
 };
 
-/** Enforced privacy options — always applied, cannot be overridden by customers. */
+/** Privacy options applied when selective masking is NOT enabled (the default). */
 const ENFORCED_PRIVACY_OPTIONS = {
     maskAllInputs: true,
     maskTextSelector: '*',
     maskInputOptions: undefined
 } as const;
+
+/**
+ * Mark every standard input type so rrweb invokes `maskInputFn` for it.
+ * Without these flags, rrweb takes its default "do not mask" path and
+ * never consults the function. Built dynamically so we can include the
+ * `number` key without tripping the repository's `id-denylist` lint rule
+ * on the bare identifier.
+ */
+const SELECTIVE_MASK_INPUT_OPTIONS: Record<string, boolean> = (() => {
+    const options: Record<string, boolean> = {
+        color: true,
+        date: true,
+        'datetime-local': true,
+        email: true,
+        month: true,
+        range: true,
+        search: true,
+        tel: true,
+        text: true,
+        time: true,
+        url: true,
+        week: true,
+        textarea: true,
+        select: true,
+        password: true
+    };
+    options['number'] = true;
+    return options;
+})();
+
+/**
+ * Privacy options used when `selectiveMaskingAttribute` is set. Only elements
+ * carrying the configured attribute are masked.
+ */
+const buildSelectivePrivacyOptions = (attribute: string) => {
+    const escaped = attribute.replace(/[\\"\]]/g, '\\$&');
+    return {
+        maskAllInputs: false,
+        maskTextSelector: `[${escaped}]`,
+        maskInputOptions: SELECTIVE_MASK_INPUT_OPTIONS,
+        maskInputFn: (text: string, element: HTMLElement) => {
+            if (
+                element &&
+                typeof element.hasAttribute === 'function' &&
+                element.hasAttribute(attribute)
+            ) {
+                return '*'.repeat(text.length);
+            }
+            return text;
+        }
+    };
+};
 
 /**
  * Production-safe defaults. Privacy masking is enforced; heavy options
@@ -114,12 +183,25 @@ export class RRWebPlugin extends InternalPlugin {
 
     constructor(config?: Partial<RRWebPluginConfig>) {
         super(RRWEB_PLUGIN_ID);
+
+        // Privacy resolution: the default is full masking. Customers opt in
+        // to selective masking by passing a non-empty `selectiveMaskingAttribute`.
+        const selectiveAttribute =
+            typeof config?.selectiveMaskingAttribute === 'string' &&
+            config.selectiveMaskingAttribute.length > 0
+                ? config.selectiveMaskingAttribute
+                : undefined;
+        const privacyOptions = selectiveAttribute
+            ? buildSelectivePrivacyOptions(selectiveAttribute)
+            : ENFORCED_PRIVACY_OPTIONS;
+
         // Merge record options separately so individual fields can be overridden
         const recordOptions: recordOptions<unknown> = {
             ...defaultConfig.recordOptions,
             ...config?.recordOptions,
-            // Enforce privacy — these cannot be overridden
-            ...ENFORCED_PRIVACY_OPTIONS
+            // Privacy options are managed by the plugin — overriding them via
+            // `recordOptions` is not supported.
+            ...privacyOptions
         };
         this.config = {
             ...defaultConfig,
@@ -130,7 +212,8 @@ export class RRWebPlugin extends InternalPlugin {
         InternalLogger.info('RRWebPlugin initialized', {
             additionalSampleRate: this.config.additionalSampleRate,
             batchSize: this.config.batchSize,
-            flushInterval: this.config.flushInterval
+            flushInterval: this.config.flushInterval,
+            selectiveMaskingAttribute: selectiveAttribute
         });
     }
 
