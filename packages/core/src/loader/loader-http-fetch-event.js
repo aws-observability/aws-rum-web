@@ -5,7 +5,11 @@ import { FetchPlugin } from '../plugins/event-plugins/FetchPlugin';
 const config = {
     logicalServiceName: 'sample.rum.aws.amazon.com',
     recordAllRequests: true,
-    addXRayTraceIdHeader: true
+    addXRayTraceIdHeader: true,
+    ignore: (event) =>
+        event.request.method === 'GET' &&
+        event.request.url?.includes('/api/resources/123') &&
+        event.response?.status === 404
 };
 
 loader('cwr', 'abc123', '1.0', 'us-west-2', './rum_javascript_telemetry.js', {

@@ -49,7 +49,7 @@ Options: `reportAllLCP`, `reportAllCLS`, `reportAllINP`. See [Performance](../co
 
 Instruments HTTP traffic by monkey-patching `window.fetch` and `XMLHttpRequest`. Records one event per request containing method, URL, status, latency, and (optionally) a stack trace of the initiating call.
 
-Options: `urlsToInclude`, `urlsToExclude`, `recordAllRequests`, `stackTraceLength`, `addXRayTraceIdHeader`. See [HTTP](../configuration.md#http).
+Options: `urlsToInclude`, `urlsToExclude`, `recordAllRequests`, `ignore`, `stackTraceLength`, `addXRayTraceIdHeader`. See [HTTP](../configuration.md#http) for status- and route-aware filtering examples. Pass `ignore` to both plugin constructors when loading them explicitly.
 
 When `enableXRay: true`, these plugins also emit `com.amazon.rum.xray_trace_event` for X-Ray. When `enableW3CTraceId: true` **and** `addXRayTraceIdHeader` is set, a W3C `traceparent` header is used instead of `X-Amzn-Trace-Id`.
 

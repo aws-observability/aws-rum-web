@@ -16,7 +16,8 @@ import {
     is429,
     is4xx,
     is5xx,
-    isTraceIdHeaderEnabled
+    isTraceIdHeaderEnabled,
+    shouldIgnoreHttpEvent
 } from '../utils/http-utils';
 import { XhrError } from '../../errors/XhrError';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
@@ -266,7 +267,10 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             httpEvent.trace_id = xhrDetails.trace!.trace_id;
             httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
         }
-        if (this.config.recordAllRequests || !this.statusOk(xhr.status)) {
+        if (
+            (this.config.recordAllRequests || !this.statusOk(xhr.status)) &&
+            !shouldIgnoreHttpEvent(httpEvent, this.config)
+        ) {
             this.context.record(HTTP_EVENT_TYPE, httpEvent);
         }
     }
@@ -292,7 +296,9 @@ export class XhrPlugin extends MonkeyPatched<XMLHttpRequest, 'send' | 'open'> {
             httpEvent.trace_id = xhrDetails.trace!.trace_id;
             httpEvent.segment_id = xhrDetails.trace!.subsegments![0].id;
         }
-        this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        if (!shouldIgnoreHttpEvent(httpEvent, this.config)) {
+            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        }
     }
 
     private recordTraceEvent(trace: XRayTraceEvent) {

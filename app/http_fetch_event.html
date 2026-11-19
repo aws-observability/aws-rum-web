@@ -7,8 +7,14 @@
             window.fetch = function (request, init) {
                 document.getElementById('fetchRequestHeaders').innerText =
                     init.headers['X-Amzn-Trace-Id'];
+                const status =
+                    request === 'https://example.test/api/resources/123' ||
+                    request === 'https://example.test/api/other-resource'
+                        ? 404
+                        : 200;
                 return Promise.resolve({
-                    status: 200,
+                    status,
+                    ok: status === 200,
                     headers: new Headers({ 'Content-Length': 125 }),
                     body: '{}'
                 });

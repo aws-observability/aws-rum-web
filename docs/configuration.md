@@ -147,7 +147,34 @@ telemetries: [
 | urlsToExclude | RegExp[] | `[]` | A list of HTTP request (`XMLHttpRequest` or `fetch`) URLs. These requests will not be recorded. |
 | stackTraceLength | Number | `1000 ` | The number of characters to record from a JavaScript error's stack trace (if available). |
 | recordAllRequests | boolean | `false` | By default, only HTTP failed requests (i.e., those with network errors or status codes which are not 2xx) are recorded. When this field is `true`, the http telemetry will record all requests, including those with successful 2xx status codes. <br/><br/>This field does **does not apply** to X-Ray traces, where all requests are recorded. |
+| ignore | `(event: HttpEvent) => boolean` | `() => false` | Return `true` to omit a candidate HTTP event after the response or network error is known. The event contains `request.method`, optional `request.url`, and either `response.status` or `error`. The callback runs only for requests that would otherwise be recorded (`recordAllRequests` still controls successful requests); a thrown callback is treated as `false`. This does not filter X-Ray trace events or change the application's response. |
 | addXRayTraceIdHeader | boolean or RegExp[] | `false` | By default, the `X-Amzn-Trace-Id` header will not be added to the HTTP request. This means that the client-side trace and server-side trace will **not be linked** in X-Ray or the ServiceLens graph.<br/><br/> When this field is `true`, the `X-Amzn-Trace-Id` header will be added to HTTP requests (`XMLHttpRequest` or `fetch`).<br/><br/> When this field is an array of regular expressions (RegExp[]), the `X-Amzn-Trace-Id` header will be added only to HTTP requests that contain an URL matching one or more of the regular expressions. If the `enableW3CTraceId` field is set to true, then a `traceparent` header will be added in the W3C trace format (see [here](https://www.w3.org/TR/trace-context/#traceparent-header) for more information) instead of the `X-Amzn-Trace-Id` header. <br/><br/>**Adding the `X-Amzn-Trace-Id` header can cause CORS failures. Test your application before enabling this feature in a production environment.** |
+
+For example, omit 404 responses for missing resources and failures from a reporting endpoint, while still recording unrelated 404s/500s and successful report responses (when `recordAllRequests` is enabled):
+
+```javascript
+const ignoreHttpEvent = ({ request, response, error }) => {
+    const url = request.url ?? '';
+    return (
+        (request.method === 'GET' &&
+            /\/api\/resources\/[^/?#]+(?:[?#]|$)/.test(url) &&
+            response?.status === 404) ||
+        (/\/api\/reports(?:[?#]|$)/.test(url) &&
+            ((response?.status ?? 0) >= 400 || !!error))
+    );
+};
+
+// Full build:
+const telemetries = [['http', { ignore: ignoreHttpEvent }]];
+
+// Slim build: pass the same option to each transport you load.
+const eventPluginsToLoad = [
+    new FetchPlugin({ ignore: ignoreHttpEvent }),
+    new XhrPlugin({ ignore: ignoreHttpEvent })
+];
+```
+
+`urlsToExclude` instead skips both HTTP events and X-Ray instrumentation for matching URLs before a request is made; use `ignore` when the response status or error determines whether an event is expected.
 
 ## Interaction
 

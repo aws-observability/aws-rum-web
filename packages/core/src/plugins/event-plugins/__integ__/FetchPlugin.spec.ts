@@ -59,4 +59,53 @@ test.describe('X-Ray Fetch Plugin', () => {
         expect(eventDetails.request.method).toBe('GET');
         expect(eventDetails.response.status).toBe(200);
     });
+    test('ignores the configured resource 404 but retains another 404 and both traces', async ({
+        page
+    }) => {
+        const missingResourceUrl = 'https://example.test/api/resources/123';
+        const unrelatedResourceUrl = 'https://example.test/api/other-resource';
+        await page.goto('/http_fetch_event.html');
+        await page.waitForFunction(() => window.AwsRumClient?.q.length === 0);
+        await page.click('#dispatch');
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+        await page.click('#clearRequestResponse');
+
+        const statuses = await page.evaluate(
+            async (urls) => {
+                const responses = await Promise.all(
+                    urls.map((url) => fetch(url))
+                );
+                return responses.map((response) => response.status);
+            },
+            [missingResourceUrl, unrelatedResourceUrl]
+        );
+        expect(statuses).toEqual([404, 404]);
+        await page.click('#dispatch');
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+
+        const payload = JSON.parse(
+            (await page.locator('#request_body').textContent()) || '{}'
+        );
+        const httpEvents = payload.RumEvents.filter(
+            (event: { type: string }) => event.type === HTTP_EVENT_TYPE
+        ).map((event: { details: string }) => JSON.parse(event.details));
+        const traces = payload.RumEvents.filter(
+            (event: { type: string }) => event.type === XRAY_TRACE_EVENT_TYPE
+        ).map((event: { details: string }) => JSON.parse(event.details));
+        expect(
+            httpEvents.map(
+                (event: { request: { url: string } }) => event.request.url
+            )
+        ).toEqual([unrelatedResourceUrl]);
+        expect(httpEvents[0].response.status).toBe(404);
+        expect(
+            traces.map(
+                (event: {
+                    subsegments: { http: { request: { url: string } } }[];
+                }) => event.subsegments[0].http.request.url
+            )
+        ).toEqual(
+            expect.arrayContaining([missingResourceUrl, unrelatedResourceUrl])
+        );
+    });
 });

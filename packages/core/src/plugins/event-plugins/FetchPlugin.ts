@@ -20,7 +20,8 @@ import {
     is4xx,
     is5xx,
     getTraceHeader,
-    isTraceIdHeaderEnabled
+    isTraceIdHeaderEnabled,
+    shouldIgnoreHttpEvent
 } from '../utils/http-utils';
 import { HTTP_EVENT_TYPE, XRAY_TRACE_EVENT_TYPE } from '../utils/constant';
 import {
@@ -249,7 +250,9 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
                 status: response.status,
                 statusText: response.statusText
             };
-            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+            if (!shouldIgnoreHttpEvent(httpEvent, this.config)) {
+                this.context.record(HTTP_EVENT_TYPE, httpEvent);
+            }
         }
     };
 
@@ -264,7 +267,9 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
             } as ErrorEvent,
             this.config.stackTraceLength
         );
-        this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        if (!shouldIgnoreHttpEvent(httpEvent, this.config)) {
+            this.context.record(HTTP_EVENT_TYPE, httpEvent);
+        }
     };
 
     private fetch = (
