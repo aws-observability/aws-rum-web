@@ -10,6 +10,7 @@ Quick link:
 <script>
     cwr('recordPageView', '/home');
     cwr('recordError', e);
+    cwr('recordError', { error: e, metadata: { traceId: 'abc' } });
     cwr('recordEvent', { type: 'my_event', data: { k: 'v' } });
     cwr('recordEvent', {
         type: 'my_event',

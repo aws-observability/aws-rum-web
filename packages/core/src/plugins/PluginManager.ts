@@ -1,5 +1,5 @@
 import { Plugin } from './Plugin';
-import { PluginContext } from './types';
+import { EventMetadata, PluginContext } from './types';
 import { InternalPlugin } from './InternalPlugin';
 import { InternalLogger } from '../utils/InternalLogger';
 
@@ -81,11 +81,12 @@ export class PluginManager {
      *
      * @param pluginId The unique identifier for the plugin being configured.
      * @param data The data to be recorded by the plugin.
+     * @param metadata Per-call metadata to attach to the recorded event.
      */
-    public record(pluginId: string, data: any): void {
+    public record(pluginId: string, data: any, metadata?: EventMetadata): void {
         const plugin = this.getPlugin(pluginId);
         if (plugin?.record instanceof Function) {
-            plugin.record(data);
+            plugin.record(data, metadata);
         } else {
             throw new Error('AWS RUM Client record: Invalid plugin ID');
         }

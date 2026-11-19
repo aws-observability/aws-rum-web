@@ -58,8 +58,10 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
 
     private config: Config;
     private pageManager: PageManager;
+    // Not named `record`: MonkeyPatched inherits an optional public `record` from InternalPlugin,
+    // and a private field of the same name is an illegal override.
     // @ts-ignore
-    private readonly record: RecordEvent;
+    private readonly recordEvent: RecordEvent;
 
     constructor(pageManager: PageManager, config: Config, record: RecordEvent) {
         super('virtual-page-load-timer');
@@ -75,7 +77,7 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
 
         this.config = config;
         this.pageManager = pageManager;
-        this.record = record;
+        this.recordEvent = record;
         this.enable();
 
         // Start tracking the timestamps
@@ -275,8 +277,8 @@ export class VirtualPageLoadTimer extends MonkeyPatched<
             startTime: page.start,
             duration: this.latestEndTime - page.start
         };
-        if (this.record) {
-            this.record(
+        if (this.recordEvent) {
+            this.recordEvent(
                 PERFORMANCE_NAVIGATION_EVENT_TYPE,
                 virtualPageNavigationEvent
             );

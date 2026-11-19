@@ -24,6 +24,21 @@ export type AwsRumClientInit = {
     u?: string;
 };
 
+const isPlainObject = (value: any): boolean =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+// The snippet forwards a single payload, so recordError's optional metadata argument arrives as an
+// envelope: cwr('recordError', { error, metadata }). Only an object literal carrying both own keys
+// is an envelope, so a thrown Error, ErrorEvent or any other class instance is still recorded as
+// the error itself.
+const isRecordErrorEnvelope = (
+    payload: any
+): payload is { error: any; metadata: any } =>
+    isPlainObject(payload) &&
+    Object.getPrototypeOf(payload) === Object.prototype &&
+    Object.prototype.hasOwnProperty.call(payload, 'error') &&
+    Object.prototype.hasOwnProperty.call(payload, 'metadata');
+
 export class CommandQueue {
     protected orchestration!: Orchestration;
 
@@ -35,7 +50,14 @@ export class CommandQueue {
             this.orchestration.recordPageView(payload);
         },
         recordError: (payload: any): void => {
-            this.orchestration.recordError(payload);
+            if (isRecordErrorEnvelope(payload)) {
+                if (!isPlainObject(payload.metadata)) {
+                    throw new Error('IncorrectParametersException');
+                }
+                this.orchestration.recordError(payload.error, payload.metadata);
+            } else {
+                this.orchestration.recordError(payload);
+            }
         },
         registerDomEvents: (payload: any): void => {
             this.orchestration.registerDomEvents(payload);
@@ -48,9 +70,7 @@ export class CommandQueue {
             ) {
                 if (
                     payload.metadata !== undefined &&
-                    (typeof payload.metadata !== 'object' ||
-                        payload.metadata === null ||
-                        Array.isArray(payload.metadata))
+                    !isPlainObject(payload.metadata)
                 ) {
                     throw new Error('IncorrectParametersException');
                 }

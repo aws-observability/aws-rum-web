@@ -305,4 +305,66 @@ describe('Slim CommandQueue tests', () => {
         await cq.push({ c: 'startSession', p: null });
         expect(startSession).not.toHaveBeenCalled();
     });
+
+    test('recordError forwards a bare error', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        const error = new Error('test');
+        await cq.push({ c: 'recordError', p: error });
+        expect(recordError).toHaveBeenCalledWith(error);
+    });
+
+    test('recordError forwards metadata from an envelope payload', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        const error = new Error('test');
+        await cq.push({
+            c: 'recordError',
+            p: { error, metadata: { traceId: 'trace-1' } }
+        });
+        expect(recordError).toHaveBeenCalledWith(error, {
+            traceId: 'trace-1'
+        });
+    });
+
+    test('recordError treats an error-shaped object without metadata as the error', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        const thrown = { error: 'inner', message: 'real error message' };
+        await cq.push({ c: 'recordError', p: thrown });
+        expect(recordError).toHaveBeenCalledWith(thrown);
+    });
+
+    test('recordError treats a thrown Error carrying both envelope keys as the error', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        const thrown = Object.assign(new Error('real error message'), {
+            error: 'inner',
+            metadata: { fromError: true }
+        });
+        await cq.push({ c: 'recordError', p: thrown });
+        expect(recordError).toHaveBeenCalledWith(thrown);
+    });
+
+    test('recordError does not treat an inherited metadata key as an envelope', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        class ThrownError extends Error {}
+        (ThrownError.prototype as any).error = 'inner';
+        (ThrownError.prototype as any).metadata = { fromProto: true };
+        const thrown = new ThrownError('real error message');
+        await cq.push({ c: 'recordError', p: thrown });
+        expect(recordError).toHaveBeenCalledWith(thrown);
+    });
+
+    test('recordError rejects non-object metadata', async () => {
+        const cq = new CommandQueue();
+        await cq.init(createAwsRumInit());
+        await expect(
+            cq.push({
+                c: 'recordError',
+                p: { error: new Error('test'), metadata: 'oops' }
+            })
+        ).rejects.toThrow('IncorrectParametersException');
+    });
 });

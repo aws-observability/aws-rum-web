@@ -1,6 +1,7 @@
 import { InternalPlugin } from '../InternalPlugin';
 import { JS_ERROR_EVENT_TYPE } from '../utils/constant';
 import { errorEventToJsErrorEvent } from '../utils/js-error-utils';
+import { EventMetadata } from '../types';
 
 export const JS_ERROR_EVENT_PLUGIN_ID = 'js-error';
 
@@ -43,11 +44,14 @@ export class JsErrorPlugin extends InternalPlugin {
         this.enabled = false;
     }
 
-    record(error: any): void {
+    record(error: any, metadata?: EventMetadata): void {
         if (error instanceof ErrorEvent) {
-            this.recordJsErrorEvent(error);
+            this.recordJsErrorEvent(error, metadata);
         } else {
-            this.recordJsErrorEvent({ type: 'error', error } as ErrorEvent);
+            this.recordJsErrorEvent(
+                { type: 'error', error } as ErrorEvent,
+                metadata
+            );
         }
     }
 
@@ -70,10 +74,11 @@ export class JsErrorPlugin extends InternalPlugin {
         }
     };
 
-    private recordJsErrorEvent(error: ErrorEvent) {
+    private recordJsErrorEvent(error: ErrorEvent, metadata?: EventMetadata) {
         this.context?.record(
             JS_ERROR_EVENT_TYPE,
-            errorEventToJsErrorEvent(error, this.config.stackTraceLength)
+            errorEventToJsErrorEvent(error, this.config.stackTraceLength),
+            metadata
         );
     }
 

@@ -1,4 +1,4 @@
-import { PluginContext } from './types';
+import { EventMetadata, PluginContext } from './types';
 
 export interface Plugin<UpdateType = unknown> {
     /**
@@ -29,8 +29,9 @@ export interface Plugin<UpdateType = unknown> {
      * Manually record an event.
      *
      * @param data Data that the plugin will use to create an event.
+     * @param metadata Per-call metadata to attach to the recorded event.
      */
-    record?<D>(data: D): void;
+    record?(data: any, metadata?: EventMetadata): void;
 
     /**
      * Update the plugin.

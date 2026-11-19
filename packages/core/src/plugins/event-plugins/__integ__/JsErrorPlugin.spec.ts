@@ -146,6 +146,32 @@ test.describe('JSErrorEvent Plugin', () => {
         expect(eventDetails.message).toContain('My error message');
     });
 
+    test('when the application records a caught error with metadata then the metadata is on the event', async ({
+        page
+    }) => {
+        await page.goto('/js_error_event.html');
+
+        await page.waitForTimeout(300);
+        await page.click('#recordCaughtErrorWithMetadata');
+        await page.click('#dispatch');
+
+        await expect(page.locator('#request_body')).toContainText('BatchId');
+
+        const requestBodyText = await page
+            .locator('#request_body')
+            .textContent();
+        const events = JSON.parse(requestBodyText || '{}').RumEvents.filter(
+            (e: any) => e.type === JS_ERROR_EVENT_TYPE
+        );
+
+        const eventDetails = JSON.parse(events[0].details);
+        const eventMetadata = JSON.parse(events[0].metadata);
+
+        expect(events.length).toBe(1);
+        expect(eventDetails.message).toContain('My error message');
+        expect(eventMetadata.traceId).toBe('trace-1');
+    });
+
     test('when ignore function matches error then the plugin does not record the error', async ({
         page
     }) => {
