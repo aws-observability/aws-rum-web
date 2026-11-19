@@ -16,6 +16,7 @@ import {
     requestInfoToHostname,
     addAmznTraceIdHeaderToHeaders,
     resourceToUrlString,
+    normalizeUrl,
     is429,
     is4xx,
     is5xx,
@@ -227,10 +228,12 @@ export class FetchPlugin extends MonkeyPatched<Window, 'fetch'> {
         init?: RequestInit
     ): HttpEvent => {
         const request = input as Request;
+        const url = normalizeUrl(resourceToUrlString(input), this.config);
+
         return {
             version: '1.0.0',
             request: {
-                url: resourceToUrlString(input),
+                url,
                 method: init?.method
                     ? init.method
                     : request.method

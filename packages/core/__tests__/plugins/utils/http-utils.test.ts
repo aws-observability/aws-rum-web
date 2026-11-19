@@ -1,7 +1,10 @@
 import {
     X_AMZN_TRACE_ID,
     W3C_TRACEPARENT_HEADER_NAME,
-    getTraceHeader
+    getTraceHeader,
+    normalizeUrl,
+    defaultConfig,
+    HttpPluginConfig
 } from '@aws-rum/web-core/plugins/utils/http-utils';
 
 const Request = function (input: RequestInfo, init?: RequestInit) {
@@ -116,5 +119,55 @@ describe('http-utils', () => {
 
         expect(traceHeader.traceId).toEqual(undefined);
         expect(traceHeader.segmentId).toEqual(undefined);
+    });
+});
+
+describe('normalizeUrl', () => {
+    const config = (
+        urlNormalizer?: HttpPluginConfig['urlNormalizer']
+    ): HttpPluginConfig => ({
+        ...defaultConfig,
+        urlNormalizer
+    });
+
+    test('returns original URL when urlNormalizer is not set', () => {
+        expect(normalizeUrl('https://example.com/users/1', config())).toEqual(
+            'https://example.com/users/1'
+        );
+    });
+
+    test('applies the normalizer function', () => {
+        const normalizer = (url: string) =>
+            url.replace(/\/users\/\d+/, '/users/{id}');
+        expect(
+            normalizeUrl('https://example.com/users/123', config(normalizer))
+        ).toEqual('https://example.com/users/{id}');
+    });
+
+    test('falls back to original URL when normalizer throws', () => {
+        const normalizer = () => {
+            throw new Error('boom');
+        };
+        expect(normalizeUrl('https://example.com', config(normalizer))).toEqual(
+            'https://example.com'
+        );
+    });
+
+    test('falls back to original URL when normalizer returns empty string', () => {
+        expect(
+            normalizeUrl(
+                'https://example.com',
+                config(() => '')
+            )
+        ).toEqual('https://example.com');
+    });
+
+    test('falls back to original URL when normalizer returns undefined', () => {
+        expect(
+            normalizeUrl(
+                'https://example.com',
+                config(() => undefined as unknown as string)
+            )
+        ).toEqual('https://example.com');
     });
 });
